@@ -38,3 +38,4 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 VERSION = '0.0.1'
+PROJECT_URL = 'https://pypi.python.org/pypi/botolimitchecker/{v}'.format(v=VERSION)

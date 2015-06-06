@@ -30,8 +30,7 @@ often at the least convenient time (i.e. mid-deploy or when autoscaling fails). 
 can help this, but even the version that comes with Business and Enterprise support only monitors a small subset of AWS limits
 and only alerts *weekly*. Botolimitchecker provides a command line script and reusable package that queries your current
 usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, or data from Trusted
-Advisor where available), notifying you when you are approaching or at your limits. It also provides useful helper
-methods to check capacity for a given number of a type of resource, usable as a sanity check in your deployment pipeline.
+Advisor where available), notifying you when you are approaching or at your limits.
 
 Requirements
 ------------
@@ -152,7 +151,7 @@ This shouldn't be much of a concern to most people.
 
 If you're simply *running* botolimitchecker, all you must do is provide a notice on where to get the source code
 in your output; this is already handled via a warning-level log message in the package. If you modify botolimitchecker's
-code, you must update this URL to reflect your modifications.
+code, you must update this URL to reflect your modifications (see ``botolimitchecker/version.py``).
 
 If you're distributing botolimitchecker with modifications or as part of your own software (as opposed to simply a
 requirement that gets installed with pip), please read the license and ensure that you comply with its terms.

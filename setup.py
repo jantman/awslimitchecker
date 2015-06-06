@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from setuptools import setup
 from sys import version_info
-from botolimitchecker.version import VERSION
+from botolimitchecker.version import VERSION, PROJECT_URL
 
 # boto isn't py3-compatible yet
 if version_info[0] > 2 or version_info[1] < 6:
@@ -85,7 +85,7 @@ setup(
     [console_scripts]
     botolimitchecker = botolimitchecker.runner:console_entry_point
     """,
-    url='https://github.com/jantman/boto-limit-checker',
+    url=PROJECT_URL,
     description='A script and python module to check your AWS service limits and usage using boto.',
     long_description=long_description,
     install_requires=requires,
