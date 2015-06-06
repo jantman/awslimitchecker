@@ -1,10 +1,10 @@
 """
-version.py
+botolimitchecker/version.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/boto-limit-checker>
 
-##################################################################################
+################################################################################
 Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
     This file is part of botolimitchecker, also known as boto-limit-checker.
@@ -25,17 +25,44 @@ Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 The Copyright and Authors attributions contained herein may not be removed or
 otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
-##################################################################################
+################################################################################
 While not legally required, I sincerely request that anyone who finds
 bugs please submit them at <https://github.com/jantman/pydnstest> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
-##################################################################################
+################################################################################
 
 AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
-##################################################################################
+################################################################################
 """
 
-VERSION = '0.0.1'
-PROJECT_URL = 'https://pypi.python.org/pypi/botolimitchecker/{v}'.format(v=VERSION)
+VERSION = '0.1.0'
+PROJECT_URL = 'https://pypi.python.org/pypi/botolimitchecker/{v}'.format(
+    v=VERSION)
+
+
+def get_version():
+    """
+    Returns the currently-installed botolimitchecker version.
+
+    This is a future hook for a more AGPL-y way of getting the actual
+    currently-running version, even if it's a git commit, etc.
+
+    :returns: botolimitchecker version
+    :rtype: string
+    """
+    return VERSION
+
+
+def get_project_url():
+    """
+    Returns the botolimitchecker project URL.
+
+    This is a future hook for a more AGPL-y way of getting the actual
+    currently-running project URL, even if it's installed from git.
+
+    :returns: botolimitchecker project URL
+    :rtype: string
+    """
+    return PROJECT_URL

@@ -1,5 +1,5 @@
 """
-botolimitchecker/__init__.py
+botolimitchecker/services/__init__.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/boto-limit-checker>
@@ -36,3 +36,9 @@ AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
+
+from .ec2 import EC2Service
+
+services = {
+    EC2Service.service_name: EC2Service,
+}

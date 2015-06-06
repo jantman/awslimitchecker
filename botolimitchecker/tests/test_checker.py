@@ -1,5 +1,5 @@
 """
-botolimitchecker/__init__.py
+botolimitchecker/tests/test_checker.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/boto-limit-checker>
@@ -36,3 +36,5 @@ AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
+
+# from botolimitchecker.checker import BotoLimitChecker as BLC

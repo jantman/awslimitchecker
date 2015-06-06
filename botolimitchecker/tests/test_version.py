@@ -1,5 +1,5 @@
 """
-botolimitchecker/tests/__init__.py
+botolimitchecker/tests/test_version.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/boto-limit-checker>
@@ -36,3 +36,47 @@ AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
 """
+
+import botolimitchecker.version as version
+
+import re
+
+
+class TestVersion(object):
+
+    def test_project_url(self):
+        expected = 'https://pypi.python.org/pypi/botolimitchecker/{v}'.format(
+            v=version.VERSION)
+        assert version.PROJECT_URL == expected
+
+    def test_get_project_url(self):
+        assert version.get_project_url() == version.PROJECT_URL
+
+    def test_get_version(self):
+        assert version.get_version() == version.VERSION
+
+    def test_is_semver(self):
+        # see:
+        # https://github.com/mojombo/semver.org/issues/59#issuecomment-57884619
+        semver_ptn = re.compile(
+            r'^'
+            r'(?P<MAJOR>(?:'
+            r'0|(?:[1-9]\d*)'
+            r'))'
+            r'\.'
+            r'(?P<MINOR>(?:'
+            r'0|(?:[1-9]\d*)'
+            r'))'
+            r'\.'
+            r'(?P<PATCH>(?:'
+            r'0|(?:[1-9]\d*)'
+            r'))'
+            r'(?:-(?P<prerelease>'
+            r'[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*'
+            r'))?'
+            r'(?:\+(?P<build>'
+            r'[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*'
+            r'))?'
+            r'$'
+        )
+        assert semver_ptn.match(version.VERSION) is not None

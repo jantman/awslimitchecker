@@ -1,5 +1,5 @@
 """
-botolimitchecker/__init__.py
+botolimitchecker/services/base.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/boto-limit-checker>
@@ -36,3 +36,11 @@ AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
+
+
+class BotoLimitCheckerService(object):
+
+    service_name = 'baseclass'
+
+    def __init__(self):
+        pass
