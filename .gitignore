@@ -52,6 +52,8 @@ coverage.xml
 
 # Sphinx documentation
 docs/build/
+docs/source/botolimitchecker*.rst
+docs/source/modules.rst
 
 # PyBuilder
 target/
