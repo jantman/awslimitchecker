@@ -39,7 +39,7 @@ Requirements
 
 * Python 2.6 or 2.7 (`boto <http://docs.pythonboto.org/en/latest/>`_ currently has incomplete python3 support)
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_
+* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.30.0
 
 Installation
 ------------

@@ -40,7 +40,44 @@ Guidelines
 
 * pep8 compliant with some exceptions (see pytest.ini)
 * 100% test coverage with pytest (with valid tests)
+* each :py:class:`~awslimitchecker.services.base.AwsLimitCheckerService` subclass
+  should only connect to boto once, and should save the connection as ``self.conn``.
 
+
+.. _development.adding_checks:
+
+Adding New Checks to Existing Services
+---------------------------------------
+
+TODO
+
+
+.. _development.adding_services:
+
+Adding New Services
+--------------------
+
+All Services are sublcasses of :py:class:`~awslimitchecker.services.base.AwsLimitCheckerService`
+using the :py:mod:`abc` module.
+
+1. In ``awslimitchecker.services`` copy ``base.py`` to ``new_service_name.py``.
+2. Change the file path on line 2 in the docstring, the class name, and the
+   ``service_name`` class attribute.
+3. Write at least high-level tests; TDD is greatly preferred.
+4. Implement all abstract methods from :py:class:`~awslimitchecker.services.base.AwsLimitCheckerService`.
+5. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
+6. TBD - write integration tests.
+7. Add the new service and its limits to the documentation under
+   :ref:`Features -> Current Checks <_features.checks>`
+8. Run all tox jobs, or at least one python version, docs and coverage.
+9. Submit your pull request.
+
+.. _development.adding_ta:
+
+Adding Trusted Advisor Checks
+------------------------------
+
+TODO
 
 .. _development.tests:
 
