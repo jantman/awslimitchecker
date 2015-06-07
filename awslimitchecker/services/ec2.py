@@ -74,7 +74,7 @@ class Ec2Service(AwsService):
                     continue
                 key = 'Running On-Demand {t} instances'.format(
                     t=inst.instance_type)
-                result[key] += 1
+                ondemand[key] += 1
 
     def get_limits(self):
         """
