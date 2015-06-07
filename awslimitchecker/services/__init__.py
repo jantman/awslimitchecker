@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.services.base import AwsService
-from .ec2 import CheckEc2
+from .ec2 import Ec2Service
 
 # dynamically generate the service name to class dict
 services = {}

@@ -57,6 +57,7 @@ class AwsService(object):
         AwsService subclasses should be usable without any external network
         connections.
         """
+        self.limits = None
         self.limits = self.get_limits()
         self.conn = None
 

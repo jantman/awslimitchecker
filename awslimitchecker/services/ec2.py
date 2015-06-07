@@ -45,21 +45,26 @@ from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
-class CheckEc2(AwsService):
+class Ec2Service(AwsService):
 
     service_name = 'EC2'
+
+    def connect(self):
+        if self.conn is None:
+            logger.debug("Connecting to EC2")
+            self.conn = boto.connect_ec2()
+            logger.info("Connected to EC2")
 
     def check_usage(self):
         """
         Check this service for the usage of each resource with a known limit.
-
-        :returns: dict of limit name (string) to usage amount
-        :rtype: dict
+        This updates limits in self.limits.
         """
-        if self.conn is None:
-            self.conn = boto.connect_ec2()
-        result = {k: 0 for k in CheckEc2.default_limits()}
+        logger.debug("Checking usage for service {n}".format(
+            n=self.service_name))
+        self.connect()
         # On-Demand instances by type
+        ondemand = {k: 0 for k in self._instance_types()}
         for res in self.conn.get_all_reservations():
             for inst in res.instances:
                 if inst.spot_instance_request_id:
@@ -70,7 +75,6 @@ class CheckEc2(AwsService):
                 key = 'Running On-Demand {t} instances'.format(
                     t=inst.instance_type)
                 result[key] += 1
-        return result
 
     def get_limits(self):
         """
@@ -80,6 +84,8 @@ class CheckEc2(AwsService):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
+        if self.limits is not None:
+            return self.limits
         # from: http://aws.amazon.com/ec2/faqs/
         # (On-Demand, Reserved, Spot)
         default_limits = (20, 20, 5)
