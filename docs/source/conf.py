@@ -15,6 +15,8 @@
 import sys
 import os
 import shlex
+# to let sphinx find the actual source...
+sys.path.insert(0, os.path.abspath("../.."))
 from awslimitchecker.version import get_version
 
 # If extensions (or modules to document with autodoc) are in another directory,

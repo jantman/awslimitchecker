@@ -68,10 +68,8 @@ using the :py:mod:`abc` module.
 5. Implement all abstract methods from :py:class:`~awslimitchecker.services.base.AwsService`.
 6. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
 7. TBD - write integration tests.
-8. Add the new service and its limits to the documentation under
-   :ref:`Features -> Current Checks <_features.checks>`
-9. Run all tox jobs, or at least one python version, docs and coverage.
-10. Submit your pull request.
+8. Run all tox jobs, or at least one python version, docs and coverage.
+9. Submit your pull request.
 
 .. _development.adding_ta:
 

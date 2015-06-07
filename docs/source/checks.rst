@@ -1,17 +1,17 @@
-.. _features:
+.. _checks:
 
-Features
+Checks
 ========
 
 
-.. _features.trusted_advisor:
+.. _checks.trusted_advisor:
 
 Trusted Advisor Data
 ---------------------
 
 TODO
 
-.. _features.checks:
+.. _checks.checks:
 
 Current Checks
 ---------------

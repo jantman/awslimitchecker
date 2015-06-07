@@ -60,11 +60,12 @@ Contents
 .. toctree::
    :maxdepth: 4
 
-   Features <features>
    Getting Started <getting_started>
+   Current Checks <checks>
    Development <development>
-   Getting Help <getting_help>
+   Internals <internals>
    API <modules>
+   Getting Help <getting_help>
 
 
 Indices and tables
