@@ -1,5 +1,5 @@
 """
-awslimitchecker/checker.py
+awslimitchecker/tests/test_limit.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -37,52 +37,33 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.services import services
+from awslimitchecker.limit import AwsLimit
 
 
-class AwsLimitChecker(object):
+class TestAwsLimit(object):
 
-    def __init__(self):
-        self.services = {}
-        for sname, cls in services.iteritems():
-            self.services[sname] = cls()
+    def test_init(self):
+        a = AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        assert a.name == 'limitname'
+        assert a.service_name == 'svcname'
+        assert a.default_limit == 3
+        assert a.limit_type is None
+        assert a.limit_subtype is None
 
-    def get_limits(self, service=None):
-        """
-        Return all :py:class:`~.AwsLimit` objects for the given
-        service name, or for all services if ``service`` is None.
-
-        If ``service`` is specified, the returned dict has one element,
-        the service name, whose value is a nested dict as described below.
-
-        :param service: the name of one service to return limits for
-        :type service: string
-        :returns: dict of service name (string) to nested dict
-        of limit name (string) to limit (:py:class:`~.AwsLimit`)
-        :rtype: dict
-        """
-        res = {}
-        if service is not None:
-            return self.services[service].get_limits()
-        for sname, cls in self.services.iteritems():
-            res[sname] = cls.get_limits()
-        return res
-
-    def get_service_names(self):
-        """
-        Return a list of all known service names
-
-        :returns: list of service names
-        :rtype: list
-        """
-        return sorted(self.services.keys())
-
-    def check_services(self, services=None, region=None):
-        """
-        Check the specified services.
-
-        :param services: a list of :py:class:`~.service.AwsService`
-          names, or None to check all services
-        :type services: None or list of strings
-        """
-        raise NotImplementedError()
+    def test_init_type(self):
+        a = AwsLimit(
+            'limitname',
+            'svcname',
+            1,
+            limit_type='foo',
+            limit_subtype='bar',
+        )
+        assert a.name == 'limitname'
+        assert a.service_name == 'svcname'
+        assert a.default_limit == 1
+        assert a.limit_type == 'foo'
+        assert a.limit_subtype == 'bar'

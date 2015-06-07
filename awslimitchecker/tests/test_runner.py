@@ -46,6 +46,7 @@ from mock import patch, call
 import awslimitchecker.runner as runner
 import awslimitchecker.version as version
 from awslimitchecker.checker import AwsLimitChecker
+from .support import sample_limits
 
 
 class TestAwsLimitCheckerRunner(object):
@@ -113,11 +114,14 @@ class TestAwsLimitCheckerRunner(object):
                       spec_set=version.get_version),
                 patch('awslimitchecker.runner.get_project_url',
                       spec_set=version.get_project_url),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
             mocK_version,
             mock_url,
+            mock_checker,
             excinfo,
         ):
             mocK_version.return_value = 'myver'
@@ -126,6 +130,7 @@ class TestAwsLimitCheckerRunner(object):
         out, err = capsys.readouterr()
         assert out == expected
         assert excinfo.value.code == 0
+        assert mock_checker.mock_calls == []
 
     def test_entry_list_services(self, capsys):
         argv = ['awslimitchecker', '-s']
@@ -140,29 +145,24 @@ class TestAwsLimitCheckerRunner(object):
             mock_checker,
             excinfo,
         ):
-            mock_checker.get_service_names.return_value = ['Foo', 'Bar']
+            mock_checker.return_value.get_service_names.return_value = [
+                'Foo',
+                'Bar'
+            ]
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == [
-            call.get_service_names()
+            call(),
+            call().get_service_names()
         ]
 
     def test_entry_list_limits(self, capsys):
         argv = ['awslimitchecker', '-l']
-        expected = 'Bar/bar limit2\t2\n' + \
-                   'Bar/barlimit1\t1\n' + \
-                   'Foo/foo limit3\t3\n'
-        limits = {
-            'Bar': {
-                'barlimit1': 1,
-                'bar limit2': 2,
-            },
-            'Foo': {
-                'foo limit3': 3,
-            },
-        }
+        expected = 'SvcBar/bar limit2\t2\n' + \
+                   'SvcBar/barlimit1\t1\n' + \
+                   'SvcFoo/foo limit3\t3\n'
         with nested(
                 patch.object(sys, 'argv', argv),
                 patch('awslimitchecker.runner.AwsLimitChecker',
@@ -173,11 +173,32 @@ class TestAwsLimitCheckerRunner(object):
             mock_checker,
             excinfo,
         ):
-            mock_checker.get_default_limits.return_value = limits
+            mock_checker.return_value.get_limits.return_value \
+                = sample_limits()
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == [
-            call.get_default_limits()
+            call(),
+            call().get_limits()
         ]
+
+    def test_entry_no_action(self, capsys):
+        argv = ['awslimitchecker']
+        expected = 'ERROR: no action specified. Please see -h|--help.\n'
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert err == expected
+        assert excinfo.value.code == 1
+        assert mock_checker.mock_calls == [call()]

@@ -96,22 +96,24 @@ def console_entry_point():
         ))
         raise SystemExit(0)
 
+    checker = AwsLimitChecker()
     if args.list_services:
-        for x in sorted(AwsLimitChecker.get_service_names()):
+        for x in sorted(checker.get_service_names()):
             print(x)
         raise SystemExit(0)
 
-    if args.list_defaults is not None:
-        limits = AwsLimitChecker.get_default_limits()
+    if args.list_defaults:
+        limits = checker.get_limits()
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
                 print("{s}/{l}\t{n}".format(
                     s=svc,
                     l=lim,
-                    n=limits[svc][lim]
+                    n=limits[svc][lim].default_limit
                 ))
         raise SystemExit(0)
-
+    sys.stderr.write('ERROR: no action specified. Please see -h|--help.\n')
+    raise SystemExit(1)
 
 if __name__ == "__main__":
     console_entry_point()

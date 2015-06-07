@@ -1,5 +1,5 @@
 """
-awslimitchecker/checker.py
+awslimitchecker/limit.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -37,52 +37,32 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.services import services
 
+class AwsLimit(object):
 
-class AwsLimitChecker(object):
-
-    def __init__(self):
-        self.services = {}
-        for sname, cls in services.iteritems():
-            self.services[sname] = cls()
-
-    def get_limits(self, service=None):
+    def __init__(self, name, service_name, default_limit,
+                 limit_type=None, limit_subtype=None):
         """
-        Return all :py:class:`~.AwsLimit` objects for the given
-        service name, or for all services if ``service`` is None.
+        Describes one specific AWS service limit, as well as its
+        current utilization, default limit, thresholds, and any
+        Trusted Advisor information about this limit.
 
-        If ``service`` is specified, the returned dict has one element,
-        the service name, whose value is a nested dict as described below.
-
-        :param service: the name of one service to return limits for
-        :type service: string
-        :returns: dict of service name (string) to nested dict
-        of limit name (string) to limit (:py:class:`~.AwsLimit`)
-        :rtype: dict
+        :param name: the name of this limit (may contain spaces);
+        if possible, this should be the name used by AWS, i.e. TrustedAdvisor
+        :type name: string
+        :param service_name: the name of the service this limit is for;
+        this should be the ``service_name`` attribute of an
+        :py:class:`~.AwsService` class.
+        :type service_name: string
+        :param default_limit: the default value of this limit for new accounts
+        :type default_limit: int
+        :param limit_type: the type of resource this limit describes, such as
+        "On-Demand Instance" or "VPC"
+        :param limit_subtype: resource sub-type for this limit, if applicable,
+        such as "t2.micro" or "SecurityGroup"
         """
-        res = {}
-        if service is not None:
-            return self.services[service].get_limits()
-        for sname, cls in self.services.iteritems():
-            res[sname] = cls.get_limits()
-        return res
-
-    def get_service_names(self):
-        """
-        Return a list of all known service names
-
-        :returns: list of service names
-        :rtype: list
-        """
-        return sorted(self.services.keys())
-
-    def check_services(self, services=None, region=None):
-        """
-        Check the specified services.
-
-        :param services: a list of :py:class:`~.service.AwsService`
-          names, or None to check all services
-        :type services: None or list of strings
-        """
-        raise NotImplementedError()
+        self.name = name
+        self.service_name = service_name
+        self.default_limit = default_limit
+        self.limit_type = limit_type
+        self.limit_subtype = limit_subtype

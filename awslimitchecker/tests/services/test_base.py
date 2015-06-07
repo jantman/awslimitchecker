@@ -1,5 +1,5 @@
 """
-awslimitchecker/checker.py
+awslimitchecker/tests/services/test_base.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -37,52 +37,36 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+from mock import Mock, patch, call
+from awslimitchecker.services.base import AwsService
 from awslimitchecker.services import services
+import pytest
 
 
-class AwsLimitChecker(object):
+class TestAwsService(object):
 
-    def __init__(self):
-        self.services = {}
-        for sname, cls in services.iteritems():
-            self.services[sname] = cls()
+    def test_init(self):
+        with pytest.raises(TypeError) as excinfo:
+            AwsService()
+        assert excinfo.value.message == "Can't instantiate abstract class " \
+            "AwsService with abstract methods check_usage, get_limits"
 
-    def get_limits(self, service=None):
-        """
-        Return all :py:class:`~.AwsLimit` objects for the given
-        service name, or for all services if ``service`` is None.
 
-        If ``service`` is specified, the returned dict has one element,
-        the service name, whose value is a nested dict as described below.
+class TestAwsServiceSubclasses(object):
 
-        :param service: the name of one service to return limits for
-        :type service: string
-        :returns: dict of service name (string) to nested dict
-        of limit name (string) to limit (:py:class:`~.AwsLimit`)
-        :rtype: dict
-        """
-        res = {}
-        if service is not None:
-            return self.services[service].get_limits()
-        for sname, cls in self.services.iteritems():
-            res[sname] = cls.get_limits()
-        return res
+    def verify_subclass(self, clsname, cls):
+        # ensure we set limits in the constructor
+        mock_limits = Mock()
+        mock_get_limits = Mock()
+        mock_get_limits.return_value = mock_limits
+        with patch.object(cls, 'get_limits', mock_get_limits):
+            inst = cls()
+        assert inst.limits == mock_limits
+        assert mock_get_limits.mock_calls == [call()]
+        # ensure service name is changed
+        assert inst.service_name != 'baseclass'
 
-    def get_service_names(self):
-        """
-        Return a list of all known service names
-
-        :returns: list of service names
-        :rtype: list
-        """
-        return sorted(self.services.keys())
-
-    def check_services(self, services=None, region=None):
-        """
-        Check the specified services.
-
-        :param services: a list of :py:class:`~.service.AwsService`
-          names, or None to check all services
-        :type services: None or list of strings
-        """
-        raise NotImplementedError()
+    def test_subclass_init(self):
+        for clsname, cls in services.iteritems():
+            yield "verify_subclass %s" % clsname, \
+                self.verify_subclass, clsname, cls

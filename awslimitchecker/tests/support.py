@@ -1,5 +1,5 @@
 """
-awslimitchecker/checker.py
+awslimitchecker/tests/support.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -37,52 +37,35 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.services import services
+from awslimitchecker.limit import AwsLimit
 
 
-class AwsLimitChecker(object):
-
-    def __init__(self):
-        self.services = {}
-        for sname, cls in services.iteritems():
-            self.services[sname] = cls()
-
-    def get_limits(self, service=None):
-        """
-        Return all :py:class:`~.AwsLimit` objects for the given
-        service name, or for all services if ``service`` is None.
-
-        If ``service`` is specified, the returned dict has one element,
-        the service name, whose value is a nested dict as described below.
-
-        :param service: the name of one service to return limits for
-        :type service: string
-        :returns: dict of service name (string) to nested dict
-        of limit name (string) to limit (:py:class:`~.AwsLimit`)
-        :rtype: dict
-        """
-        res = {}
-        if service is not None:
-            return self.services[service].get_limits()
-        for sname, cls in self.services.iteritems():
-            res[sname] = cls.get_limits()
-        return res
-
-    def get_service_names(self):
-        """
-        Return a list of all known service names
-
-        :returns: list of service names
-        :rtype: list
-        """
-        return sorted(self.services.keys())
-
-    def check_services(self, services=None, region=None):
-        """
-        Check the specified services.
-
-        :param services: a list of :py:class:`~.service.AwsService`
-          names, or None to check all services
-        :type services: None or list of strings
-        """
-        raise NotImplementedError()
+def sample_limits():
+    limits = {
+        'SvcBar': {
+            'barlimit1': AwsLimit(
+                'barlimit1',
+                'SvcBar',
+                1,
+                limit_type='ltbar1',
+                limit_subtype='sltbar1',
+            ),
+            'bar limit2': AwsLimit(
+                'bar limit2',
+                'SvcBar',
+                2,
+                limit_type='ltbar2',
+                limit_subtype='sltbar2',
+            ),
+        },
+        'SvcFoo': {
+            'foo limit3': AwsLimit(
+                'foo limit3',
+                'SvcFoo',
+                3,
+                limit_type='ltfoo3',
+                limit_subtype='sltfoo3',
+            ),
+        },
+    }
+    return limits

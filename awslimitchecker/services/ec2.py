@@ -37,22 +37,18 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-import abc
+import abc  # noqa
 import boto
 import logging
 from .base import AwsService
+from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
 class CheckEc2(AwsService):
-    __metaclass__ = abc.ABCMeta
 
     service_name = 'EC2'
 
-    def __init__(self):
-        self.conn = boto.connect_ec2()
-
-    @abc.abstractmethod
     def check_usage(self):
         """
         Check this service for the usage of each resource with a known limit.
@@ -60,6 +56,8 @@ class CheckEc2(AwsService):
         :returns: dict of limit name (string) to usage amount
         :rtype: dict
         """
+        if self.conn is None:
+            self.conn = boto.connect_ec2()
         result = {k: 0 for k in CheckEc2.default_limits()}
         # On-Demand instances by type
         for res in self.conn.get_all_reservations():
@@ -74,20 +72,14 @@ class CheckEc2(AwsService):
                 result[key] += 1
         return result
 
-    @staticmethod
-    @abc.abstractmethod
-    def default_limits():
+    def get_limits(self):
         """
-        Return a dict of all known limit names for this service, to
-        their default values.
+        Return all known limits for this service, as a dict of their names
+        to :py:class:`~.AwsLimit` objects.
 
-        :returns: dict of limit names to their defaults
+        :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
-        # tuple keys:
-        ON_DEMAND = 0
-        RESERVED = 1  # noqa
-        SPOT = 2  # noqa
         # from: http://aws.amazon.com/ec2/faqs/
         # (On-Demand, Reserved, Spot)
         default_limits = (20, 20, 5)
@@ -110,17 +102,22 @@ class CheckEc2(AwsService):
             'd2.8xlarge': (5, 20, 5),
         }
         limits = {}
-        for i_type in CheckEc2._instance_types():
-            key = 'Running On-Demand {t} instances'.format(
+        for i_type in self._instance_types():
+            key = 'Running On-Demand {t} Instances'.format(
                 t=i_type)
+            lim = default_limits[0]
             if i_type in special_limits:
-                limits[key] = special_limits[i_type][ON_DEMAND]
-            else:
-                limits[key] = default_limits[ON_DEMAND]
+                lim = special_limits[i_type][0]
+            limits[key] = AwsLimit(
+                key,
+                self.service_name,
+                lim,
+                limit_type='On-Demand Instances',
+                limit_subtype=i_type
+            )
         return limits
 
-    @staticmethod
-    def _instance_types():
+    def _instance_types(self):
         """
         Return a list of all known EC2 instance types
 

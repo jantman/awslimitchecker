@@ -48,7 +48,17 @@ class AwsService(object):
     service_name = 'baseclass'
 
     def __init__(self):
-        pass
+        """
+        Describes an AWS service and its limits, and provides methods to
+        query current utilization.
+
+        Constructors of AwsService subclasses *must not* make any external
+        connections; these must be made lazily as needed in other methods.
+        AwsService subclasses should be usable without any external network
+        connections.
+        """
+        self.limits = self.get_limits()
+        self.conn = None
 
     @abc.abstractmethod
     def check_usage(self):
@@ -60,14 +70,13 @@ class AwsService(object):
         """
         raise NotImplementedError('abstract base class')
 
-    @staticmethod
     @abc.abstractmethod
-    def default_limits(self):
+    def get_limits(self):
         """
-        Return a dict of all known limit names for this service, to
-        their default values.
+        Return all known limits for this service, as a dict of their names
+        to :py:class:`~.AwsLimit` objects.
 
-        :returns: dict of limit names to their defaults
+        :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
         raise NotImplementedError('abstract base class')

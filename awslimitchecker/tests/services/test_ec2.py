@@ -36,5 +36,3 @@ AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
-
-from awslimitchecker.services.ec2 import CheckEc2

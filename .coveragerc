@@ -3,6 +3,7 @@ branch = True
 omit = lib/*
        awslimitchecker/tests/*
        setup.py
+       awslimitchecker/services/base.py
 
 [report]
 exclude_lines =
