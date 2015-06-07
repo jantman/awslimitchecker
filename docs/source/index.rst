@@ -37,6 +37,44 @@ and only alerts *weekly*. awslimitchecker provides a command line script and reu
 usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, or data from Trusted
 Advisor where available), notifying you when you are approaching or at your limits.
 
+Status
+-------
+
+This project is currently in very early development.
+
+To Do:
++++++++
+
+- add documentation about AGPL?
+- log WARNING at init - awslimitchecker {version} - AGPLv3 Free Software - {source_url}
+
+  - version should attempt to tell if we're installed from package or git, and print the right thing
+  - source_url should print the package source url, or the clone url if installed from git
+
+- set warning and critical thresholds as percentage; override per limit as percentage or int
+- runner --help should point to RTD
+- if using TA, update limits from TA (where possible)
+- should have library support (init?) and CLI args for TA:
+  - don't use it at all
+  - trigger updates now
+  - update (and wait for) anything not updated in <time interval>
+- should be able to do everything (library and CLI) for ALL services, or a list of services
+- should be able to dump limits and current usage in machine-readable format
+- should be able to either report, or warn (should the library throw exceptions??? or just return a dict?)
+- helpers to check capacity for a given type of resource
+- regions - should be able to run with a single region or a list of them??
+
+  - future - support finding what regions our account has things in
+
+- re-enable -n and -W in sphinx docs build, and linkcheck
+- ec2 get_usage - how to make sure we're not counting reserved instances?
+
+- AWSLimit objects will handle limit overrides, TA information and thresholds
+- will also contain threshold checking logic and hold information on what breached the threshold
+  (i.e. if it was SGs per VPC, hold the vpc_ids that crossed threshold
+- for now, rip out the runner logic to show individual services; can add that back later
+- tox should generate checks.rst from actual source
+
 Requirements
 ------------
 
