@@ -43,10 +43,13 @@ class AwsLimitChecker(object):
     def __init__(self):
         pass
 
-    def get_limits(services=None, region=None):
+    def get_limits(self, services=None, region=None):
         pass
 
-    def check_services(services=None, region=None):
+    def get_service_names(self):
+        pass
+
+    def check_services(self, services=None, region=None):
         """
         Check the specified services.
 

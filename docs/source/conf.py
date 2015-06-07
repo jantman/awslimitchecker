@@ -119,11 +119,12 @@ if os.environ.get('READTHEDOCS', None) != 'True':
     html_theme_path = [
         sphinx_rtd_theme.get_html_theme_path(),
     ]
-    html_theme_options = {
-        'analytics_id': 'UA-2718127-9',
-    }
     html_static_path = ['_static']
     htmlhelp_basename = 'awslimitcheckerdoc'
+
+html_theme_options = {
+    'analytics_id': 'UA-2718127-9',
+}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

@@ -37,10 +37,34 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+import abc
 
 class AwsLimitCheckerService(object):
+    __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'
 
     def __init__(self):
         pass
+
+    @abc.abstractmethod
+    def check_usage(self):
+        """
+        Check this service for the usage of each resource with a known limit.
+
+        :returns: dict of limit name (string) to usage amount
+        :rtype: dict
+        """
+        raise NotImplementedError('abstract base class')
+
+    @abc.abstractmethod
+    @staticmethod
+    def default_limits(self):
+        """
+        Return a dict of all known limit names for this service, to
+        their default values.
+
+        :returns: dict of limit names to their defaults
+        :rtype: dict
+        """
+        raise NotImplementedError('abstract base class')
