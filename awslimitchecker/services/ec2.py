@@ -39,7 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc
 import boto
-from collections import defaultdict
 import logging
 from .base import AwsLimitCheckerService
 logger = logging.getLogger(__name__)
@@ -87,9 +86,9 @@ class CheckEc2(AwsLimitCheckerService):
         """
         # tuple keys:
         ON_DEMAND = 0
-        RESERVED = 1
-        SPOT = 2
-        # from: http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2
+        RESERVED = 1  # noqa
+        SPOT = 2  # noqa
+        # from: http://aws.amazon.com/ec2/faqs/
         # (On-Demand, Reserved, Spot)
         default_limits = (20, 20, 5)
         special_limits = {

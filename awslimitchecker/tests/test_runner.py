@@ -85,13 +85,11 @@ class TestAwsLimitCheckerRunner(object):
             call().add_argument('-s', '--list-services',
                                 default=False, action='store_true',
                                 help='print a list of all AWS service types '
-                                'that awslimitchecker knows how to check and '
-                                'exit'),
+                                'that awslimitchecker knows how to check'),
             call().add_argument('-l', '--list-defaults', action='store_true',
                                 default=False,
                                 help='print all AWS default limits in '
-                                '"service_name/limit_name" '
-                                'format and exit'),
+                                '"service_name/limit_name" format'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,

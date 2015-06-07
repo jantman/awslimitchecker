@@ -73,10 +73,10 @@ def parse_args(argv):
     p = argparse.ArgumentParser(description=desc, epilog=epilog)
     p.add_argument('-s', '--list-services', action='store_true', default=False,
                    help='print a list of all AWS service types that '
-                   'awslimitchecker knows how to check and exit')
+                   'awslimitchecker knows how to check')
     p.add_argument('-l', '--list-defaults', action='store_true', default=False,
                    help='print all AWS default limits in "service_name/'
-                   'limit_name" format and exit')
+                   'limit_name" format')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
                    help='verbose output. specify twice for debug-level output.')
@@ -101,7 +101,7 @@ def console_entry_point():
             print(x)
         raise SystemExit(0)
 
-    if args.list_defaults:
+    if args.list_defaults is not None:
         limits = AwsLimitChecker.get_default_limits()
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
