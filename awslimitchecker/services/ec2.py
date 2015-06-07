@@ -41,10 +41,11 @@ import abc
 import boto
 from collections import defaultdict
 import logging
+from .base import AwsLimitCheckerService
 logger = logging.getLogger(__name__)
 
 
-class CheckEc2(object):
+class CheckEc2(AwsLimitCheckerService):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'EC2'
@@ -60,10 +61,15 @@ class CheckEc2(object):
         :returns: dict of limit name (string) to usage amount
         :rtype: dict
         """
-        result = {}
+        result = {k: 0 for k in CheckEc2.default_limits()}
         # On-Demand instances by type
         for res in self.conn.get_all_reservations():
             for inst in res.instances:
+                if inst.spot_instance_request_id:
+                    logger.warning("Spot instance found ({i}); awslimitchecker "
+                                   "does not yet support spot "
+                                   "instances.".format(i=inst.id))
+                    continue
                 key = 'Running On-Demand {t} instances'.format(
                     t=inst.instance_type)
                 result[key] += 1
@@ -105,7 +111,7 @@ class CheckEc2(object):
             'd2.8xlarge': (5, 20, 5),
         }
         limits = {}
-        for i_type in self._instance_types():
+        for i_type in CheckEc2._instance_types():
             key = 'Running On-Demand {t} instances'.format(
                 t=i_type)
             if i_type in special_limits:
@@ -129,27 +135,54 @@ class CheckEc2(object):
             'm3.medium',
             'm3.large',
             'm3.xlarge',
-            'm3.2xlarge'
+            'm3.2xlarge',
         ]
 
         MEMORY_TYPES = [
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
-            'r3.4xlarge'
+            'r3.4xlarge',
+            'r3.8xlarge',
         ]
 
         COMPUTE_TYPES = [
+            'c3.large',
+            'c3.xlarge',
+            'c3.2xlarge',
+            'c3.4xlarge',
+            'c3.8xlarge',
             'c4.large',
             'c4.xlarge',
             'c4.2xlarge',
-            'c4.4xlarge'
+            'c4.4xlarge',
+            'c4.8xlarge',
         ]
 
         STORAGE_TYPES = [
             'i2.xlarge',
             'i2.2xlarge',
-            'i2.4xlarge'
+            'i2.4xlarge',
+            'i2.8xlarge',
         ]
 
-        return GENERAL_TYPES + MEMORY_TYPES + COMPUTE_TYPES + STORAGE_TYPES
+        DENSE_STORAGE_TYPES = [
+            'd2.xlarge',
+            'd2.2xlarge',
+            'd2.4xlarge',
+            'd2.8xlarge',
+        ]
+
+        GPU_TYPES = [
+            'g2.2xlarge',
+            'g2.8xlarge',
+        ]
+
+        return (
+            GENERAL_TYPES +
+            MEMORY_TYPES +
+            COMPUTE_TYPES +
+            STORAGE_TYPES +
+            DENSE_STORAGE_TYPES +
+            GPU_TYPES
+        )

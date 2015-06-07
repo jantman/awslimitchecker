@@ -45,6 +45,7 @@ from mock import patch, call
 
 import awslimitchecker.runner as runner
 import awslimitchecker.version as version
+from awslimitchecker.checker import AwsLimitChecker
 
 
 class TestAwsLimitCheckerRunner(object):
@@ -86,9 +87,9 @@ class TestAwsLimitCheckerRunner(object):
                                 help='print a list of all AWS service types '
                                 'that awslimitchecker knows how to check and '
                                 'exit'),
-            call().add_argument('-l', '--list-limits', action='store_true',
+            call().add_argument('-l', '--list-defaults', action='store_true',
                                 default=False,
-                                help='print all default limits in '
+                                help='print all AWS default limits in '
                                 '"service_name/limit_name" '
                                 'format and exit'),
             call().add_argument('-v', '--verbose', dest='verbose',
@@ -127,3 +128,58 @@ class TestAwsLimitCheckerRunner(object):
         out, err = capsys.readouterr()
         assert out == expected
         assert excinfo.value.code == 0
+
+    def test_entry_list_services(self, capsys):
+        argv = ['awslimitchecker', '-s']
+        expected = 'Bar\nFoo\n'
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            mock_checker.get_service_names.return_value = ['Foo', 'Bar']
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert out == expected
+        assert excinfo.value.code == 0
+        assert mock_checker.mock_calls == [
+            call.get_service_names()
+        ]
+
+    def test_entry_list_limits(self, capsys):
+        argv = ['awslimitchecker', '-l']
+        expected = 'Bar/bar limit2\t=> 2\n' + \
+                   'Bar/barlimit1\t=> 1\n' + \
+                   'Foo/foo limit3\t=> 3\n'
+        limits = {
+            'Bar': {
+                'barlimit1': 1,
+                'bar limit2': 2,
+            },
+            'Foo': {
+                'foo limit3': 3,
+            },
+        }
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            mock_checker.get_default_limits.return_value = limits
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert out == expected
+        assert excinfo.value.code == 0
+        assert mock_checker.mock_calls == [
+            call.get_default_limits()
+        ]

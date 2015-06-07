@@ -40,7 +40,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 import argparse
 
-from version import get_version, get_project_url
+from .version import get_version, get_project_url
+from .checker import AwsLimitChecker
 
 
 def parse_args(argv):
@@ -73,9 +74,9 @@ def parse_args(argv):
     p.add_argument('-s', '--list-services', action='store_true', default=False,
                    help='print a list of all AWS service types that '
                    'awslimitchecker knows how to check and exit')
-    p.add_argument('-l', '--list-limits', action='store_true', default=False,
-                   help='print all default limits in "service_name/limit_name" '
-                   'format and exit')
+    p.add_argument('-l', '--list-defaults', action='store_true', default=False,
+                   help='print all AWS default limits in "service_name/'
+                   'limit_name" format and exit')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
                    help='verbose output. specify twice for debug-level output.')
@@ -94,13 +95,20 @@ def console_entry_point():
             v=get_version()
         ))
         raise SystemExit(0)
-    if args.default_limits:
-        pass
     if args.list_services:
-        pass
-    # script = AutoSimulationCraft(dry_run=args.dry_run,
-    #  verbose=args.verbose, confdir=args.confdir)
-    # script.run(no_stat=args.no_stat)
+        for x in sorted(AwsLimitChecker.get_service_names()):
+            print(x)
+        raise SystemExit(0)
+    if args.list_defaults:
+        limits = AwsLimitChecker.get_default_limits()
+        for svc in sorted(limits.keys()):
+            for lim in sorted(limits[svc].keys()):
+                print("{s}/{l}\t=> {n}".format(
+                    s=svc,
+                    l=lim,
+                    n=limits[svc][lim]
+                ))
+        raise SystemExit(0)
 
 
 if __name__ == "__main__":

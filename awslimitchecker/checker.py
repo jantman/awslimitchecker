@@ -37,17 +37,42 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+from awslimitchecker.services import services
+
 
 class AwsLimitChecker(object):
 
     def __init__(self):
         pass
 
-    def get_limits(self, services=None, region=None):
-        pass
+    @staticmethod
+    def get_default_limits(service=None):
+        """
+        Return the AWS default limits for all known services, or
+        the named service if ``service`` is not None.
 
-    def get_service_names(self):
-        pass
+        :param service: the name of one service to return limits for
+        :type service: string
+        :returns: dict of service name (string) to nested dict
+        of limit name (string) to limit (int)
+        :rtype: dict
+        """
+        res = {}
+        if service is not None:
+            return services[service].default_limits()
+        for sname, cls in services.iteritems():
+            res[sname] = cls.default_limits()
+        return res
+
+    @staticmethod
+    def get_service_names():
+        """
+        Return a list of all known service names
+
+        :returns: list of service names
+        :rtype: list
+        """
+        return sorted(services.keys())
 
     def check_services(self, services=None, region=None):
         """

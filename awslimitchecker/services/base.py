@@ -60,8 +60,8 @@ class AwsLimitCheckerService(object):
         """
         raise NotImplementedError('abstract base class')
 
-    @abc.abstractmethod
     @staticmethod
+    @abc.abstractmethod
     def default_limits(self):
         """
         Return a dict of all known limit names for this service, to
