@@ -75,9 +75,11 @@ See the [project documentation](http://botolimitchecker.readthedocs.org) for fur
 Bugs and Feature Requests
 -------------------------
 
-Bug reports and feature requests are happily accepted via the `GitHub Issue Tracker <https://github.com/jantman/botolimitchecker/issues>`_. Pull requests are
-welcome. Issues that don't have an accompanying pull request will be worked on
-as my time and priority allows.
+Questions, comments, Bug reports and feature requests are happily accepted via
+the `GitHub Issue Tracker <https://github.com/jantman/botolimitchecker/issues>`_.
+Pull requests are always welcome.
+
+Please see the [Development]() and [Getting Help]() documentation for more information.
 
 License
 --------
