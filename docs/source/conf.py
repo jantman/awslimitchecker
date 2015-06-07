@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# botolimitchecker documentation build configuration file, created by
+# awslimitchecker documentation build configuration file, created by
 # sphinx-quickstart on Sat Jun  6 16:12:56 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -15,7 +15,7 @@
 import sys
 import os
 import shlex
-from botolimitchecker.version import get_version
+from awslimitchecker.version import get_version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -53,7 +53,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'botolimitchecker'
+project = u'awslimitchecker'
 copyright = u'2015, Jason Antman'
 author = u'Jason Antman'
 
@@ -123,11 +123,11 @@ if os.environ.get('READTHEDOCS', None) != 'True':
         'analytics_id': 'UA-2718127-9',
     }
     html_static_path = ['_static']
-    htmlhelp_basename = 'botolimitcheckerdoc'
+    htmlhelp_basename = 'awslimitcheckerdoc'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'botolinkchecker v{v}'.format(v=version)
+html_title = 'awslimitchecker v{v}'.format(v=version)
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -190,7 +190,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-#htmlhelp_basename = 'botolimitcheckerdoc'
+#htmlhelp_basename = 'awslimitcheckerdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -212,7 +212,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'botolimitchecker.tex', u'botolimitchecker Documentation',
+  (master_doc, 'awslimitchecker.tex', u'awslimitchecker Documentation',
    u'Jason Antman', 'manual'),
 ]
 
@@ -242,7 +242,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'botolimitchecker', u'botolimitchecker Documentation',
+    (master_doc, 'awslimitchecker', u'awslimitchecker Documentation',
      [author], 1)
 ]
 
@@ -256,8 +256,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'botolimitchecker', u'botolimitchecker Documentation',
-   author, 'botolimitchecker', 'One line description of project.',
+  (master_doc, 'awslimitchecker', u'awslimitchecker Documentation',
+   author, 'awslimitchecker', 'One line description of project.',
    'Miscellaneous'),
 ]
 

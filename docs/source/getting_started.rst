@@ -25,13 +25,13 @@ system-wide, you can (using sudo).
 
 .. code-block:: bash
 
-    pip install botolimitchecker
+    pip install awslimitchecker
 
 .. _getting_started.credentials:
 Credentials
 ------------
 
-botolimitchecker does nothing with AWS credentials, it leaves that to boto itself.
+awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
 files, or set as environment variables. See
 `the boto configuration documentation <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_

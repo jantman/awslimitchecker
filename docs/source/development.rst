@@ -9,24 +9,24 @@ Development
 Installing for Development
 --------------------------
 
-To setup botolimitchecker for development:
+To setup awslimitchecker for development:
 
-1. Fork the `botolimitchecker <https://github.com/jantman/botolimitchecker>`_ repository on GitHub
+1. Fork the `awslimitchecker <https://github.com/jantman/awslimitchecker>`_ repository on GitHub
 
 2. Create a `virtualenv` to run the code in:
 
 .. code-block:: bash
 
-    $ virtualenv botolimitchecker
-    $ cd botolimitchecker
+    $ virtualenv awslimitchecker
+    $ cd awslimitchecker
     $ source bin/activate
 
 3. Clone your fork and install it in the virtualenv
 
 .. code-block:: bash
 
-    $ git clone https://github.com/YOUR_NAME/botolimitchecker src/botolimitchecker
-    $ cd src/botolimitchecker
+    $ git clone https://github.com/YOUR_NAME/awslimitchecker src/awslimitchecker
+    $ cd src/awslimitchecker
     $ python setup.py develop
 
 4. Check out a new git branch. If you're working on a GitHub issue you opened, your
@@ -93,14 +93,14 @@ Release Checklist
 2. Confirm that there are CHANGES.rst entries for all major changes.
 3. Ensure that Travis tests passing in all environments.
 4. Ensure that test coverage is no less than the last release (ideally, 100%).
-5. Increment the version number in botolimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
+5. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
 6. Confirm that README.rst renders correctly on GitHub.
 7. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct
    * ``python setup.py register -r https://testpypi.python.org/pypi``
    * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
-   * Check that the README renders at https://testpypi.python.org/pypi/botolimitchecker
+   * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
 8. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
 9. Tag the release in Git, push tag to GitHub:

@@ -1,7 +1,7 @@
 [run]
 branch = True
 omit = lib/*
-       botolimitchecker/tests/*
+       awslimitchecker/tests/*
        setup.py
 
 [report]

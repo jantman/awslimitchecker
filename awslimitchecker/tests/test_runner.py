@@ -1,26 +1,26 @@
 """
-botolimitchecker/tests/test_runner.py
+awslimitchecker/tests/test_runner.py
 
 The latest version of this package is available at:
-<https://github.com/jantman/boto-limit-checker>
+<https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
 Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
-    This file is part of botolimitchecker, also known as boto-limit-checker.
+    This file is part of awslimitchecker, also known as awslimitchecker.
 
-    botolimitchecker is free software: you can redistribute it and/or modify
+    awslimitchecker is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    botolimitchecker is distributed in the hope that it will be useful,
+    awslimitchecker is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with botolimitchecker.  If not, see <http://www.gnu.org/licenses/>.
+    along with awslimitchecker.  If not, see <http://www.gnu.org/licenses/>.
 
 The Copyright and Authors attributions contained herein may not be removed or
 otherwise altered, except to add the Author attribution of a contributor to
@@ -43,11 +43,11 @@ import sys
 from contextlib import nested
 from mock import patch, call
 
-import botolimitchecker.runner as runner
-import botolimitchecker.version as version
+import awslimitchecker.runner as runner
+import awslimitchecker.version as version
 
 
-class TestBotoLimitCheckerRunner(object):
+class TestAwsLimitCheckerRunner(object):
 
     def test_parse_args(self):
         argv = ['-V']
@@ -60,16 +60,16 @@ class TestBotoLimitCheckerRunner(object):
         desc = 'Report on AWS service limits and usage via boto, optionally ' \
                'warn about any services with usage nearing or exceeding ' \
                'their limits.'
-        epilog = 'botolimitchecker is AGPLv3-licensed Free Software. Anyone ' \
+        epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \
                  'entitled to a copy of the source code. You can obtain ' \
-                 'the source code of botolimitchecker myver from: <myurl>'
+                 'the source code of awslimitchecker myver from: <myurl>'
         with nested(
-                patch('botolimitchecker.runner.argparse.ArgumentParser',
+                patch('awslimitchecker.runner.argparse.ArgumentParser',
                       spec_set=argparse.ArgumentParser),
-                patch('botolimitchecker.runner.get_version',
+                patch('awslimitchecker.runner.get_version',
                       spec_set=version.get_version),
-                patch('botolimitchecker.runner.get_project_url',
+                patch('awslimitchecker.runner.get_project_url',
                       spec_set=version.get_project_url),
         ) as (
             mock_parser,
@@ -84,7 +84,7 @@ class TestBotoLimitCheckerRunner(object):
             call().add_argument('-s', '--list-services', action='store_true',
                                 default=False,
                                 help='print a list of all AWS service types '
-                                'that botolimitchecker knows how to check and '
+                                'that awslimitchecker knows how to check and '
                                 'exit'),
             call().add_argument('-l', '--default-limits', action='store_true',
                                 default=False,
@@ -104,13 +104,13 @@ class TestBotoLimitCheckerRunner(object):
         assert mock_url.mock_calls == [call()]
 
     def test_entry_version(self, capsys):
-        argv = ['botolimitchecker', '-V']
-        expected = 'botolimitchecker myver (see <myurl> for source code)\n'
+        argv = ['awslimitchecker', '-V']
+        expected = 'awslimitchecker myver (see <myurl> for source code)\n'
         with nested(
                 patch.object(sys, 'argv', argv),
-                patch('botolimitchecker.runner.get_version',
+                patch('awslimitchecker.runner.get_version',
                       spec_set=version.get_version),
-                patch('botolimitchecker.runner.get_project_url',
+                patch('awslimitchecker.runner.get_project_url',
                       spec_set=version.get_project_url),
                 pytest.raises(SystemExit),
         ) as (

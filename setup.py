@@ -2,25 +2,25 @@
 setup.py
 
 The latest version of this package is available at:
-<https://github.com/jantman/boto-limit-checker>
+<https://github.com/jantman/awslimitchecker>
 
 ##################################################################################
 Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
-    This file is part of botolimitchecker, also known as boto-limit-checker.
+    This file is part of awslimitchecker, also known as awslimitchecker.
 
-    botolimitchecker is free software: you can redistribute it and/or modify
+    awslimitchecker is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    botolimitchecker is distributed in the hope that it will be useful,
+    awslimitchecker is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with botolimitchecker.  If not, see <http://www.gnu.org/licenses/>.
+    along with awslimitchecker.  If not, see <http://www.gnu.org/licenses/>.
 
 The Copyright and Authors attributions contained herein may not be removed or
 otherwise altered, except to add the Author attribution of a contributor to
@@ -39,13 +39,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from setuptools import setup
 from sys import version_info
-from botolimitchecker.version import VERSION, PROJECT_URL
+from awslimitchecker.version import VERSION, PROJECT_URL
 
 # boto isn't py3-compatible yet
 if version_info[0] > 2 or version_info[1] < 6:
     raise SystemExit("ERROR - boto currently requires python 2.6 or 2.7;"
                      " once boto announces py3 compatibility, "
-                     "botolimitchecker will too")
+                     "awslimitchecker will too")
 
 with open('README.rst') as file:
     long_description = file.read()
@@ -76,14 +76,14 @@ classifiers = [
 ]
 
 setup(
-    name='botolimitchecker',
+    name='awslimitchecker',
     version=VERSION,
     author='Jason Antman',
     author_email='jason@jasonantman.com',
-    packages=['botolimitchecker', 'botolimitchecker.tests'],
+    packages=['awslimitchecker', 'awslimitchecker.tests'],
     entry_points="""
     [console_scripts]
-    botolimitchecker = botolimitchecker.runner:console_entry_point
+    awslimitchecker = awslimitchecker.runner:console_entry_point
     """,
     url=PROJECT_URL,
     description='A script and python module to check your AWS service limits and usage using boto.',

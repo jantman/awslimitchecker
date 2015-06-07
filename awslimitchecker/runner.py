@@ -1,26 +1,26 @@
 """
-botolimitchecker/runner.py
+awslimitchecker/runner.py
 
 The latest version of this package is available at:
-<https://github.com/jantman/boto-limit-checker>
+<https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
 Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
-    This file is part of botolimitchecker, also known as boto-limit-checker.
+    This file is part of awslimitchecker, also known as awslimitchecker.
 
-    botolimitchecker is free software: you can redistribute it and/or modify
+    awslimitchecker is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    botolimitchecker is distributed in the hope that it will be useful,
+    awslimitchecker is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with botolimitchecker.  If not, see <http://www.gnu.org/licenses/>.
+    along with awslimitchecker.  If not, see <http://www.gnu.org/licenses/>.
 
 The Copyright and Authors attributions contained herein may not be removed or
 otherwise altered, except to add the Author attribution of a contributor to
@@ -64,15 +64,15 @@ def parse_args(argv):
       the actually-running source available somewhere for your users.
     ####### IMPORTANT license notice ##########
     """
-    epilog = 'botolimitchecker is AGPLv3-licensed Free Software. Anyone using' \
+    epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone using' \
              ' this program, even remotely over a network, is entitled to a ' \
              'copy of the source code. You can obtain the source code of ' \
-             'botolimitchecker ' + get_version() + ' from: <' \
+             'awslimitchecker ' + get_version() + ' from: <' \
              + get_project_url() + '>'
     p = argparse.ArgumentParser(description=desc, epilog=epilog)
     p.add_argument('-s', '--list-services', action='store_true', default=False,
                    help='print a list of all AWS service types that '
-                   'botolimitchecker knows how to check and exit')
+                   'awslimitchecker knows how to check and exit')
     p.add_argument('-l', '--default-limits', action='store_true', default=False,
                    help='print all default limits and exit')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
@@ -88,7 +88,7 @@ def parse_args(argv):
 def console_entry_point():
     args = parse_args(sys.argv[1:])
     if args.version:
-        print('botolimitchecker {v} (see <{s}> for source code)'.format(
+        print('awslimitchecker {v} (see <{s}> for source code)'.format(
             s=get_project_url(),
             v=get_version()
         ))

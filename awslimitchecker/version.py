@@ -1,26 +1,26 @@
 """
-botolimitchecker/version.py
+awslimitchecker/version.py
 
 The latest version of this package is available at:
-<https://github.com/jantman/boto-limit-checker>
+<https://github.com/jantman/awslimitchecker>
 
 ################################################################################
 Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
-    This file is part of botolimitchecker, also known as boto-limit-checker.
+    This file is part of awslimitchecker, also known as awslimitchecker.
 
-    botolimitchecker is free software: you can redistribute it and/or modify
+    awslimitchecker is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    botolimitchecker is distributed in the hope that it will be useful,
+    awslimitchecker is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with botolimitchecker.  If not, see <http://www.gnu.org/licenses/>.
+    along with awslimitchecker.  If not, see <http://www.gnu.org/licenses/>.
 
 The Copyright and Authors attributions contained herein may not be removed or
 otherwise altered, except to add the Author attribution of a contributor to
@@ -38,18 +38,18 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 VERSION = '0.1.0'
-PROJECT_URL = 'https://pypi.python.org/pypi/botolimitchecker/{v}'.format(
+PROJECT_URL = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
     v=VERSION)
 
 
 def get_version():
     """
-    Returns the currently-installed botolimitchecker version.
+    Returns the currently-installed awslimitchecker version.
 
     This is a future hook for a more AGPL-y way of getting the actual
     currently-running version, even if it's a git commit, etc.
 
-    :returns: botolimitchecker version
+    :returns: awslimitchecker version
     :rtype: string
     """
     return VERSION
@@ -57,12 +57,12 @@ def get_version():
 
 def get_project_url():
     """
-    Returns the botolimitchecker project URL.
+    Returns the awslimitchecker project URL.
 
     This is a future hook for a more AGPL-y way of getting the actual
     currently-running project URL, even if it's installed from git.
 
-    :returns: botolimitchecker project URL
+    :returns: awslimitchecker project URL
     :rtype: string
     """
     return PROJECT_URL
