@@ -37,8 +37,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from .ec2 import EC2Service
+from .ec2 import CheckEc2
 
 services = {
-    EC2Service.service_name: EC2Service,
+    CheckEc2.service_name: CheckEc2,
 }

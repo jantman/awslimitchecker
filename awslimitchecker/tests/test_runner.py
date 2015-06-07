@@ -81,14 +81,16 @@ class TestAwsLimitCheckerRunner(object):
             runner.parse_args(argv)
         assert mock_parser.mock_calls == [
             call(description=desc, epilog=epilog),
-            call().add_argument('-s', '--list-services', action='store_true',
-                                default=False,
+            call().add_argument('-s', '--list-services',
+                                default=False, action='store_true',
                                 help='print a list of all AWS service types '
                                 'that awslimitchecker knows how to check and '
                                 'exit'),
-            call().add_argument('-l', '--default-limits', action='store_true',
+            call().add_argument('-l', '--list-limits', action='store_true',
                                 default=False,
-                                help='print all default limits and exit'),
+                                help='print all default limits in '
+                                '"service_name/limit_name" '
+                                'format and exit'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,

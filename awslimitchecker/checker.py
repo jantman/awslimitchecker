@@ -53,8 +53,8 @@ class AwsLimitChecker(object):
         """
         Check the specified services.
 
-        :param services: a list of :py:class:`~.service.AwsLimitCheckerService` names,
-          or None to check all services
+        :param services: a list of :py:class:`~.service.AwsLimitCheckerService`
+          names, or None to check all services
         :type services: None or list of strings
         """
         pass

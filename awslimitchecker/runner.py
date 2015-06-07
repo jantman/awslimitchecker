@@ -74,7 +74,7 @@ def parse_args(argv):
                    help='print a list of all AWS service types that '
                    'awslimitchecker knows how to check and exit')
     p.add_argument('-l', '--list-limits', action='store_true', default=False,
-                   help='print all default limits in service_name/limit_name '
+                   help='print all default limits in "service_name/limit_name" '
                    'format and exit')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
