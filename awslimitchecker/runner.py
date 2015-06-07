@@ -95,15 +95,17 @@ def console_entry_point():
             v=get_version()
         ))
         raise SystemExit(0)
+
     if args.list_services:
         for x in sorted(AwsLimitChecker.get_service_names()):
             print(x)
         raise SystemExit(0)
+
     if args.list_defaults:
         limits = AwsLimitChecker.get_default_limits()
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
-                print("{s}/{l}\t=> {n}".format(
+                print("{s}/{l}\t{n}".format(
                     s=svc,
                     l=lim,
                     n=limits[svc][lim]

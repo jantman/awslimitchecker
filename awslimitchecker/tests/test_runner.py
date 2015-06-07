@@ -153,9 +153,9 @@ class TestAwsLimitCheckerRunner(object):
 
     def test_entry_list_limits(self, capsys):
         argv = ['awslimitchecker', '-l']
-        expected = 'Bar/bar limit2\t=> 2\n' + \
-                   'Bar/barlimit1\t=> 1\n' + \
-                   'Foo/foo limit3\t=> 3\n'
+        expected = 'Bar/bar limit2\t2\n' + \
+                   'Bar/barlimit1\t1\n' + \
+                   'Foo/foo limit3\t3\n'
         limits = {
             'Bar': {
                 'barlimit1': 1,
