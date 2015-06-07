@@ -51,7 +51,7 @@ with open('README.rst') as file:
     long_description = file.read()
 
 requires = [
-    'boto>=2.0',
+    'boto>=2.9.1',
 ]
 
 classifiers = [
