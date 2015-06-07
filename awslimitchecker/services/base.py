@@ -42,7 +42,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AwsLimitCheckerService(object):
+class AwsService(object):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'

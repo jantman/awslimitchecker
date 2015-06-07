@@ -40,11 +40,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import abc
 import boto
 import logging
-from .base import AwsLimitCheckerService
+from .base import AwsService
 logger = logging.getLogger(__name__)
 
 
-class CheckEc2(AwsLimitCheckerService):
+class CheckEc2(AwsService):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'EC2'
