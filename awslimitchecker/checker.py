@@ -50,7 +50,7 @@ class AwsLimitChecker(object):
         portion of awslimitchecker.
 
         Constructor builds ``self.services`` as a dict of service_name (str)
-        to AwsService instance.
+        to _AwsService instance.
         """
         self.services = {}
         for sname, cls in services.iteritems():
@@ -90,7 +90,7 @@ class AwsLimitChecker(object):
         """
         Check the specified services.
 
-        :param services: a list of :py:class:`~.service.AwsService`
+        :param services: a list of :py:class:`~.service._AwsService`
           names, or None to check all services
         :type services: None or list of strings
         """
@@ -113,8 +113,8 @@ class AwsLimitChecker(object):
 
         Internally, for each limit override for each service in
         ``override_dict``, this method calls
-        :py:meth:`~.AwsService.set_limit_override` on the corresponding
-        AwsService instance.
+        :py:meth:`~._AwsService.set_limit_override` on the corresponding
+        _AwsService instance.
 
         Explicitly set limit overrides using this method will take
         precedence over default limits. They will also take precedence over

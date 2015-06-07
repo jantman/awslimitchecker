@@ -37,10 +37,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.services.base import AwsService
+from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.ec2 import Ec2Service
 
 # dynamically generate the service name to class dict
 services = {}
-for cls in AwsService.__subclasses__():
+for cls in _AwsService.__subclasses__():
     services[cls.service_name] = cls

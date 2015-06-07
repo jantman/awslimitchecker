@@ -40,12 +40,12 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import abc  # noqa
 import boto
 import logging
-from .base import AwsService
+from .base import _AwsService
 from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
-class Ec2Service(AwsService):
+class Ec2Service(_AwsService):
 
     service_name = 'EC2'
 

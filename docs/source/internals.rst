@@ -13,7 +13,7 @@ Overall Program Flow
 project; it's used by the ``awslimitchecker`` command line script (entry point to :py:mod:`~awslimitchecker.runner`)
 and should be the only portion directly used by external code.
 
-Each AWS Service is represented by a subclass of the :py:class:`~awslimitchecker.services.base.AwsService` abstract base
+Each AWS Service is represented by a subclass of the :py:class:`~awslimitchecker.services.base._AwsService` abstract base
 class; these Service Classes are responsible for knowing which limits exist for the service they represent, what the
 default values for these limits are, and how to check the current usage via the AWS API (via :py:pkg:`boto`). When the
 Service Classes are instantiated, they build a dict of all of their limits, correlating a string key (the "limit name")

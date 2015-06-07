@@ -52,7 +52,7 @@ class AwsLimit(object):
         :type name: string
         :param service_name: the name of the service this limit is for;
         this should be the ``service_name`` attribute of an
-        :py:class:`~.AwsService` class.
+        :py:class:`~._AwsService` class.
         :type service_name: string
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int

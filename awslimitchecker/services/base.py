@@ -42,7 +42,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AwsService(object):
+class _AwsService(object):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'
@@ -52,9 +52,9 @@ class AwsService(object):
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
 
-        Constructors of AwsService subclasses *must not* make any external
+        Constructors of _AwsService subclasses *must not* make any external
         connections; these must be made lazily as needed in other methods.
-        AwsService subclasses should be usable without any external network
+        _AwsService subclasses should be usable without any external network
         connections.
         """
         self.limits = []

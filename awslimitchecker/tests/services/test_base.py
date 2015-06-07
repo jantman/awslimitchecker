@@ -38,21 +38,21 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from mock import Mock, patch, call
-from awslimitchecker.services.base import AwsService
+from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services import services
 import pytest
 
 
-class TestAwsService(object):
+class Test_AwsService(object):
 
     def test_init(self):
         with pytest.raises(TypeError) as excinfo:
-            AwsService()
+            _AwsService()
         assert excinfo.value.message == "Can't instantiate abstract class " \
-            "AwsService with abstract methods check_usage, get_limits"
+            "_AwsService with abstract methods check_usage, get_limits"
 
 
-class TestAwsServiceSubclasses(object):
+class Test_AwsServiceSubclasses(object):
 
     def verify_subclass(self, clsname, cls):
         # ensure we set limits in the constructor

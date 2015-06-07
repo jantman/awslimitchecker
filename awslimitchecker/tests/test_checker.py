@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from mock import Mock, patch, call
-from awslimitchecker.services.base import AwsService
+from awslimitchecker.services.base import _AwsService
 from awslimitchecker.checker import AwsLimitChecker
 from .support import sample_limits
 
@@ -46,29 +46,29 @@ from .support import sample_limits
 class TestAwsLimitChecker(object):
 
     def test_init(self):
-        mock_svc1 = Mock(spec_set=AwsService)
-        mock_svc2 = Mock(spec_set=AwsService)
-        mock_foo = Mock(spec_set=AwsService)
-        mock_bar = Mock(spec_set=AwsService)
+        mock_svc1 = Mock(spec_set=_AwsService)
+        mock_svc2 = Mock(spec_set=_AwsService)
+        mock_foo = Mock(spec_set=_AwsService)
+        mock_bar = Mock(spec_set=_AwsService)
         mock_foo.return_value = mock_svc1
         mock_bar.return_value = mock_svc2
         svcs = {'foo': mock_foo, 'bar': mock_bar}
         with patch.dict('awslimitchecker.checker.services',
                         values=svcs, clear=True):
             cls = AwsLimitChecker()
-        # dict should be of AwsService instances
+        # dict should be of _AwsService instances
         assert cls.services == {'foo': mock_svc1, 'bar': mock_svc2}
-        # AwsService instances should exist, but have no other calls
+        # _AwsService instances should exist, but have no other calls
         assert mock_foo.mock_calls == [call()]
         assert mock_bar.mock_calls == [call()]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
 
     def test_get_service_names(self):
-        mock_svc1 = Mock(spec_set=AwsService)
-        mock_svc2 = Mock(spec_set=AwsService)
-        mock_bar = Mock(spec_set=AwsService)
-        mock_foo = Mock(spec_set=AwsService)
+        mock_svc1 = Mock(spec_set=_AwsService)
+        mock_svc2 = Mock(spec_set=_AwsService)
+        mock_bar = Mock(spec_set=_AwsService)
+        mock_foo = Mock(spec_set=_AwsService)
         mock_bar.return_value = mock_svc1
         mock_foo.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
@@ -80,12 +80,12 @@ class TestAwsLimitChecker(object):
 
     def test_get_limits(self):
         limits = sample_limits()
-        mock_svc1 = Mock(spec_set=AwsService)
+        mock_svc1 = Mock(spec_set=_AwsService)
         mock_svc1.get_limits.return_value = limits['SvcBar']
-        mock_svc2 = Mock(spec_set=AwsService)
+        mock_svc2 = Mock(spec_set=_AwsService)
         mock_svc2.get_limits.return_value = limits['SvcFoo']
-        mock_bar = Mock(spec_set=AwsService)
-        mock_foo = Mock(spec_set=AwsService)
+        mock_bar = Mock(spec_set=_AwsService)
+        mock_foo = Mock(spec_set=_AwsService)
         mock_bar.return_value = mock_svc1
         mock_foo.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
@@ -97,12 +97,12 @@ class TestAwsLimitChecker(object):
 
     def test_get_limits_service(self):
         limits = sample_limits()
-        mock_svc1 = Mock(spec_set=AwsService)
+        mock_svc1 = Mock(spec_set=_AwsService)
         mock_svc1.get_limits.return_value = limits['SvcBar']
-        mock_svc2 = Mock(spec_set=AwsService)
+        mock_svc2 = Mock(spec_set=_AwsService)
         mock_svc2.get_limits.return_value = limits['SvcFoo']
-        mock_bar = Mock(spec_set=AwsService)
-        mock_foo = Mock(spec_set=AwsService)
+        mock_bar = Mock(spec_set=_AwsService)
+        mock_foo = Mock(spec_set=_AwsService)
         mock_bar.return_value = mock_svc1
         mock_foo.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
