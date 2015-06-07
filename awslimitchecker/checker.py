@@ -38,11 +38,20 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.services import services
+import logging
+logger = logging.getLogger(__name__)
 
 
 class AwsLimitChecker(object):
 
     def __init__(self):
+        """
+        Main AwsLimitChecker class - this should be the only externally-used
+        portion of awslimitchecker.
+
+        Constructor builds ``self.services`` as a dict of service_name (str)
+        to AwsService instance.
+        """
         self.services = {}
         for sname, cls in services.iteritems():
             self.services[sname] = cls()
@@ -86,3 +95,45 @@ class AwsLimitChecker(object):
         :type services: None or list of strings
         """
         raise NotImplementedError()
+
+    def set_limit_overrides(self, override_dict, override_ta=True):
+        """
+        Set manual overrides on AWS service limits, i.e. if you
+        had limits increased by AWS support. This takes a dict in
+        the same form as that returned by :py:meth:`~.get_limits`,
+        i.e. service_name (str) keys to nested dict of limit_name
+        (str) to limit value (int) like:
+
+            {
+                'EC2': {
+                    'Running On-Demand t2.micro Instances': 1000,
+                    'Running On-Demand r3.4xlarge Instances': 1000,
+                }
+            }
+
+        Internally, for each limit override for each service in
+        ``override_dict``, this method calls
+        :py:meth:`~.AwsService.set_limit_override` on the corresponding
+        AwsService instance.
+
+        Explicitly set limit overrides using this method will take
+        precedence over default limits. They will also take precedence over
+        limit information obtained via Trusted Advisor, unless ``override_ta``
+        is set to ``False``.
+
+        :param override_dict: dict of overrides to default limits
+        :type override_dict: dict
+        :param override_ta: whether or not to use this value even if Trusted
+        Advisor supplies limit information
+        :type override_ta: bool
+        :raises: ValueError if limit_name is not known to the service instance
+        """
+        logger.debug("Applying limit overrides")
+        for svc_name in override_dict:
+            for lim_name in override_dict[svc_name]:
+                self.services[svc_name].set_limit_override(
+                    lim_name,
+                    override_dict[svc_name][lim_name],
+                    override_ta=override_ta
+                )
+        logger.info("Limit overrides applied.")

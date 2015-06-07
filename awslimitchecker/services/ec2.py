@@ -84,7 +84,7 @@ class Ec2Service(AwsService):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
-        if self.limits is not None:
+        if self.limits != []:
             return self.limits
         # from: http://aws.amazon.com/ec2/faqs/
         # (On-Demand, Reserved, Spot)

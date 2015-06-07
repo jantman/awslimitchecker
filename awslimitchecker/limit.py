@@ -66,3 +66,21 @@ class AwsLimit(object):
         self.default_limit = default_limit
         self.limit_type = limit_type
         self.limit_subtype = limit_subtype
+        self.limit_override = None
+        self.override_ta = True
+
+    def set_limit_override(self, limit_value, override_ta=True):
+        """
+        Set a new value for this limit, to override the default
+        (such as when AWS Support has increased a limit of yours).
+        If ``override_ta`` is True, this value will also supersede
+        any found through Trusted Advisor.
+
+        :param limit_value: the new limit value
+        :type limit_value: int
+        :param override_ta: whether or not to also override Trusted
+        Advisor information
+        :type override_ta: bool
+        """
+        self.limit_override = limit_value
+        self.override_ta = override_ta

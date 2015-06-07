@@ -57,7 +57,7 @@ class AwsService(object):
         AwsService subclasses should be usable without any external network
         connections.
         """
-        self.limits = None
+        self.limits = []
         self.limits = self.get_limits()
         self.conn = None
 
@@ -81,3 +81,34 @@ class AwsService(object):
         :rtype: dict
         """
         raise NotImplementedError('abstract base class')
+        if self.limits != []:
+            return self.limits
+        # else define the limits
+
+    def set_limit_override(self, limit_name, value, override_ta=True):
+        """
+        Set a new limit ``value`` for the specified limit, overriding
+        the default. If ``override_ta`` is True, also use this value
+        instead of any found by Trusted Advisor. This method simply
+        passes the data through to the
+        :py:meth:`~awslimitchecker.limit.AwsLimit.set_limit_override`
+        method of the underlying :py:class:`~.AwsLimit` instance.
+
+        :param limit_name: the name of the limit to override the value for
+        :type limit_name: string
+        :param value: the new value to set for the limit
+        :type value: int
+        :param override_ta: whether or not to also override Trusted
+        Advisor information
+        :type override_ta: bool
+        :raises: ValueError if limit_name is not known to this service
+        """
+        try:
+            self.limits[limit_name].set_limit_override(
+                value,
+                override_ta=override_ta
+            )
+        except KeyError:
+            raise ValueError("{s} service has no '{l}' limit".format(
+                s=self.service_name,
+                l=limit_name))

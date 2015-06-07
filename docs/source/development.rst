@@ -42,6 +42,8 @@ Guidelines
 * 100% test coverage with pytest (with valid tests)
 * each :py:class:`~awslimitchecker.services.base.AwsService` subclass
   should only connect to boto once, and should save the connection as ``self.conn``.
+  They *must not* connect in the class constructor.
+* All modules should have (and use) module-level loggers.
 
 
 .. _development.adding_checks:
