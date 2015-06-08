@@ -107,3 +107,37 @@ class _AwsLimit(object):
         :type value: int
         """
         self._current_usage = value
+
+    def check_thresholds(self, default_warning=80, default_critical=100):
+        """
+        Check this limit's current usage against the specified default
+        thresholds, and any custom theresholds that have been set on the
+        instance. Return True if usage is within thresholds, or false if
+        warning or critical thresholds have been surpassed.
+
+        This method sets internal variables in this instance which can be
+        queried via :py:meth:`~.get_warnings` and :py:meth:`~.get_criticals`
+        to obtain further details about the thresholds that were crossed.
+
+        This method handles limits that are evaluated both globally
+        (region- and account-wide) as well as limits on specific
+        AWS resources or types.
+
+        :param default_warning: default warning threshold in percentage;
+          usage higher than this percent of the limit will be considered
+          a warning
+        :type default_warning: :py:obj:`int` or :py:obj:`float` percentage
+        :param default_critical: default critical threshold in percentage;
+          usage higher than this percent of the limit will be considered
+          a critical
+        :type default_critical: :py:obj:`int` or :py:obj:`float` percentage
+        """
+        pass
+
+    def get_warnings(self):
+        """
+        Return a dict describing any warning-level thresholds that were
+        crossed for this limit. Keys are unique identifiers for the resource
+        that crossed the limit, or the name of the limit itself
+        """
+        pass
