@@ -45,7 +45,7 @@ from ..limit import _AwsLimit
 logger = logging.getLogger(__name__)
 
 
-class Ec2Service(_AwsService):
+class _Ec2Service(_AwsService):
 
     service_name = 'EC2'
 

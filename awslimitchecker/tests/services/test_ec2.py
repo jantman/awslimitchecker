@@ -38,22 +38,22 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from mock import Mock, patch, call
-from awslimitchecker.services.ec2 import Ec2Service
+from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import _AwsLimit
 
 
-class TestEc2Service(object):
+class Test_Ec2Service(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = Ec2Service()
+        cls = _Ec2Service()
         assert cls.service_name == 'EC2'
         assert cls.conn is None
 
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
-        cls = Ec2Service()
+        cls = _Ec2Service()
         with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
             mock_ec2.return_value = mock_conn
             cls.connect()
@@ -63,7 +63,7 @@ class TestEc2Service(object):
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
-        cls = Ec2Service()
+        cls = _Ec2Service()
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
             mock_ec2.return_value = mock_conn
@@ -72,7 +72,7 @@ class TestEc2Service(object):
         assert mock_conn.mock_calls == []
 
     def test_instance_types(self):
-        cls = Ec2Service()
+        cls = _Ec2Service()
         types = cls._instance_types()
         assert len(types) == 32
         assert 't2.micro' in types
@@ -83,7 +83,7 @@ class TestEc2Service(object):
         assert 'g2.8xlarge' in types
 
     def test_get_limits(self):
-        cls = Ec2Service()
+        cls = _Ec2Service()
         init_limits = cls.limits
         limits = cls.get_limits()
         assert limits == init_limits
