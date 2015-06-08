@@ -111,6 +111,22 @@ class Test_Ec2Service(object):
         assert mock_instances.mock_calls == [call()]
         assert mock_ebs.mock_calls == [call()]
 
+    def test_get_limits_again(self):
+        """test that existing limits dict is returned on subsequent calls"""
+        cls = _Ec2Service()
+        cls.limits = {'foo': 'bar'}
+        with nested(
+                patch('%s._get_limits_instances' % self.pb),
+                patch('%s._get_limits_ebs' % self.pb),
+        ) as (
+            mock_instances,
+            mock_ebs,
+        ):
+            res = cls.get_limits()
+        assert res == {'foo': 'bar'}
+        assert mock_instances.mock_calls == []
+        assert mock_ebs.mock_calls == []
+
     def test_get_limits_ebs(self):
         cls = _Ec2Service()
         limits = cls._get_limits_ebs()
@@ -413,6 +429,10 @@ class Test_Ec2Service(object):
         type(mock_vol6).size = 100
         type(mock_vol6).iops = 300
 
+        mock_vol7 = Mock(spec_set=Volume)
+        type(mock_vol7).id = 'vol-7'
+        type(mock_vol7).type = 'othertype'
+
         mock_conn = Mock(spec_set=EC2Connection)
         mock_conn.get_all_volumes.return_value = [
             mock_vol1,
@@ -420,14 +440,17 @@ class Test_Ec2Service(object):
             mock_vol3,
             mock_vol4,
             mock_vol5,
-            mock_vol6
+            mock_vol6,
+            mock_vol7
         ]
         cls = _Ec2Service()
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_ebs()
         assert mock_logger.mock_calls == [
-            call.debug("Getting usage for EBS volumes")
+            call.debug("Getting usage for EBS volumes"),
+            call.error("ERROR - unknown volume type 'othertype' for volume "
+                       "vol-7; not counting")
         ]
         assert cls.limits['Provisioned IOPS'].current_usage == 1000
         assert cls.limits['Provisioned IOPS (SSD) volume storage '

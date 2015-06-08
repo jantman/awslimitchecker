@@ -173,8 +173,8 @@ class _Ec2Service(_AwsService):
             elif vol.type == 'standard':
                 mag_gb += vol.size
             else:
-                logger.error("ERROR - unknown volume type '{t}'; not "
-                             "counting".format(t=vol.type))
+                logger.error("ERROR - unknown volume type '{t}' for volume {i};"
+                             " not counting".format(t=vol.type, i=vol.id))
         self.limits['Provisioned IOPS']._set_current_usage(piops)
         self.limits['Provisioned IOPS (SSD) volume storage '
                     '(TiB)']._set_current_usage(piops_gb / 1000.0)
