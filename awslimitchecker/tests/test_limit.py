@@ -100,6 +100,15 @@ class Test_AwsLimit(object):
             'svcname',
             3
         )
-        assert limit.current_usage is None
+        assert limit._current_usage is None
         limit._set_current_usage(2)
-        assert limit.current_usage == 2
+        assert limit._current_usage == 2
+
+    def test_get_current_usage(self):
+        limit = _AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit._current_usage = 2
+        assert limit.get_current_usage() == 2

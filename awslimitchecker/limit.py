@@ -68,7 +68,7 @@ class _AwsLimit(object):
         self.limit_subtype = limit_subtype
         self.limit_override = None
         self.override_ta = True
-        self.current_usage = None
+        self._current_usage = None
 
     def set_limit_override(self, limit_value, override_ta=True):
         """
@@ -86,6 +86,16 @@ class _AwsLimit(object):
         self.limit_override = limit_value
         self.override_ta = override_ta
 
+    def get_current_usage(self):
+        """
+        Get the current usage value for this limit, or
+        None if not yet set.
+
+        :returns: current usage value, or None
+        :rtype: :py:obj:`int` or :py:obj:`None`
+        """
+        return self._current_usage
+
     def _set_current_usage(self, value):
         """
         Set this limit's current usage value.
@@ -96,4 +106,4 @@ class _AwsLimit(object):
         :param value: current usage value for this limit
         :type value: int
         """
-        self.current_usage = value
+        self._current_usage = value

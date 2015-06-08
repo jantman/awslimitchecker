@@ -452,13 +452,13 @@ class Test_Ec2Service(object):
             call.error("ERROR - unknown volume type 'othertype' for volume "
                        "vol-7; not counting")
         ]
-        assert cls.limits['Provisioned IOPS'].current_usage == 1000
+        assert cls.limits['Provisioned IOPS'].get_current_usage() == 1000
         assert cls.limits['Provisioned IOPS (SSD) volume storage '
-                          '(TiB)'].current_usage == 0.5
+                          '(TiB)'].get_current_usage() == 0.5
         assert cls.limits['General Purpose (SSD) volume storage '
-                          '(TiB)'].current_usage == 0.045
+                          '(TiB)'].get_current_usage() == 0.045
         assert cls.limits['Magnetic volume storage '
-                          '(TiB)'].current_usage == 0.508
+                          '(TiB)'].get_current_usage() == 0.508
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service()

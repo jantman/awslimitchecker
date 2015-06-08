@@ -60,8 +60,8 @@ class _Ec2Service(_AwsService):
     def find_usage(self):
         """
         Determine the current usage for each limit of this service,
-        and update the ``current_usage`` property of each corresponding
-        :py:class:`~._AwsLimit` instance.
+        and update corresponding Limit via
+        :py:meth:`~._AwsLimit._set_current_usage`.
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
