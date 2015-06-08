@@ -37,7 +37,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.limit import AwsLimit
+from mock import Mock
+from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 
 
 class TestAwsLimit(object):
@@ -94,15 +95,19 @@ class TestAwsLimit(object):
         assert limit.default_limit == 3
         assert limit.override_ta is False
 
-    def test_set_current_usage(self):
+    def test_add_current_usage(self):
         limit = AwsLimit(
             'limitname',
             'svcname',
             3
         )
-        assert limit._current_usage is None
-        limit._set_current_usage(2)
-        assert limit._current_usage == 2
+        assert limit._current_usage == []
+        limit._add_current_usage(2)
+        assert len(limit.get_current_usage()) == 1
+        assert limit._current_usage[0].get_value() == 2
+        limit._add_current_usage(4)
+        assert len(limit.get_current_usage()) == 2
+        assert limit._current_usage[1].get_value() == 4
 
     def test_get_current_usage(self):
         limit = AwsLimit(
@@ -112,3 +117,115 @@ class TestAwsLimit(object):
         )
         limit._current_usage = 2
         assert limit.get_current_usage() == 2
+
+    def test_get_current_usage_str(self):
+        limit = AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit._add_current_usage(4)
+        assert limit.get_current_usage_str() == '4'
+
+    def test_get_current_usage_str_id(self):
+        limit = AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit._add_current_usage(4, id='foobar')
+        assert limit.get_current_usage_str() == 'foobar=4'
+
+    def test_get_current_usage_str_multi(self):
+        limit = AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit._add_current_usage(4)
+        limit._add_current_usage(3)
+        limit._add_current_usage(2)
+        assert limit.get_current_usage_str() == 'max: 4 (2, 3, 4)'
+
+    def test_get_current_usage_str_multi_id(self):
+        limit = AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit._add_current_usage(4, id='foo4bar')
+        limit._add_current_usage(3, id='foo3bar')
+        limit._add_current_usage(2, id='foo2bar')
+        assert limit.get_current_usage_str() == 'max: foo4bar=4 (foo2bar=2, ' \
+            'foo3bar=3, foo4bar=4)'
+
+
+class TestAwsLimitUsage(object):
+
+    def test_init(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        u = AwsLimitUsage(
+            mock_limit,
+            1.23,
+        )
+        assert u.limit == mock_limit
+        assert u.value == 1.23
+        assert u.id is None
+        assert u.aws_type is None
+
+        u2 = AwsLimitUsage(
+            mock_limit,
+            3,
+            id='foobar',
+            aws_type='mytype',
+        )
+        assert u2.limit == mock_limit
+        assert u2.value == 3
+        assert u2.id == 'foobar'
+        assert u2.aws_type == 'mytype'
+
+    def test_get_value(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        u = AwsLimitUsage(
+            mock_limit,
+            3.456
+        )
+        assert u.get_value() == 3.456
+
+    def test_repr(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        u = AwsLimitUsage(
+            mock_limit,
+            3.456
+        )
+        assert str(u) == '3.456'
+
+        u2 = AwsLimitUsage(
+            mock_limit,
+            3.456,
+            id='foobar'
+        )
+        assert str(u2) == 'foobar=3.456'
+
+    def test_comparable(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        u1 = AwsLimitUsage(
+            mock_limit,
+            3.456
+        )
+        u2 = AwsLimitUsage(
+            mock_limit,
+            3
+        )
+        u3 = AwsLimitUsage(
+            mock_limit,
+            4
+        )
+        u1b = AwsLimitUsage(
+            mock_limit,
+            3.456
+        )
+        assert u1 == u1b
+        assert u1 != u2
+        assert u1 < u3
+        assert u1 > u2

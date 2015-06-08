@@ -226,9 +226,9 @@ class TestAwsLimitCheckerRunner(object):
 
     def test_entry_show_usage(self, capsys):
         limits = sample_limits()
-        limits['SvcFoo']['foo limit3']._set_current_usage(33)
-        limits['SvcBar']['bar limit2']._set_current_usage(22)
-        limits['SvcBar']['barlimit1']._set_current_usage(11)
+        limits['SvcFoo']['foo limit3']._add_current_usage(33)
+        limits['SvcBar']['bar limit2']._add_current_usage(22)
+        limits['SvcBar']['barlimit1']._add_current_usage(11)
         argv = ['awslimitchecker', '-u']
         expected = 'SvcBar/bar limit2\t22\n' + \
                    'SvcBar/barlimit1\t11\n' + \

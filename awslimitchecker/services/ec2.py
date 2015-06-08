@@ -61,11 +61,13 @@ class _Ec2Service(_AwsService):
         """
         Determine the current usage for each limit of this service,
         and update corresponding Limit via
-        :py:meth:`~.AwsLimit._set_current_usage`.
+        :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
+        for lim in self.limits.values():
+            lim._reset_usage()
         self._find_usage_instances()
         self._find_usage_ebs()
         logger.debug("Done checking usage.")
@@ -97,11 +99,17 @@ class _Ec2Service(_AwsService):
         for i_type, usage in ondemand_usage.iteritems():
             key = 'Running On-Demand {t} instances'.format(
                 t=i_type)
-            self.limits[key]._set_current_usage(usage)
+            self.limits[key]._add_current_usage(
+                usage,
+                aws_type='AWS::EC2::Instance',
+            )
             total_instances += usage
         # limit for ALL On-Demand EC2 instances
         key = 'Running On-Demand EC2 instances'
-        self.limits[key]._set_current_usage(total_instances)
+        self.limits[key]._add_current_usage(
+            total_instances,
+            aws_type='AWS::EC2::Instance'
+        )
 
     def _get_reserved_instance_count(self):
         """
@@ -175,13 +183,25 @@ class _Ec2Service(_AwsService):
             else:
                 logger.error("ERROR - unknown volume type '{t}' for volume {i};"
                              " not counting".format(t=vol.type, i=vol.id))
-        self.limits['Provisioned IOPS']._set_current_usage(piops)
+        self.limits['Provisioned IOPS']._add_current_usage(
+            piops,
+            aws_type='AWS::EC2::Volume'
+        )
         self.limits['Provisioned IOPS (SSD) volume storage '
-                    '(TiB)']._set_current_usage(piops_gb / 1000.0)
+                    '(TiB)']._add_current_usage(
+                        piops_gb / 1000.0,
+                        aws_type='AWS::EC2::Volume'
+                    )
         self.limits['General Purpose (SSD) volume storage '
-                    '(TiB)']._set_current_usage(gp_gb / 1000.0)
+                    '(TiB)']._add_current_usage(
+                        gp_gb / 1000.0,
+                        aws_type='AWS::EC2::Volume'
+                    )
         self.limits['Magnetic volume storage '
-                    '(TiB)']._set_current_usage(mag_gb / 1000.0)
+                    '(TiB)']._add_current_usage(
+                        mag_gb / 1000.0,
+                        aws_type='AWS::EC2::Volume'
+                    )
 
     def get_limits(self):
         """
@@ -211,29 +231,29 @@ class _Ec2Service(_AwsService):
             'Provisioned IOPS',
             self.service_name,
             40000,
-            limit_type='IOPS',
-            limit_subtype='Provisioned IOPS',
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='io1',
         )
         limits['Provisioned IOPS (SSD) volume storage (TiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) volume storage (TiB)',
             self.service_name,
             20,
-            limit_type='volume storage (TiB)',
-            limit_subtype='Provisioned IOPS (SSD)',
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='io1',
         )
         limits['General Purpose (SSD) volume storage (TiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (TiB)',
             self.service_name,
             20,
-            limit_type='volume storage (TiB)',
-            limit_subtype='General Purpose (SSD)',
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='gp2',
         )
         limits['Magnetic volume storage (TiB)'] = AwsLimit(
             'Magnetic volume storage (TiB)',
             self.service_name,
             20,
-            limit_type='volume storage (TiB)',
-            limit_subtype='Magnetic',
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='standard',
         )
         return limits
 

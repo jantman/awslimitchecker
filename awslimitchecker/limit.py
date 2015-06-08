@@ -51,15 +51,17 @@ class AwsLimit(object):
         if possible, this should be the name used by AWS, i.e. TrustedAdvisor
         :type name: string
         :param service_name: the name of the service this limit is for;
-        this should be the ``service_name`` attribute of an
+          this should be the ``service_name`` attribute of an
         :py:class:`~._AwsService` class.
         :type service_name: string
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int
-        :param limit_type: the type of resource this limit describes, such as
-        "On-Demand Instance" or "VPC"
+        :param limit_type: the type of resource this limit describes, specified
+          as one of the type names used in
+          `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
+          such as "AWS::EC2::Instance" or "AWS::RDS::DBSubnetGroup".
         :param limit_subtype: resource sub-type for this limit, if applicable,
-        such as "t2.micro" or "SecurityGroup"
+          such as "t2.micro" or "SecurityGroup"
         """
         self.name = name
         self.service_name = service_name
@@ -68,7 +70,7 @@ class AwsLimit(object):
         self.limit_subtype = limit_subtype
         self.limit_override = None
         self.override_ta = True
-        self._current_usage = None
+        self._current_usage = []
 
     def set_limit_override(self, limit_value, override_ta=True):
         """
@@ -88,25 +90,75 @@ class AwsLimit(object):
 
     def get_current_usage(self):
         """
-        Get the current usage value for this limit, or
-        None if not yet set.
+        Get the current usage for this limit, as a list of
+        :py:class:`~.AwsLimitUsage` instances.
 
-        :returns: current usage value, or None
-        :rtype: :py:obj:`int` or :py:obj:`None`
+        :returns: list of current usage values
+        :rtype: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
         """
         return self._current_usage
 
-    def _set_current_usage(self, value):
+    def get_current_usage_str(self):
         """
-        Set this limit's current usage value.
+        Get the a string describing the current usage for this limit.
+
+        If no usage has been added for this limit, the result will be
+        "<unknown>".
+
+        If the limit has only one current usage instance, this will be
+        that instance's :py:meth:`~.AwsLimitUsage.__repr__` value.
+
+        If the limit has more than one current usage instance, this
+        will be the a string of the form ``max: X (Y)`` where ``X`` is
+        the :py:meth:`~.AwsLimitUsage.__repr__` value of the instance
+        with the maximum value, and ``Y`` is a comma-separated list
+        of the :py:meth:`~.AwsLimitUsage.__repr__` values of all usage
+        instances in ascending order.
+
+        :returns: representation of current usage
+        :rtype: string
+        """
+        if len(self._current_usage) == 0:
+            return '<unknown>'
+        if len(self._current_usage) == 1:
+            return str(self._current_usage[0])
+        lim_str = ', '.join([str(x) for x in sorted(self._current_usage)])
+        s = 'max: {m} ({l})'.format(
+            m=str(max(self._current_usage)),
+            l=lim_str
+        )
+        return s
+
+    def _add_current_usage(self, value, id=None, aws_type=None):
+        """
+        Add a new current usage value for this limit.
+
+        Creates a new :py:class:`~.AwsLimitUsage` instance and
+        appends it to the internal list. If more than one usage value
+        is given to this service, they should have ``id`` and
+        ``aws_type`` set.
 
         This method should only be called from the :py:class:`~._AwsService`
         instance that created and manages this Limit.
 
-        :param value: current usage value for this limit
-        :type value: int
+        :param value: the numeric usage value
+        :type value: :py:obj:`int` or :py:obj:`float`
+        :param id: If there can be multiple usage values for one limit,
+          an AWS ID for the resource this instance describes
+        :type id: string
+        :param aws_type: if ``id`` is not None, the AWS resource type
+          that ID represents. As a convention, we use the AWS Resource
+          Type names used by
+          `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
+        :type aws_type: string
         """
-        self._current_usage = value
+        self._current_usage.append(
+            AwsLimitUsage(self, value, id=id, aws_type=aws_type)
+        )
+
+    def _reset_usage(self):
+        """Discard all current usage data."""
+        self._current_usage = []
 
     def check_thresholds(self, default_warning=80, default_critical=100):
         """
@@ -141,3 +193,79 @@ class AwsLimit(object):
         that crossed the limit, or the name of the limit itself
         """
         pass
+
+
+class AwsLimitUsage(object):
+
+    def __init__(self, limit, value, id=None, aws_type=None):
+        """
+        This object describes the usage of an AWS resource, with the capability
+        of containing information about the resource beyond an integer usage.
+
+        The simplest case is an account- / region-wide count, such as the
+        number of running EC2 Instances, in which case a simple integer value
+        is sufficient. In this case, the :py:class:`~.AwsLimit` would have one
+        instance of this class for the single value.
+
+        In more complex cases, such as the "Subnets per VPC", the limit is
+        applied by AWS on multiple resources (once per VPC). In this case,
+        the :py:class:`~.AwsLimit` should have one instance of this class
+        per VPC, so we can determine *which* VPCs have crossed thresholds.
+
+        AwsLimitUsage objects are comparable based on their numeric ``value``.
+
+        :param limit: the AwsLimit that this instance describes
+        :type limit: :py:class:`~.AwsLimit`
+        :param value: the numeric usage value
+        :type value: :py:obj:`int` or :py:obj:`float`
+        :param id: If there can be multiple usage values for one limit,
+          an AWS ID for the resource this instance describes
+        :type id: string
+        :param aws_type: if ``id`` is not None, the AWS resource type
+          that ID represents. As a convention, we use the AWS Resource
+          Type names used by
+          `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
+        :type aws_type: string
+        """
+        self.limit = limit
+        self.value = value
+        self.id = id
+        self.aws_type = aws_type
+
+    def get_value(self):
+        """
+        Get the current usage value
+
+        :returns: current usage value
+        :rtype: :py:obj:`int` or :py:obj:`float`
+        """
+        return self.value
+
+    def __str__(self):
+        """
+        Return a string representation of this object.
+
+        If ``id`` is not set, return ``value`` formatted as a string;
+        otherwise, return a string of the format ``id=value``.
+
+        :rtype: string
+        """
+        s = '{v}'.format(v=self.value)
+        if self.id is not None:
+            s = self.id + '=' + s
+        return s
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return self.value != other.value
+
+    def __gt__(self, other):
+        return self.value > other.value
+
+    def __lt__(self, other):
+        return self.value < other.value
+
+    def __ge__(self, other):
+        return self.value >= other.value

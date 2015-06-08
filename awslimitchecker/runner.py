@@ -143,7 +143,7 @@ def console_entry_point():
                 print("{s}/{l}\t{n}".format(
                     s=svc,
                     l=lim,
-                    n=limits[svc][lim].get_current_usage()
+                    n=limits[svc][lim].get_current_usage_str()
                 ))
         raise SystemExit(0)
     sys.stderr.write('ERROR: no action specified. Please see -h|--help.\n')

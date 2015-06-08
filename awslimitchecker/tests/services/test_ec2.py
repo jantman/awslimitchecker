@@ -135,17 +135,17 @@ class Test_Ec2Service(object):
             assert isinstance(limits[x], AwsLimit)
             assert limits[x].service_name == 'EC2'
         piops = limits['Provisioned IOPS']
-        assert piops.limit_type == 'IOPS'
-        assert piops.limit_subtype == 'Provisioned IOPS'
+        assert piops.limit_type == 'AWS::EC2::Volume'
+        assert piops.limit_subtype == 'io1'
         piops_tb = limits['Provisioned IOPS (SSD) volume storage (TiB)']
-        assert piops_tb.limit_type == 'volume storage (TiB)'
-        assert piops_tb.limit_subtype == 'Provisioned IOPS (SSD)'
+        assert piops_tb.limit_type == 'AWS::EC2::Volume'
+        assert piops_tb.limit_subtype == 'io1'
         gp_tb = limits['General Purpose (SSD) volume storage (TiB)']
-        assert gp_tb.limit_type == 'volume storage (TiB)'
-        assert gp_tb.limit_subtype == 'General Purpose (SSD)'
+        assert gp_tb.limit_type == 'AWS::EC2::Volume'
+        assert gp_tb.limit_subtype == 'gp2'
         mag_tb = limits['Magnetic volume storage (TiB)']
-        assert mag_tb.limit_type == 'volume storage (TiB)'
-        assert mag_tb.limit_subtype == 'Magnetic'
+        assert mag_tb.limit_type == 'AWS::EC2::Volume'
+        assert mag_tb.limit_subtype == 'standard'
 
     def test_get_limits_instances(self):
         cls = _Ec2Service()
@@ -356,10 +356,22 @@ class Test_Ec2Service(object):
             mock_inst_usage.return_value = iusage
             mock_res_inst_count.return_value = ri_count
             cls._find_usage_instances()
-        assert mock_t2_micro.mock_calls == [call._set_current_usage(36)]
-        assert mock_r3_2xlarge.mock_calls == [call._set_current_usage(8)]
-        assert mock_c4_4xlarge.mock_calls == [call._set_current_usage(5)]
-        assert mock_all_ec2.mock_calls == [call._set_current_usage(49)]
+        assert mock_t2_micro.mock_calls == [call._add_current_usage(
+            36,
+            aws_type='AWS::EC2::Instance'
+        )]
+        assert mock_r3_2xlarge.mock_calls == [call._add_current_usage(
+            8,
+            aws_type='AWS::EC2::Instance'
+        )]
+        assert mock_c4_4xlarge.mock_calls == [call._add_current_usage(
+            5,
+            aws_type='AWS::EC2::Instance'
+        )]
+        assert mock_all_ec2.mock_calls == [call._add_current_usage(
+            49,
+            aws_type='AWS::EC2::Instance'
+        )]
         assert mock_inst_usage.mock_calls == [call(cls)]
         assert mock_res_inst_count.mock_calls == [call(cls)]
 
@@ -452,13 +464,21 @@ class Test_Ec2Service(object):
             call.error("ERROR - unknown volume type 'othertype' for volume "
                        "vol-7; not counting")
         ]
-        assert cls.limits['Provisioned IOPS'].get_current_usage() == 1000
+        assert len(cls.limits['Provisioned IOPS'].get_current_usage()) == 1
+        assert cls.limits['Provisioned IOPS'
+                          ''].get_current_usage()[0].get_value() == 1000
+        assert len(cls.limits['Provisioned IOPS (SSD) volume storage '
+                              '(TiB)'].get_current_usage()) == 1
         assert cls.limits['Provisioned IOPS (SSD) volume storage '
-                          '(TiB)'].get_current_usage() == 0.5
+                          '(TiB)'].get_current_usage()[0].get_value() == 0.5
+        assert len(cls.limits['General Purpose (SSD) volume storage '
+                              '(TiB)'].get_current_usage()) == 1
         assert cls.limits['General Purpose (SSD) volume storage '
-                          '(TiB)'].get_current_usage() == 0.045
+                          '(TiB)'].get_current_usage()[0].get_value() == 0.045
+        assert len(cls.limits['Magnetic volume storage '
+                              '(TiB)'].get_current_usage()) == 1
         assert cls.limits['Magnetic volume storage '
-                          '(TiB)'].get_current_usage() == 0.508
+                          '(TiB)'].get_current_usage()[0].get_value() == 0.508
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service()
