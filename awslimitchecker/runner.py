@@ -39,9 +39,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 import argparse
+import logging
 
 from .version import _get_version, _get_project_url
 from .checker import AwsLimitChecker
+
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger()
 
 
 def parse_args(argv):
@@ -92,6 +96,10 @@ def parse_args(argv):
 
 def console_entry_point():
     args = parse_args(sys.argv[1:])
+    if args.verbose == 1:
+        logger.setLevel(logging.INFO)
+    elif args.verbose > 1:
+        logger.setLevel(logging.DEBUG)
     if args.version:
         print('awslimitchecker {v} (see <{s}> for source code)'.format(
             s=_get_project_url(),

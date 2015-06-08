@@ -85,3 +85,15 @@ class _AwsLimit(object):
         """
         self.limit_override = limit_value
         self.override_ta = override_ta
+
+    def _set_current_usage(self, value):
+        """
+        Set this limit's current usage value.
+
+        This method should only be called from the :py:class:`~._AwsService`
+        instance that created and manages this Limit.
+
+        :param value: current usage value for this limit
+        :type value: int
+        """
+        self.current_usage = value

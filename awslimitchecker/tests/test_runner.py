@@ -40,6 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import argparse
 import pytest
 import sys
+import logging
 from contextlib import nested
 from mock import patch, call
 
@@ -133,6 +134,7 @@ class TestAwsLimitCheckerRunner(object):
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
+        assert err == ''
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == []
 
@@ -156,6 +158,7 @@ class TestAwsLimitCheckerRunner(object):
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
+        assert err == ''
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == [
             call(),
@@ -182,6 +185,7 @@ class TestAwsLimitCheckerRunner(object):
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
+        assert err == ''
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == [
             call(),
@@ -212,12 +216,59 @@ class TestAwsLimitCheckerRunner(object):
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
+        assert err == ''
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == [
             call(),
             call().find_usage(),
             call().get_limits()
         ]
+
+    def test_entry_verbose(self, capsys):
+        argv = ['awslimitchecker', '-v']
+        expected = 'ERROR: no action specified. Please see -h|--help.\n'
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                patch('awslimitchecker.runner.logger.setLevel'),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            mock_set_level,
+            excinfo,
+        ):
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert err == expected
+        assert out == ''
+        assert excinfo.value.code == 1
+        assert mock_checker.mock_calls == [call()]
+        assert mock_set_level.mock_calls == [call(logging.INFO)]
+
+    def test_entry_debug(self, capsys):
+        argv = ['awslimitchecker', '-vv']
+        expected = 'ERROR: no action specified. Please see -h|--help.\n'
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                patch('awslimitchecker.runner.logger.setLevel'),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            mock_set_level,
+            excinfo,
+        ):
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert err == expected
+        assert out == ''
+        assert excinfo.value.code == 1
+        assert mock_checker.mock_calls == [call()]
+        assert mock_set_level.mock_calls == [call(logging.DEBUG)]
 
     def test_entry_no_action(self, capsys):
         argv = ['awslimitchecker']
@@ -235,5 +286,6 @@ class TestAwsLimitCheckerRunner(object):
             runner.console_entry_point()
         out, err = capsys.readouterr()
         assert err == expected
+        assert out == ''
         assert excinfo.value.code == 1
         assert mock_checker.mock_calls == [call()]

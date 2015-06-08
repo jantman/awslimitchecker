@@ -42,6 +42,11 @@ from .version import _get_version, _get_project_url
 import logging
 logger = logging.getLogger(__name__)
 
+# suppress boto internal logging
+boto_log = logging.getLogger("boto")
+boto_log.setLevel(logging.WARNING)
+boto_log.propagate = True
+
 
 class AwsLimitChecker(object):
 

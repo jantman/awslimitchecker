@@ -45,6 +45,8 @@ This project is currently in very early development.
 To Do:
 +++++++
 
+- add documentation about region coming from boto config/defaults
+- subtract reserved instances (per-AZ) from ec2 usage
 - add documentation about AGPL?
 - log WARNING at init - awslimitchecker {version} - AGPLv3 Free Software - {source_url}
 

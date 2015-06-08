@@ -64,6 +64,11 @@ class _Ec2Service(_AwsService):
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
+        self._find_usage_instances()
+        logger.debug("Done checking usage.")
+
+    def _find_usage_instances(self):
+        """find usage of EC2 instances"""
         # On-Demand instances by type
         ondemand = {k: 0 for k in self._instance_types()}
         for res in self.conn.get_all_reservations():
@@ -73,9 +78,16 @@ class _Ec2Service(_AwsService):
                                    "does not yet support spot "
                                    "instances.".format(i=inst.id))
                     continue
-                key = 'Running On-Demand {t} instances'.format(
-                    t=inst.instance_type)
-                ondemand[key] += 1
+                try:
+                    ondemand[inst.instance_type] += 1
+                except KeyError:
+                    logger.error("ERROR - unknown instance type '{t}'; not "
+                                 "counting".format(t=inst.instance_type))
+        # update our limits with usage
+        for i_type, usage in ondemand.iteritems():
+            key = 'Running On-Demand {t} Instances'.format(
+                t=i_type)
+            self.limits[key]._set_current_usage(usage)
 
     def get_limits(self):
         """
@@ -141,12 +153,27 @@ class _Ec2Service(_AwsService):
             'm3.2xlarge',
         ]
 
+        PREV_GENERAL_TYPES = [
+            't1.micro',
+            'm1.small',
+            'm1.medium',
+            'm1.large',
+            'm1.xlarge',
+        ]
+
         MEMORY_TYPES = [
             'r3.large',
             'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+        ]
+
+        PREV_MEMORY_TYPES = [
+            'm2.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'cr1.8xlarge',
         ]
 
         COMPUTE_TYPES = [
@@ -162,11 +189,22 @@ class _Ec2Service(_AwsService):
             'c4.8xlarge',
         ]
 
+        PREV_COMPUTE_TYPES = [
+            'c1.medium',
+            'c1.xlarge',
+            'cc2.8xlarge',
+        ]
+
         STORAGE_TYPES = [
             'i2.xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
+        ]
+
+        PREV_STORAGE_TYPES = [
+            'hi1.4xlarge',
+            'hs1.8xlarge',
         ]
 
         DENSE_STORAGE_TYPES = [
@@ -181,11 +219,20 @@ class _Ec2Service(_AwsService):
             'g2.8xlarge',
         ]
 
+        PREV_GPU_TYPES = [
+            'cg1.4xlarge',
+        ]
+
         return (
             GENERAL_TYPES +
+            PREV_GENERAL_TYPES +
             MEMORY_TYPES +
+            PREV_MEMORY_TYPES +
             COMPUTE_TYPES +
+            PREV_COMPUTE_TYPES +
             STORAGE_TYPES +
+            PREV_STORAGE_TYPES +
             DENSE_STORAGE_TYPES +
-            GPU_TYPES
+            GPU_TYPES +
+            PREV_GPU_TYPES
         )

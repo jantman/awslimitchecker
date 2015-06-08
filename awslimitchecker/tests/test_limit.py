@@ -93,3 +93,13 @@ class Test_AwsLimit(object):
         assert limit.limit_override == 1
         assert limit.default_limit == 3
         assert limit.override_ta is False
+
+    def test_set_current_usage(self):
+        limit = _AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        assert limit.current_usage is None
+        limit._set_current_usage(2)
+        assert limit.current_usage == 2
