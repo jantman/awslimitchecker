@@ -49,7 +49,7 @@ class Test_AwsService(object):
         with pytest.raises(TypeError) as excinfo:
             _AwsService()
         assert excinfo.value.message == "Can't instantiate abstract class " \
-            "_AwsService with abstract methods check_usage, get_limits"
+            "_AwsService with abstract methods find_usage, get_limits"
 
 
 class Test_AwsServiceSubclasses(object):

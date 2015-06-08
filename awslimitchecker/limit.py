@@ -68,6 +68,7 @@ class _AwsLimit(object):
         self.limit_subtype = limit_subtype
         self.limit_override = None
         self.override_ta = True
+        self.current_usage = None
 
     def set_limit_override(self, limit_value, override_ta=True):
         """

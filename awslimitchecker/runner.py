@@ -77,6 +77,9 @@ def parse_args(argv):
     p.add_argument('-l', '--list-defaults', action='store_true', default=False,
                    help='print all AWS default limits in "service_name/'
                    'limit_name" format')
+    p.add_argument('-u', '--show-usage', action='store_true', default=False,
+                   help='find and print the current usage of all AWS services'
+                   ' with known limits')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
                    help='verbose output. specify twice for debug-level output.')
@@ -110,6 +113,18 @@ def console_entry_point():
                     s=svc,
                     l=lim,
                     n=limits[svc][lim].default_limit
+                ))
+        raise SystemExit(0)
+
+    if args.show_usage:
+        checker.find_usage()
+        limits = checker.get_limits()
+        for svc in sorted(limits.keys()):
+            for lim in sorted(limits[svc].keys()):
+                print("{s}/{l}\t{n}".format(
+                    s=svc,
+                    l=lim,
+                    n=limits[svc][lim].current_usage
                 ))
         raise SystemExit(0)
     sys.stderr.write('ERROR: no action specified. Please see -h|--help.\n')

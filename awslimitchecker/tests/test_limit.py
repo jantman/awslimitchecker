@@ -43,27 +43,53 @@ from awslimitchecker.limit import _AwsLimit
 class Test_AwsLimit(object):
 
     def test_init(self):
-        a = _AwsLimit(
+        limit = _AwsLimit(
             'limitname',
             'svcname',
             3
         )
-        assert a.name == 'limitname'
-        assert a.service_name == 'svcname'
-        assert a.default_limit == 3
-        assert a.limit_type is None
-        assert a.limit_subtype is None
+        assert limit.name == 'limitname'
+        assert limit.service_name == 'svcname'
+        assert limit.default_limit == 3
+        assert limit.limit_type is None
+        assert limit.limit_subtype is None
+        assert limit.limit_override is None
+        assert limit.override_ta is True
 
     def test_init_type(self):
-        a = _AwsLimit(
+        limit = _AwsLimit(
             'limitname',
             'svcname',
             1,
             limit_type='foo',
             limit_subtype='bar',
         )
-        assert a.name == 'limitname'
-        assert a.service_name == 'svcname'
-        assert a.default_limit == 1
-        assert a.limit_type == 'foo'
-        assert a.limit_subtype == 'bar'
+        assert limit.name == 'limitname'
+        assert limit.service_name == 'svcname'
+        assert limit.default_limit == 1
+        assert limit.limit_type == 'foo'
+        assert limit.limit_subtype == 'bar'
+        assert limit.limit_override is None
+        assert limit.override_ta is True
+
+    def test_set_limit_override(self):
+        limit = _AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit.set_limit_override(10)
+        assert limit.limit_override == 10
+        assert limit.default_limit == 3
+        assert limit.override_ta is True
+
+    def test_set_limit_override_ta_False(self):
+        limit = _AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        limit.set_limit_override(1, override_ta=False)
+        assert limit.limit_override == 1
+        assert limit.default_limit == 3
+        assert limit.override_ta is False

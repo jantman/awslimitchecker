@@ -62,12 +62,11 @@ class _AwsService(object):
         self.conn = None
 
     @abc.abstractmethod
-    def check_usage(self):
+    def find_usage(self):
         """
-        Check this service for the usage of each resource with a known limit.
-
-        :returns: dict of limit name (string) to usage amount
-        :rtype: dict
+        Determine the current usage for each limit of this service,
+        and update the ``current_usage`` property of each corresponding
+        :py:class:`~._AwsLimit` instance.
         """
         raise NotImplementedError('abstract base class')
 

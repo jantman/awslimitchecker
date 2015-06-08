@@ -55,10 +55,11 @@ class _Ec2Service(_AwsService):
             self.conn = boto.connect_ec2()
             logger.info("Connected to EC2")
 
-    def check_usage(self):
+    def find_usage(self):
         """
-        Check this service for the usage of each resource with a known limit.
-        This updates limits in self.limits.
+        Determine the current usage for each limit of this service,
+        and update the ``current_usage`` property of each corresponding
+        :py:class:`~._AwsLimit` instance.
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))

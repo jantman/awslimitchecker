@@ -91,6 +91,10 @@ class TestAwsLimitCheckerRunner(object):
                                 default=False,
                                 help='print all AWS default limits in '
                                 '"service_name/limit_name" format'),
+            call().add_argument('-u', '--show-usage', action='store_true',
+                                default=False,
+                                help='find and print the current usage of '
+                                'all AWS services with known limits'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,
@@ -181,6 +185,37 @@ class TestAwsLimitCheckerRunner(object):
         assert excinfo.value.code == 0
         assert mock_checker.mock_calls == [
             call(),
+            call().get_limits()
+        ]
+
+    def test_entry_show_usage(self, capsys):
+        limits = sample_limits()
+        limits['SvcFoo']['foo limit3'].current_usage = 33
+        limits['SvcBar']['bar limit2'].current_usage = 22
+        limits['SvcBar']['barlimit1'].current_usage = 11
+        argv = ['awslimitchecker', '-u']
+        expected = 'SvcBar/bar limit2\t22\n' + \
+                   'SvcBar/barlimit1\t11\n' + \
+                   'SvcFoo/foo limit3\t33\n'
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            mock_checker.return_value.get_limits.return_value \
+                = limits
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert out == expected
+        assert excinfo.value.code == 0
+        assert mock_checker.mock_calls == [
+            call(),
+            call().find_usage(),
             call().get_limits()
         ]
 

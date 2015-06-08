@@ -53,6 +53,12 @@ class AwsLimitChecker(object):
         Constructor builds ``self.services`` as a dict of service_name (str)
         to _AwsService instance.
         """
+        logger.warning("awslimitchecker {v} is AGPL-licensed free software; "
+                       "all users have a right to the full source code of "
+                       "this version. See <{u}>".format(
+                           v=_get_version(),
+                           u=_get_project_url(),
+                       ))
         self.services = {}
         for sname, cls in _services.iteritems():
             self.services[sname] = cls()
@@ -105,15 +111,25 @@ class AwsLimitChecker(object):
         """
         return sorted(self.services.keys())
 
-    def check_services(self, services=None, region=None):
+    def find_usage(self, service=None):
         """
-        Check the specified services.
+        For each limit in the specified service (or all services if
+        ``service`` is ``None``), query the AWS API via :py:pkg:`boto`
+        and find the current usage amounts for that limit.
 
-        :param services: a list of :py:class:`~.service._AwsService`
-          names, or None to check all services
-        :type services: :py:obj:`None` or :py:obj:`list` of :py:obj:`string` s
+        This method updates the ``current_usage`` attribute of the
+        :py:class:`~._AwsLimit` objects for each service, which can
+        then be queried using :py:meth:`~.get_limits`.
+
+        :param service: :py:class:`~.service._AwsService` name, or ``None`` to
+          check all services.
+        :type services: :py:obj:`None` or :py:obj:`string` service name
         """
-        raise NotImplementedError()
+        if service is not None:
+            self.services[service].find_usage()
+            return
+        for sname, cls in self.services.iteritems():
+            cls.find_usage()
 
     def set_limit_overrides(self, override_dict, override_ta=True):
         """
