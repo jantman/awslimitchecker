@@ -43,7 +43,7 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 from .base import _AwsService
-from ..limit import _AwsLimit
+from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +61,7 @@ class _Ec2Service(_AwsService):
         """
         Determine the current usage for each limit of this service,
         and update corresponding Limit via
-        :py:meth:`~._AwsLimit._set_current_usage`.
+        :py:meth:`~.AwsLimit._set_current_usage`.
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
@@ -186,9 +186,9 @@ class _Ec2Service(_AwsService):
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
-        to :py:class:`~._AwsLimit` objects.
+        to :py:class:`~.AwsLimit` objects.
 
-        :returns: dict of limit names to :py:class:`~._AwsLimit` objects
+        :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
         if self.limits != {}:
@@ -207,28 +207,28 @@ class _Ec2Service(_AwsService):
         :rtype: dict
         """
         limits = {}
-        limits['Provisioned IOPS'] = _AwsLimit(
+        limits['Provisioned IOPS'] = AwsLimit(
             'Provisioned IOPS',
             self.service_name,
             40000,
             limit_type='IOPS',
             limit_subtype='Provisioned IOPS',
         )
-        limits['Provisioned IOPS (SSD) volume storage (TiB)'] = _AwsLimit(
+        limits['Provisioned IOPS (SSD) volume storage (TiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) volume storage (TiB)',
             self.service_name,
             20,
             limit_type='volume storage (TiB)',
             limit_subtype='Provisioned IOPS (SSD)',
         )
-        limits['General Purpose (SSD) volume storage (TiB)'] = _AwsLimit(
+        limits['General Purpose (SSD) volume storage (TiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (TiB)',
             self.service_name,
             20,
             limit_type='volume storage (TiB)',
             limit_subtype='General Purpose (SSD)',
         )
-        limits['Magnetic volume storage (TiB)'] = _AwsLimit(
+        limits['Magnetic volume storage (TiB)'] = AwsLimit(
             'Magnetic volume storage (TiB)',
             self.service_name,
             20,
@@ -273,7 +273,7 @@ class _Ec2Service(_AwsService):
             lim = default_limits[0]
             if i_type in special_limits:
                 lim = special_limits[i_type][0]
-            limits[key] = _AwsLimit(
+            limits[key] = AwsLimit(
                 key,
                 self.service_name,
                 lim,
@@ -282,7 +282,7 @@ class _Ec2Service(_AwsService):
             )
         # limit for ALL running On-Demand instances
         key = 'Running On-Demand EC2 instances'
-        limits[key] = _AwsLimit(
+        limits[key] = AwsLimit(
             key,
             self.service_name,
             default_limits[0],

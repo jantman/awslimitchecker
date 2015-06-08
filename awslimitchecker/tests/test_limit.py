@@ -37,13 +37,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.limit import _AwsLimit
+from awslimitchecker.limit import AwsLimit
 
 
-class Test_AwsLimit(object):
+class TestAwsLimit(object):
 
     def test_init(self):
-        limit = _AwsLimit(
+        limit = AwsLimit(
             'limitname',
             'svcname',
             3
@@ -57,7 +57,7 @@ class Test_AwsLimit(object):
         assert limit.override_ta is True
 
     def test_init_type(self):
-        limit = _AwsLimit(
+        limit = AwsLimit(
             'limitname',
             'svcname',
             1,
@@ -73,7 +73,7 @@ class Test_AwsLimit(object):
         assert limit.override_ta is True
 
     def test_set_limit_override(self):
-        limit = _AwsLimit(
+        limit = AwsLimit(
             'limitname',
             'svcname',
             3
@@ -84,7 +84,7 @@ class Test_AwsLimit(object):
         assert limit.override_ta is True
 
     def test_set_limit_override_ta_False(self):
-        limit = _AwsLimit(
+        limit = AwsLimit(
             'limitname',
             'svcname',
             3
@@ -95,7 +95,7 @@ class Test_AwsLimit(object):
         assert limit.override_ta is False
 
     def test_set_current_usage(self):
-        limit = _AwsLimit(
+        limit = AwsLimit(
             'limitname',
             'svcname',
             3
@@ -105,7 +105,7 @@ class Test_AwsLimit(object):
         assert limit._current_usage == 2
 
     def test_get_current_usage(self):
-        limit = _AwsLimit(
+        limit = AwsLimit(
             'limitname',
             'svcname',
             3

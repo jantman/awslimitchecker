@@ -66,7 +66,7 @@ class _AwsService(object):
         """
         Determine the current usage for each limit of this service,
         and update the ``current_usage`` property of each corresponding
-        :py:class:`~._AwsLimit` instance.
+        :py:class:`~.AwsLimit` instance.
         """
         raise NotImplementedError('abstract base class')
 
@@ -74,9 +74,9 @@ class _AwsService(object):
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
-        to :py:class:`~._AwsLimit` objects.
+        to :py:class:`~.AwsLimit` objects.
 
-        :returns: dict of limit names to :py:class:`~._AwsLimit` objects
+        :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
         raise NotImplementedError('abstract base class')
@@ -102,8 +102,8 @@ class _AwsService(object):
         the default. If ``override_ta`` is True, also use this value
         instead of any found by Trusted Advisor. This method simply
         passes the data through to the
-        :py:meth:`~awslimitchecker.limit._AwsLimit.set_limit_override`
-        method of the underlying :py:class:`~._AwsLimit` instance.
+        :py:meth:`~awslimitchecker.limit.AwsLimit.set_limit_override`
+        method of the underlying :py:class:`~.AwsLimit` instance.
 
         :param limit_name: the name of the limit to override the value for
         :type limit_name: string

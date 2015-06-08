@@ -44,7 +44,7 @@ from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance
 from boto.ec2.volume import Volume
 from awslimitchecker.services.ec2 import _Ec2Service
-from awslimitchecker.limit import _AwsLimit
+from awslimitchecker.limit import AwsLimit
 
 
 class Test_Ec2Service(object):
@@ -132,7 +132,7 @@ class Test_Ec2Service(object):
         limits = cls._get_limits_ebs()
         assert len(limits) == 4
         for x in limits:
-            assert isinstance(limits[x], _AwsLimit)
+            assert isinstance(limits[x], AwsLimit)
             assert limits[x].service_name == 'EC2'
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'IOPS'
@@ -152,7 +152,7 @@ class Test_Ec2Service(object):
         limits = cls._get_limits_instances()
         assert len(limits) == 48
         for x in limits:
-            assert isinstance(limits[x], _AwsLimit)
+            assert isinstance(limits[x], AwsLimit)
             assert limits[x].service_name == 'EC2'
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
@@ -189,9 +189,9 @@ class Test_Ec2Service(object):
         assert mock_ebs.mock_calls == [call(cls)]
 
     def test_instance_usage(self):
-        mock_t2_micro = Mock(spec_set=_AwsLimit)
-        mock_r3_2xlarge = Mock(spec_set=_AwsLimit)
-        mock_c4_4xlarge = Mock(spec_set=_AwsLimit)
+        mock_t2_micro = Mock(spec_set=AwsLimit)
+        mock_r3_2xlarge = Mock(spec_set=AwsLimit)
+        mock_c4_4xlarge = Mock(spec_set=AwsLimit)
         limits = {
             'Running On-Demand t2.micro instances': mock_t2_micro,
             'Running On-Demand r3.2xlarge instances': mock_r3_2xlarge,
@@ -329,10 +329,10 @@ class Test_Ec2Service(object):
             },
         }
 
-        mock_t2_micro = Mock(spec_set=_AwsLimit)
-        mock_r3_2xlarge = Mock(spec_set=_AwsLimit)
-        mock_c4_4xlarge = Mock(spec_set=_AwsLimit)
-        mock_all_ec2 = Mock(spec_set=_AwsLimit)
+        mock_t2_micro = Mock(spec_set=AwsLimit)
+        mock_r3_2xlarge = Mock(spec_set=AwsLimit)
+        mock_c4_4xlarge = Mock(spec_set=AwsLimit)
+        mock_all_ec2 = Mock(spec_set=AwsLimit)
         limits = {
             'Running On-Demand t2.micro instances': mock_t2_micro,
             'Running On-Demand r3.2xlarge instances': mock_r3_2xlarge,

@@ -89,7 +89,7 @@ class AwsLimitChecker(object):
 
     def get_limits(self, service=None):
         """
-        Return all :py:class:`~._AwsLimit` objects for the given
+        Return all :py:class:`~.AwsLimit` objects for the given
         service name, or for all services if ``service`` is None.
 
         If ``service`` is specified, the returned dict has one element,
@@ -98,7 +98,7 @@ class AwsLimitChecker(object):
         :param service: the name of one service to return limits for
         :type service: string
         :returns: dict of service name (string) to nested dict
-          of limit name (string) to limit (:py:class:`~._AwsLimit`)
+          of limit name (string) to limit (:py:class:`~.AwsLimit`)
         :rtype: dict
         """
         res = {}
@@ -124,7 +124,7 @@ class AwsLimitChecker(object):
         and find the current usage amounts for that limit.
 
         This method updates the ``current_usage`` attribute of the
-        :py:class:`~._AwsLimit` objects for each service, which can
+        :py:class:`~.AwsLimit` objects for each service, which can
         then be queried using :py:meth:`~.get_limits`.
 
         :param service: :py:class:`~.service._AwsService` name, or ``None`` to

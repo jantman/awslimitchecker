@@ -37,20 +37,20 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.limit import _AwsLimit
+from awslimitchecker.limit import AwsLimit
 
 
 def sample_limits():
     limits = {
         'SvcBar': {
-            'barlimit1': _AwsLimit(
+            'barlimit1': AwsLimit(
                 'barlimit1',
                 'SvcBar',
                 1,
                 limit_type='ltbar1',
                 limit_subtype='sltbar1',
             ),
-            'bar limit2': _AwsLimit(
+            'bar limit2': AwsLimit(
                 'bar limit2',
                 'SvcBar',
                 2,
@@ -59,7 +59,7 @@ def sample_limits():
             ),
         },
         'SvcFoo': {
-            'foo limit3': _AwsLimit(
+            'foo limit3': AwsLimit(
                 'foo limit3',
                 'SvcFoo',
                 3,

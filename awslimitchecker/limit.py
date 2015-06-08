@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 
-class _AwsLimit(object):
+class AwsLimit(object):
 
     def __init__(self, name, service_name, default_limit,
                  limit_type=None, limit_subtype=None):
