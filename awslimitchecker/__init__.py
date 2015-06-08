@@ -42,4 +42,5 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from .checker import _AwsLimitChecker  # noqa - convenience only
+# for convenience only
+from .checker import _AwsLimitChecker  # noqa
