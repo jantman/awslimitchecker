@@ -118,6 +118,14 @@ class TestAwsLimit(object):
         limit._current_usage = 2
         assert limit.get_current_usage() == 2
 
+    def test_get_current_usage_str_none(self):
+        limit = AwsLimit(
+            'limitname',
+            'svcname',
+            3
+        )
+        assert limit.get_current_usage_str() == '<unknown>'
+
     def test_get_current_usage_str(self):
         limit = AwsLimit(
             'limitname',
@@ -229,3 +237,4 @@ class TestAwsLimitUsage(object):
         assert u1 != u2
         assert u1 < u3
         assert u1 > u2
+        assert u1 >= u2

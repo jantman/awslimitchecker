@@ -64,7 +64,6 @@ class AwsLimitChecker(object):
                            v=_get_version(),
                            u=_get_project_url(),
                        ))
-        self.have_usage = False
         self.services = {}
         for sname, cls in _services.iteritems():
             self.services[sname] = cls()
@@ -134,7 +133,6 @@ class AwsLimitChecker(object):
         if service is not None:
             self.services[service].find_usage()
             return
-        self.have_usage = True
         for sname, cls in self.services.iteritems():
             cls.find_usage()
 
@@ -195,8 +193,7 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         """
-        if not self.have_usage:
-            self.find_usage()
+        pass
 
     def get_required_iam_policy(self):
         """
