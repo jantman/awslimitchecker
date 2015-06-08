@@ -41,7 +41,7 @@ import abc  # noqa
 import boto
 import logging
 from .base import _AwsService
-from ..limit import AwsLimit
+from ..limit import _AwsLimit
 logger = logging.getLogger(__name__)
 
 
@@ -79,9 +79,9 @@ class Ec2Service(_AwsService):
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
-        to :py:class:`~.AwsLimit` objects.
+        to :py:class:`~._AwsLimit` objects.
 
-        :returns: dict of limit names to :py:class:`~.AwsLimit` objects
+        :returns: dict of limit names to :py:class:`~._AwsLimit` objects
         :rtype: dict
         """
         if self.limits != []:
@@ -114,7 +114,7 @@ class Ec2Service(_AwsService):
             lim = default_limits[0]
             if i_type in special_limits:
                 lim = special_limits[i_type][0]
-            limits[key] = AwsLimit(
+            limits[key] = _AwsLimit(
                 key,
                 self.service_name,
                 lim,

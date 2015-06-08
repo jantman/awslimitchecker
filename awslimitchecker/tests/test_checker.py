@@ -39,11 +39,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from mock import Mock, patch, call
 from awslimitchecker.services.base import _AwsService
-from awslimitchecker.checker import AwsLimitChecker
+from awslimitchecker.checker import _AwsLimitChecker
 from .support import sample_limits
 
 
-class TestAwsLimitChecker(object):
+class Test_AwsLimitChecker(object):
 
     def test_init(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -55,7 +55,7 @@ class TestAwsLimitChecker(object):
         svcs = {'foo': mock_foo, 'bar': mock_bar}
         with patch.dict('awslimitchecker.checker.services',
                         values=svcs, clear=True):
-            cls = AwsLimitChecker()
+            cls = _AwsLimitChecker()
         # dict should be of _AwsService instances
         assert cls.services == {'foo': mock_svc1, 'bar': mock_svc2}
         # _AwsService instances should exist, but have no other calls
@@ -74,7 +74,7 @@ class TestAwsLimitChecker(object):
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
         with patch.dict('awslimitchecker.checker.services',
                         values=svcs, clear=True):
-            cls = AwsLimitChecker()
+            cls = _AwsLimitChecker()
             res = cls.get_service_names()
         assert res == ['SvcBar', 'SvcFoo']
 
@@ -91,7 +91,7 @@ class TestAwsLimitChecker(object):
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
         with patch.dict('awslimitchecker.checker.services',
                         values=svcs, clear=True):
-            cls = AwsLimitChecker()
+            cls = _AwsLimitChecker()
             res = cls.get_limits()
         assert res == limits
 
@@ -108,6 +108,6 @@ class TestAwsLimitChecker(object):
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
         with patch.dict('awslimitchecker.checker.services',
                         values=svcs, clear=True):
-            cls = AwsLimitChecker()
+            cls = _AwsLimitChecker()
             res = cls.get_limits(service='SvcFoo')
         assert res == limits['SvcFoo']

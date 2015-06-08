@@ -45,11 +45,11 @@ from mock import patch, call
 
 import awslimitchecker.runner as runner
 import awslimitchecker.version as version
-from awslimitchecker.checker import AwsLimitChecker
+from awslimitchecker.checker import _AwsLimitChecker
 from .support import sample_limits
 
 
-class TestAwsLimitCheckerRunner(object):
+class Test_AwsLimitCheckerRunner(object):
 
     def test_parse_args(self):
         argv = ['-V']
@@ -114,8 +114,8 @@ class TestAwsLimitCheckerRunner(object):
                       spec_set=version._get_version),
                 patch('awslimitchecker.runner._get_project_url',
                       spec_set=version._get_project_url),
-                patch('awslimitchecker.runner.AwsLimitChecker',
-                      spec_set=AwsLimitChecker),
+                patch('awslimitchecker.runner._AwsLimitChecker',
+                      spec_set=_AwsLimitChecker),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
@@ -137,8 +137,8 @@ class TestAwsLimitCheckerRunner(object):
         expected = 'Bar\nFoo\n'
         with nested(
                 patch.object(sys, 'argv', argv),
-                patch('awslimitchecker.runner.AwsLimitChecker',
-                      spec_set=AwsLimitChecker),
+                patch('awslimitchecker.runner._AwsLimitChecker',
+                      spec_set=_AwsLimitChecker),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
@@ -165,8 +165,8 @@ class TestAwsLimitCheckerRunner(object):
                    'SvcFoo/foo limit3\t3\n'
         with nested(
                 patch.object(sys, 'argv', argv),
-                patch('awslimitchecker.runner.AwsLimitChecker',
-                      spec_set=AwsLimitChecker),
+                patch('awslimitchecker.runner._AwsLimitChecker',
+                      spec_set=_AwsLimitChecker),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
@@ -189,8 +189,8 @@ class TestAwsLimitCheckerRunner(object):
         expected = 'ERROR: no action specified. Please see -h|--help.\n'
         with nested(
                 patch.object(sys, 'argv', argv),
-                patch('awslimitchecker.runner.AwsLimitChecker',
-                      spec_set=AwsLimitChecker),
+                patch('awslimitchecker.runner._AwsLimitChecker',
+                      spec_set=_AwsLimitChecker),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,

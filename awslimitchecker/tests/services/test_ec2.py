@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from mock import Mock, patch, call
 from awslimitchecker.services.ec2 import Ec2Service
-from awslimitchecker.limit import AwsLimit
+from awslimitchecker.limit import _AwsLimit
 
 
 class TestEc2Service(object):
@@ -89,7 +89,7 @@ class TestEc2Service(object):
         assert limits == init_limits
         assert len(limits) == 32
         for x in limits:
-            assert isinstance(limits[x], AwsLimit)
+            assert isinstance(limits[x], _AwsLimit)
             assert limits[x].service_name == 'EC2'
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro Instances']

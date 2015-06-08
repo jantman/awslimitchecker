@@ -37,13 +37,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.limit import AwsLimit
+from awslimitchecker.limit import _AwsLimit
 
 
-class TestAwsLimit(object):
+class Test_AwsLimit(object):
 
     def test_init(self):
-        a = AwsLimit(
+        a = _AwsLimit(
             'limitname',
             'svcname',
             3
@@ -55,7 +55,7 @@ class TestAwsLimit(object):
         assert a.limit_subtype is None
 
     def test_init_type(self):
-        a = AwsLimit(
+        a = _AwsLimit(
             'limitname',
             'svcname',
             1,

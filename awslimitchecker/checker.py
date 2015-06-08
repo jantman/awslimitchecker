@@ -43,11 +43,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AwsLimitChecker(object):
+class _AwsLimitChecker(object):
 
     def __init__(self):
         """
-        Main AwsLimitChecker class - this should be the only externally-used
+        Main _AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
 
         Constructor builds ``self.services`` as a dict of service_name (str)
@@ -77,7 +77,7 @@ class AwsLimitChecker(object):
 
     def get_limits(self, service=None):
         """
-        Return all :py:class:`~.AwsLimit` objects for the given
+        Return all :py:class:`~._AwsLimit` objects for the given
         service name, or for all services if ``service`` is None.
 
         If ``service`` is specified, the returned dict has one element,
@@ -86,7 +86,7 @@ class AwsLimitChecker(object):
         :param service: the name of one service to return limits for
         :type service: string
         :returns: dict of service name (string) to nested dict
-        of limit name (string) to limit (:py:class:`~.AwsLimit`)
+        of limit name (string) to limit (:py:class:`~._AwsLimit`)
         :rtype: dict
         """
         res = {}
