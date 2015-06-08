@@ -93,23 +93,27 @@ class Test_Ec2Service(object):
         init_limits = cls.limits
         limits = cls.get_limits()
         assert limits == init_limits
-        assert len(limits) == 47
+        assert len(limits) == 48
         for x in limits:
             assert isinstance(limits[x], _AwsLimit)
             assert limits[x].service_name == 'EC2'
         # check a random subset of limits
-        t2_micro = limits['Running On-Demand t2.micro Instances']
+        t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
-        assert t2_micro.limit_type == 'On-Demand Instances'
+        assert t2_micro.limit_type == 'On-Demand instances'
         assert t2_micro.limit_subtype == 't2.micro'
-        c4_8xlarge = limits['Running On-Demand c4.8xlarge Instances']
+        c4_8xlarge = limits['Running On-Demand c4.8xlarge instances']
         assert c4_8xlarge.default_limit == 5
-        assert c4_8xlarge.limit_type == 'On-Demand Instances'
+        assert c4_8xlarge.limit_type == 'On-Demand instances'
         assert c4_8xlarge.limit_subtype == 'c4.8xlarge'
-        i2_8xlarge = limits['Running On-Demand i2.8xlarge Instances']
+        i2_8xlarge = limits['Running On-Demand i2.8xlarge instances']
         assert i2_8xlarge.default_limit == 2
-        assert i2_8xlarge.limit_type == 'On-Demand Instances'
+        assert i2_8xlarge.limit_type == 'On-Demand instances'
         assert i2_8xlarge.limit_subtype == 'i2.8xlarge'
+        all_ec2 = limits['Running On-Demand EC2 instances']
+        assert all_ec2.default_limit == 20
+        assert all_ec2.limit_type == 'On-Demand instances'
+        assert all_ec2.limit_subtype is None
 
     def test_find_usage(self):
         pb = 'awslimitchecker.services.ec2._Ec2Service'  # patch base path
@@ -130,9 +134,9 @@ class Test_Ec2Service(object):
         mock_r3_2xlarge = Mock(spec_set=_AwsLimit)
         mock_c4_4xlarge = Mock(spec_set=_AwsLimit)
         limits = {
-            'Running On-Demand t2.micro Instances': mock_t2_micro,
-            'Running On-Demand r3.2xlarge Instances': mock_r3_2xlarge,
-            'Running On-Demand c4.4xlarge Instances': mock_c4_4xlarge,
+            'Running On-Demand t2.micro instances': mock_t2_micro,
+            'Running On-Demand r3.2xlarge instances': mock_r3_2xlarge,
+            'Running On-Demand c4.4xlarge instances': mock_c4_4xlarge,
         }
 
         cls = _Ec2Service()
@@ -269,10 +273,12 @@ class Test_Ec2Service(object):
         mock_t2_micro = Mock(spec_set=_AwsLimit)
         mock_r3_2xlarge = Mock(spec_set=_AwsLimit)
         mock_c4_4xlarge = Mock(spec_set=_AwsLimit)
+        mock_all_ec2 = Mock(spec_set=_AwsLimit)
         limits = {
-            'Running On-Demand t2.micro Instances': mock_t2_micro,
-            'Running On-Demand r3.2xlarge Instances': mock_r3_2xlarge,
-            'Running On-Demand c4.4xlarge Instances': mock_c4_4xlarge,
+            'Running On-Demand t2.micro instances': mock_t2_micro,
+            'Running On-Demand r3.2xlarge instances': mock_r3_2xlarge,
+            'Running On-Demand c4.4xlarge instances': mock_c4_4xlarge,
+            'Running On-Demand EC2 instances': mock_all_ec2,
         }
 
         cls = _Ec2Service()
@@ -294,6 +300,7 @@ class Test_Ec2Service(object):
         assert mock_t2_micro.mock_calls == [call._set_current_usage(36)]
         assert mock_r3_2xlarge.mock_calls == [call._set_current_usage(8)]
         assert mock_c4_4xlarge.mock_calls == [call._set_current_usage(5)]
+        assert mock_all_ec2.mock_calls == [call._set_current_usage(49)]
         assert mock_inst_usage.mock_calls == [call(cls)]
         assert mock_res_inst_count.mock_calls == [call(cls)]
 
@@ -309,7 +316,7 @@ class Test_Ec2Service(object):
         mock_conn.get_all_reservations.return_value = [mock_res1]
         cls = _Ec2Service()
         cls.conn = mock_conn
-        cls.limits = {'Running On-Demand t2.micro Instances': Mock()}
+        cls.limits = {'Running On-Demand t2.micro instances': Mock()}
         with patch('awslimitchecker.services.ec2._Ec2Service._instance_types',
                    autospec=True) as mock_itypes:
             mock_itypes.return_value = ['t2.micro']

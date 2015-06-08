@@ -92,10 +92,15 @@ class _Ec2Service(_AwsService):
                     # we have unused reservations
                     continue
                 ondemand_usage[i_type] += od
+        total_instances = 0
         for i_type, usage in ondemand_usage.iteritems():
-            key = 'Running On-Demand {t} Instances'.format(
+            key = 'Running On-Demand {t} instances'.format(
                 t=i_type)
             self.limits[key]._set_current_usage(usage)
+            total_instances += usage
+        # limit for ALL On-Demand EC2 instances
+        key = 'Running On-Demand EC2 instances'
+        self.limits[key]._set_current_usage(total_instances)
 
     def _get_reserved_instance_count(self):
         """
@@ -182,7 +187,7 @@ class _Ec2Service(_AwsService):
         }
         limits = {}
         for i_type in self._instance_types():
-            key = 'Running On-Demand {t} Instances'.format(
+            key = 'Running On-Demand {t} instances'.format(
                 t=i_type)
             lim = default_limits[0]
             if i_type in special_limits:
@@ -191,9 +196,17 @@ class _Ec2Service(_AwsService):
                 key,
                 self.service_name,
                 lim,
-                limit_type='On-Demand Instances',
+                limit_type='On-Demand instances',
                 limit_subtype=i_type
             )
+        # limit for ALL running On-Demand instances
+        key = 'Running On-Demand EC2 instances'
+        limits[key] = _AwsLimit(
+            key,
+            self.service_name,
+            default_limits[0],
+            limit_type='On-Demand instances',
+        )
         return limits
 
     def required_iam_permissions(self):
