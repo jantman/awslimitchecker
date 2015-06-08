@@ -64,6 +64,7 @@ class AwsLimitChecker(object):
                            v=_get_version(),
                            u=_get_project_url(),
                        ))
+        self.have_usage = False
         self.services = {}
         for sname, cls in _services.iteritems():
             self.services[sname] = cls()
@@ -97,7 +98,7 @@ class AwsLimitChecker(object):
         :param service: the name of one service to return limits for
         :type service: string
         :returns: dict of service name (string) to nested dict
-        of limit name (string) to limit (:py:class:`~._AwsLimit`)
+          of limit name (string) to limit (:py:class:`~._AwsLimit`)
         :rtype: dict
         """
         res = {}
@@ -133,6 +134,7 @@ class AwsLimitChecker(object):
         if service is not None:
             self.services[service].find_usage()
             return
+        self.have_usage = True
         for sname, cls in self.services.iteritems():
             cls.find_usage()
 
@@ -177,3 +179,21 @@ class AwsLimitChecker(object):
                     override_ta=override_ta
                 )
         logger.info("Limit overrides applied.")
+
+    def check_limits(self, warning_threshold=80, critical_threshold=95):
+        """
+        Check all limits and current usage against their specified thresholds,
+        and <<do something>> if current usage exceeds the threshold for
+        any limits.
+
+        :param warning_threshold: the default warning threshold, as an
+          integer percentage, for any limits without a specifically-set
+          threshold.
+        :type warning_threshold: int
+        :param critical_threshold: the default critical threshold, as an
+          integer percentage, for any limits without a specifically-set
+          threshold.
+        :type critical_threshold: int
+        """
+        if not self.have_usage:
+            self.find_usage()

@@ -185,3 +185,14 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc2.mock_calls == [
             call.set_limit_override('bar limit2', 100, override_ta=False)
         ]
+
+    def test_check_limits_no_usage(self):
+        with nested(
+                patch('awslimitchecker.checker.AwsLimitChecker.find_usage',
+                      autospec=True),
+        ) as (
+            mock_find_usage,
+        ):
+            self.cls.have_usage = False
+            self.cls.check_limits()
+        assert mock_find_usage.mock_calls == [call(self.cls)]
