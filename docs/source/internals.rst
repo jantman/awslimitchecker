@@ -20,7 +20,7 @@ Service Classes are instantiated, they build a dict of all of their limits, corr
 with an :py:class:`~awslimitchecker.limit._AwsLimit` object. The Service Class constructors *must not* make any network
 connections; connections are created lazily as needed and stored as a class attribute. This allows us to inspect the
 services, limits and default limit values without ever connecting to AWS (this is also used to generate the
-:ref:`Checks <_checks>` documentation automatically).
+:ref:`Supported Limits <_limits>` documentation automatically).
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is instantiated, it imports :py:mod:`~awslimitchecker.services`
 which in turn creates instances of all ``awslimitchecker.services.*`` classes and adds them to a dict mapping the

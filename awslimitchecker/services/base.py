@@ -84,6 +84,18 @@ class _AwsService(object):
             return self.limits
         # else define the limits
 
+    @abc.abstractmethod
+    def required_iam_permissions(self):
+        """
+        Return a list of IAM Actions required for this Service to function
+        properly. All Actions will be shown with an Effect of "Allow"
+        and a Resource of "*".
+
+        :returns: list of IAM Action strings
+        :rtype: list
+        """
+        raise NotImplementedError('abstract base class')
+
     def set_limit_override(self, limit_name, value, override_ta=True):
         """
         Set a new limit ``value`` for the specified limit, overriding

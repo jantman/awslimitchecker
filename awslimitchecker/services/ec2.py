@@ -111,7 +111,7 @@ class _Ec2Service(_AwsService):
         for x in res:
             if x.state != 'active':
                 logger.debug("Skipping ReservedInstance {i} with state "
-                             "{s}".format(i=x.id, s=x.status))
+                             "{s}".format(i=x.id, s=x.state))
                 continue
             if x.availability_zone not in az_to_res:
                 az_to_res[x.availability_zone] = deepcopy(reservations)
@@ -195,6 +195,20 @@ class _Ec2Service(_AwsService):
                 limit_subtype=i_type
             )
         return limits
+
+    def required_iam_permissions(self):
+        """
+        Return a list of IAM Actions required for this Service to function
+        properly. All Actions will be shown with an Effect of "Allow"
+        and a Resource of "*".
+
+        :returns: list of IAM Action strings
+        :rtype: list
+        """
+        return [
+            "ec2:DescribeInstances",
+            "ec2:DescribeReservedInstances",
+        ]
 
     def _instance_types(self):
         """

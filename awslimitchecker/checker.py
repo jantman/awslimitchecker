@@ -197,3 +197,28 @@ class AwsLimitChecker(object):
         """
         if not self.have_usage:
             self.find_usage()
+
+    def get_required_iam_policy(self):
+        """
+        Return an IAM policy granting all of the permissions needed for
+        awslimitchecker to fully function. This returns a dict suitable
+        for json serialization to a valid IAM policy.
+
+        Internally, this calls :py:meth:`~._AwsService.required_iam_permissions`
+        on each :py:class:`~.service._AwsService` instance.
+
+        :returns: dict representation of IAM Policy
+        :rtype: dict
+        """
+        required_actions = []
+        for sname, cls in self.services.iteritems():
+            required_actions.extend(cls.required_iam_permissions())
+        policy = {
+            'Version': '2012-10-17',
+            'Statement': [{
+                'Effect': 'Allow',
+                'Resource': '*',
+                'Action': sorted(required_actions),
+            }],
+        }
+        return policy

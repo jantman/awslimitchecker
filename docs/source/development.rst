@@ -67,11 +67,21 @@ using the :py:mod:`abc` module.
    ``service_name`` class attribute.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
 4. Write at least high-level tests; TDD is greatly preferred.
-5. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService`.
+5. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
+   small, easily-testable methods are preferred. Ensure all methods have full documentation.
 6. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
-7. TBD - write integration tests.
-8. Run all tox jobs, or at least one python version, docs and coverage.
-9. Submit your pull request.
+7. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
+   returns a list of all IAM permissions required for it to work.
+8. TBD - write integration tests.
+9. Run all tox jobs, or at least one python version, docs and coverage.
+10. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+    output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
+    Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
+    "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
+    `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_policy-validator.html>`_.
+    It would also be a good idea to run any policy changes through the
+    `Policy Simulator <https://policysim.aws.amazon.com/>`_.
+11. Submit your pull request.
 
 .. _development.adding_ta:
 

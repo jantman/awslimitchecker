@@ -40,6 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 import argparse
 import logging
+import json
 
 from .version import _get_version, _get_project_url
 from .checker import AwsLimitChecker
@@ -84,6 +85,11 @@ def parse_args(argv):
     p.add_argument('-u', '--show-usage', action='store_true', default=False,
                    help='find and print the current usage of all AWS services'
                    ' with known limits')
+    p.add_argument('--iam-policy', action='store_true',
+                   default=False,
+                   help='output a JSON serialized IAM Policy '
+                   'listing the required permissions for '
+                   'awslimitchecker to run correctly.')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
                    help='verbose output. specify twice for debug-level output.')
@@ -122,6 +128,11 @@ def console_entry_point():
                     l=lim,
                     n=limits[svc][lim].default_limit
                 ))
+        raise SystemExit(0)
+
+    if args.iam_policy:
+        policy = checker.get_required_iam_policy()
+        print(json.dumps(policy, sort_keys=True, indent=2))
         raise SystemExit(0)
 
     if args.show_usage:

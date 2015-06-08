@@ -46,7 +46,6 @@ To Do:
 +++++++
 
 - add documentation about region coming from boto config/defaults
-- have a required_iam_role() method return a dict of the minimum required IAM role policy, and a CLI command for this.
 - add documentation about AGPL?
 - fix AGPL warning in init - how can this be done nicer? maybe just print or stderr?
 
@@ -101,7 +100,8 @@ Contents
    :maxdepth: 4
 
    Getting Started <getting_started>
-   Current Checks <checks>
+   Required IAM Permissions <iam_policy>
+   Supported Limits <limits>
    Development <development>
    Internals <internals>
    API <modules>

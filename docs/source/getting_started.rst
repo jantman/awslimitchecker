@@ -37,6 +37,27 @@ files, or set as environment variables. See
 `the boto configuration documentation <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
 for further information.
 
+.. _getting_started.permissions:
+Required Permissions
+---------------------
+
+You can view a sample IAM policy listing the permissions required for awslimitchecker to function properly
+either via the CLI client:
+
+.. code-block:: bash
+
+    awslimitchecker --iam-policy
+
+Or as a python dict:
+
+.. code-block:: python
+
+    from awslimitchecker.checker import AwsLimitChecker
+    c = AwsLimitChecker()
+    iam_policy = c.get_required_iam_policy()
+
+You can also view the required permissions for the current version of awslimitchecker at :ref:`Required IAM Permissions <.iam_policy>`.
+
 .. _getting_started.cli_usage:
 
 Basic Command Line Usage

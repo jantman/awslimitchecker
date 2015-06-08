@@ -196,3 +196,30 @@ class TestAwsLimitChecker(object):
             self.cls.have_usage = False
             self.cls.check_limits()
         assert mock_find_usage.mock_calls == [call(self.cls)]
+
+    def test_get_required_iam_policy(self):
+        expected = {
+            'Version': '2012-10-17',
+            'Statement': [{
+                'Effect': 'Allow',
+                'Resource': '*',
+                'Action': [
+                    'ec2:bar',
+                    'ec2:foo',
+                    'foo:perm1',
+                    'foo:perm2',
+                ],
+            }],
+        }
+        self.mock_svc1.required_iam_permissions.return_value = [
+            'ec2:foo',
+            'ec2:bar',
+        ]
+        self.mock_svc2.required_iam_permissions.return_value = [
+            'foo:perm1',
+            'foo:perm2',
+        ]
+        res = self.cls.get_required_iam_policy()
+        assert res == expected
+        assert self.mock_svc1.mock_calls == [call.required_iam_permissions()]
+        assert self.mock_svc2.mock_calls == [call.required_iam_permissions()]

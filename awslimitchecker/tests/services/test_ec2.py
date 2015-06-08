@@ -318,3 +318,10 @@ class Test_Ec2Service(object):
         assert mock_logger.mock_calls == [
             call.error("ERROR - unknown instance type 'foobar'; not counting"),
         ]
+
+    def test_required_iam_permissions(self):
+        cls = _Ec2Service()
+        assert cls.required_iam_permissions() == [
+            "ec2:DescribeInstances",
+            "ec2:DescribeReservedInstances",
+        ]

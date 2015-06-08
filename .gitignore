@@ -54,6 +54,8 @@ coverage.xml
 docs/build/
 docs/source/awslimitchecker*.rst
 docs/source/modules.rst
+docs/source/limits.rst
+docs/source/iam_policy.rst
 
 # PyBuilder
 target/

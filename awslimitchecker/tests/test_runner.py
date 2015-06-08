@@ -96,6 +96,11 @@ class TestAwsLimitCheckerRunner(object):
                                 default=False,
                                 help='find and print the current usage of '
                                 'all AWS services with known limits'),
+            call().add_argument('--iam-policy', action='store_true',
+                                default=False,
+                                help='output a JSON serialized IAM Policy '
+                                'listing the required permissions for '
+                                'awslimitchecker to run correctly.'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,
@@ -163,6 +168,33 @@ class TestAwsLimitCheckerRunner(object):
         assert mock_checker.mock_calls == [
             call(),
             call().get_service_names()
+        ]
+
+    def test_entry_iam_policy(self, capsys):
+        argv = ['awslimitchecker', '--iam-policy']
+        expected = '{\n  "baz": "blam", \n  "foo": "bar"\n}\n'
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            mock_checker.return_value.get_required_iam_policy.return_value = {
+                'foo': 'bar',
+                'baz': 'blam',
+            }
+            runner.console_entry_point()
+        out, err = capsys.readouterr()
+        assert out == expected
+        assert err == ''
+        assert excinfo.value.code == 0
+        assert mock_checker.mock_calls == [
+            call(),
+            call().get_required_iam_policy()
         ]
 
     def test_entry_list_limits(self, capsys):

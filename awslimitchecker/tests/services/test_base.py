@@ -49,7 +49,10 @@ class Test_AwsService(object):
         with pytest.raises(TypeError) as excinfo:
             _AwsService()
         assert excinfo.value.message == "Can't instantiate abstract class " \
-            "_AwsService with abstract methods find_usage, get_limits"
+            "_AwsService with abstract methods " \
+            "find_usage"\
+            ", get_limits" \
+            ", required_iam_permissions"
 
 
 class Test_AwsServiceSubclasses(object):
@@ -65,6 +68,8 @@ class Test_AwsServiceSubclasses(object):
         assert mock_get_limits.mock_calls == [call()]
         # ensure service name is changed
         assert inst.service_name != 'baseclass'
+        # ensure an IAM permissions list, even if empty
+        assert isinstance(inst.required_iam_permissions(), list)
 
     def test_subclass_init(self):
         for clsname, cls in _services.iteritems():
