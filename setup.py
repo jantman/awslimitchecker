@@ -71,7 +71,7 @@ classifiers = [
 
 setup(
     name='awslimitchecker',
-    version=VERSION,
+    version=_VERSION,
     author='Jason Antman',
     author_email='jason@jasonantman.com',
     packages=['awslimitchecker', 'awslimitchecker.tests'],
@@ -79,7 +79,7 @@ setup(
     [console_scripts]
     awslimitchecker = awslimitchecker.runner:console_entry_point
     """,
-    url=PROJECT_URL,
+    url=_PROJECT_URL,
     description='A script and python module to check your AWS service limits and usage using boto.',
     long_description=long_description,
     install_requires=requires,
