@@ -39,13 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from setuptools import setup
 from sys import version_info
-from awslimitchecker.version import VERSION, PROJECT_URL
-
-# boto isn't py3-compatible yet
-if version_info[0] > 2 or version_info[1] < 6:
-    raise SystemExit("ERROR - boto currently requires python 2.6 or 2.7;"
-                     " once boto announces py3 compatibility, "
-                     "awslimitchecker will too")
+from awslimitchecker.version import _VERSION, _PROJECT_URL
 
 with open('README.rst') as file:
     long_description = file.read()

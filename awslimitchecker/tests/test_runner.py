@@ -69,10 +69,10 @@ class TestAwsLimitCheckerRunner(object):
         with nested(
                 patch('awslimitchecker.runner.argparse.ArgumentParser',
                       spec_set=argparse.ArgumentParser),
-                patch('awslimitchecker.runner.get_version',
-                      spec_set=version.get_version),
-                patch('awslimitchecker.runner.get_project_url',
-                      spec_set=version.get_project_url),
+                patch('awslimitchecker.runner._get_version',
+                      spec_set=version._get_version),
+                patch('awslimitchecker.runner._get_project_url',
+                      spec_set=version._get_project_url),
         ) as (
             mock_parser,
             mock_version,
@@ -110,10 +110,10 @@ class TestAwsLimitCheckerRunner(object):
         expected = 'awslimitchecker myver (see <myurl> for source code)\n'
         with nested(
                 patch.object(sys, 'argv', argv),
-                patch('awslimitchecker.runner.get_version',
-                      spec_set=version.get_version),
-                patch('awslimitchecker.runner.get_project_url',
-                      spec_set=version.get_project_url),
+                patch('awslimitchecker.runner._get_version',
+                      spec_set=version._get_version),
+                patch('awslimitchecker.runner._get_project_url',
+                      spec_set=version._get_project_url),
                 patch('awslimitchecker.runner.AwsLimitChecker',
                       spec_set=AwsLimitChecker),
                 pytest.raises(SystemExit),

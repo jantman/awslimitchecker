@@ -46,14 +46,14 @@ class TestVersion(object):
 
     def test_project_url(self):
         expected = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
-            v=version.VERSION)
-        assert version.PROJECT_URL == expected
+            v=version._VERSION)
+        assert version._PROJECT_URL == expected
 
-    def test_get_project_url(self):
-        assert version.get_project_url() == version.PROJECT_URL
+    def test__get_project_url(self):
+        assert version._get_project_url() == version._PROJECT_URL
 
-    def test_get_version(self):
-        assert version.get_version() == version.VERSION
+    def test__get_version(self):
+        assert version._get_version() == version._VERSION
 
     def test_is_semver(self):
         # see:
@@ -79,4 +79,4 @@ class TestVersion(object):
             r'))?'
             r'$'
         )
-        assert semver_ptn.match(version.VERSION) is not None
+        assert semver_ptn.match(version._VERSION) is not None

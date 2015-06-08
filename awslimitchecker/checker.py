@@ -37,7 +37,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.services import services
+from .services import services
+from .version import _get_version, _get_project_url
 import logging
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,24 @@ class AwsLimitChecker(object):
         self.services = {}
         for sname, cls in services.iteritems():
             self.services[sname] = cls()
+
+    def get_version(self):
+        """
+        Return the version of awslimitchecker currently running.
+
+        :returns: current awslimitchecker version
+        :rtype: string
+        """
+        return _get_version()
+
+    def get_project_url(self):
+        """
+        Return the URL for the awslimitchecker project.
+
+        :returns: URL of where to find awslimitchecker
+        :rtype: string
+        """
+        return _get_project_url()
 
     def get_limits(self, service=None):
         """

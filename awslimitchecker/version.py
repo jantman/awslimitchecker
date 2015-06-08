@@ -37,12 +37,12 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-VERSION = '0.1.0'
-PROJECT_URL = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
-    v=VERSION)
+_VERSION = '0.1.0'
+_PROJECT_URL = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
+    v=_VERSION)
 
 
-def get_version():
+def _get_version():
     """
     Returns the currently-installed awslimitchecker version.
 
@@ -52,10 +52,10 @@ def get_version():
     :returns: awslimitchecker version
     :rtype: string
     """
-    return VERSION
+    return _VERSION
 
 
-def get_project_url():
+def _get_project_url():
     """
     Returns the awslimitchecker project URL.
 
@@ -65,4 +65,4 @@ def get_project_url():
     :returns: awslimitchecker project URL
     :rtype: string
     """
-    return PROJECT_URL
+    return _PROJECT_URL

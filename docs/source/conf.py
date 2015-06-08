@@ -17,7 +17,7 @@ import os
 import shlex
 # to let sphinx find the actual source...
 sys.path.insert(0, os.path.abspath("../.."))
-from awslimitchecker.version import get_version
+from awslimitchecker.version import _get_version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -64,7 +64,7 @@ author = u'Jason Antman'
 # built documents.
 #
 # The short X.Y version.
-version = get_version()
+version = _get_version()
 # The full version, including alpha/beta/rc tags.
 release = version
 

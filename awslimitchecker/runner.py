@@ -40,7 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 import argparse
 
-from .version import get_version, get_project_url
+from .version import _get_version, _get_project_url
 from .checker import AwsLimitChecker
 
 
@@ -60,7 +60,7 @@ def parse_args(argv):
     ####### IMPORTANT license notice ##########
     In order to remain in compliance with the AGPLv3 license:
     - this notice MUST NOT be removed, and MUST be displayed to all users
-    - get_project_url() MUST point to the source code of the ACTUALLY RUNNING
+    - _get_project_url() MUST point to the source code of the ACTUALLY RUNNING
       version of this program. i.e. if you modify this program, you MUST have
       the actually-running source available somewhere for your users.
     ####### IMPORTANT license notice ##########
@@ -68,8 +68,8 @@ def parse_args(argv):
     epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone using' \
              ' this program, even remotely over a network, is entitled to a ' \
              'copy of the source code. You can obtain the source code of ' \
-             'awslimitchecker ' + get_version() + ' from: <' \
-             + get_project_url() + '>'
+             'awslimitchecker ' + _get_version() + ' from: <' \
+             + _get_project_url() + '>'
     p = argparse.ArgumentParser(description=desc, epilog=epilog)
     p.add_argument('-s', '--list-services', action='store_true', default=False,
                    help='print a list of all AWS service types that '
@@ -91,8 +91,8 @@ def console_entry_point():
     args = parse_args(sys.argv[1:])
     if args.version:
         print('awslimitchecker {v} (see <{s}> for source code)'.format(
-            s=get_project_url(),
-            v=get_version()
+            s=_get_project_url(),
+            v=_get_version()
         ))
         raise SystemExit(0)
 

@@ -41,3 +41,5 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 ################################################################################
 """
+
+from .checker import AwsLimitChecker
