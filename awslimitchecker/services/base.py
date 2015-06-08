@@ -57,7 +57,7 @@ class _AwsService(object):
         _AwsService subclasses should be usable without any external network
         connections.
         """
-        self.limits = []
+        self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
 

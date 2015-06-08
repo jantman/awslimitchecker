@@ -42,11 +42,14 @@ from contextlib import nested
 from boto.ec2.connection import EC2Connection
 from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance
+from boto.ec2.volume import Volume
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import _AwsLimit
 
 
 class Test_Ec2Service(object):
+
+    pb = 'awslimitchecker.services.ec2._Ec2Service'  # patch base path
 
     def test_init(self):
         """test __init__()"""
@@ -90,9 +93,47 @@ class Test_Ec2Service(object):
 
     def test_get_limits(self):
         cls = _Ec2Service()
-        init_limits = cls.limits
-        limits = cls.get_limits()
-        assert limits == init_limits
+        cls.limits = {}
+        with nested(
+                patch('%s._get_limits_instances' % self.pb),
+                patch('%s._get_limits_ebs' % self.pb),
+        ) as (
+            mock_instances,
+            mock_ebs,
+        ):
+            mock_instances.return_value = {'ec2lname': 'ec2lval'}
+            mock_ebs.return_value = {'ebslname': 'ebslval'}
+            res = cls.get_limits()
+        assert res == {
+            'ec2lname': 'ec2lval',
+            'ebslname': 'ebslval'
+        }
+        assert mock_instances.mock_calls == [call()]
+        assert mock_ebs.mock_calls == [call()]
+
+    def test_get_limits_ebs(self):
+        cls = _Ec2Service()
+        limits = cls._get_limits_ebs()
+        assert len(limits) == 4
+        for x in limits:
+            assert isinstance(limits[x], _AwsLimit)
+            assert limits[x].service_name == 'EC2'
+        piops = limits['Provisioned IOPS']
+        assert piops.limit_type == 'IOPS'
+        assert piops.limit_subtype == 'Provisioned IOPS'
+        piops_tb = limits['Provisioned IOPS (SSD) volume storage (TiB)']
+        assert piops_tb.limit_type == 'volume storage (TiB)'
+        assert piops_tb.limit_subtype == 'Provisioned IOPS (SSD)'
+        gp_tb = limits['General Purpose (SSD) volume storage (TiB)']
+        assert gp_tb.limit_type == 'volume storage (TiB)'
+        assert gp_tb.limit_subtype == 'General Purpose (SSD)'
+        mag_tb = limits['Magnetic volume storage (TiB)']
+        assert mag_tb.limit_type == 'volume storage (TiB)'
+        assert mag_tb.limit_subtype == 'Magnetic'
+
+    def test_get_limits_instances(self):
+        cls = _Ec2Service()
+        limits = cls._get_limits_instances()
         assert len(limits) == 48
         for x in limits:
             assert isinstance(limits[x], _AwsLimit)
@@ -116,18 +157,20 @@ class Test_Ec2Service(object):
         assert all_ec2.limit_subtype is None
 
     def test_find_usage(self):
-        pb = 'awslimitchecker.services.ec2._Ec2Service'  # patch base path
         with nested(
-                patch('%s.connect' % pb, autospec=True),
-                patch('%s._find_usage_instances' % pb, autospec=True),
+                patch('%s.connect' % self.pb, autospec=True),
+                patch('%s._find_usage_instances' % self.pb, autospec=True),
+                patch('%s._find_usage_ebs' % self.pb, autospec=True),
         ) as (
             mock_connect,
             mock_instances,
+            mock_ebs,
         ):
             cls = _Ec2Service()
             cls.find_usage()
         assert mock_connect.mock_calls == [call(cls)]
         assert mock_instances.mock_calls == [call(cls)]
+        assert mock_ebs.mock_calls == [call(cls)]
 
     def test_instance_usage(self):
         mock_t2_micro = Mock(spec_set=_AwsLimit)
@@ -323,8 +366,76 @@ class Test_Ec2Service(object):
             with patch('awslimitchecker.services.ec2.logger') as mock_logger:
                 cls._instance_usage()
         assert mock_logger.mock_calls == [
+            call.debug('Getting usage for on-demand instances'),
             call.error("ERROR - unknown instance type 'foobar'; not counting"),
         ]
+
+    def test_find_usage_ebs(self):
+        # 500G magnetic
+        mock_vol1 = Mock(spec_set=Volume)
+        type(mock_vol1).id = 'vol-1'
+        type(mock_vol1).type = 'standard'  # magnetic
+        type(mock_vol1).size = 500
+        type(mock_vol1).iops = None
+
+        # 8G magnetic
+        mock_vol2 = Mock(spec_set=Volume)
+        type(mock_vol2).id = 'vol-2'
+        type(mock_vol2).type = 'standard'  # magnetic
+        type(mock_vol2).size = 8
+        type(mock_vol2).iops = None
+
+        # 15G general purpose SSD, 45 IOPS
+        mock_vol3 = Mock(spec_set=Volume)
+        type(mock_vol3).id = 'vol-3'
+        type(mock_vol3).type = 'gp2'
+        type(mock_vol3).size = 15
+        type(mock_vol3).iops = 45
+
+        # 30G general purpose SSD, 90 IOPS
+        mock_vol4 = Mock(spec_set=Volume)
+        type(mock_vol4).id = 'vol-4'
+        type(mock_vol4).type = 'gp2'
+        type(mock_vol4).size = 30
+        type(mock_vol4).iops = 90
+
+        # 400G PIOPS, 700 IOPS
+        mock_vol5 = Mock(spec_set=Volume)
+        type(mock_vol5).id = 'vol-5'
+        type(mock_vol5).type = 'io1'
+        type(mock_vol5).size = 400
+        type(mock_vol5).iops = 700
+
+        # 100G PIOPS, 300 IOPS
+        mock_vol6 = Mock(spec_set=Volume)
+        type(mock_vol6).id = 'vol-6'
+        type(mock_vol6).type = 'io1'
+        type(mock_vol6).size = 100
+        type(mock_vol6).iops = 300
+
+        mock_conn = Mock(spec_set=EC2Connection)
+        mock_conn.get_all_volumes.return_value = [
+            mock_vol1,
+            mock_vol2,
+            mock_vol3,
+            mock_vol4,
+            mock_vol5,
+            mock_vol6
+        ]
+        cls = _Ec2Service()
+        cls.conn = mock_conn
+        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+            cls._find_usage_ebs()
+        assert mock_logger.mock_calls == [
+            call.debug("Getting usage for EBS volumes")
+        ]
+        assert cls.limits['Provisioned IOPS'].current_usage == 1000
+        assert cls.limits['Provisioned IOPS (SSD) volume storage '
+                          '(TiB)'].current_usage == 0.5
+        assert cls.limits['General Purpose (SSD) volume storage '
+                          '(TiB)'].current_usage == 0.045
+        assert cls.limits['Magnetic volume storage '
+                          '(TiB)'].current_usage == 0.508
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service()

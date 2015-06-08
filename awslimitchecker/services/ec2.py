@@ -67,6 +67,7 @@ class _Ec2Service(_AwsService):
             n=self.service_name))
         self.connect()
         self._find_usage_instances()
+        self._find_usage_ebs()
         logger.debug("Done checking usage.")
 
     def _find_usage_instances(self):
@@ -112,6 +113,7 @@ class _Ec2Service(_AwsService):
         """
         reservations = defaultdict(int)
         az_to_res = {}
+        logger.debug("Getting reserved instance information")
         res = self.conn.get_all_reserved_instances()
         for x in res:
             if x.state != 'active':
@@ -138,6 +140,7 @@ class _Ec2Service(_AwsService):
         # On-Demand instances by type
         ondemand = {k: 0 for k in self._instance_types()}
         az_to_inst = {}
+        logger.debug("Getting usage for on-demand instances")
         for res in self.conn.get_all_reservations():
             for inst in res.instances:
                 if inst.spot_instance_request_id:
@@ -154,6 +157,33 @@ class _Ec2Service(_AwsService):
                                  "counting".format(t=inst.instance_type))
         return az_to_inst
 
+    def _find_usage_ebs(self):
+        """calculate usage for all EBS limits and update Limits"""
+        piops = 0
+        piops_gb = 0
+        gp_gb = 0
+        mag_gb = 0
+        logger.debug("Getting usage for EBS volumes")
+        for vol in self.conn.get_all_volumes():
+            if vol.type == 'io1':
+                piops_gb += vol.size
+                piops += vol.iops
+            elif vol.type == 'gp2':
+                gp_gb += vol.size
+            elif vol.type == 'standard':
+                mag_gb += vol.size
+            else:
+                logger.error("ERROR - unknown volume type '{t}'; not "
+                             "counting".format(t=vol.type))
+        print(piops, piops_gb)
+        self.limits['Provisioned IOPS']._set_current_usage(piops)
+        self.limits['Provisioned IOPS (SSD) volume storage '
+                    '(TiB)']._set_current_usage(piops_gb / 1000.0)
+        self.limits['General Purpose (SSD) volume storage '
+                    '(TiB)']._set_current_usage(gp_gb / 1000.0)
+        self.limits['Magnetic volume storage '
+                    '(TiB)']._set_current_usage(mag_gb / 1000.0)
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -162,8 +192,60 @@ class _Ec2Service(_AwsService):
         :returns: dict of limit names to :py:class:`~._AwsLimit` objects
         :rtype: dict
         """
-        if self.limits != []:
+        if self.limits != {}:
             return self.limits
+        limits = {}
+        limits.update(self._get_limits_instances())
+        limits.update(self._get_limits_ebs())
+        return limits
+
+    def _get_limits_ebs(self):
+        """
+        Return a dict of EBS-related limits only.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
+        limits = {}
+        limits['Provisioned IOPS'] = _AwsLimit(
+            'Provisioned IOPS',
+            self.service_name,
+            40000,
+            limit_type='IOPS',
+            limit_subtype='Provisioned IOPS',
+        )
+        limits['Provisioned IOPS (SSD) volume storage (TiB)'] = _AwsLimit(
+            'Provisioned IOPS (SSD) volume storage (TiB)',
+            self.service_name,
+            20,
+            limit_type='volume storage (TiB)',
+            limit_subtype='Provisioned IOPS (SSD)',
+        )
+        limits['General Purpose (SSD) volume storage (TiB)'] = _AwsLimit(
+            'General Purpose (SSD) volume storage (TiB)',
+            self.service_name,
+            20,
+            limit_type='volume storage (TiB)',
+            limit_subtype='General Purpose (SSD)',
+        )
+        limits['Magnetic volume storage (TiB)'] = _AwsLimit(
+            'Magnetic volume storage (TiB)',
+            self.service_name,
+            20,
+            limit_type='volume storage (TiB)',
+            limit_subtype='Magnetic',
+        )
+        return limits
+
+    def _get_limits_instances(self):
+        """
+        Return a dict of limits for EC2 instances only.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
         # from: http://aws.amazon.com/ec2/faqs/
         # (On-Demand, Reserved, Spot)
         default_limits = (20, 20, 5)
