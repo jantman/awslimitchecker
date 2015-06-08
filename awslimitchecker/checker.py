@@ -43,11 +43,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class _AwsLimitChecker(object):
+class AwsLimitChecker(object):
 
     def __init__(self):
         """
-        Main _AwsLimitChecker class - this should be the only externally-used
+        Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
 
         Constructor builds ``self.services`` as a dict of service_name (str)

@@ -41,7 +41,7 @@ import sys
 import argparse
 
 from .version import _get_version, _get_project_url
-from .checker import _AwsLimitChecker
+from .checker import AwsLimitChecker
 
 
 def parse_args(argv):
@@ -96,7 +96,7 @@ def console_entry_point():
         ))
         raise SystemExit(0)
 
-    checker = _AwsLimitChecker()
+    checker = AwsLimitChecker()
     if args.list_services:
         for x in sorted(checker.get_service_names()):
             print(x)
