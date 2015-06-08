@@ -53,7 +53,7 @@ class TestAwsLimitChecker(object):
         mock_foo.return_value = mock_svc1
         mock_bar.return_value = mock_svc2
         svcs = {'foo': mock_foo, 'bar': mock_bar}
-        with patch.dict('awslimitchecker.checker.services',
+        with patch.dict('awslimitchecker.checker._services',
                         values=svcs, clear=True):
             cls = AwsLimitChecker()
         # dict should be of _AwsService instances
@@ -72,7 +72,7 @@ class TestAwsLimitChecker(object):
         mock_bar.return_value = mock_svc1
         mock_foo.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with patch.dict('awslimitchecker.checker.services',
+        with patch.dict('awslimitchecker.checker._services',
                         values=svcs, clear=True):
             cls = AwsLimitChecker()
             res = cls.get_service_names()
@@ -89,7 +89,7 @@ class TestAwsLimitChecker(object):
         mock_bar.return_value = mock_svc1
         mock_foo.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with patch.dict('awslimitchecker.checker.services',
+        with patch.dict('awslimitchecker.checker._services',
                         values=svcs, clear=True):
             cls = AwsLimitChecker()
             res = cls.get_limits()
@@ -106,7 +106,7 @@ class TestAwsLimitChecker(object):
         mock_bar.return_value = mock_svc1
         mock_foo.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with patch.dict('awslimitchecker.checker.services',
+        with patch.dict('awslimitchecker.checker._services',
                         values=svcs, clear=True):
             cls = AwsLimitChecker()
             res = cls.get_limits(service='SvcFoo')

@@ -41,6 +41,6 @@ from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.ec2 import Ec2Service
 
 # dynamically generate the service name to class dict
-services = {}
+_services = {}
 for cls in _AwsService.__subclasses__():
-    services[cls.service_name] = cls
+    _services[cls.service_name] = cls

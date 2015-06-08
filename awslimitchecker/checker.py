@@ -37,7 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from .services import services
+from .services import _services
 from .version import _get_version, _get_project_url
 import logging
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class AwsLimitChecker(object):
         to _AwsService instance.
         """
         self.services = {}
-        for sname, cls in services.iteritems():
+        for sname, cls in _services.iteritems():
             self.services[sname] = cls()
 
     def get_version(self):

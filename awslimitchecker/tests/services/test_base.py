@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from mock import Mock, patch, call
 from awslimitchecker.services.base import _AwsService
-from awslimitchecker.services import services
+from awslimitchecker.services import _services
 import pytest
 
 
@@ -67,6 +67,6 @@ class Test_AwsServiceSubclasses(object):
         assert inst.service_name != 'baseclass'
 
     def test_subclass_init(self):
-        for clsname, cls in services.iteritems():
+        for clsname, cls in _services.iteritems():
             yield "verify_subclass %s" % clsname, \
                 self.verify_subclass, clsname, cls
