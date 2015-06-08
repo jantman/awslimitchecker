@@ -111,7 +111,7 @@ class AwsLimitChecker(object):
 
         :param services: a list of :py:class:`~.service._AwsService`
           names, or None to check all services
-        :type services: None or list of strings
+        :type services: :py:obj:`None` or :py:obj:`list` of :py:obj:`string` s
         """
         raise NotImplementedError()
 
