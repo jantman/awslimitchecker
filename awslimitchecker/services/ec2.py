@@ -40,6 +40,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import abc  # noqa
 import boto
 import logging
+from collections import defaultdict
+from copy import deepcopy
 from .base import _AwsService
 from ..limit import _AwsLimit
 logger = logging.getLogger(__name__)
@@ -68,9 +70,69 @@ class _Ec2Service(_AwsService):
         logger.debug("Done checking usage.")
 
     def _find_usage_instances(self):
-        """find usage of EC2 instances"""
+        """calculate On-Demand instance usage for all types and update Limits"""
+        # update our limits with usage
+        inst_usage = self._instance_usage()
+        res_usage = self._get_reserved_instance_count()
+        # subtract reservations from instance usage
+        ondemand_usage = defaultdict(int)
+        for az in inst_usage:
+            if az not in res_usage:
+                for i_type, count in inst_usage[az].iteritems():
+                    ondemand_usage[i_type] += count
+                continue
+            # else we have reservations for this AZ
+            for i_type, count in inst_usage[az].iteritems():
+                if i_type not in res_usage[az]:
+                    # no reservations for this type
+                    ondemand_usage[i_type] += count
+                    continue
+                od = count - res_usage[az][i_type]
+                if od < 1:
+                    # we have unused reservations
+                    continue
+                ondemand_usage[i_type] += od
+        for i_type, usage in ondemand_usage.iteritems():
+            key = 'Running On-Demand {t} Instances'.format(
+                t=i_type)
+            self.limits[key]._set_current_usage(usage)
+
+    def _get_reserved_instance_count(self):
+        """
+        For each availability zone, get the count of current instance
+        reservations of each instance type. Return as a nested
+        dict of AZ name to dict of instance type to reservation count.
+
+        :rtype: dict
+        """
+        reservations = defaultdict(int)
+        az_to_res = {}
+        res = self.conn.get_all_reserved_instances()
+        for x in res:
+            if x.state != 'active':
+                logger.debug("Skipping ReservedInstance {i} with state "
+                             "{s}".format(i=x.id, s=x.status))
+                continue
+            if x.availability_zone not in az_to_res:
+                az_to_res[x.availability_zone] = deepcopy(reservations)
+            az_to_res[x.availability_zone][x.instance_type] += x.instance_count
+        # flatten and return
+        for x in az_to_res:
+            az_to_res[x] = dict(az_to_res[x])
+        return az_to_res
+
+    def _instance_usage(self):
+        """
+        Find counts of currently-running EC2 Instances
+        (On-Demand or Reserved) by placement (Availability
+        Zone) and instance type (size). Return as a nested dict
+        of AZ name to dict of instance type to count.
+
+        :rtype: dict
+        """
         # On-Demand instances by type
         ondemand = {k: 0 for k in self._instance_types()}
+        az_to_inst = {}
         for res in self.conn.get_all_reservations():
             for inst in res.instances:
                 if inst.spot_instance_request_id:
@@ -78,16 +140,14 @@ class _Ec2Service(_AwsService):
                                    "does not yet support spot "
                                    "instances.".format(i=inst.id))
                     continue
+                if inst.placement not in az_to_inst:
+                    az_to_inst[inst.placement] = deepcopy(ondemand)
                 try:
-                    ondemand[inst.instance_type] += 1
+                    az_to_inst[inst.placement][inst.instance_type] += 1
                 except KeyError:
                     logger.error("ERROR - unknown instance type '{t}'; not "
                                  "counting".format(t=inst.instance_type))
-        # update our limits with usage
-        for i_type, usage in ondemand.iteritems():
-            key = 'Running On-Demand {t} Instances'.format(
-                t=i_type)
-            self.limits[key]._set_current_usage(usage)
+        return az_to_inst
 
     def get_limits(self):
         """

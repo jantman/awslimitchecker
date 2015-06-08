@@ -46,9 +46,9 @@ To Do:
 +++++++
 
 - add documentation about region coming from boto config/defaults
-- subtract reserved instances (per-AZ) from ec2 usage
+- have a required_iam_role() method return a dict of the minimum required IAM role policy, and a CLI command for this.
 - add documentation about AGPL?
-- log WARNING at init - awslimitchecker {version} - AGPLv3 Free Software - {source_url}
+- fix AGPL warning in init - how can this be done nicer? maybe just print or stderr?
 
   - version should attempt to tell if we're installed from package or git, and print the right thing
   - source_url should print the package source url, or the clone url if installed from git
