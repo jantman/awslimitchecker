@@ -42,7 +42,7 @@ import pytest
 import sys
 import logging
 from contextlib import nested
-from mock import patch, call
+from mock import patch, call, Mock
 
 import awslimitchecker.runner as runner
 import awslimitchecker.version as version
@@ -101,6 +101,14 @@ class TestAwsLimitCheckerRunner(object):
                                 help='output a JSON serialized IAM Policy '
                                 'listing the required permissions for '
                                 'awslimitchecker to run correctly.'),
+            call().add_argument('-W', '--warning-threshold', action='store',
+                                type=int, default=80,
+                                help='default warning threshold (percentage of '
+                                'limit); default: 80'),
+            call().add_argument('-C', '--critical-threshold', action='store',
+                                type=int, default=99,
+                                help='default critical threshold (percentage '
+                                'of limit); default: 99'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,
@@ -147,112 +155,119 @@ class TestAwsLimitCheckerRunner(object):
         argv = ['awslimitchecker', '-s']
         with nested(
                 patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
                 patch('awslimitchecker.runner.list_services'),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
+            mock_checker,
             mock_list_services,
             excinfo,
         ):
             runner.console_entry_point()
         assert excinfo.value.code == 0
-        assert mock_list_services.mock_calls == [call()]
+        assert mock_list_services.mock_calls == [
+            call(mock_checker.return_value)
+        ]
 
     def test_list_services(self, capsys):
         expected = 'Bar\nFoo\n'
-        with patch('awslimitchecker.runner.AwsLimitChecker',
-                   spec_set=AwsLimitChecker) as mock_checker:
-            mock_checker.return_value.get_service_names.return_value = [
-                'Foo',
-                'Bar'
-            ]
-            runner.list_services()
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_service_names.return_value = [
+            'Foo',
+            'Bar'
+        ]
+        runner.list_services(mock_checker)
         out, err = capsys.readouterr()
         assert out == expected
         assert err == ''
         assert mock_checker.mock_calls == [
-            call(),
-            call().get_service_names()
+            call.get_service_names()
         ]
 
     def test_entry_iam_policy(self):
         argv = ['awslimitchecker', '--iam-policy']
         with nested(
                 patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
                 patch('awslimitchecker.runner.iam_policy'),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
+            mock_checker,
             mock_iam_policy,
             excinfo,
         ):
             runner.console_entry_point()
         assert excinfo.value.code == 0
-        assert mock_iam_policy.mock_calls == [call()]
+        assert mock_iam_policy.mock_calls == [call(mock_checker.return_value)]
 
     def test_iam_policy(self, capsys):
         expected = '{\n  "baz": "blam", \n  "foo": "bar"\n}\n'
-        with patch('awslimitchecker.runner.AwsLimitChecker',
-                   spec_set=AwsLimitChecker) as mock_checker:
-            mock_checker.return_value.get_required_iam_policy.return_value = {
-                'foo': 'bar',
-                'baz': 'blam',
-            }
-            runner.iam_policy()
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_required_iam_policy.return_value = {
+            'foo': 'bar',
+            'baz': 'blam',
+        }
+        runner.iam_policy(mock_checker)
         out, err = capsys.readouterr()
         assert out == expected
         assert err == ''
         assert mock_checker.mock_calls == [
-            call(),
-            call().get_required_iam_policy()
+            call.get_required_iam_policy()
         ]
 
     def test_entry_list_limits(self):
         argv = ['awslimitchecker', '-l']
         with nested(
                 patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
                 patch('awslimitchecker.runner.list_limits'),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
+            mock_checker,
             mock_list_limits,
             excinfo,
         ):
             runner.console_entry_point()
         assert excinfo.value.code == 0
-        assert mock_list_limits.mock_calls == [call()]
+        assert mock_list_limits.mock_calls == [call(mock_checker.return_value)]
 
     def test_list_limits(self, capsys):
         expected = 'SvcBar/bar limit2\t2\n' + \
                    'SvcBar/barlimit1\t1\n' + \
                    'SvcFoo/foo limit3\t3\n'
-        with patch('awslimitchecker.runner.AwsLimitChecker',
-                   spec_set=AwsLimitChecker) as mock_checker:
-            mock_checker.return_value.get_limits.return_value \
-                = sample_limits()
-            runner.list_limits()
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_limits.return_value = sample_limits()
+        runner.list_limits(mock_checker)
         out, err = capsys.readouterr()
         assert out == expected
         assert err == ''
         assert mock_checker.mock_calls == [
-            call(),
-            call().get_limits()
+            call.get_limits()
         ]
 
     def test_entry_show_usage(self):
         argv = ['awslimitchecker', '-u']
         with nested(
                 patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
                 patch('awslimitchecker.runner.show_usage'),
                 pytest.raises(SystemExit),
         ) as (
             mock_argv,
+            mock_checker,
             mock_show_usage,
             excinfo,
         ):
             runner.console_entry_point()
         assert excinfo.value.code == 0
-        assert mock_show_usage.mock_calls == [call()]
+        assert mock_show_usage.mock_calls == [call(mock_checker.return_value)]
 
     def test_show_usage(self, capsys):
         limits = sample_limits()
@@ -262,18 +277,15 @@ class TestAwsLimitCheckerRunner(object):
         expected = 'SvcBar/bar limit2\t22\n' + \
                    'SvcBar/barlimit1\t11\n' + \
                    'SvcFoo/foo limit3\t33\n'
-        with patch('awslimitchecker.runner.AwsLimitChecker',
-                   spec_set=AwsLimitChecker) as mock_checker:
-            mock_checker.return_value.get_limits.return_value \
-                = limits
-            runner.show_usage()
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_limits.return_value = limits
+        runner.show_usage(mock_checker)
         out, err = capsys.readouterr()
         assert out == expected
         assert err == ''
         assert mock_checker.mock_calls == [
-            call(),
-            call().find_usage(),
-            call().get_limits()
+            call.find_usage(),
+            call.get_limits()
         ]
 
     def test_entry_verbose(self, capsys):
@@ -329,3 +341,39 @@ class TestAwsLimitCheckerRunner(object):
         assert err == expected
         assert out == ''
         assert excinfo.value.code == 1
+
+    def test_entry_warning(self):
+        argv = ['awslimitchecker', '-W', '50']
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            runner.console_entry_point()
+        assert excinfo.value.code == 1
+        assert mock_checker.mock_calls == [
+            call(warning_threshold=50, critical_threshold=99)
+        ]
+
+    def test_entry_critical(self):
+        argv = ['awslimitchecker', '-C', '95']
+        with nested(
+                patch.object(sys, 'argv', argv),
+                patch('awslimitchecker.runner.AwsLimitChecker',
+                      spec_set=AwsLimitChecker),
+                pytest.raises(SystemExit),
+        ) as (
+            mock_argv,
+            mock_checker,
+            excinfo,
+        ):
+            runner.console_entry_point()
+        assert excinfo.value.code == 1
+        assert mock_checker.mock_calls == [
+            call(warning_threshold=80, critical_threshold=95)
+        ]

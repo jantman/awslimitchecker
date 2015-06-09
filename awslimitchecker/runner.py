@@ -90,6 +90,14 @@ def parse_args(argv):
                    help='output a JSON serialized IAM Policy '
                    'listing the required permissions for '
                    'awslimitchecker to run correctly.')
+    p.add_argument('-W', '--warning-threshold', action='store',
+                   type=int, default=80,
+                   help='default warning threshold (percentage of '
+                   'limit); default: 80')
+    p.add_argument('-C', '--critical-threshold', action='store',
+                   type=int, default=99,
+                   help='default critical threshold (percentage of '
+                   'limit); default: 99')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
                    help='verbose output. specify twice for debug-level output.')
@@ -100,14 +108,12 @@ def parse_args(argv):
     return args
 
 
-def list_services():
-    checker = AwsLimitChecker()
+def list_services(checker):
     for x in sorted(checker.get_service_names()):
         print(x)
 
 
-def list_limits():
-    checker = AwsLimitChecker()
+def list_limits(checker):
     limits = checker.get_limits()
     for svc in sorted(limits.keys()):
         for lim in sorted(limits[svc].keys()):
@@ -118,14 +124,12 @@ def list_limits():
             ))
 
 
-def iam_policy():
-    checker = AwsLimitChecker()
+def iam_policy(checker):
     policy = checker.get_required_iam_policy()
     print(json.dumps(policy, sort_keys=True, indent=2))
 
 
-def show_usage():
-    checker = AwsLimitChecker()
+def show_usage(checker):
     checker.find_usage()
     limits = checker.get_limits()
     for svc in sorted(limits.keys()):
@@ -151,22 +155,28 @@ def console_entry_point():
         ))
         raise SystemExit(0)
 
+    # the rest of these actually use the checker
+    checker = AwsLimitChecker(
+        warning_threshold=args.warning_threshold,
+        critical_threshold=args.critical_threshold
+    )
     if args.list_services:
-        list_services()
+        list_services(checker)
         raise SystemExit(0)
 
     if args.list_defaults:
-        list_limits()
+        list_limits(checker)
         raise SystemExit(0)
 
     if args.iam_policy:
-        iam_policy()
+        iam_policy(checker)
         raise SystemExit(0)
 
     if args.show_usage:
-        show_usage()
+        show_usage(checker)
         raise SystemExit(0)
 
+    # @TODO this should be an argparse mutex group
     sys.stderr.write('ERROR: no action specified. Please see -h|--help.\n')
     raise SystemExit(1)
 
