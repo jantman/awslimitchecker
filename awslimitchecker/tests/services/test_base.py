@@ -40,7 +40,26 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 from mock import Mock, patch, call
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services import _services
+from awslimitchecker.limit import AwsLimit
 import pytest
+
+
+class AwsServiceTester(_AwsService):
+    """class to test non-abstract methods on base class"""
+
+    service_name = 'AwsServiceTester'
+
+    def connect(self):
+        pass
+
+    def find_usage(self):
+        pass
+
+    def get_limits(self):
+        return {'foo': 'bar'}
+
+    def required_iam_permissions(self):
+        pass
 
 
 class Test_AwsService(object):
@@ -54,6 +73,34 @@ class Test_AwsService(object):
             ", find_usage" \
             ", get_limits" \
             ", required_iam_permissions"
+
+    def test_init_subclass(self):
+        cls = AwsServiceTester(1, 2)
+        assert cls.warning_threshold == 1
+        assert cls.critical_threshold == 2
+        assert cls.limits == {'foo': 'bar'}
+        assert cls.conn is None
+
+    def test_set_limit_override(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        cls.set_limit_override('foo', 10)
+        assert mock_limit.mock_calls == [
+            call.set_limit_override(10, override_ta=True)
+        ]
+
+    def test_set_limit_override_keyerror(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        with pytest.raises(ValueError) as excinfo:
+            cls.set_limit_override('bar', 10)
+        assert excinfo.value.message == "AwsServiceTester service has no " \
+            "'bar' limit"
+        assert mock_limit.mock_calls == []
 
 
 class Test_AwsServiceSubclasses(object):

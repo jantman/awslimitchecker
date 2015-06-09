@@ -78,13 +78,15 @@ class _AwsService(object):
         If not already done, establish a connection to the relevant AWS service
         and save as ``self.conn``.
         """
-        raise NotImplementedError('abstract base class')
+        """
         if self.conn is None:
             logger.debug("Connecting to {n}".format(
                 n=self.service_name))
             # self.conn = boto.<connect to something>
             logger.info("Connected to {n}".format(
                 n=self.service_name))
+        """
+        raise NotImplementedError('abstract base class')
 
     @abc.abstractmethod
     def find_usage(self):
@@ -93,11 +95,13 @@ class _AwsService(object):
         and update the ``current_usage`` property of each corresponding
         :py:class:`~.AwsLimit` instance.
         """
-        raise NotImplementedError('abstract base class')
+        """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
         logger.debug("Done checking usage.")
+        """
+        raise NotImplementedError('abstract base class')
 
     @abc.abstractmethod
     def get_limits(self):
@@ -111,10 +115,12 @@ class _AwsService(object):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
-        raise NotImplementedError('abstract base class')
+        """
         if self.limits != []:
             return self.limits
         # else define the limits
+        """
+        raise NotImplementedError('abstract base class')
 
     @abc.abstractmethod
     def required_iam_permissions(self):
