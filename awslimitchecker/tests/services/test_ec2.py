@@ -54,14 +54,16 @@ class Test_Ec2Service(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         assert cls.service_name == 'EC2'
         assert cls.conn is None
+        assert cls.warning_threshold == 21
+        assert cls.critical_threshold == 43
 
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
             mock_ec2.return_value = mock_conn
             cls.connect()
@@ -71,7 +73,7 @@ class Test_Ec2Service(object):
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
             mock_ec2.return_value = mock_conn
@@ -80,7 +82,7 @@ class Test_Ec2Service(object):
         assert mock_conn.mock_calls == []
 
     def test_instance_types(self):
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         types = cls._instance_types()
         assert len(types) == 47
         assert 't2.micro' in types
@@ -93,7 +95,7 @@ class Test_Ec2Service(object):
         assert 'cg1.4xlarge' in types
 
     def test_get_limits(self):
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         cls.limits = {}
         with nested(
                 patch('%s._get_limits_instances' % self.pb),
@@ -119,7 +121,7 @@ class Test_Ec2Service(object):
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         cls.limits = {'foo': 'bar'}
         with nested(
                 patch('%s._get_limits_instances' % self.pb),
@@ -138,7 +140,7 @@ class Test_Ec2Service(object):
 
     def test_get_limits_all(self):
         """test some things all limits should conform to"""
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         limits = cls.get_limits()
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
@@ -146,7 +148,7 @@ class Test_Ec2Service(object):
             assert limits[x].service_name == 'EC2'
 
     def test_get_limits_ebs(self):
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         limits = cls._get_limits_ebs()
         assert len(limits) == 4
         piops = limits['Provisioned IOPS']
@@ -163,7 +165,7 @@ class Test_Ec2Service(object):
         assert mag_tb.limit_subtype == 'standard'
 
     def test_get_limits_instances(self):
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
         assert len(limits) == 48
         # check a random subset of limits
@@ -196,7 +198,7 @@ class Test_Ec2Service(object):
             mock_ebs,
             mock_vpc,
         ):
-            cls = _Ec2Service()
+            cls = _Ec2Service(21, 43)
             cls.find_usage()
         assert mock_connect.mock_calls == [call(cls)]
         assert mock_instances.mock_calls == [call(cls)]
@@ -213,7 +215,7 @@ class Test_Ec2Service(object):
             'Running On-Demand c4.4xlarge instances': mock_c4_4xlarge,
         }
 
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         mock_inst1A = Mock(spec_set=Instance)
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 't2.micro'
@@ -296,7 +298,7 @@ class Test_Ec2Service(object):
         type(mock_res4).instance_type = 'it2'
         type(mock_res4).instance_count = 98
 
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         mock_conn = Mock(spec_set=EC2Connection)
         mock_conn.get_all_reserved_instances.return_value = [
             mock_res1,
@@ -355,7 +357,7 @@ class Test_Ec2Service(object):
             'Running On-Demand EC2 instances': mock_all_ec2,
         }
 
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         mock_conn = Mock(spec_set=EC2Connection)
         cls.conn = mock_conn
         cls.limits = limits
@@ -400,7 +402,7 @@ class Test_Ec2Service(object):
 
         mock_conn = Mock(spec_set=EC2Connection)
         mock_conn.get_all_reservations.return_value = [mock_res1]
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
         cls.limits = {'Running On-Demand t2.micro instances': Mock()}
         with patch('awslimitchecker.services.ec2._Ec2Service._instance_types',
@@ -470,7 +472,7 @@ class Test_Ec2Service(object):
             mock_vol6,
             mock_vol7
         ]
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_ebs()
@@ -496,7 +498,7 @@ class Test_Ec2Service(object):
                           '(TiB)'].get_current_usage()[0].get_value() == 0.508
 
     def test_required_iam_permissions(self):
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         assert cls.required_iam_permissions() == [
             "ec2:DescribeInstances",
             "ec2:DescribeReservedInstances",
@@ -523,7 +525,7 @@ class Test_Ec2Service(object):
             mock_sg3,
             mock_sg4,
         ]
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_vpc()
@@ -544,7 +546,7 @@ class Test_Ec2Service(object):
         assert sorted_usage[1].aws_type == 'AWS::EC2::VPC'
 
     def test_get_limits_vpc(self):
-        cls = _Ec2Service()
+        cls = _Ec2Service(21, 43)
         limits = cls._get_limits_vpc()
         assert len(limits) == 1
         for x in limits:

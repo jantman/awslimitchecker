@@ -47,7 +47,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            7,
+            11
         )
         assert limit.name == 'limitname'
         assert limit.service_name == 'svcname'
@@ -56,12 +58,16 @@ class TestAwsLimit(object):
         assert limit.limit_subtype is None
         assert limit.limit_override is None
         assert limit.override_ta is True
+        assert limit.def_warning_threshold == 7
+        assert limit.def_critical_threshold == 11
 
     def test_init_type(self):
         limit = AwsLimit(
             'limitname',
             'svcname',
             1,
+            6,
+            12,
             limit_type='foo',
             limit_subtype='bar',
         )
@@ -72,12 +78,16 @@ class TestAwsLimit(object):
         assert limit.limit_subtype == 'bar'
         assert limit.limit_override is None
         assert limit.override_ta is True
+        assert limit.def_warning_threshold == 6
+        assert limit.def_critical_threshold == 12
 
     def test_set_limit_override(self):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit.set_limit_override(10)
         assert limit.limit_override == 10
@@ -88,7 +98,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit.set_limit_override(1, override_ta=False)
         assert limit.limit_override == 1
@@ -99,7 +111,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         assert limit._current_usage == []
         limit._add_current_usage(2)
@@ -113,7 +127,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit._current_usage = 2
         assert limit.get_current_usage() == 2
@@ -122,7 +138,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         assert limit.get_current_usage_str() == '<unknown>'
 
@@ -130,7 +148,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit._add_current_usage(4)
         assert limit.get_current_usage_str() == '4'
@@ -139,7 +159,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit._add_current_usage(4, id='foobar')
         assert limit.get_current_usage_str() == 'foobar=4'
@@ -148,7 +170,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit._add_current_usage(4)
         limit._add_current_usage(3)
@@ -159,7 +183,9 @@ class TestAwsLimit(object):
         limit = AwsLimit(
             'limitname',
             'svcname',
-            3
+            3,
+            1,
+            2
         )
         limit._add_current_usage(4, id='foo4bar')
         limit._add_current_usage(3, id='foo3bar')

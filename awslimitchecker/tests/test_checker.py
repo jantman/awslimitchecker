@@ -47,19 +47,17 @@ from .support import sample_limits
 
 class TestAwsLimitChecker(object):
 
-    def setup(self, svcs=None):
-        if svcs is None:
-            self.mock_svc1 = Mock(spec_set=_AwsService)
-            self.mock_svc2 = Mock(spec_set=_AwsService)
-            self.mock_foo = Mock(spec_set=_AwsService)
-            self.mock_bar = Mock(spec_set=_AwsService)
-            self.mock_foo.return_value = self.mock_svc1
-            self.mock_bar.return_value = self.mock_svc2
-            self.svcs = {'SvcFoo': self.mock_foo, 'SvcBar': self.mock_bar}
-            svcs = self.svcs
+    def setup(self):
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.mock_foo = Mock(spec_set=_AwsService)
+        self.mock_bar = Mock(spec_set=_AwsService)
+        self.mock_foo.return_value = self.mock_svc1
+        self.mock_bar.return_value = self.mock_svc2
+        self.svcs = {'SvcFoo': self.mock_foo, 'SvcBar': self.mock_bar}
         with nested(
                 patch.dict('awslimitchecker.checker._services',
-                           values=svcs, clear=True),
+                           values=self.svcs, clear=True),
                 patch('awslimitchecker.checker.logger',
                       autospec=True),
                 patch('awslimitchecker.checker._get_version',
@@ -83,10 +81,50 @@ class TestAwsLimitChecker(object):
             'SvcBar': self.mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert self.mock_foo.mock_calls == [call()]
-        assert self.mock_bar.mock_calls == [call()]
+        assert self.mock_foo.mock_calls == [call(80, 99)]
+        assert self.mock_bar.mock_calls == [call(80, 99)]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
+
+    def test_init_thresholds(self):
+        mock_svc1 = Mock(spec_set=_AwsService)
+        mock_svc2 = Mock(spec_set=_AwsService)
+        mock_foo = Mock(spec_set=_AwsService)
+        mock_bar = Mock(spec_set=_AwsService)
+        mock_foo.return_value = mock_svc1
+        mock_bar.return_value = mock_svc2
+        svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
+        with nested(
+                patch.dict('awslimitchecker.checker._services',
+                           values=svcs, clear=True),
+                patch('awslimitchecker.checker.logger',
+                      autospec=True),
+                patch('awslimitchecker.checker._get_version',
+                      spec_set=_get_version),
+                patch('awslimitchecker.checker._get_project_url',
+                      spec_set=_get_project_url)
+        ) as (
+            mock_services,
+            mock_logger,
+            mock_version,
+            mock_project_url,
+        ):
+            mock_version.return_value = 'MVER'
+            mock_project_url.return_value = 'PURL'
+            cls = AwsLimitChecker(
+                warning_threshold=5,
+                critical_threshold=22,
+            )
+        # dict should be of _AwsService instances
+        assert cls.services == {
+            'SvcFoo': mock_svc1,
+            'SvcBar': mock_svc2
+        }
+        # _AwsService instances should exist, but have no other calls
+        assert mock_foo.mock_calls == [call(5, 22)]
+        assert mock_bar.mock_calls == [call(5, 22)]
+        assert mock_svc1.mock_calls == []
+        assert mock_svc2.mock_calls == []
 
     def test_init_logger(self):
         """ensure we log a license message"""

@@ -47,7 +47,7 @@ class _AwsService(object):
 
     service_name = 'baseclass'
 
-    def __init__(self):
+    def __init__(self, warning_threshold, critical_threshold):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -56,7 +56,18 @@ class _AwsService(object):
         connections; these must be made lazily as needed in other methods.
         _AwsService subclasses should be usable without any external network
         connections.
+
+        :param warning_threshold: the default warning threshold, as an
+          integer percentage, for any limits without a specifically-set
+          threshold.
+        :type warning_threshold: int
+        :param critical_threshold: the default critical threshold, as an
+          integer percentage, for any limits without a specifically-set
+          threshold.
+        :type critical_threshold: int
         """
+        self.warning_threshold = warning_threshold
+        self.critical_threshold = critical_threshold
         self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
@@ -93,6 +104,9 @@ class _AwsService(object):
         """
         Return all known limits for this service, as a dict of their names
         to :py:class:`~.AwsLimit` objects.
+
+        All limits must have ``self.warning_threshold`` and
+        ``self.critical_threshold`` passed into them.
 
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict

@@ -64,13 +64,16 @@ class Test_AwsServiceSubclasses(object):
         mock_get_limits = Mock()
         mock_get_limits.return_value = mock_limits
         with patch.object(cls, 'get_limits', mock_get_limits):
-            inst = cls()
+            inst = cls(3, 7)
         assert inst.limits == mock_limits
         assert mock_get_limits.mock_calls == [call()]
         # ensure service name is changed
         assert inst.service_name != 'baseclass'
         # ensure an IAM permissions list, even if empty
         assert isinstance(inst.required_iam_permissions(), list)
+        # ensure warning and critical thresholds
+        assert inst.warning_threshold == 3
+        assert inst.critical_threshold == 7
 
     def test_subclass_init(self):
         for clsname, cls in _services.iteritems():

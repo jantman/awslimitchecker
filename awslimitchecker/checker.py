@@ -50,13 +50,22 @@ boto_log.propagate = True
 
 class AwsLimitChecker(object):
 
-    def __init__(self):
+    def __init__(self, warning_threshold=80, critical_threshold=99):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
 
         Constructor builds ``self.services`` as a dict of service_name (str)
-        to _AwsService instance.
+        to _AwsService instance, and sets limit thresholds.
+
+        :param warning_threshold: the default warning threshold, as an
+          integer percentage, for any limits without a specifically-set
+          threshold.
+        :type warning_threshold: int
+        :param critical_threshold: the default critical threshold, as an
+          integer percentage, for any limits without a specifically-set
+          threshold.
+        :type critical_threshold: int
         """
         logger.warning("awslimitchecker {v} is AGPL-licensed free software; "
                        "all users have a right to the full source code of "
@@ -64,9 +73,11 @@ class AwsLimitChecker(object):
                            v=_get_version(),
                            u=_get_project_url(),
                        ))
+        self.warning_threshold = warning_threshold
+        self.critical_threshold = critical_threshold
         self.services = {}
         for sname, cls in _services.iteritems():
-            self.services[sname] = cls()
+            self.services[sname] = cls(warning_threshold, critical_threshold)
 
     def get_version(self):
         """
@@ -182,20 +193,11 @@ class AwsLimitChecker(object):
                 )
         logger.info("Limit overrides applied.")
 
-    def check_limits(self, warning_threshold=80, critical_threshold=95):
+    def check_limits(self):
         """
         Check all limits and current usage against their specified thresholds,
         and <<do something>> if current usage exceeds the threshold for
         any limits.
-
-        :param warning_threshold: the default warning threshold, as an
-          integer percentage, for any limits without a specifically-set
-          threshold.
-        :type warning_threshold: int
-        :param critical_threshold: the default critical threshold, as an
-          integer percentage, for any limits without a specifically-set
-          threshold.
-        :type critical_threshold: int
         """
         pass
 

@@ -41,6 +41,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 class AwsLimit(object):
 
     def __init__(self, name, service_name, default_limit,
+                 def_warning_threshold, def_critical_threshold,
                  limit_type=None, limit_subtype=None):
         """
         Describes one specific AWS service limit, as well as its
@@ -56,6 +57,12 @@ class AwsLimit(object):
         :type service_name: string
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int
+        :param def_warning_threshold: the default warning threshold, as an
+          integer percentage.
+        :type def_warning_threshold: int
+        :param def_critical_threshold: the default critical threshold, as an
+          integer percentage.
+        :type def_critical_threshold: int
         :param limit_type: the type of resource this limit describes, specified
           as one of the type names used in
           `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
@@ -71,6 +78,8 @@ class AwsLimit(object):
         self.limit_override = None
         self.override_ta = True
         self._current_usage = []
+        self.def_warning_threshold = def_warning_threshold
+        self.def_critical_threshold = def_critical_threshold
 
     def set_limit_override(self, limit_value, override_ta=True):
         """

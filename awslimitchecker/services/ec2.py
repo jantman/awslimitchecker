@@ -235,6 +235,8 @@ class _Ec2Service(_AwsService):
             'Provisioned IOPS',
             self.service_name,
             40000,
+            self.warning_threshold,
+            self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
         )
@@ -242,6 +244,8 @@ class _Ec2Service(_AwsService):
             'Provisioned IOPS (SSD) volume storage (TiB)',
             self.service_name,
             20,
+            self.warning_threshold,
+            self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
         )
@@ -249,6 +253,8 @@ class _Ec2Service(_AwsService):
             'General Purpose (SSD) volume storage (TiB)',
             self.service_name,
             20,
+            self.warning_threshold,
+            self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
         )
@@ -256,6 +262,8 @@ class _Ec2Service(_AwsService):
             'Magnetic volume storage (TiB)',
             self.service_name,
             20,
+            self.warning_threshold,
+            self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
         )
@@ -301,6 +309,8 @@ class _Ec2Service(_AwsService):
                 key,
                 self.service_name,
                 lim,
+                self.warning_threshold,
+                self.critical_threshold,
                 limit_type='On-Demand instances',
                 limit_subtype=i_type
             )
@@ -310,6 +320,8 @@ class _Ec2Service(_AwsService):
             key,
             self.service_name,
             default_limits[0],
+            self.warning_threshold,
+            self.critical_threshold,
             limit_type='On-Demand instances',
         )
         return limits
@@ -342,6 +354,8 @@ class _Ec2Service(_AwsService):
             'Security groups per VPC',
             self.service_name,
             100,
+            self.warning_threshold,
+            self.critical_threshold,
             limit_type='AWS::EC2::VPC',
             limit_subtype='AWS::EC2::SecurityGroup',
         )
