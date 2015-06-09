@@ -114,7 +114,7 @@ class AwsLimitChecker(object):
         """
         res = {}
         if service is not None:
-            return self.services[service].get_limits()
+            return {service: self.services[service].get_limits()}
         for sname, cls in self.services.iteritems():
             res[sname] = cls.get_limits()
         return res
@@ -194,15 +194,36 @@ class AwsLimitChecker(object):
                 )
         logger.info("Limit overrides applied.")
 
-    def check_limits(self):
+    def check_thresholds(self, service=None):
         """
-        Check all limits and current usage against their specified thresholds.
-        Return False if any thresholds were crossed, True otherwise.
+        Check all limits and current usage against their specified thresholds;
+        return all :py:class:`~.AwsLimit` instances that have crossed
+        one or more of their thresholds.
 
-        :returns: bool
+        If ``service`` is specified, the returned dict has one element,
+        the service name, whose value is a nested dict as described below;
+        otherwise it includes all known services.
+
+        The returned :py:class:`~.AwsLimit` objects can be interrogated
+        for their limits (:py:meth:`~.AwsLimit.get_limit`) as well as
+        the details of usage that crossed the thresholds
+        (:py:meth:`~.AwsLimit.get_warnings` and
+        :py:meth:`~.AwsLimit.get_criticals`).
+
+        :param service: the name of one service to return results for
+        :type service: string
+        :returns: dict of service name (string) to nested dict
+          of limit name (string) to limit (:py:class:`~.AwsLimit`)
+        :rtype: dict
         """
-        all_ok = True
-        pass
+        res = {}
+        if service is not None:
+            return {service: self.services[service].check_thresholds()}
+        for sname, cls in self.services.iteritems():
+            tmp = cls.check_thresholds()
+            if len(tmp) > 0:
+                res[sname] = tmp
+        return res
 
     def get_required_iam_policy(self):
         """

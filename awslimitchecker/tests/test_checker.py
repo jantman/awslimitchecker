@@ -166,7 +166,7 @@ class TestAwsLimitChecker(object):
         self.mock_svc1.get_limits.return_value = limits['SvcFoo']
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
         res = self.cls.get_limits(service='SvcFoo')
-        assert sorted(res) == sorted(limits['SvcFoo'])
+        assert res == {'SvcFoo': limits['SvcFoo']}
 
     def test_find_usage(self):
         self.cls.find_usage()
@@ -252,4 +252,25 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc2.mock_calls == [call.required_iam_permissions()]
 
     def test_check_limits(self):
-        pass
+        self.mock_svc1.check_thresholds.return_value = {
+            'foo': 'bar',
+            'baz': 'blam',
+        }
+        self.mock_svc2.check_thresholds.return_value = {}
+        res = self.cls.check_thresholds()
+        assert res == {
+            'SvcFoo': {
+                'foo': 'bar',
+                'baz': 'blam',
+            }
+        }
+
+    def test_check_limits_service(self):
+        self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
+        self.mock_svc2.check_thresholds.return_value = {'baz': 'blam'}
+        res = self.cls.check_thresholds(service='SvcFoo')
+        assert res == {
+            'SvcFoo': {
+                'foo': 'bar',
+            }
+        }
