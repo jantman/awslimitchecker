@@ -251,7 +251,6 @@ class AwsLimit(object):
             elif pct >= warn_pct:
                 self._warnings.append(u)
                 all_ok = False
-            print("none")
         return all_ok
 
     def get_warnings(self):

@@ -141,6 +141,56 @@ def show_usage(checker):
             ))
 
 
+def print_issue(service_name, limit, crits, warns):
+    """
+    :param service_name: the name of the service
+    :type service_name: str
+    :param limit: the Limit this relates to
+    :type limit: :py:class:`~.AwsLimit`
+    :param crits: the specific usage values that crossed the critical threshold
+    :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+    :param crits: the specific usage values that crossed the warning threshold
+    :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+    """
+    usage_str = ''
+    if len(crits) > 0:
+        usage_str += 'CRITICAL: '
+        usage_str += ', '.join([str(x) for x in sorted(crits)])
+    if len(warns) > 0:
+        usage_str += 'WARNING: '
+        usage_str += ', '.join([str(x) for x in sorted(warns)])
+    s = "{s}/{l} (limit {v}) {u}".format(
+        s=service_name,
+        l=limit.name,
+        v=limit.get_limit(),
+        u=usage_str,
+    )
+    return s
+
+
+def check_thresholds(checker):
+    have_warn = False
+    have_crit = False
+    problems = checker.check_thresholds()
+    for svc in sorted(problems.keys()):
+        for lim_name in sorted(problems[svc].keys()):
+            limit = problems[svc][lim_name]
+            warns = limit.get_warnings()
+            crits = limit.get_criticals()
+            if len(crits) > 0:
+                have_crit = True
+            if len(warns) > 0:
+                have_warn = True
+            print(print_issue(svc, limit, crits, warns))
+    # might as well use the Nagios exit codes,
+    # even though our output doesn't work for that
+    if have_crit:
+        return 2
+    if have_warn:
+        return 1
+    return 0
+
+
 def console_entry_point():
     args = parse_args(sys.argv[1:])
     if args.verbose == 1:
@@ -176,9 +226,9 @@ def console_entry_point():
         show_usage(checker)
         raise SystemExit(0)
 
-    # @TODO this should be an argparse mutex group
-    sys.stderr.write('ERROR: no action specified. Please see -h|--help.\n')
-    raise SystemExit(1)
+    # else check
+    res = check_thresholds(checker)
+    raise SystemExit(res)
 
 if __name__ == "__main__":
     console_entry_point()
