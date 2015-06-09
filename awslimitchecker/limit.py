@@ -69,7 +69,11 @@ class AwsLimit(object):
           such as "AWS::EC2::Instance" or "AWS::RDS::DBSubnetGroup".
         :param limit_subtype: resource sub-type for this limit, if applicable,
           such as "t2.micro" or "SecurityGroup"
+        :raises: ValueError
         """
+        if def_warning_threshold >= def_critical_threshold:
+            raise ValueError("critical threshold must be greater than warning "
+                             "threshold")
         self.name = name
         self.service_name = service_name
         self.default_limit = default_limit

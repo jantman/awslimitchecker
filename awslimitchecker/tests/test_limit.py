@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from mock import Mock
+import pytest
 from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 
 
@@ -60,6 +61,18 @@ class TestAwsLimit(object):
         assert limit.override_ta is True
         assert limit.def_warning_threshold == 7
         assert limit.def_critical_threshold == 11
+
+    def test_init_valueerror(self):
+        with pytest.raises(ValueError) as excinfo:
+            AwsLimit(
+                'limitname',
+                'svcname',
+                3,
+                11,
+                7
+            )
+        assert excinfo.value.message == "critical threshold must be greater " \
+            "than warning threshold"
 
     def test_init_type(self):
         limit = AwsLimit(
