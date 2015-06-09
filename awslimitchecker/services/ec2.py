@@ -70,6 +70,7 @@ class _Ec2Service(_AwsService):
             lim._reset_usage()
         self._find_usage_instances()
         self._find_usage_ebs()
+        self._find_usage_vpc()
         logger.debug("Done checking usage.")
 
     def _find_usage_instances(self):
@@ -216,6 +217,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits.update(self._get_limits_instances())
         limits.update(self._get_limits_ebs())
+        limits.update(self._get_limits_vpc())
         return limits
 
     def _get_limits_ebs(self):
@@ -307,6 +309,39 @@ class _Ec2Service(_AwsService):
             self.service_name,
             default_limits[0],
             limit_type='On-Demand instances',
+        )
+        return limits
+
+    def _find_usage_vpc(self):
+        """calculate usage for VPC-related things"""
+        logger.debug("Getting usage for EC2 VPC resources")
+        sgs_per_vpc = defaultdict(int)
+        for sg in self.conn.get_all_security_groups():
+            if sg.vpc_id is not None:
+                sgs_per_vpc[sg.vpc_id] += 1
+        for vpc_id, count in sgs_per_vpc.iteritems():
+            self.limits['Security groups per '
+                        'VPC']._add_current_usage(
+                            count,
+                            aws_type='AWS::EC2::VPC',
+                            id=vpc_id,
+                    )
+
+    def _get_limits_vpc(self):
+        """
+        Return a dict of VPC-related limits only.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
+        limits = {}
+        limits['Security groups per VPC'] = AwsLimit(
+            'Security groups per VPC',
+            self.service_name,
+            100,
+            limit_type='AWS::EC2::VPC',
+            limit_subtype='AWS::EC2::SecurityGroup',
         )
         return limits
 

@@ -42,6 +42,7 @@ from contextlib import nested
 from boto.ec2.connection import EC2Connection
 from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance
+from boto.ec2.securitygroup import SecurityGroup
 from boto.ec2.volume import Volume
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
@@ -97,19 +98,24 @@ class Test_Ec2Service(object):
         with nested(
                 patch('%s._get_limits_instances' % self.pb),
                 patch('%s._get_limits_ebs' % self.pb),
+                patch('%s._get_limits_vpc' % self.pb),
         ) as (
             mock_instances,
             mock_ebs,
+            mock_vpc
         ):
             mock_instances.return_value = {'ec2lname': 'ec2lval'}
             mock_ebs.return_value = {'ebslname': 'ebslval'}
+            mock_vpc.return_value = {'vpck': 'vpcv'}
             res = cls.get_limits()
         assert res == {
             'ec2lname': 'ec2lval',
-            'ebslname': 'ebslval'
+            'ebslname': 'ebslval',
+            'vpck': 'vpcv',
         }
         assert mock_instances.mock_calls == [call()]
         assert mock_ebs.mock_calls == [call()]
+        assert mock_vpc.mock_calls == [call()]
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
@@ -118,22 +124,31 @@ class Test_Ec2Service(object):
         with nested(
                 patch('%s._get_limits_instances' % self.pb),
                 patch('%s._get_limits_ebs' % self.pb),
+                patch('%s._get_limits_vpc' % self.pb),
         ) as (
             mock_instances,
             mock_ebs,
+            mock_vpc,
         ):
             res = cls.get_limits()
         assert res == {'foo': 'bar'}
         assert mock_instances.mock_calls == []
         assert mock_ebs.mock_calls == []
+        assert mock_vpc.mock_calls == []
+
+    def test_get_limits_all(self):
+        """test some things all limits should conform to"""
+        cls = _Ec2Service()
+        limits = cls.get_limits()
+        for x in limits:
+            assert isinstance(limits[x], AwsLimit)
+            assert x == limits[x].name
+            assert limits[x].service_name == 'EC2'
 
     def test_get_limits_ebs(self):
         cls = _Ec2Service()
         limits = cls._get_limits_ebs()
         assert len(limits) == 4
-        for x in limits:
-            assert isinstance(limits[x], AwsLimit)
-            assert limits[x].service_name == 'EC2'
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
@@ -151,9 +166,6 @@ class Test_Ec2Service(object):
         cls = _Ec2Service()
         limits = cls._get_limits_instances()
         assert len(limits) == 48
-        for x in limits:
-            assert isinstance(limits[x], AwsLimit)
-            assert limits[x].service_name == 'EC2'
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
@@ -177,16 +189,19 @@ class Test_Ec2Service(object):
                 patch('%s.connect' % self.pb, autospec=True),
                 patch('%s._find_usage_instances' % self.pb, autospec=True),
                 patch('%s._find_usage_ebs' % self.pb, autospec=True),
+                patch('%s._find_usage_vpc' % self.pb, autospec=True),
         ) as (
             mock_connect,
             mock_instances,
             mock_ebs,
+            mock_vpc,
         ):
             cls = _Ec2Service()
             cls.find_usage()
         assert mock_connect.mock_calls == [call(cls)]
         assert mock_instances.mock_calls == [call(cls)]
         assert mock_ebs.mock_calls == [call(cls)]
+        assert mock_vpc.mock_calls == [call(cls)]
 
     def test_instance_usage(self):
         mock_t2_micro = Mock(spec_set=AwsLimit)
@@ -486,3 +501,52 @@ class Test_Ec2Service(object):
             "ec2:DescribeInstances",
             "ec2:DescribeReservedInstances",
         ]
+
+    def test_find_usage_vpc(self):
+        mock_sg1 = Mock(spec_set=SecurityGroup)
+        type(mock_sg1).id = 'sg-1'
+        type(mock_sg1).vpc_id = 'vpc-aaa'
+        mock_sg2 = Mock(spec_set=SecurityGroup)
+        type(mock_sg2).id = 'sg-2'
+        type(mock_sg2).vpc_id = None
+        mock_sg3 = Mock(spec_set=SecurityGroup)
+        type(mock_sg3).id = 'sg-3'
+        type(mock_sg3).vpc_id = 'vpc-bbb'
+        mock_sg4 = Mock(spec_set=SecurityGroup)
+        type(mock_sg4).id = 'sg-4'
+        type(mock_sg4).vpc_id = 'vpc-aaa'
+
+        mock_conn = Mock(spec_set=EC2Connection)
+        mock_conn.get_all_security_groups.return_value = [
+            mock_sg1,
+            mock_sg2,
+            mock_sg3,
+            mock_sg4,
+        ]
+        cls = _Ec2Service()
+        cls.conn = mock_conn
+        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+            cls._find_usage_vpc()
+        assert mock_logger.mock_calls == [
+            call.debug("Getting usage for EC2 VPC resources"),
+        ]
+        limit = cls.limits['Security groups per VPC']
+        # relies on AwsLimitUsage sorting by numeric usage value
+        sorted_usage = sorted(limit.get_current_usage())
+        assert len(sorted_usage) == 2
+        assert sorted_usage[0].limit == limit
+        assert sorted_usage[0].get_value() == 1
+        assert sorted_usage[0].id == 'vpc-bbb'
+        assert sorted_usage[0].aws_type == 'AWS::EC2::VPC'
+        assert sorted_usage[1].limit == limit
+        assert sorted_usage[1].get_value() == 2
+        assert sorted_usage[1].id == 'vpc-aaa'
+        assert sorted_usage[1].aws_type == 'AWS::EC2::VPC'
+
+    def test_get_limits_vpc(self):
+        cls = _Ec2Service()
+        limits = cls._get_limits_vpc()
+        assert len(limits) == 1
+        for x in limits:
+            assert limits[x].limit_type == 'AWS::EC2::VPC'
+        assert 'Security groups per VPC' in limits
