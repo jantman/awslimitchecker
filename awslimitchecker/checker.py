@@ -56,7 +56,8 @@ class AwsLimitChecker(object):
         portion of awslimitchecker.
 
         Constructor builds ``self.services`` as a dict of service_name (str)
-        to _AwsService instance, and sets limit thresholds.
+        to :py:class:`~._AwsService` instance, and sets limit
+        thresholds.
 
         :param warning_threshold: the default warning threshold, as an
           integer percentage, for any limits without a specifically-set
@@ -137,7 +138,7 @@ class AwsLimitChecker(object):
         :py:class:`~.AwsLimit` objects for each service, which can
         then be queried using :py:meth:`~.get_limits`.
 
-        :param service: :py:class:`~.service._AwsService` name, or ``None`` to
+        :param service: :py:class:`~._AwsService` name, or ``None`` to
           check all services.
         :type services: :py:obj:`None` or :py:obj:`string` service name
         """
@@ -210,7 +211,7 @@ class AwsLimitChecker(object):
         for json serialization to a valid IAM policy.
 
         Internally, this calls :py:meth:`~._AwsService.required_iam_permissions`
-        on each :py:class:`~.service._AwsService` instance.
+        on each :py:class:`~._AwsService` instance.
 
         :returns: dict representation of IAM Policy
         :rtype: dict

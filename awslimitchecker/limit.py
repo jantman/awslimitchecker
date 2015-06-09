@@ -49,11 +49,11 @@ class AwsLimit(object):
         Trusted Advisor information about this limit.
 
         :param name: the name of this limit (may contain spaces);
-        if possible, this should be the name used by AWS, i.e. TrustedAdvisor
+          if possible, this should be the name used by AWS, i.e. TrustedAdvisor
         :type name: string
         :param service_name: the name of the service this limit is for;
           this should be the ``service_name`` attribute of an
-        :py:class:`~._AwsService` class.
+          :py:class:`~._AwsService` class.
         :type service_name: string
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int
