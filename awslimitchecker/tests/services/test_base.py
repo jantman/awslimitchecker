@@ -50,7 +50,8 @@ class Test_AwsService(object):
             _AwsService()
         assert excinfo.value.message == "Can't instantiate abstract class " \
             "_AwsService with abstract methods " \
-            "find_usage"\
+            "connect" \
+            ", find_usage" \
             ", get_limits" \
             ", required_iam_permissions"
 

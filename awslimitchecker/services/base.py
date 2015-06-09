@@ -143,8 +143,7 @@ class _AwsService(object):
                              l=limit_name,
                              o=value,
                              d=self.limits[limit_name].default_limit,
-                         )
-            )
+                         ))
         except KeyError:
             raise ValueError("{s} service has no '{l}' limit".format(
                 s=self.service_name,
