@@ -84,6 +84,8 @@ class AwsLimit(object):
         self._current_usage = []
         self.def_warning_threshold = def_warning_threshold
         self.def_critical_threshold = def_critical_threshold
+        self._warnings = []
+        self._criticals = []
 
     def set_limit_override(self, limit_value, override_ta=True):
         """
@@ -100,6 +102,20 @@ class AwsLimit(object):
         """
         self.limit_override = limit_value
         self.override_ta = override_ta
+
+    def get_limit(self):
+        """
+        Returns the effective limit value for this Limit,
+        taking into account limit overrides and Trusted
+        Advisor data.
+
+        :returns: effective limit value
+        :rtype: int
+        """
+        # @TODO override_ta
+        if self.limit_override is not None:
+            return self.limit_override
+        return self.default_limit
 
     def get_current_usage(self):
         """
@@ -173,7 +189,29 @@ class AwsLimit(object):
         """Discard all current usage data."""
         self._current_usage = []
 
-    def check_thresholds(self, default_warning=80, default_critical=100):
+    def _get_thresholds(self):
+        """
+        Get the warning and critical thresholds for this Limit.
+
+        Return type is a 4-tuple of:
+
+        1. warning integer (usage) threshold, or None
+        2. warning percent threshold
+        3. critical integer (usage) threshold, or None
+        4. critical percent threshold
+
+        :rtype: tuple
+        """
+        # @TODO threshold overrides
+        t = (
+            None,
+            self.def_warning_threshold,
+            None,
+            self.def_critical_threshold,
+        )
+        return t
+
+    def check_thresholds(self):
         """
         Check this limit's current usage against the specified default
         thresholds, and any custom theresholds that have been set on the
@@ -184,10 +222,6 @@ class AwsLimit(object):
         queried via :py:meth:`~.get_warnings` and :py:meth:`~.get_criticals`
         to obtain further details about the thresholds that were crossed.
 
-        This method handles limits that are evaluated both globally
-        (region- and account-wide) as well as limits on specific
-        AWS resources or types.
-
         :param default_warning: default warning threshold in percentage;
           usage higher than this percent of the limit will be considered
           a warning
@@ -196,16 +230,49 @@ class AwsLimit(object):
           usage higher than this percent of the limit will be considered
           a critical
         :type default_critical: :py:obj:`int` or :py:obj:`float` percentage
+        :returns: False if any thresholds crossed, True otherwise
+        :rtype: bool
         """
-        pass
+        (warn_int, warn_pct, crit_int, crit_pct) = self._get_thresholds()
+        limit = self.get_limit()
+        all_ok = True
+        for u in self._current_usage:
+            usage = u.get_value()
+            pct = (usage / (limit * 1.0)) * 100
+            if crit_int is not None and usage >= crit_int:
+                self._criticals.append(u)
+                all_ok = False
+            elif pct >= crit_pct:
+                self._criticals.append(u)
+                all_ok = False
+            elif warn_int is not None and usage >= warn_int:
+                self._warnings.append(u)
+                all_ok = False
+            elif pct >= warn_pct:
+                self._warnings.append(u)
+                all_ok = False
+            print("none")
+        return all_ok
 
     def get_warnings(self):
         """
-        Return a dict describing any warning-level thresholds that were
-        crossed for this limit. Keys are unique identifiers for the resource
-        that crossed the limit, or the name of the limit itself
+        Return a list of :py:class:`~.AwsLimitUsage` instances that
+        crossed the warning threshold. These objects are comparable
+        and can be sorted.
+
+        :rtype: list
         """
-        pass
+        return self._warnings
+
+    def get_criticals(self):
+        """
+        Return a list of :py:class:`~.AwsLimitUsage` instances that
+        crossed the critical threshold. These objects are comparable
+        and can be sorted.
+
+        :rtype: list
+        """
+        return self._criticals
 
 
 class AwsLimitUsage(object):
