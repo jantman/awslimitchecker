@@ -195,10 +195,12 @@ class AwsLimitChecker(object):
 
     def check_limits(self):
         """
-        Check all limits and current usage against their specified thresholds,
-        and <<do something>> if current usage exceeds the threshold for
-        any limits.
+        Check all limits and current usage against their specified thresholds.
+        Return False if any thresholds were crossed, True otherwise.
+
+        :returns: bool
         """
+        all_ok = True
         pass
 
     def get_required_iam_policy(self):

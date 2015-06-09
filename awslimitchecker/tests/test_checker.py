@@ -250,3 +250,6 @@ class TestAwsLimitChecker(object):
         assert res == expected
         assert self.mock_svc1.mock_calls == [call.required_iam_permissions()]
         assert self.mock_svc2.mock_calls == [call.required_iam_permissions()]
+
+    def test_check_limits(self):
+        pass
