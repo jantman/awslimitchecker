@@ -53,7 +53,7 @@ class AwsServiceTester(_AwsService):
         pass
 
     def find_usage(self):
-        pass
+        self._have_usage = True
 
     def get_limits(self):
         return {'foo': 'bar'}
@@ -102,6 +102,55 @@ class Test_AwsService(object):
         assert excinfo.value.message == "AwsServiceTester service has no " \
             "'bar' limit"
         assert mock_limit.mock_calls == []
+
+    def test_check_thresholds(self):
+        cls = AwsServiceTester(1, 2)
+        cls.find_usage()
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        mock_limit1.check_thresholds.return_value = False
+        cls.limits['foo'] = mock_limit1
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        mock_limit2.check_thresholds.return_value = True
+        cls.limits['foo2'] = mock_limit2
+        mock_limit3 = Mock(spec_set=AwsLimit)
+        mock_limit3.check_thresholds.return_value = True
+        cls.limits['foo3'] = mock_limit3
+        mock_limit4 = Mock(spec_set=AwsLimit)
+        mock_limit4.check_thresholds.return_value = False
+        cls.limits['foo4'] = mock_limit4
+        mock_find_usage = Mock()
+        with patch.object(AwsServiceTester, 'find_usage', mock_find_usage):
+            res = cls.check_thresholds()
+        assert mock_limit1.mock_calls == [call.check_thresholds()]
+        assert mock_limit2.mock_calls == [call.check_thresholds()]
+        assert mock_limit3.mock_calls == [call.check_thresholds()]
+        assert mock_limit4.mock_calls == [call.check_thresholds()]
+        assert res == {'foo': mock_limit1, 'foo4': mock_limit4}
+        assert mock_find_usage.mock_calls == []
+
+    def test_check_thresholds_find_usage(self):
+        cls = AwsServiceTester(1, 2)
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        mock_limit1.check_thresholds.return_value = False
+        cls.limits['foo'] = mock_limit1
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        mock_limit2.check_thresholds.return_value = True
+        cls.limits['foo2'] = mock_limit2
+        mock_limit3 = Mock(spec_set=AwsLimit)
+        mock_limit3.check_thresholds.return_value = True
+        cls.limits['foo3'] = mock_limit3
+        mock_limit4 = Mock(spec_set=AwsLimit)
+        mock_limit4.check_thresholds.return_value = False
+        cls.limits['foo4'] = mock_limit4
+        mock_find_usage = Mock()
+        with patch.object(AwsServiceTester, 'find_usage', mock_find_usage):
+            res = cls.check_thresholds()
+        assert mock_limit1.mock_calls == [call.check_thresholds()]
+        assert mock_limit2.mock_calls == [call.check_thresholds()]
+        assert mock_limit3.mock_calls == [call.check_thresholds()]
+        assert mock_limit4.mock_calls == [call.check_thresholds()]
+        assert res == {'foo': mock_limit1, 'foo4': mock_limit4}
+        assert mock_find_usage.mock_calls == [call()]
 
 
 class Test_AwsServiceSubclasses(object):

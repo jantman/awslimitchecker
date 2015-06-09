@@ -173,3 +173,20 @@ class _AwsService(object):
             raise ValueError("{s} service has no '{l}' limit".format(
                 s=self.service_name,
                 l=limit_name))
+
+    def check_thresholds(self):
+        """
+        Checks current usage against configured thresholds for all limits
+        for this service.
+
+        :returns: a dict of limit name to :py:class:`~.AwsLimit` instance
+          for all limits that crossed one or more of their thresholds.
+        :rtype: :py:obj:`dict` of :py:class:`~.AwsLimit`
+        """
+        if not self._have_usage:
+            self.find_usage()
+        ret = {}
+        for name, limit in self.limits.iteritems():
+            if limit.check_thresholds() is False:
+                ret[name] = limit
+        return ret
