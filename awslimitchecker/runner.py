@@ -100,12 +100,50 @@ def parse_args(argv):
     return args
 
 
+def list_services():
+    checker = AwsLimitChecker()
+    for x in sorted(checker.get_service_names()):
+        print(x)
+
+
+def list_limits():
+    checker = AwsLimitChecker()
+    limits = checker.get_limits()
+    for svc in sorted(limits.keys()):
+        for lim in sorted(limits[svc].keys()):
+            print("{s}/{l}\t{n}".format(
+                s=svc,
+                l=lim,
+                n=limits[svc][lim].default_limit
+            ))
+
+
+def iam_policy():
+    checker = AwsLimitChecker()
+    policy = checker.get_required_iam_policy()
+    print(json.dumps(policy, sort_keys=True, indent=2))
+
+
+def show_usage():
+    checker = AwsLimitChecker()
+    checker.find_usage()
+    limits = checker.get_limits()
+    for svc in sorted(limits.keys()):
+        for lim in sorted(limits[svc].keys()):
+            print("{s}/{l}\t{n}".format(
+                s=svc,
+                l=lim,
+                n=limits[svc][lim].get_current_usage_str()
+            ))
+
+
 def console_entry_point():
     args = parse_args(sys.argv[1:])
     if args.verbose == 1:
         logger.setLevel(logging.INFO)
     elif args.verbose > 1:
         logger.setLevel(logging.DEBUG)
+
     if args.version:
         print('awslimitchecker {v} (see <{s}> for source code)'.format(
             s=_get_project_url(),
@@ -113,39 +151,22 @@ def console_entry_point():
         ))
         raise SystemExit(0)
 
-    checker = AwsLimitChecker()
     if args.list_services:
-        for x in sorted(checker.get_service_names()):
-            print(x)
+        list_services()
         raise SystemExit(0)
 
     if args.list_defaults:
-        limits = checker.get_limits()
-        for svc in sorted(limits.keys()):
-            for lim in sorted(limits[svc].keys()):
-                print("{s}/{l}\t{n}".format(
-                    s=svc,
-                    l=lim,
-                    n=limits[svc][lim].default_limit
-                ))
+        list_limits()
         raise SystemExit(0)
 
     if args.iam_policy:
-        policy = checker.get_required_iam_policy()
-        print(json.dumps(policy, sort_keys=True, indent=2))
+        iam_policy()
         raise SystemExit(0)
 
     if args.show_usage:
-        checker.find_usage()
-        limits = checker.get_limits()
-        for svc in sorted(limits.keys()):
-            for lim in sorted(limits[svc].keys()):
-                print("{s}/{l}\t{n}".format(
-                    s=svc,
-                    l=lim,
-                    n=limits[svc][lim].get_current_usage_str()
-                ))
+        show_usage()
         raise SystemExit(0)
+
     sys.stderr.write('ERROR: no action specified. Please see -h|--help.\n')
     raise SystemExit(1)
 
