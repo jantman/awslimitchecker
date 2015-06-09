@@ -3,7 +3,6 @@ branch = True
 omit = lib/*
        awslimitchecker/tests/*
        setup.py
-       awslimitchecker/services/base.py
 
 [report]
 exclude_lines =
@@ -11,3 +10,4 @@ exclude_lines =
     # so ignore it
     if __name__ == .__main__.:
     if sys.version_info\[.+
+    raise NotImplementedError
