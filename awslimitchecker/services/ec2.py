@@ -73,6 +73,7 @@ class _Ec2Service(_AwsService):
         self._find_usage_instances()
         self._find_usage_ebs()
         self._find_usage_vpc()
+        self._have_usage = True
         logger.debug("Done checking usage.")
 
     def _find_usage_instances(self):

@@ -71,6 +71,7 @@ class _AwsService(object):
         self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
+        self._have_usage = False
 
     @abc.abstractmethod
     def connect(self):
@@ -94,12 +95,16 @@ class _AwsService(object):
         Determine the current usage for each limit of this service,
         and update the ``current_usage`` property of each corresponding
         :py:class:`~.AwsLimit` instance.
+
+        This method must set ``self._have_usage = True``
         """
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
+        # find usage here
         logger.debug("Done checking usage.")
+        self._have_usage = True
         """
         raise NotImplementedError('abstract base class')
 

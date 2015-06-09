@@ -199,7 +199,9 @@ class Test_Ec2Service(object):
             mock_vpc,
         ):
             cls = _Ec2Service(21, 43)
+            assert cls._have_usage is False
             cls.find_usage()
+        assert cls._have_usage is True
         assert mock_connect.mock_calls == [call(cls)]
         assert mock_instances.mock_calls == [call(cls)]
         assert mock_ebs.mock_calls == [call(cls)]

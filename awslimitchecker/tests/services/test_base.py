@@ -80,6 +80,7 @@ class Test_AwsService(object):
         assert cls.critical_threshold == 2
         assert cls.limits == {'foo': 'bar'}
         assert cls.conn is None
+        assert cls._have_usage is False
 
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
