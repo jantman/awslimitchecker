@@ -502,6 +502,8 @@ class Test_Ec2Service(object):
         assert cls.required_iam_permissions() == [
             "ec2:DescribeInstances",
             "ec2:DescribeReservedInstances",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeSecurityGroups",
         ]
 
     def test_find_usage_vpc(self):

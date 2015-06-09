@@ -373,6 +373,8 @@ class _Ec2Service(_AwsService):
         return [
             "ec2:DescribeInstances",
             "ec2:DescribeReservedInstances",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeSecurityGroups",
         ]
 
     def _instance_types(self):
