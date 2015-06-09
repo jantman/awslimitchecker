@@ -62,6 +62,20 @@ class _AwsService(object):
         self.conn = None
 
     @abc.abstractmethod
+    def connect(self):
+        """
+        If not already done, establish a connection to the relevant AWS service
+        and save as ``self.conn``.
+        """
+        raise NotImplementedError('abstract base class')
+        if self.conn is None:
+            logger.debug("Connecting to {n}".format(
+                n=self.service_name))
+            # self.conn = boto.<connect to something>
+            logger.info("Connected to {n}".format(
+                n=self.service_name))
+
+    @abc.abstractmethod
     def find_usage(self):
         """
         Determine the current usage for each limit of this service,
@@ -69,6 +83,10 @@ class _AwsService(object):
         :py:class:`~.AwsLimit` instance.
         """
         raise NotImplementedError('abstract base class')
+        logger.debug("Checking usage for service {n}".format(
+            n=self.service_name))
+        self.connect()
+        logger.debug("Done checking usage.")
 
     @abc.abstractmethod
     def get_limits(self):
@@ -118,6 +136,14 @@ class _AwsService(object):
             self.limits[limit_name].set_limit_override(
                 value,
                 override_ta=override_ta
+            )
+            logger.debug("Overriding {s} limit {l}; default={d} override={o}"
+                         "".format(
+                             s=self.service_name,
+                             l=limit_name,
+                             o=value,
+                             d=self.limits[limit_name].default_limit,
+                         )
             )
         except KeyError:
             raise ValueError("{s} service has no '{l}' limit".format(

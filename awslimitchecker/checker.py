@@ -131,9 +131,13 @@ class AwsLimitChecker(object):
         :type services: :py:obj:`None` or :py:obj:`string` service name
         """
         if service is not None:
+            logger.debug("Finding usage for service: {s}".format(
+                s=self.services[service].service_name))
             self.services[service].find_usage()
             return
         for sname, cls in self.services.iteritems():
+            logger.debug("Finding usage for service: {s}".format(
+                s=cls.service_name))
             cls.find_usage()
 
     def set_limit_overrides(self, override_dict, override_ta=True):

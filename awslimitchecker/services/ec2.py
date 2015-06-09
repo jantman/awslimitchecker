@@ -53,9 +53,11 @@ class _Ec2Service(_AwsService):
 
     def connect(self):
         if self.conn is None:
-            logger.debug("Connecting to EC2")
+            logger.debug("Connecting to {n}".format(
+                n=self.service_name))
             self.conn = boto.connect_ec2()
-            logger.info("Connected to EC2")
+            logger.info("Connected to {n}".format(
+                n=self.service_name))
 
     def find_usage(self):
         """
