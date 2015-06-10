@@ -32,7 +32,14 @@ and only alerts *weekly*. awslimitchecker provides a command line script and reu
 usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, or data from Trusted
 Advisor where available), notifying you when you are approaching or at your limits.
 
-Full project documentation is available at [http://awslimitchecker.readthedocs.org](http://awslimitchecker.readthedocs.org).
+Full project documentation is available at `http://awslimitchecker.readthedocs.org <http://awslimitchecker.readthedocs.org>`_.
+
+Status
+-------
+
+This project is currently in very early development. At this time please consider it alpha code and not reliable;
+furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
+use, but contributions are certainly welcome.
 
 Requirements
 ------------
@@ -70,7 +77,7 @@ For basic usage, see:
 
     awslimitchecker --help
 
-See the [project documentation](http://awslimitchecker.readthedocs.org) for further information.
+See the `project documentation <http://awslimitchecker.readthedocs.org>`_ for further information.
 
 Bugs and Feature Requests
 -------------------------
