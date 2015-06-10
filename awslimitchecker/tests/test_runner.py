@@ -47,6 +47,7 @@ from mock import patch, call, Mock
 import awslimitchecker.runner as runner
 import awslimitchecker.version as version
 from awslimitchecker.checker import AwsLimitChecker
+from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 from .support import sample_limits
 
 
@@ -391,28 +392,228 @@ class TestAwsLimitCheckerRunner(object):
         assert excinfo.value.code == 10
         assert mock_check.mock_calls == [call(mock_checker.return_value)]
 
-    def test_check_thresholds(self, capsys):
-        """
-        Ok, so the gist is:
-        iterate over the result output
-        print each warning or critical in the format:
-        SVC_NAME/LIMIT_NAME limit=X {usage}
-        where usage is a colorized (CLI flag to disable)
-        version of the AwsLimitUsage's usage string
-        """
-        limits = sample_limits()
-        limits['SvcFoo']['foo limit3']._add_current_usage(33)
-        limits['SvcBar']['bar limit2']._add_current_usage(22)
-        limits['SvcBar']['barlimit1']._add_current_usage(11)
-        expected = 'SvcBar/bar limit2\t22\n' + \
-                   'SvcBar/barlimit1\t11\n' + \
-                   'SvcFoo/foo limit3\t33\n'
+    def test_check_thresholds_ok(self, capsys):
+        """no problems, return 0 and print nothing"""
         mock_checker = Mock(spec_set=AwsLimitChecker)
-        mock_checker.get_limits.return_value = limits
-        runner.show_usage(mock_checker)
+        mock_checker.check_thresholds.return_value = {}
+        res = runner.check_thresholds(mock_checker)
         out, err = capsys.readouterr()
-        assert out == expected
+        assert out == ''
         assert err == ''
         assert mock_checker.mock_calls == [
             call.check_thresholds()
         ]
+        assert res == 0
+
+    def test_check_thresholds_many_problems(self):
+        """lots of problems"""
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        mock_w1 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_warnings.return_value = [mock_w1]
+        mock_c1 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_criticals.return_value = [mock_c1]
+
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        mock_w2 = Mock(spec_set=AwsLimitUsage)
+        mock_limit2.get_warnings.return_value = [mock_w2]
+        mock_limit2.get_criticals.return_value = []
+
+        mock_limit3 = Mock(spec_set=AwsLimit)
+        mock_w3 = Mock(spec_set=AwsLimitUsage)
+        mock_limit3.get_warnings.return_value = [mock_w3]
+        mock_limit3.get_criticals.return_value = []
+
+        mock_limit4 = Mock(spec_set=AwsLimit)
+        mock_limit4.get_warnings.return_value = []
+        mock_c2 = Mock(spec_set=AwsLimitUsage)
+        mock_limit4.get_criticals.return_value = [mock_c2]
+
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.check_thresholds.return_value = {
+            'svc2': {
+                'limit3': mock_limit3,
+                'limit4': mock_limit4,
+            },
+            'svc1': {
+                'limit1': mock_limit1,
+                'limit2': mock_limit2,
+            },
+        }
+        with patch('awslimitchecker.runner.print_issue') as mock_print:
+            mock_print.return_value = ''
+            res = runner.check_thresholds(mock_checker)
+        assert mock_checker.mock_calls == [
+            call.check_thresholds()
+        ]
+        assert mock_print.mock_calls == [
+            call('svc1', mock_limit1, [mock_c1], [mock_w1]),
+            call('svc1', mock_limit2, [], [mock_w2]),
+            call('svc2', mock_limit3, [], [mock_w3]),
+            call('svc2', mock_limit4, [mock_c2], []),
+        ]
+        assert res == 2
+
+    def test_check_thresholds_warn(self):
+        """just warnings"""
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        mock_w1 = Mock(spec_set=AwsLimitUsage)
+        mock_w2 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_warnings.return_value = [mock_w1, mock_w2]
+        mock_limit1.get_criticals.return_value = []
+
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        mock_w3 = Mock(spec_set=AwsLimitUsage)
+        mock_limit2.get_warnings.return_value = [mock_w3]
+        mock_limit2.get_criticals.return_value = []
+
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.check_thresholds.return_value = {
+            'svc2': {
+                'limit2': mock_limit2,
+            },
+            'svc1': {
+                'limit1': mock_limit1,
+            },
+        }
+        with patch('awslimitchecker.runner.print_issue') as mock_print:
+            mock_print.return_value = ''
+            res = runner.check_thresholds(mock_checker)
+        assert mock_checker.mock_calls == [
+            call.check_thresholds()
+        ]
+        assert mock_print.mock_calls == [
+            call('svc1', mock_limit1, [], [mock_w1, mock_w2]),
+            call('svc2', mock_limit2, [], [mock_w3]),
+        ]
+        assert res == 1
+
+    def test_check_thresholds_crit(self):
+        """only critical"""
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        mock_limit1.get_warnings.return_value = []
+        mock_c1 = Mock(spec_set=AwsLimitUsage)
+        mock_c2 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_criticals.return_value = [mock_c1, mock_c2]
+
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.check_thresholds.return_value = {
+            'svc1': {
+                'limit1': mock_limit1,
+            },
+        }
+        with patch('awslimitchecker.runner.print_issue') as mock_print:
+            mock_print.return_value = ''
+            res = runner.check_thresholds(mock_checker)
+        assert mock_checker.mock_calls == [
+            call.check_thresholds()
+        ]
+        assert mock_print.mock_calls == [
+            call('svc1', mock_limit1, [mock_c1, mock_c2], []),
+        ]
+        assert res == 2
+
+    def test_print_issue_crit_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 56)
+
+        res = runner.print_issue(
+            'svcname',
+            mock_limit,
+            [c1],
+            []
+        )
+        assert res == 'svcname/limitname (limit 12) CRITICAL: 56'
+
+    def test_print_issue_crit_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 5
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        c2 = AwsLimitUsage(mock_limit, 12, id='c2id')
+        c3 = AwsLimitUsage(mock_limit, 8)
+
+        res = runner.print_issue(
+            'svcname',
+            mock_limit,
+            [c1, c2, c3],
+            []
+        )
+        assert res == 'svcname/limitname (limit 5) ' \
+            'CRITICAL: 8, 10, c2id=12'
+
+    def test_print_issue_warn_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        w1 = AwsLimitUsage(mock_limit, 11)
+
+        res = runner.print_issue(
+            'svcname',
+            mock_limit,
+            [],
+            [w1]
+        )
+        assert res == 'svcname/limitname (limit 12) WARNING: 11'
+
+    def test_print_issue_warn_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        w1 = AwsLimitUsage(mock_limit, 11)
+        w2 = AwsLimitUsage(mock_limit, 10, id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, id='w3id')
+
+        res = runner.print_issue(
+            'svcname',
+            mock_limit,
+            [],
+            [w1, w2, w3]
+        )
+        assert res == 'svcname/limitname (limit 12) WARNING: ' \
+            'w2id=10, w3id=10, 11'
+
+    def test_print_issue_both_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        w1 = AwsLimitUsage(mock_limit, 10, id='w3id')
+
+        res = runner.print_issue(
+            'svcname',
+            mock_limit,
+            [c1],
+            [w1]
+        )
+        assert res == 'svcname/limitname (limit 12) ' \
+            'CRITICAL: 10 ' \
+            'WARNING: w3id=10'
+
+    def test_print_issue_both_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        c2 = AwsLimitUsage(mock_limit, 12, id='c2id')
+        c3 = AwsLimitUsage(mock_limit, 8)
+        w1 = AwsLimitUsage(mock_limit, 11)
+        w2 = AwsLimitUsage(mock_limit, 10, id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, id='w3id')
+
+        res = runner.print_issue(
+            'svcname',
+            mock_limit,
+            [c1, c2, c3],
+            [w1, w2, w3]
+        )
+        assert res == 'svcname/limitname (limit 12) ' \
+            'CRITICAL: 8, 10, c2id=12 ' \
+            'WARNING: w2id=10, w3id=10, 11'

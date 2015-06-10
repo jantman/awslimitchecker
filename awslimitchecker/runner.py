@@ -157,6 +157,8 @@ def print_issue(service_name, limit, crits, warns):
         usage_str += 'CRITICAL: '
         usage_str += ', '.join([str(x) for x in sorted(crits)])
     if len(warns) > 0:
+        if len(crits) > 0:
+            usage_str += ' '
         usage_str += 'WARNING: '
         usage_str += ', '.join([str(x) for x in sorted(warns)])
     s = "{s}/{l} (limit {v}) {u}".format(
