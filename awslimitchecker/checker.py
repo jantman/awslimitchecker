@@ -184,7 +184,6 @@ class AwsLimitChecker(object):
         :type override_ta: bool
         :raises: ValueError if limit_name is not known to the service instance
         """
-        logger.debug("Applying limit overrides")
         for svc_name in override_dict:
             for lim_name in override_dict[svc_name]:
                 self.services[svc_name].set_limit_override(
@@ -192,7 +191,37 @@ class AwsLimitChecker(object):
                     override_dict[svc_name][lim_name],
                     override_ta=override_ta
                 )
-        logger.info("Limit overrides applied.")
+
+    def set_limit_override(self, service_name, limit_name,
+                           value, override_ta=True):
+        """
+        Set a manual override on an AWS service limits, i.e. if you
+        had limits increased by AWS support.
+
+        This method calls :py:meth:`~._AwsService.set_limit_override`
+        on the corresponding _AwsService instance.
+
+        Explicitly set limit overrides using this method will take
+        precedence over default limits. They will also take precedence over
+        limit information obtained via Trusted Advisor, unless ``override_ta``
+        is set to ``False``.
+
+        :param service_name: the name of the service to override limit for
+        :type service_name: string
+        :param limit_name: the name of the limit to override:
+        :type limit_name: string
+        :param value: the new (overridden) limit value)
+        :type value: int
+        :param override_ta: whether or not to use this value even if Trusted
+        Advisor supplies limit information
+        :type override_ta: bool
+        :raises: ValueError if limit_name is not known to the service instance
+        """
+        self.services[service_name].set_limit_override(
+            limit_name,
+            value,
+            override_ta=override_ta
+        )
 
     def check_thresholds(self, service=None):
         """

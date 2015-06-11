@@ -224,6 +224,31 @@ class TestAwsLimitChecker(object):
             call.set_limit_override('bar limit2', 100, override_ta=False)
         ]
 
+    def test_set_limit_override(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.cls.set_limit_override('SvcFoo', 'foo limit3', 99)
+        assert self.mock_svc1.mock_calls == [
+            call.set_limit_override('foo limit3', 99, override_ta=True)
+        ]
+
+    def test_set_limit_override_ta(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.cls.set_limit_override(
+            'SvcFoo',
+            'foo limit3',
+            99,
+            override_ta=False
+        )
+        assert self.mock_svc1.mock_calls == [
+            call.set_limit_override(
+                'foo limit3',
+                99,
+                override_ta=False
+            )
+        ]
+
     def test_get_required_iam_policy(self):
         expected = {
             'Version': '2012-10-17',
