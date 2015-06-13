@@ -45,7 +45,7 @@ with open('README.rst') as file:
     long_description = file.read()
 
 requires = [
-    'boto>=2.30.0',
+    'boto>=2.32.0',
 ]
 
 classifiers = [
@@ -62,7 +62,6 @@ classifiers = [
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.2',
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Topic :: Internet',
