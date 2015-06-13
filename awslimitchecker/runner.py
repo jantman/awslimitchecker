@@ -199,7 +199,8 @@ def console_entry_point():
         logger.setLevel(logging.INFO)
     elif args.verbose > 1:
         # debug-level logging hacks
-        FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(name)s.%(funcName)s() ] %(message)s"
+        FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - " \
+                 "%(name)s.%(funcName)s() ] %(message)s"
         debug_formatter = logging.Formatter(fmt=FORMAT)
         logger.handlers[0].setFormatter(debug_formatter)
         logger.setLevel(logging.DEBUG)
