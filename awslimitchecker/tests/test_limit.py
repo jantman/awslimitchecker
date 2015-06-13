@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from mock import Mock, patch, call
 import pytest
+import sys
 from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 
 
@@ -71,7 +72,11 @@ class TestAwsLimit(object):
                 11,
                 7
             )
-        assert excinfo.value.message == "critical threshold must be greater " \
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+        assert msg == "critical threshold must be greater " \
             "than warning threshold"
 
     def test_init_type(self):

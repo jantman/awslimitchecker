@@ -91,7 +91,7 @@ class TestAwsLimitChecker(object):
         mock_bar.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
         with patch.dict('awslimitchecker.checker._services',
-                        values=self.svcs, clear=True):
+                        values=svcs, clear=True):
             with patch.multiple(
                     'awslimitchecker.checker',
                     logger=DEFAULT,
@@ -99,7 +99,6 @@ class TestAwsLimitChecker(object):
                     _get_project_url=DEFAULT,
                     autospec=True,
             ) as mocks:
-                mock_logger = mocks['logger']
                 mock_version = mocks['_get_version']
                 mock_project_url = mocks['_get_project_url']
                 mock_version.return_value = 'MVER'

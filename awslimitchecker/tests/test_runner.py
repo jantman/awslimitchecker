@@ -41,6 +41,7 @@ import argparse
 import pytest
 import sys
 import logging
+import json
 from mock import patch, call, Mock, DEFAULT
 
 import awslimitchecker.runner as runner
@@ -183,7 +184,7 @@ class TestAwsLimitCheckerRunner(object):
         ]
 
     def test_iam_policy(self, capsys):
-        expected = '{\n  "baz": "blam", \n  "foo": "bar"\n}\n'
+        expected = {"baz": "blam", "foo": "bar"}
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_required_iam_policy.return_value = {
             'foo': 'bar',
@@ -191,7 +192,7 @@ class TestAwsLimitCheckerRunner(object):
         }
         runner.iam_policy(mock_checker)
         out, err = capsys.readouterr()
-        assert out == expected
+        assert json.loads(out) == expected
         assert err == ''
         assert mock_checker.mock_calls == [
             call.get_required_iam_policy()
@@ -271,7 +272,7 @@ class TestAwsLimitCheckerRunner(object):
                 with patch('awslimitchecker.runner.logger.setLevel'
                            '') as mock_set_level:
                     with pytest.raises(SystemExit) as excinfo:
-                        mocks['AwsLimitChecker'].return_value = 6
+                        mocks['check_thresholds'].return_value = 6
                         runner.console_entry_point()
         out, err = capsys.readouterr()
         assert err == ''
@@ -290,12 +291,12 @@ class TestAwsLimitCheckerRunner(object):
                 with patch('awslimitchecker.runner.logger.setLevel'
                            '') as mock_set_level:
                     with pytest.raises(SystemExit) as excinfo:
-                        mocks['AwsLimitChecker'].return_value = 7
+                        mocks['check_thresholds'].return_value = 7
                         runner.console_entry_point()
         out, err = capsys.readouterr()
         assert err == ''
         assert out == ''
-        assert excinfo.value.code == 7
+        assert excinfo.value.args[0] == 7
         assert mock_set_level.mock_calls == [call(logging.DEBUG)]
 
     def test_entry_warning(self):
@@ -306,11 +307,9 @@ class TestAwsLimitCheckerRunner(object):
                     AwsLimitChecker=DEFAULT,
                     check_thresholds=DEFAULT,
             ) as mocks:
-                with patch('awslimitchecker.runner.logger.setLevel'
-                           '') as mock_set_level:
-                    with pytest.raises(SystemExit) as excinfo:
-                        mocks['check_thresholds'].return_value = 8
-                        runner.console_entry_point()
+                with pytest.raises(SystemExit) as excinfo:
+                    mocks['check_thresholds'].return_value = 8
+                    runner.console_entry_point()
         assert excinfo.value.code == 8
         assert mocks['AwsLimitChecker'].mock_calls == [
             call(warning_threshold=50, critical_threshold=99)
@@ -324,11 +323,9 @@ class TestAwsLimitCheckerRunner(object):
                     AwsLimitChecker=DEFAULT,
                     check_thresholds=DEFAULT,
             ) as mocks:
-                with patch('awslimitchecker.runner.logger.setLevel'
-                           '') as mock_set_level:
-                    with pytest.raises(SystemExit) as excinfo:
-                        mocks['check_thresholds'].return_value = 9
-                        runner.console_entry_point()
+                with pytest.raises(SystemExit) as excinfo:
+                    mocks['check_thresholds'].return_value = 9
+                    runner.console_entry_point()
         assert excinfo.value.code == 9
         assert mocks['AwsLimitChecker'].mock_calls == [
             call(warning_threshold=80, critical_threshold=95)
