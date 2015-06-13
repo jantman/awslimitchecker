@@ -42,6 +42,7 @@ from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services import _services
 from awslimitchecker.limit import AwsLimit
 import pytest
+import sys
 
 
 class AwsServiceTester(_AwsService):
@@ -67,7 +68,11 @@ class Test_AwsService(object):
     def test_init(self):
         with pytest.raises(TypeError) as excinfo:
             _AwsService()
-        assert excinfo.value.message == "Can't instantiate abstract class " \
+        if sys.version_info[0] == 2 and sys.version_info[1] < 7:
+            msg = excinfo.value
+        else:
+            msg = excinfo.value.message
+        assert msg == "Can't instantiate abstract class " \
             "_AwsService with abstract methods " \
             "connect" \
             ", find_usage" \
