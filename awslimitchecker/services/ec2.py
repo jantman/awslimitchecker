@@ -152,7 +152,9 @@ class _Ec2Service(_AwsService):
         :rtype: dict
         """
         # On-Demand instances by type
-        ondemand = {k: 0 for k in self._instance_types()}
+        ondemand = {}
+        for t in self._instance_types():
+            ondemand[t] = 0
         az_to_inst = {}
         logger.debug("Getting usage for on-demand instances")
         for res in self.conn.get_all_reservations():
