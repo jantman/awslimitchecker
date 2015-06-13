@@ -40,7 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 class AwsLimit(object):
 
-    def __init__(self, name, service_name, default_limit,
+    def __init__(self, name, service, default_limit,
                  def_warning_threshold, def_critical_threshold,
                  limit_type=None, limit_subtype=None):
         """
@@ -51,10 +51,9 @@ class AwsLimit(object):
         :param name: the name of this limit (may contain spaces);
           if possible, this should be the name used by AWS, i.e. TrustedAdvisor
         :type name: string
-        :param service_name: the name of the service this limit is for;
-          this should be the ``service_name`` attribute of an
-          :py:class:`~._AwsService` class.
-        :type service_name: string
+        :param service: the :py:class:`~._AwsService` class that
+          this limit is for
+        :type service_name: :py:class:`~._AwsService`
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int
         :param def_warning_threshold: the default warning threshold, as an
@@ -75,7 +74,7 @@ class AwsLimit(object):
             raise ValueError("critical threshold must be greater than warning "
                              "threshold")
         self.name = name
-        self.service_name = service_name
+        self.service = service
         self.default_limit = default_limit
         self.limit_type = limit_type
         self.limit_subtype = limit_subtype

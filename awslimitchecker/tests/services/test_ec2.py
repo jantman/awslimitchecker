@@ -135,7 +135,7 @@ class Test_Ec2Service(object):
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
-            assert limits[x].service_name == 'EC2'
+            assert limits[x].service == cls
 
     def test_get_limits_ebs(self):
         cls = _Ec2Service(21, 43)

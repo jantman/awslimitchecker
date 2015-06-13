@@ -238,7 +238,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits['Provisioned IOPS'] = AwsLimit(
             'Provisioned IOPS',
-            self.service_name,
+            self,
             40000,
             self.warning_threshold,
             self.critical_threshold,
@@ -247,7 +247,7 @@ class _Ec2Service(_AwsService):
         )
         limits['Provisioned IOPS (SSD) volume storage (TiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) volume storage (TiB)',
-            self.service_name,
+            self,
             20,
             self.warning_threshold,
             self.critical_threshold,
@@ -256,7 +256,7 @@ class _Ec2Service(_AwsService):
         )
         limits['General Purpose (SSD) volume storage (TiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (TiB)',
-            self.service_name,
+            self,
             20,
             self.warning_threshold,
             self.critical_threshold,
@@ -265,7 +265,7 @@ class _Ec2Service(_AwsService):
         )
         limits['Magnetic volume storage (TiB)'] = AwsLimit(
             'Magnetic volume storage (TiB)',
-            self.service_name,
+            self,
             20,
             self.warning_threshold,
             self.critical_threshold,
@@ -312,7 +312,7 @@ class _Ec2Service(_AwsService):
                 lim = special_limits[i_type][0]
             limits[key] = AwsLimit(
                 key,
-                self.service_name,
+                self,
                 lim,
                 self.warning_threshold,
                 self.critical_threshold,
@@ -323,7 +323,7 @@ class _Ec2Service(_AwsService):
         key = 'Running On-Demand EC2 instances'
         limits[key] = AwsLimit(
             key,
-            self.service_name,
+            self,
             default_limits[0],
             self.warning_threshold,
             self.critical_threshold,
@@ -388,7 +388,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits['Security groups per VPC'] = AwsLimit(
             'Security groups per VPC',
-            self.service_name,
+            self,
             100,
             self.warning_threshold,
             self.critical_threshold,
@@ -397,7 +397,7 @@ class _Ec2Service(_AwsService):
         )
         limits['Rules per VPC security group'] = AwsLimit(
             'Rules per VPC security group',
-            self.service_name,
+            self,
             50,
             self.warning_threshold,
             self.critical_threshold,
@@ -407,7 +407,7 @@ class _Ec2Service(_AwsService):
         # self.conn.get_all_addresses - domain == 'vpc'
         limits['EC2-VPC Elastic IPs'] = AwsLimit(
             'EC2-VPC Elastic IPs',
-            self.service_name,
+            self,
             5,
             self.warning_threshold,
             self.critical_threshold,
@@ -417,7 +417,7 @@ class _Ec2Service(_AwsService):
         # self.conn.get_all_addresses - domain == 'standard'
         limits['EC2-Classic Elastic IPs'] = AwsLimit(
             'EC2-Classic Elastic IPs',
-            self.service_name,
+            self,
             5,
             self.warning_threshold,
             self.critical_threshold,
@@ -426,7 +426,7 @@ class _Ec2Service(_AwsService):
         # self.conn.get_all_network_interfaces()
         limits['VPC security groups per elastic network interface'] = AwsLimit(
             'VPC security groups per elastic network interface',
-            self.service_name,
+            self,
             5,
             self.warning_threshold,
             self.critical_threshold,
