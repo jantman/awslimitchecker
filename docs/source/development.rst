@@ -74,14 +74,15 @@ using the :py:mod:`abc` module.
    returns a list of all IAM permissions required for it to work.
 8. TBD - write integration tests.
 9. Run all tox jobs, or at least one python version, docs and coverage.
-10. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+10. Commit the updated documentation to the repository.
+11. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
     `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
     `Policy Simulator <https://policysim.aws.amazon.com/>`_.
-11. Submit your pull request.
+12. Submit your pull request.
 
 .. _development.adding_ta:
 
@@ -137,27 +138,30 @@ Output will be in the ``docs/build/html`` directory under the project root.
 Release Checklist
 -----------------
 
-1. Open an issue for the release; cut a branch off master for that issue.
-2. Confirm that there are CHANGES.rst entries for all major changes.
-3. Ensure that Travis tests passing in all environments.
-4. Ensure that test coverage is no less than the last release (ideally, 100%).
-5. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
-6. Confirm that README.rst renders correctly on GitHub.
-7. Upload package to testpypi, confirm that README.rst renders correctly.
+1. Open an issue for the release; cut a branch off ``develop`` for that issue.
+2. Build docs (``tox -e docs``) and ensure they're current; commit any changes.
+3. Confirm that there are CHANGES.rst entries for all major changes.
+4. Ensure that Travis tests passing in all environments.
+5. Ensure that test coverage is no less than the last release (ideally, 100%).
+6. Build docs for the branch (locally) and ensure they look correct.
+7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
+8. Confirm that README.rst renders correctly on GitHub.
+9. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct
    * ``python setup.py register -r https://testpypi.python.org/pypi``
    * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
-8. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
-9. Tag the release in Git, push tag to GitHub:
+10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
+11. Tag the release in Git, push tag to GitHub:
 
    * tag the release. for now the message is quite simple: ``git tag -a vX.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
    * push the tag to GitHub: ``git push origin vX.Y.Z``
 
-11. Upload package to live pypi:
+12. Upload package to live pypi:
 
     * ``python setup.py sdist upload``
 
-10. make sure any GH issues fixed in the release were closed.
+13. make sure any GH issues fixed in the release were closed.
+14. merge master back into develop
