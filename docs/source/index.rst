@@ -8,9 +8,11 @@ awslimitchecker
 
 .. image:: https://pypip.in/v/awslimitchecker/badge.png
    :target: https://crate.io/packages/awslimitchecker
+   :alt: PyPi package version
 
 .. image:: https://pypip.in/d/awslimitchecker/badge.png
    :target: https://crate.io/packages/awslimitchecker
+   :alt: PyPi downloads
 
 .. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
    :target: https://landscape.io/github/jantman/awslimitchecker/master
@@ -23,6 +25,14 @@ awslimitchecker
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=master
    :alt: coverage report for master branch
+
+.. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=latest
+   :target: https://readthedocs.org/projects/awslimitchecker/?badge=latest
+   :alt: sphinx documentation for latest release
+
+.. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=develop
+   :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
+   :alt: sphinx documentation for develop branch
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
