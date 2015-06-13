@@ -77,7 +77,7 @@ class AwsLimitChecker(object):
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.services = {}
-        for sname, cls in _services.iteritems():
+        for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold)
 
     def get_version(self):
@@ -115,7 +115,7 @@ class AwsLimitChecker(object):
         res = {}
         if service is not None:
             return {service: self.services[service].get_limits()}
-        for sname, cls in self.services.iteritems():
+        for sname, cls in self.services.items():
             res[sname] = cls.get_limits()
         return res
 
@@ -147,7 +147,7 @@ class AwsLimitChecker(object):
                 s=self.services[service].service_name))
             self.services[service].find_usage()
             return
-        for sname, cls in self.services.iteritems():
+        for sname, cls in self.services.items():
             logger.debug("Finding usage for service: {s}".format(
                 s=cls.service_name))
             cls.find_usage()
@@ -248,7 +248,7 @@ class AwsLimitChecker(object):
         res = {}
         if service is not None:
             return {service: self.services[service].check_thresholds()}
-        for sname, cls in self.services.iteritems():
+        for sname, cls in self.services.items():
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp
@@ -267,7 +267,7 @@ class AwsLimitChecker(object):
         :rtype: dict
         """
         required_actions = []
-        for sname, cls in self.services.iteritems():
+        for sname, cls in self.services.items():
             required_actions.extend(cls.required_iam_permissions())
         policy = {
             'Version': '2012-10-17',

@@ -87,11 +87,11 @@ class _Ec2Service(_AwsService):
         ondemand_usage = defaultdict(int)
         for az in inst_usage:
             if az not in res_usage:
-                for i_type, count in inst_usage[az].iteritems():
+                for i_type, count in inst_usage[az].items():
                     ondemand_usage[i_type] += count
                 continue
             # else we have reservations for this AZ
-            for i_type, count in inst_usage[az].iteritems():
+            for i_type, count in inst_usage[az].items():
                 if i_type not in res_usage[az]:
                     # no reservations for this type
                     ondemand_usage[i_type] += count
@@ -102,7 +102,7 @@ class _Ec2Service(_AwsService):
                     continue
                 ondemand_usage[i_type] += od
         total_instances = 0
-        for i_type, usage in ondemand_usage.iteritems():
+        for i_type, usage in ondemand_usage.items():
             key = 'Running On-Demand {t} instances'.format(
                 t=i_type)
             self.limits[key]._add_current_usage(
@@ -341,13 +341,13 @@ class _Ec2Service(_AwsService):
                 sgs_per_vpc[sg.vpc_id] += 1
                 rules_per_sg[sg.id] = len(sg.rules)
         # set usage
-        for vpc_id, count in sgs_per_vpc.iteritems():
+        for vpc_id, count in sgs_per_vpc.items():
             self.limits['Security groups per VPC']._add_current_usage(
                 count,
                 aws_type='AWS::EC2::VPC',
                 id=vpc_id,
             )
-        for sg_id, count in rules_per_sg.iteritems():
+        for sg_id, count in rules_per_sg.items():
             self.limits['Rules per VPC security group']._add_current_usage(
                 count,
                 aws_type='AWS::EC2::SecurityGroupRule',
