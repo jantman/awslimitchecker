@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from mock import Mock, patch, call
-from contextlib import nested
 import pytest
 from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 
@@ -222,18 +221,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 3, id='foo3bar')
         u3 = AwsLimitUsage(limit, 2, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (None, 40, None, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (None, 40, None, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is True
         assert limit._warnings == []
         assert limit._criticals == []
@@ -246,18 +240,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 50, id='foo3bar')
         u3 = AwsLimitUsage(limit, 2, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (None, 40, None, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (None, 40, None, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is False
         assert limit._warnings == [u2]
         assert limit._criticals == []
@@ -270,18 +259,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 1, id='foo3bar')
         u3 = AwsLimitUsage(limit, 2, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (4, 40, 6, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (4, 40, 6, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is False
         assert limit._warnings == [u1]
         assert limit._criticals == []
@@ -294,18 +278,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 1, id='foo3bar')
         u3 = AwsLimitUsage(limit, 7, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (4, 40, 6, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (4, 40, 6, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is False
         assert limit._warnings == [u1]
         assert limit._criticals == [u3]
@@ -318,18 +297,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 3, id='foo3bar')
         u3 = AwsLimitUsage(limit, 95, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (None, 40, None, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (None, 40, None, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is False
         assert limit._warnings == []
         assert limit._criticals == [u3]
@@ -342,18 +316,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 3, id='foo3bar')
         u3 = AwsLimitUsage(limit, 95, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (6, 40, 8, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (6, 40, 8, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is False
         assert limit._warnings == []
         assert limit._criticals == [u1, u3]
@@ -366,18 +335,13 @@ class TestAwsLimit(object):
         u2 = AwsLimitUsage(limit, 3, id='foo3bar')
         u3 = AwsLimitUsage(limit, 95, id='foo2bar')
         limit._current_usage = [u1, u2, u3]
-        with nested(
-                patch('awslimitchecker.limit.AwsLimit._get_'
-                      'thresholds'),
-                patch('awslimitchecker.limit.AwsLimit.get_'
-                      'limit'),
-        ) as (
-            mock_get_thresh,
-            mock_get_limit,
-        ):
-            mock_get_thresh.return_value = (None, 40, None, 80)
-            mock_get_limit.return_value = 100
-            res = limit.check_thresholds()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (None, 40, None, 80)
+                mock_get_limit.return_value = 100
+                res = limit.check_thresholds()
         assert res is False
         assert limit._warnings == [u1]
         assert limit._criticals == [u3]

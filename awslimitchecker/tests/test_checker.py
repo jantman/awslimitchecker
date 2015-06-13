@@ -37,8 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from mock import Mock, patch, call
-from contextlib import nested
+from mock import Mock, patch, call, DEFAULT
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.version import _get_version, _get_project_url
@@ -55,24 +54,21 @@ class TestAwsLimitChecker(object):
         self.mock_foo.return_value = self.mock_svc1
         self.mock_bar.return_value = self.mock_svc2
         self.svcs = {'SvcFoo': self.mock_foo, 'SvcBar': self.mock_bar}
-        with nested(
-                patch.dict('awslimitchecker.checker._services',
-                           values=self.svcs, clear=True),
-                patch('awslimitchecker.checker.logger',
-                      autospec=True),
-                patch('awslimitchecker.checker._get_version',
-                      spec_set=_get_version),
-                patch('awslimitchecker.checker._get_project_url',
-                      spec_set=_get_project_url)
-        ) as (
-            mock_services,
-            self.mock_logger,
-            self.mock_version,
-            self.mock_project_url,
-        ):
-            self.mock_version.return_value = 'MVER'
-            self.mock_project_url.return_value = 'PURL'
-            self.cls = AwsLimitChecker()
+        with patch.dict('awslimitchecker.checker._services',
+                        values=self.svcs, clear=True):
+            with patch.multiple(
+                    'awslimitchecker.checker',
+                    logger=DEFAULT,
+                    _get_version=DEFAULT,
+                    _get_project_url=DEFAULT,
+                    autospec=True,
+            ) as mocks:
+                self.mock_logger = mocks['logger']
+                self.mock_version = mocks['_get_version']
+                self.mock_project_url = mocks['_get_project_url']
+                self.mock_version.return_value = 'MVER'
+                self.mock_project_url.return_value = 'PURL'
+                self.cls = AwsLimitChecker()
 
     def test_init(self):
         # dict should be of _AwsService instances
@@ -94,27 +90,24 @@ class TestAwsLimitChecker(object):
         mock_foo.return_value = mock_svc1
         mock_bar.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with nested(
-                patch.dict('awslimitchecker.checker._services',
-                           values=svcs, clear=True),
-                patch('awslimitchecker.checker.logger',
-                      autospec=True),
-                patch('awslimitchecker.checker._get_version',
-                      spec_set=_get_version),
-                patch('awslimitchecker.checker._get_project_url',
-                      spec_set=_get_project_url)
-        ) as (
-            mock_services,
-            mock_logger,
-            mock_version,
-            mock_project_url,
-        ):
-            mock_version.return_value = 'MVER'
-            mock_project_url.return_value = 'PURL'
-            cls = AwsLimitChecker(
-                warning_threshold=5,
-                critical_threshold=22,
-            )
+        with patch.dict('awslimitchecker.checker._services',
+                        values=self.svcs, clear=True):
+            with patch.multiple(
+                    'awslimitchecker.checker',
+                    logger=DEFAULT,
+                    _get_version=DEFAULT,
+                    _get_project_url=DEFAULT,
+                    autospec=True,
+            ) as mocks:
+                mock_logger = mocks['logger']
+                mock_version = mocks['_get_version']
+                mock_project_url = mocks['_get_project_url']
+                mock_version.return_value = 'MVER'
+                mock_project_url.return_value = 'PURL'
+                cls = AwsLimitChecker(
+                    warning_threshold=5,
+                    critical_threshold=22,
+                )
         # dict should be of _AwsService instances
         assert cls.services == {
             'SvcFoo': mock_svc1,

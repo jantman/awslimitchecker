@@ -37,8 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from mock import Mock, patch, call
-from contextlib import nested
+from mock import Mock, patch, call, DEFAULT
 from boto.ec2.connection import EC2Connection
 from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance
@@ -100,19 +99,13 @@ class Test_Ec2Service(object):
     def test_get_limits(self):
         cls = _Ec2Service(21, 43)
         cls.limits = {}
-        with nested(
-                patch('%s._get_limits_instances' % self.pb),
-                patch('%s._get_limits_ebs' % self.pb),
-                patch('%s._get_limits_networking' % self.pb),
-        ) as (
-            mock_instances,
-            mock_ebs,
-            mock_vpc
-        ):
-            mock_instances.return_value = {'ec2lname': 'ec2lval'}
-            mock_ebs.return_value = {'ebslname': 'ebslval'}
-            mock_vpc.return_value = {'vpck': 'vpcv'}
-            res = cls.get_limits()
+        with patch('%s._get_limits_instances' % self.pb) as mock_instances:
+            with patch('%s._get_limits_ebs' % self.pb) as mock_ebs:
+                with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
+                    mock_instances.return_value = {'ec2lname': 'ec2lval'}
+                    mock_ebs.return_value = {'ebslname': 'ebslval'}
+                    mock_vpc.return_value = {'vpck': 'vpcv'}
+                    res = cls.get_limits()
         assert res == {
             'ec2lname': 'ec2lval',
             'ebslname': 'ebslval',
@@ -126,16 +119,10 @@ class Test_Ec2Service(object):
         """test that existing limits dict is returned on subsequent calls"""
         cls = _Ec2Service(21, 43)
         cls.limits = {'foo': 'bar'}
-        with nested(
-                patch('%s._get_limits_instances' % self.pb),
-                patch('%s._get_limits_ebs' % self.pb),
-                patch('%s._get_limits_networking' % self.pb),
-        ) as (
-            mock_instances,
-            mock_ebs,
-            mock_vpc,
-        ):
-            res = cls.get_limits()
+        with patch('%s._get_limits_instances' % self.pb) as mock_instances:
+            with patch('%s._get_limits_ebs' % self.pb) as mock_ebs:
+                with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
+                    res = cls.get_limits()
         assert res == {'foo': 'bar'}
         assert mock_instances.mock_calls == []
         assert mock_ebs.mock_calls == []
@@ -191,33 +178,23 @@ class Test_Ec2Service(object):
         assert 'Running On-Demand m4.4xlarge instances' in limits
 
     def test_find_usage(self):
-        with nested(
-                patch('%s.connect' % self.pb, autospec=True),
-                patch('%s._find_usage_instances' % self.pb, autospec=True),
-                patch('%s._find_usage_ebs' % self.pb, autospec=True),
-                patch('%s._find_usage_networking_sgs' % self.pb, autospec=True),
-                patch('%s._find_usage_networking_eips' % self.pb,
-                      autospec=True),
-                patch('%s._find_usage_networking_eni_sg' % self.pb,
-                      autospec=True),
-        ) as (
-            mock_connect,
-            mock_instances,
-            mock_ebs,
-            mock_vpc,
-            mock_eips,
-            mock_eni_sg,
-        ):
+        with patch.multiple(
+                self.pb,
+                connect=DEFAULT,
+                _find_usage_instances=DEFAULT,
+                _find_usage_ebs=DEFAULT,
+                _find_usage_networking_sgs=DEFAULT,
+                _find_usage_networking_eips=DEFAULT,
+                _find_usage_networking_eni_sg=DEFAULT,
+                autospec=True,
+        ) as mocks:
             cls = _Ec2Service(21, 43)
             assert cls._have_usage is False
             cls.find_usage()
         assert cls._have_usage is True
-        assert mock_connect.mock_calls == [call(cls)]
-        assert mock_instances.mock_calls == [call(cls)]
-        assert mock_ebs.mock_calls == [call(cls)]
-        assert mock_vpc.mock_calls == [call(cls)]
-        assert mock_eips.mock_calls == [call(cls)]
-        assert mock_eni_sg.mock_calls == [call(cls)]
+        assert len(mocks) == 6
+        for m in mocks:
+            assert mocks[m].mock_calls == [call(cls)]
 
     def test_instance_usage(self):
         mock_t2_micro = Mock(spec_set=AwsLimit)
@@ -385,18 +362,14 @@ class Test_Ec2Service(object):
         mock_conn = Mock(spec_set=EC2Connection)
         cls.conn = mock_conn
         cls.limits = limits
-        with nested(
-                patch('awslimitchecker.services.ec2._Ec2Service.'
-                      '_instance_usage', autospec=True),
-                patch('awslimitchecker.services.ec2._Ec2Service.'
-                      '_get_reserved_instance_count', autospec=True),
-        ) as (
-            mock_inst_usage,
-            mock_res_inst_count,
-        ):
-            mock_inst_usage.return_value = iusage
-            mock_res_inst_count.return_value = ri_count
-            cls._find_usage_instances()
+        with patch('awslimitchecker.services.ec2._Ec2Service.'
+                   '_instance_usage', autospec=True) as mock_inst_usage:
+            with patch('awslimitchecker.services.ec2._Ec2Service.'
+                       '_get_reserved_instance_count',
+                       autospec=True) as mock_res_inst_count:
+                mock_inst_usage.return_value = iusage
+                mock_res_inst_count.return_value = ri_count
+                cls._find_usage_instances()
         assert mock_t2_micro.mock_calls == [call._add_current_usage(
             36,
             aws_type='AWS::EC2::Instance'
