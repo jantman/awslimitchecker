@@ -72,7 +72,9 @@ class _Ec2Service(_AwsService):
             lim._reset_usage()
         self._find_usage_instances()
         self._find_usage_ebs()
-        self._find_usage_vpc()
+        self._find_usage_networking_sgs()
+        self._find_usage_networking_eips()
+        self._find_usage_networking_eni_sg()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -220,7 +222,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits.update(self._get_limits_instances())
         limits.update(self._get_limits_ebs())
-        limits.update(self._get_limits_vpc())
+        limits.update(self._get_limits_networking())
         return limits
 
     def _get_limits_ebs(self):
@@ -327,22 +329,53 @@ class _Ec2Service(_AwsService):
         )
         return limits
 
-    def _find_usage_vpc(self):
+    def _find_usage_networking_sgs(self):
         """calculate usage for VPC-related things"""
         logger.debug("Getting usage for EC2 VPC resources")
         sgs_per_vpc = defaultdict(int)
+        rules_per_sg = defaultdict(int)
         for sg in self.conn.get_all_security_groups():
             if sg.vpc_id is not None:
                 sgs_per_vpc[sg.vpc_id] += 1
+                rules_per_sg[sg.id] = len(sg.rules)
+        # set usage
         for vpc_id, count in sgs_per_vpc.iteritems():
-            self.limits['Security groups per '
-                        'VPC']._add_current_usage(
-                            count,
-                            aws_type='AWS::EC2::VPC',
-                            id=vpc_id,
-                    )
+            self.limits['Security groups per VPC']._add_current_usage(
+                count,
+                aws_type='AWS::EC2::VPC',
+                id=vpc_id,
+            )
+        for sg_id, count in rules_per_sg.iteritems():
+            self.limits['Rules per VPC security group']._add_current_usage(
+                count,
+                aws_type='AWS::EC2::SecurityGroupRule',
+                id=sg_id,
+            )
 
-    def _get_limits_vpc(self):
+    def _find_usage_networking_eips(self):
+        logger.debug("Getting usage for EC2 EIPs")
+        addrs = self.conn.get_all_addresses()
+        self.limits['EC2-VPC Elastic IPs']._add_current_usage(
+            sum(1 for a in addrs if a.domain == 'vpc'),
+            aws_type='AWS::EC2::EIP',
+        )
+        self.limits['EC2-Classic Elastic IPs']._add_current_usage(
+            sum(1 for a in addrs if a.domain == 'standard'),
+            aws_type='AWS::EC2::EIP',
+        )
+
+    def _find_usage_networking_eni_sg(self):
+        logger.debug("Getting usage for EC2 Network Interfaces")
+        ints = self.conn.get_all_network_interfaces()
+        for iface in ints:
+            self.limits['VPC security groups per elastic network '
+                        'interface']._add_current_usage(
+                            len(iface.groups),
+                            aws_type='AWS::EC2::NetworkInterface',
+                            id=iface.id,
+                        )
+
+    def _get_limits_networking(self):
         """
         Return a dict of VPC-related limits only.
         This method should only be used internally by
@@ -357,8 +390,46 @@ class _Ec2Service(_AwsService):
             100,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::EC2::VPC',
-            limit_subtype='AWS::EC2::SecurityGroup',
+            limit_type='AWS::EC2::SecurityGroup',
+            limit_subtype='AWS::EC2::VPC',
+        )
+        limits['Rules per VPC security group'] = AwsLimit(
+            'Rules per VPC security group',
+            self.service_name,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::SecurityGroup',
+            limit_subtype='AWS::EC2::VPC',
+        )
+        # self.conn.get_all_addresses - domain == 'vpc'
+        limits['EC2-VPC Elastic IPs'] = AwsLimit(
+            'EC2-VPC Elastic IPs',
+            self.service_name,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::EIP',
+            limit_subtype='AWS::EC2::VPC',
+        )
+        # self.conn.get_all_addresses - domain == 'standard'
+        limits['EC2-Classic Elastic IPs'] = AwsLimit(
+            'EC2-Classic Elastic IPs',
+            self.service_name,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::EIP',
+        )
+        # self.conn.get_all_network_interfaces()
+        limits['VPC security groups per elastic network interface'] = AwsLimit(
+            'VPC security groups per elastic network interface',
+            self.service_name,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::SecurityGroup',
+            limit_subtype='AWS::EC2::NetworkInterface',
         )
         return limits
 
@@ -393,6 +464,11 @@ class _Ec2Service(_AwsService):
             'm3.large',
             'm3.xlarge',
             'm3.2xlarge',
+            'm4.large',
+            'm4.xlarge',
+            'm4.2xlarge',
+            'm4.4xlarge',
+            'm4.8xlarge',
         ]
 
         PREV_GENERAL_TYPES = [
