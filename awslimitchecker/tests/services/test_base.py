@@ -65,19 +65,33 @@ class AwsServiceTester(_AwsService):
 
 class Test_AwsService(object):
 
-    def test_init(self):
+    @pytest.mark.skipif(sys.version_info != (2, 6), reason='test for py26')
+    def test_init_py26(self):
         with pytest.raises(TypeError) as excinfo:
-            _AwsService()
-        if sys.version_info[0] == 2 and sys.version_info[1] < 7:
-            msg = excinfo.value
-        else:
-            msg = excinfo.value.message
-        assert msg == "Can't instantiate abstract class " \
+            _AwsService(1, 2)
+        assert excinfo.value == "Can't instantiate abstract class " \
             "_AwsService with abstract methods " \
             "connect" \
             ", find_usage" \
             ", get_limits" \
             ", required_iam_permissions"
+
+    @pytest.mark.skipif(sys.version_info != (2, 7), reason='test for py27')
+    def test_init_py27(self):
+        with pytest.raises(TypeError) as excinfo:
+            _AwsService(1, 2)
+        assert excinfo.value.message == "Can't instantiate abstract class " \
+            "_AwsService with abstract methods " \
+            "connect" \
+            ", find_usage" \
+            ", get_limits" \
+            ", required_iam_permissions"
+
+    @pytest.mark.skipif(sys.version_info < (3, 0), reason='test for py3')
+    def test_init_py3(self):
+        with pytest.raises(NotImplementedError) as excinfo:
+            _AwsService(1, 2)
+        assert excinfo.value.args[0] == "abstract base class"
 
     def test_init_subclass(self):
         cls = AwsServiceTester(1, 2)
@@ -104,7 +118,13 @@ class Test_AwsService(object):
         cls.limits['foo'] = mock_limit
         with pytest.raises(ValueError) as excinfo:
             cls.set_limit_override('bar', 10)
-        assert excinfo.value.message == "AwsServiceTester service has no " \
+
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+
+        assert msg == "AwsServiceTester service has no " \
             "'bar' limit"
         assert mock_limit.mock_calls == []
 
@@ -178,6 +198,6 @@ class Test_AwsServiceSubclasses(object):
         assert inst.critical_threshold == 7
 
     def test_subclass_init(self):
-        for clsname, cls in _services.iteritems():
+        for clsname, cls in _services.items():
             yield "verify_subclass %s" % clsname, \
                 self.verify_subclass, clsname, cls
