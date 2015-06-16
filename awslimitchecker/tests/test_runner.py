@@ -291,7 +291,11 @@ class TestAwsLimitCheckerRunner(object):
         with pytest.raises(ValueError) as excinfo:
             runner.set_limit_overrides(mock_checker, overrides)
         assert mock_checker.mock_calls == []
-        assert excinfo.value.message == "Limit names must be in " \
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+        assert msg == "Limit names must be in " \
             "'service/limit' format; EC2 is invalid."
 
     def test_entry_show_usage(self):

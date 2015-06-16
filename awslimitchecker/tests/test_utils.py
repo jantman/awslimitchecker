@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import argparse
 import pytest
+import sys
 
 from awslimitchecker.utils import StoreKeyValuePair
 
@@ -80,4 +81,11 @@ class TestStoreKeyValuePair(object):
         parser.add_argument('-o', '--one', action=StoreKeyValuePair)
         with pytest.raises(SystemExit) as excinfo:
             parser.parse_args(['-o', 'foobar'])
-        assert excinfo.value.message == 2
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            if sys.version_info[1] < 7:
+                msg = excinfo.value
+            else:
+                msg = excinfo.value.message
+        assert msg == 2
