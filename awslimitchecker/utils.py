@@ -61,4 +61,6 @@ class StoreKeyValuePair(argparse.Action):
         if '=' not in values:
             raise argparse.ArgumentError(self, 'must be in the form key=value')
         n, v = values.split('=')
+        # handle quotes for values with spaces
+        n = n.strip('"\'')
         getattr(namespace, self.dest)[n] = v

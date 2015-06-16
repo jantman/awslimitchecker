@@ -89,3 +89,13 @@ class TestStoreKeyValuePair(object):
             else:
                 msg = excinfo.value.message
         assert msg == 2
+
+    def test_quoted(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-o', '--one', action=StoreKeyValuePair)
+        res = parser.parse_args([
+            '-o',
+            '"foo some"=bar',
+            '--one="baz other"=blam'
+        ])
+        assert res.one == {'foo some': 'bar', 'baz other': 'blam'}
