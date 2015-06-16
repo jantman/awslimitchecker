@@ -205,7 +205,7 @@ def set_limit_overrides(checker, overrides):
             raise ValueError("Limit names must be in 'service/limit' format; "
                              "{k} is invalid.".format(k=key))
         svc, limit = key.split('/')
-        checker.set_limit_override(svc, limit, overrides[key])
+        checker.set_limit_override(svc, limit, int(overrides[key]))
 
 
 def console_entry_point():

@@ -270,8 +270,8 @@ class TestAwsLimitCheckerRunner(object):
 
     def test_set_limit_overrides(self):
         overrides = {
-            'EC2/Foo bar': 2,
-            'ElastiCache/Cache cluster subnet groups': 100,
+            'EC2/Foo bar': "2",
+            'ElastiCache/Cache cluster subnet groups': "100",
         }
         mock_checker = Mock(spec_set=AwsLimitChecker)
         runner.set_limit_overrides(mock_checker, overrides)
