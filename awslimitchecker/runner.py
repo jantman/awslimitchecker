@@ -60,7 +60,8 @@ def parse_args(argv):
     :rtype: :py:class:`argparse.Namespace`
     """
     desc = 'Report on AWS service limits and usage via boto, optionally warn ' \
-           'about any services with usage nearing or exceeding their limits.'
+           'about any services with usage nearing or exceeding their limits. ' \
+           'For further help, see <http://awslimitchecker.readthedocs.org/>'
 
     """
     ####### IMPORTANT license notice ##########

@@ -64,7 +64,8 @@ class TestAwsLimitCheckerRunner(object):
         argv = ['-V']
         desc = 'Report on AWS service limits and usage via boto, optionally ' \
                'warn about any services with usage nearing or exceeding ' \
-               'their limits.'
+               'their limits. For further help, see ' \
+               '<http://awslimitchecker.readthedocs.org/>'
         epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \
                  'entitled to a copy of the source code. You can obtain ' \
