@@ -1,10 +1,10 @@
 """
-awslimitchecker/tests/support.py
+awslimitchecker/utils.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
-################################################################################
+##############################################################################
 Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
@@ -25,54 +25,40 @@ Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 The Copyright and Authors attributions contained herein may not be removed or
 otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
-################################################################################
+##############################################################################
 While not legally required, I sincerely request that anyone who finds
 bugs please submit them at <https://github.com/jantman/pydnstest> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
-################################################################################
+##############################################################################
 
 AUTHORS:
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
-################################################################################
+##############################################################################
 """
 
-from awslimitchecker.limit import AwsLimit
+import argparse
 
 
-def sample_limits():
-    limits = {
-        'SvcBar': {
-            'barlimit1': AwsLimit(
-                'barlimit1',
-                'SvcBar',
-                1,
-                2,
-                3,
-                limit_type='ltbar1',
-                limit_subtype='sltbar1',
-            ),
-            'bar limit2': AwsLimit(
-                'bar limit2',
-                'SvcBar',
-                2,
-                2,
-                3,
-                limit_type='ltbar2',
-                limit_subtype='sltbar2',
-            ),
-        },
-        'SvcFoo': {
-            'foo limit3': AwsLimit(
-                'foo limit3',
-                'SvcFoo',
-                3,
-                2,
-                3,
-                limit_type='ltfoo3',
-                limit_subtype='sltfoo3',
-            ),
-        },
-    }
-    limits['SvcBar']['bar limit2'].set_limit_override(99)
-    return limits
+class StoreKeyValuePair(argparse.Action):
+    """
+    Store key=value options in a dict as {'key': 'value'}.
+
+    Supports specifying the option multiple times, but NOT with ``nargs``.
+
+    See :py:class:`~argparse.Action`.
+    """
+
+    def __init__(self, option_strings, dest, nargs=None, const=None,
+                 default=None, type=None, choices=None, required=False,
+                 help=None, metavar=None):
+        super(StoreKeyValuePair, self).__init__(option_strings, dest, nargs,
+                                                const, default, type, choices,
+                                                required, help, metavar)
+        self.default = {}
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if '=' not in values:
+            raise argparse.ArgumentError(self, 'must be in the form key=value')
+        n, v = values.split('=')
+        getattr(namespace, self.dest)[n] = v

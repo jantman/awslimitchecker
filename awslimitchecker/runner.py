@@ -44,6 +44,7 @@ import json
 
 from .version import _get_version, _get_project_url
 from .checker import AwsLimitChecker
+from .utils import StoreKeyValuePair
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
@@ -82,6 +83,10 @@ def parse_args(argv):
     p.add_argument('-l', '--list-defaults', action='store_true', default=False,
                    help='print all AWS default limits in "service_name/'
                    'limit_name" format')
+    p.add_argument('-L', '--limit', action=StoreKeyValuePair,
+                   help='override a single AWS limit, specified in '
+                   '"service_name/limit_name=value" format; can be '
+                   'specified multiple times.')
     p.add_argument('-u', '--show-usage', action='store_true', default=False,
                    help='find and print the current usage of all AWS services'
                    ' with known limits')
@@ -120,7 +125,7 @@ def list_limits(checker):
             print("{s}/{l}\t{n}".format(
                 s=svc,
                 l=lim,
-                n=limits[svc][lim].default_limit
+                n=limits[svc][lim].get_limit()
             ))
 
 
@@ -193,6 +198,15 @@ def check_thresholds(checker):
     return 0
 
 
+def set_limit_overrides(checker, overrides):
+    for key in sorted(overrides.keys()):
+        if key.count('/') != 1:
+            raise ValueError("Limit names must be in 'service/limit' format; "
+                             "{k} is invalid.".format(k=key))
+        svc, limit = key.split('/')
+        checker.set_limit_override(svc, limit, overrides[key])
+
+
 def console_entry_point():
     args = parse_args(sys.argv[1:])
     if args.verbose == 1:
@@ -217,6 +231,10 @@ def console_entry_point():
         warning_threshold=args.warning_threshold,
         critical_threshold=args.critical_threshold
     )
+
+    if len(args.limit) > 0:
+        set_limit_overrides(checker, args.limit)
+
     if args.list_services:
         list_services(checker)
         raise SystemExit(0)

@@ -180,7 +180,7 @@ class AwsLimitChecker(object):
         :param override_dict: dict of overrides to default limits
         :type override_dict: dict
         :param override_ta: whether or not to use this value even if Trusted
-        Advisor supplies limit information
+          Advisor supplies limit information
         :type override_ta: bool
         :raises: ValueError if limit_name is not known to the service instance
         """
@@ -213,7 +213,7 @@ class AwsLimitChecker(object):
         :param value: the new (overridden) limit value)
         :type value: int
         :param override_ta: whether or not to use this value even if Trusted
-        Advisor supplies limit information
+          Advisor supplies limit information
         :type override_ta: bool
         :raises: ValueError if limit_name is not known to the service instance
         """

@@ -48,6 +48,7 @@ import awslimitchecker.runner as runner
 import awslimitchecker.version as version
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.limit import AwsLimit, AwsLimitUsage
+from awslimitchecker.utils import StoreKeyValuePair
 from .support import sample_limits
 
 
@@ -87,6 +88,10 @@ class TestAwsLimitCheckerRunner(object):
                                 default=False,
                                 help='print all AWS default limits in '
                                 '"service_name/limit_name" format'),
+            call().add_argument('-L', '--limit', action=StoreKeyValuePair,
+                                help='override a single AWS limit, specified in'
+                                ' "service_name/limit_name=value" format; can '
+                                'be specified multiple times.'),
             call().add_argument('-u', '--show-usage', action='store_true',
                                 default=False,
                                 help='find and print the current usage of '
@@ -214,7 +219,7 @@ class TestAwsLimitCheckerRunner(object):
         ]
 
     def test_list_limits(self, capsys):
-        expected = 'SvcBar/bar limit2\t2\n' + \
+        expected = 'SvcBar/bar limit2\t99\n' + \
                    'SvcBar/barlimit1\t1\n' + \
                    'SvcFoo/foo limit3\t3\n'
         mock_checker = Mock(spec_set=AwsLimitChecker)
@@ -226,6 +231,68 @@ class TestAwsLimitCheckerRunner(object):
         assert mock_checker.mock_calls == [
             call.get_limits()
         ]
+
+    def test_entry_limit(self):
+        argv = ['awslimitchecker', '-L', 'foo=bar']
+        with patch.object(sys, 'argv', argv):
+            with patch.multiple(
+                    'awslimitchecker.runner',
+                    AwsLimitChecker=DEFAULT,
+                    check_thresholds=DEFAULT,
+                    set_limit_overrides=DEFAULT,
+            ) as mocks:
+                mocks['check_thresholds'].return_value = 0
+                with pytest.raises(SystemExit) as excinfo:
+                    runner.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mocks['set_limit_overrides'].mock_calls == [
+            call(mocks['AwsLimitChecker'].return_value, {'foo': 'bar'})
+        ]
+
+    def test_entry_limit_multi(self):
+        argv = ['awslimitchecker', '--limit=foo=bar', '--limit=baz=blam']
+        with patch.object(sys, 'argv', argv):
+            with patch.multiple(
+                    'awslimitchecker.runner',
+                    AwsLimitChecker=DEFAULT,
+                    check_thresholds=DEFAULT,
+                    set_limit_overrides=DEFAULT,
+            ) as mocks:
+                mocks['check_thresholds'].return_value = 0
+                with pytest.raises(SystemExit) as excinfo:
+                    runner.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mocks['set_limit_overrides'].mock_calls == [
+            call(mocks['AwsLimitChecker'].return_value,
+                 {'foo': 'bar', 'baz': 'blam'})
+        ]
+
+    def test_set_limit_overrides(self):
+        overrides = {
+            'EC2/Foo bar': 2,
+            'ElastiCache/Cache cluster subnet groups': 100,
+        }
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        runner.set_limit_overrides(mock_checker, overrides)
+        assert mock_checker.mock_calls == [
+            call.set_limit_override('EC2', 'Foo bar', 2),
+            call.set_limit_override(
+                'ElastiCache',
+                'Cache cluster subnet groups',
+                100
+            )
+        ]
+
+    def test_set_limit_overrides_error(self):
+        overrides = {
+            'EC2': 2,
+        }
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        with pytest.raises(ValueError) as excinfo:
+            runner.set_limit_overrides(mock_checker, overrides)
+        assert mock_checker.mock_calls == []
+        assert excinfo.value.message == "Limit names must be in " \
+            "'service/limit' format; EC2 is invalid."
 
     def test_entry_show_usage(self):
         argv = ['awslimitchecker', '-u']
