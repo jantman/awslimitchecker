@@ -57,17 +57,3 @@ Or as a python dict:
     iam_policy = c.get_required_iam_policy()
 
 You can also view the required permissions for the current version of awslimitchecker at :ref:`Required IAM Permissions <.iam_policy>`.
-
-.. _getting_started.cli_usage:
-
-Basic Command Line Usage
--------------------------
-
-TODO
-
-.. _getting_started.python_usage:
-
-Basic Python Package Usage
----------------------------
-
-TODO

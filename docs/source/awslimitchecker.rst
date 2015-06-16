@@ -21,5 +21,6 @@ Submodules
    awslimitchecker.checker
    awslimitchecker.limit
    awslimitchecker.runner
+   awslimitchecker.utils
    awslimitchecker.version
 
