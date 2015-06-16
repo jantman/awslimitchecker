@@ -174,6 +174,35 @@ class _AwsService(object):
                 s=self.service_name,
                 l=limit_name))
 
+    def set_threshold_override(self, limit_name, warn_percent=None,
+                               warn_count=None, crit_percent=None,
+                               crit_count=None):
+        """
+        Override the default warning and critical thresholds used to evaluate
+        the specified limit's usage. Theresholds can be specified as a
+        percentage of the limit, or as a usage count, or both.
+
+        :param warn_percent: new warning threshold, percentage used
+        :type warn_percent: int
+        :param warn_count: new warning threshold, actual count/number
+        :type warn_count: int
+        :param crit_percent: new critical threshold, percentage used
+        :type crit_percent: int
+        :param crit_count: new critical threshold, actual count/number
+        :type crit_count: int
+        """
+        try:
+            self.limits[limit_name].set_threshold_override(
+                warn_percent=warn_percent,
+                warn_count=warn_count,
+                crit_percent=crit_percent,
+                crit_count=crit_count
+            )
+        except KeyError:
+            raise ValueError("{s} service has no '{l}' limit".format(
+                s=self.service_name,
+                l=limit_name))
+
     def check_thresholds(self):
         """
         Checks current usage against configured thresholds for all limits

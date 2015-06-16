@@ -83,6 +83,10 @@ class AwsLimit(object):
         self._current_usage = []
         self.def_warning_threshold = def_warning_threshold
         self.def_critical_threshold = def_critical_threshold
+        self.warn_percent = None
+        self.warn_count = None
+        self.crit_percent = None
+        self.crit_count = None
         self._warnings = []
         self._criticals = []
 
@@ -201,14 +205,34 @@ class AwsLimit(object):
 
         :rtype: tuple
         """
-        # @TODO threshold overrides
         t = (
-            None,
-            self.def_warning_threshold,
-            None,
-            self.def_critical_threshold,
+            self.warn_count,
+            self.warn_percent or self.def_warning_threshold,
+            self.crit_count,
+            self.crit_percent or self.def_critical_threshold,
         )
         return t
+
+    def set_threshold_override(self, warn_percent=None, warn_count=None,
+                               crit_percent=None, crit_count=None):
+        """
+        Override the default warning and critical thresholds used to evaluate
+        this limit's usage. Theresholds can be specified as a percentage
+        of the limit, or as a usage count, or both.
+
+        :param warn_percent: new warning threshold, percentage used
+        :type warn_percent: int
+        :param warn_count: new warning threshold, actual count/number
+        :type warn_count: int
+        :param crit_percent: new critical threshold, percentage used
+        :type crit_percent: int
+        :param crit_count: new critical threshold, actual count/number
+        :type crit_count: int
+        """
+        self.warn_percent = warn_percent
+        self.warn_count = warn_count
+        self.crit_percent = crit_percent
+        self.crit_count = crit_count
 
     def check_thresholds(self):
         """

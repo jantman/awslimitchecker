@@ -223,6 +223,92 @@ class AwsLimitChecker(object):
             override_ta=override_ta
         )
 
+    def set_threshold_overrides(self, override_dict):
+        """
+        Set manual overrides on the threshold (used for determining
+        warning/critical status) a dict of limits. See
+        :py:class:`~.AwsLimitChecker` for information on Warning and
+        Critical thresholds.
+
+        Dict is composed of service name keys (string) to dict of
+        limit names (string), to dict of threshold specifications.
+        Each threhold specification dict can contain keys 'warning'
+        or 'critical', each having a value of a dict containing
+        keys 'percent' or 'count', to an integer value.
+
+        Example:
+
+            {
+                'EC2': {
+                    'SomeLimit': {
+                        'warning': {
+                            'percent': 80,
+                            'count': 8,
+                        },
+                        'critical': {
+                            'percent': 90,
+                            'count': 9,
+                        }
+                    }
+                }
+            }
+
+        See :py:meth:`~.AwsLimit.set_threshold_override`.
+
+        :param override_dict: nested dict of threshold overrides
+        :type override_dict: dict
+        """
+        for svc_name in sorted(override_dict):
+            for lim_name in sorted(override_dict[svc_name]):
+                d = override_dict[svc_name][lim_name]
+                kwargs = {}
+                if 'warning' in d:
+                    if 'percent' in d['warning']:
+                        kwargs['warn_percent'] = d['warning']['percent']
+                    if 'count' in d['warning']:
+                        kwargs['warn_count'] = d['warning']['count']
+                if 'critical' in d:
+                    if 'percent' in d['critical']:
+                        kwargs['crit_percent'] = d['critical']['percent']
+                    if 'count' in d['critical']:
+                        kwargs['crit_count'] = d['critical']['count']
+                self.services[svc_name].set_threshold_override(
+                    lim_name,
+                    **kwargs
+                )
+
+    def set_threshold_override(self, service_name, limit_name,
+                               warn_percent=None, warn_count=None,
+                               crit_percent=None, crit_count=None):
+        """
+        Set a manual override on the threshold (used for determining
+        warning/critical status) for a specific limit. See
+        :py:class:`~.AwsLimitChecker` for information on Warning and
+        Critical thresholds.
+
+        See :py:meth:`~.AwsLimit.set_threshold_override`.
+
+        :param service_name: the name of the service to override limit for
+        :type service_name: string
+        :param limit_name: the name of the limit to override:
+        :type limit_name: string
+        :param warn_percent: new warning threshold, percentage used
+        :type warn_percent: int
+        :param warn_count: new warning threshold, actual count/number
+        :type warn_count: int
+        :param crit_percent: new critical threshold, percentage used
+        :type crit_percent: int
+        :param crit_count: new critical threshold, actual count/number
+        :type crit_count: int
+        """
+        self.services[service_name].set_threshold_override(
+            limit_name,
+            warn_percent=warn_percent,
+            warn_count=warn_count,
+            crit_percent=crit_percent,
+            crit_count=crit_count
+        )
+
     def check_thresholds(self, service=None):
         """
         Check all limits and current usage against their specified thresholds;

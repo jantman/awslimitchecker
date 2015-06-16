@@ -41,6 +41,7 @@ from mock import Mock, patch, call, DEFAULT
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.version import _get_version, _get_project_url
+from awslimitchecker.limit import AwsLimit
 from .support import sample_limits
 
 
@@ -176,6 +177,77 @@ class TestAwsLimitChecker(object):
         ]
         assert self.mock_svc2.mock_calls == []
 
+    def test_set_threshold_overrides(self):
+        limits = sample_limits()
+        limits['SvcFoo']['zz3'] = AwsLimit(
+            'zz3',
+            self.mock_svc1,
+            1,
+            2,
+            3,
+        )
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.mock_svc2.get_limits.return_value = limits['SvcBar']
+        overrides = {
+            'SvcBar': {
+                'barlimit1': {
+                    'warning': {
+                        'percent': 10,
+                        'count': 12
+                    },
+                    'critical': {
+                        'percent': 14,
+                        'count': 16
+                    }
+                },
+                'bar limit2': {
+                    'critical': {
+                        'count': 15,
+                    }
+                },
+                'zz3': {
+                    'warning': {
+                        'count': 41
+                    },
+                    'critical': {
+                        'percent': 52
+                    }
+                }
+            },
+            'SvcFoo': {
+                'foo limit3': {
+                    'warning': {
+                        'percent': 91
+                    },
+                }
+            },
+        }
+        self.cls.set_threshold_overrides(overrides)
+        assert self.mock_svc1.mock_calls == [
+            call.set_threshold_override(
+                'foo limit3',
+                warn_percent=91,
+            )
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call.set_threshold_override(
+                'bar limit2',
+                crit_count=15
+            ),
+            call.set_threshold_override(
+                'barlimit1',
+                warn_percent=10,
+                warn_count=12,
+                crit_percent=14,
+                crit_count=16
+            ),
+            call.set_threshold_override(
+                'zz3',
+                warn_count=41,
+                crit_percent=52
+            ),
+        ]
+
     def test_set_limit_overrides(self):
         limits = sample_limits()
         self.mock_svc1.get_limits.return_value = limits['SvcFoo']
@@ -238,6 +310,27 @@ class TestAwsLimitChecker(object):
                 'foo limit3',
                 99,
                 override_ta=False
+            )
+        ]
+
+    def test_set_threshold_override(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.cls.set_threshold_override(
+            'SvcFoo',
+            'foo limit3',
+            warn_percent=10,
+            warn_count=12,
+            crit_percent=14,
+            crit_count=16
+        )
+        assert self.mock_svc1.mock_calls == [
+            call.set_threshold_override(
+                'foo limit3',
+                warn_percent=10,
+                warn_count=12,
+                crit_percent=14,
+                crit_count=16
             )
         ]
 

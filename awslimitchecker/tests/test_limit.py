@@ -378,6 +378,32 @@ class TestAwsLimit(object):
             2
         )
 
+    def test_get_thresholds_overridden(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 88, 99)
+        limit.warn_percent = 1
+        limit.warn_count = 2
+        limit.crit_percent = 3
+        limit.crit_count = 4
+        assert limit._get_thresholds() == (
+            2,
+            1,
+            4,
+            3
+        )
+
+    def test_set_threshold_override(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
+        limit.set_threshold_override(
+            warn_percent=1,
+            warn_count=2,
+            crit_percent=3,
+            crit_count=4
+        )
+        assert limit.warn_percent == 1
+        assert limit.warn_count == 2
+        assert limit.crit_percent == 3
+        assert limit.crit_count == 4
+
 
 class TestAwsLimitUsage(object):
 
