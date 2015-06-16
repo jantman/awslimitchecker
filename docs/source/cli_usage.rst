@@ -150,12 +150,8 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker
-   EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
+   EC2/EC2-Classic Elastic IPs (limit 5) WARNING: 4
    EC2/Magnetic volume storage (TiB) (limit 20) CRITICAL: 23.305
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 98
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 54
-   EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=100
-
 
 
 Set Custom Thresholds
@@ -165,13 +161,9 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker -W 97 --critical=98
+   (venv)$ awslimitchecker -W 50 --critical=75
    EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
    EC2/Magnetic volume storage (TiB) (limit 20) CRITICAL: 23.305
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 98
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 54
-   EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=100
-
 
 
 Required IAM Policy
