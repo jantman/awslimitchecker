@@ -115,7 +115,6 @@ class AwsLimit(object):
         :returns: effective limit value
         :rtype: int
         """
-        # @TODO override_ta
         if self.limit_override is not None:
             return self.limit_override
         return self.default_limit

@@ -48,11 +48,16 @@ Guidelines
 
 .. _development.adding_checks:
 
-Adding New Checks to Existing Services
----------------------------------------
+Adding New Limits and Checks to Existing Services
+--------------------------------------------------
 
-TODO
-
+1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
+   Service class's :py:meth:`~._AwsService.get_limits` method.
+2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method
+   called by that, in the case of large or complex services), get the usage information
+   via `boto` and pass it to the appropriate AwsLimit object via its
+   :py:meth:`~.AwsLimit._add_current_usage` method.
+3. Ensure complete test coverage for the above.
 
 .. _development.adding_services:
 
@@ -62,7 +67,7 @@ Adding New Services
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
 
-1. In ``awslimitchecker.services`` copy ``base.py`` to ``new_service_name.py``.
+1. In ``awslimitchecker.services`` copy ``service_skeleton.py`` to ``new_service_name.py``.
 2. Change the file path on line 2 in the docstring, the class name, and the
    ``service_name`` class attribute.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
@@ -72,7 +77,7 @@ using the :py:mod:`abc` module.
 6. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
 7. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
-8. TBD - write integration tests.
+8. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
 9. Run all tox jobs, or at least one python version, docs and coverage.
 10. Commit the updated documentation to the repository.
 11. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
@@ -89,7 +94,7 @@ using the :py:mod:`abc` module.
 Adding Trusted Advisor Checks
 ------------------------------
 
-TODO
+Currently not implemented; see `issue #14 <https://github.com/jantman/awslimitchecker/issues/14>`_
 
 .. _development.tests:
 
@@ -118,8 +123,7 @@ is ready for it when boto is.
 Integration Testing
 --------------------
 
-TBD.
-
+currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_
 
 .. _development.docs:
 

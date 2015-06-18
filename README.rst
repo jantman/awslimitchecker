@@ -51,6 +51,17 @@ This project is currently in very early development. At this time please conside
 furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
 use, but contributions are certainly welcome.
 
+What It Does
+-------------
+
+- Check current AWS resource usage against AWS Service Limits
+- Show and inspect current usage
+- Override default Service Limits (for accounts with increased limits)
+- Compare current usage to limits; return information about limits that
+  exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
+- Define custom thresholds per-limit
+- Coming Soon: where possible, pull current limits from Trusted Advisor API
+
 Requirements
 ------------
 

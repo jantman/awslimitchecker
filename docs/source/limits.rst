@@ -14,7 +14,7 @@ Supported Limits
 Trusted Advisor Data
 ---------------------
 
-TODO
+TBD; Trusted Advisor support is `not yet implemented <https://github.com/jantman/awslimitchecker/issues/14>`_
 
 .. _limits.checks:
 

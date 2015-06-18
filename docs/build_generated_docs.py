@@ -95,7 +95,7 @@ def build_limits(checker):
     logger.info("Beginning build of limits.rst")
     # get the policy dict
     logger.info("Getting Limits")
-    ta_info = 'TODO'  # @TODO trusted advisor data
+    ta_info = 'TBD; Trusted Advisor support is `not yet implemented <https://github.com/jantman/awslimitchecker/issues/14>`_'  # @TODO trusted advisor data
     limit_info = ''
     limits = checker.get_limits()
     # this is a bit of a pain, because we need to know string lengths to build the table
