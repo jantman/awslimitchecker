@@ -3,6 +3,39 @@
 Getting Started
 ===============
 
+.. _getting_started.features:
+
+Features
+---------
+
+TODO.
+
+.. _getting_started.nomenclature:
+
+Nomenclature
+-------------
+
+Service
+   An AWS Service or Product, such as EC2, VPC, RDS or ElastiCache. More specifically, Services in AwsLimitChecker correspond to
+   distinct APIs for `AWS Services <http://aws.amazon.com/documentation/>`_.
+
+Limit
+   An AWS-imposed maximum usage for a certain resource type in AWS. See `AWS Service Limits <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html>`_.
+   Limits are generally either account-wide or per-region. They have AWS global default values, but can be increased by AWS Support. "Limit" is also the term used
+   within this documentation to describe :py:class:`~.AwsLimit` objects, which describe a specific AWS Limit within this program.
+
+Usage
+   "Usage" refers to your current usage of a specific resource that has a limit. Usage values/amounts (some integer or floating point number, such as number of VPCs
+   or GB of IOPS-provisioned storage) are represented by instances of the :py:class:`~.AwsLimitUsage` class. Limits that are measured as a subset of some "parent"
+   resource, such as "Subnets per VPC" or "Read Replicas per Master" have their usage tracked per parent resource, so you can easily determine which ones are problematic.
+
+Threshold
+   The point at which AwsLimitChecker will consider the current usage for a limit to be problematic. Global thresholds default to usage >= 80% of limit for "warning" severity,
+   and usage >= 99% of limit for "critical" severity. Limits which have reached or exceeded their threshold will be reported separately for warning and critical (we generally
+   consider "warning" to be something that will require human intervention in the near future, and "critical" something that is an immediate problem, i.e. should block
+   automated processes). The ``awslimitchecker`` command line wrapper can override the default global thresholds. The :py:class:`~.AwsLimitChecker` class can both override
+   global percentage thresholds, as well as specify per-limit thresholds as a percentage, a fixed usage value, or both.
+
 .. _getting_started.requirements:
 
 Requirements
@@ -28,6 +61,7 @@ system-wide, you can (using sudo).
     pip install awslimitchecker
 
 .. _getting_started.credentials:
+
 Credentials
 ------------
 
@@ -38,6 +72,7 @@ files, or set as environment variables. See
 for further information.
 
 .. _getting_started.permissions:
+
 Required Permissions
 ---------------------
 
