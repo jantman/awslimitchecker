@@ -59,11 +59,13 @@ Installing
 
 It's recommended that you install into a virtual environment (virtualenv /
 venv). See the `virtualenv usage documentation <http://www.virtualenv.org/en/latest/>`_
-for information on how to create a venv. If you really want to install
-system-wide, you can (using sudo).
+for more details, but the gist is as follows (the virtualenv name, "limitchecker" here,
+can be whatever you want):
 
 .. code-block:: bash
 
+    virtualenv limitchecker
+    source limitchecker/bin/activate
     pip install awslimitchecker
 
 .. _getting_started.credentials:
