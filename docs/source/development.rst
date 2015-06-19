@@ -67,13 +67,20 @@ Adding New Services
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
 
-1. In ``awslimitchecker.services`` copy ``service_skeleton.py`` to ``new_service_name.py``.
-2. Change the file path on line 2 in the docstring, the class name, and the
-   ``service_name`` class attribute.
+1. The new service name should be all lowercase, preferably one word (if not one word, it should be underscore-separated).
+   In ``awslimitchecker/services``, where ``some_service`` is the name of the AWS Service you're adding support for:
+
+.. code-block:: bash
+
+   SVC_NAME='some_service' sed "s/NewService/${SVC_NAME}/gi" newservice.py.example > ${SVC_NAME}.py
+
+2. Find all "TODO" comments in the newly-created file; these have instructions on things to change for new services.
+   Add yourself to the Authors section in the header if desired.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
 4. Write at least high-level tests; TDD is greatly preferred.
 5. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
-   small, easily-testable methods are preferred. Ensure all methods have full documentation.
+   small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
+   to search for "TODO" in the new service class you created (#1).
 6. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
 7. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
