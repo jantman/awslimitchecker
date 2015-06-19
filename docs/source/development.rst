@@ -21,13 +21,12 @@ To setup awslimitchecker for development:
     $ cd awslimitchecker
     $ source bin/activate
 
-3. Clone your fork and install it in the virtualenv
+3. Install your fork in the virtualenv as an editable git clone
 
 .. code-block:: bash
 
-    $ git clone https://github.com/YOUR_NAME/awslimitchecker src/awslimitchecker
+    $ pip install -e git+git@github.com:YOUR_NAME/awslimitchecker.git#egg=awslimitchecker
     $ cd src/awslimitchecker
-    $ python setup.py develop
 
 4. Check out a new git branch. If you're working on a GitHub issue you opened, your
    branch should be called "issues/N" where N is the issue number.
@@ -44,7 +43,7 @@ Guidelines
   should only connect to boto once, and should save the connection as ``self.conn``.
   They *must not* connect in the class constructor.
 * All modules should have (and use) module-level loggers.
-
+* See the section on the AGPL license below.
 
 .. _development.adding_checks:
 
@@ -143,6 +142,27 @@ Much like the test suite, documentation is build using tox:
     $ tox -e docs
 
 Output will be in the ``docs/build/html`` directory under the project root.
+
+.. _development.agpl:
+
+AGPL License
+-------------
+
+awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
+
+* If you're simply *running* awslimitchecker via the command line, there's nothing to worry about; just use it like any other software.
+* If you're using awslimitchecker in your own software in a way that allows users to interact with it over the network (i.e. in your
+  deployment or monitoring systems), but not modifying it, you also don't need to do anything special; awslimitchecker will log a
+  WARNING-level message indicating where the source code of the currently-running version can be obtained from. This suffices for the
+  AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
+* If you wish to modify the source code of awslimitchecker, all you need to do is ensure that :py:meth:`~awslimitchecker.version._get_project_url`
+  returns a publicly-accessible URL to the exact version of the running source code. A `future version <https://github.com/jantman/awslimitchecker/issues/28>`_
+  of awslimitchecker will automatically provide the correct URL if you install it as an editable (``pip install -e``)
+  fork of the original GitHub repository.
+* If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply a
+  requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
+* If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
+  ensure that the source code URL is visible in the output given to users.
 
 .. _development.release_checklist:
 

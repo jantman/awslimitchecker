@@ -83,12 +83,12 @@ using their IDs).
    EC2/EC2-Classic Elastic IPs	5
    EC2/EC2-VPC Elastic IPs	0
    EC2/General Purpose (SSD) volume storage (TiB)	4.501
-   EC2/Magnetic volume storage (TiB)	23.417
+   EC2/Magnetic volume storage (TiB)	7.825
    EC2/Provisioned IOPS	5600
    (...)
    EC2/Running On-Demand t2.micro instances	5
    EC2/Running On-Demand t2.small instances	4
-   EC2/Security groups per VPC	max: vpc-c300b9a6=96 (vpc-a926c2cc=22, vpc-73ec9716=24, vpc-1ee8937b=28, (...)
+   EC2/Security groups per VPC	max: vpc-c300b9a6=99 (vpc-a926c2cc=22, vpc-73ec9716=24, vpc-1ee8937b=28, (...)
    EC2/VPC security groups per elastic network interface	max: eni-8cd846a6=2 (eni-46e63869=1, eni-1b2ee (...)
 
 
@@ -151,10 +151,9 @@ threshold only, and another has crossed the critical threshold):
 
    (venv)$ awslimitchecker
    EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
-   EC2/Magnetic volume storage (TiB) (limit 20) CRITICAL: 23.417
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 97
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 53
-   EC2/Security groups per VPC (limit 100) WARNING: vpc-c300b9a6=96
+   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 102
+   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 60
+   EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=99
 
 
 
@@ -167,9 +166,9 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 
    (venv)$ awslimitchecker -W 97 --critical=98
    EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
-   EC2/Magnetic volume storage (TiB) (limit 20) CRITICAL: 23.417
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 97
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 53
+   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 102
+   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 60
+   EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=99
 
 
 

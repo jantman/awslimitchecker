@@ -99,14 +99,4 @@ License
 --------
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
-This shouldn't be much of a concern to most people.
-
-If you're simply *running* awslimitchecker, all you must do is provide a notice on where to get the source code
-in your output; this is already handled via a warning-level log message in the package. If you modify awslimitchecker's
-code, you must update this URL to reflect your modifications (see ``awslimitchecker/version.py``).
-
-If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply a
-requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
-
-If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
-ensure that the source code URL is visible in the output given to users.
+This shouldn't be much of a concern to most people; see :ref:`Development / AGPL <development.agpl>` for more information.
