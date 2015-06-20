@@ -55,3 +55,18 @@ class TrustedAdvisor(object):
             logger.debug("Connecting to Support API (TrustedAdvisor)")
             self.conn = boto.connect_support()
             logger.info("Connected to Support API")
+
+    def update_limits(self, services):
+        """
+        Poll 'Service Limits' check results from Trusted Advisor, if possible.
+        Iterate over all :py:class:`~.AwsLimit` objects for the given services
+        and update their limits from TA if present in TA checks.
+
+        :param services: dict of service name (string) to
+          :py:class:`~._AwsService` objects
+        :type services: dict
+        """
+        # @TODO call this in AwsLimitChecker.get_limits()
+        # also, make sure it's been done in get_usage, or anything else
+        #   that relies on limits
+        pass
