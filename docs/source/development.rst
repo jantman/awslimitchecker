@@ -175,25 +175,27 @@ Release Checklist
 3. Confirm that there are CHANGES.rst entries for all major changes.
 4. Ensure that Travis tests passing in all environments.
 5. Ensure that test coverage is no less than the last release (ideally, 100%).
-6. Build docs for the branch (locally) and ensure they look correct.
-7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
-8. Confirm that README.rst renders correctly on GitHub.
-9. Upload package to testpypi, confirm that README.rst renders correctly.
+6. Create or update an actual IAM user with the policy from ``awslimitchecker --iam-policy``;
+   run the command line wrapper and ensure that the policy works and contains all needed permissions.
+7. Build docs for the branch (locally) and ensure they look correct.
+8. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
+9. Confirm that README.rst renders correctly on GitHub.
+10. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct
    * ``python setup.py register -r https://testpypi.python.org/pypi``
    * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
-10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
-11. Tag the release in Git, push tag to GitHub:
+11. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
+12. Tag the release in Git, push tag to GitHub:
 
    * tag the release. for now the message is quite simple: ``git tag -a vX.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
    * push the tag to GitHub: ``git push origin vX.Y.Z``
 
-12. Upload package to live pypi:
+13. Upload package to live pypi:
 
     * ``python setup.py sdist upload``
 
-13. make sure any GH issues fixed in the release were closed.
-14. merge master back into develop
+14. make sure any GH issues fixed in the release were closed.
+15. merge master back into develop

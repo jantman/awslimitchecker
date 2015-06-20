@@ -130,7 +130,7 @@ using their IDs).
    EC2/General Purpose (SSD) volume storage (TiB)         4.501
    (...)
    VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
-   VPC/Subnets per VPC                                    max: vpc-73ec9716=8 (vpc-a926c2cc=4, vpc-c300 (...)
+   VPC/Subnets per VPC                                    max: vpc-1ee8937b=8 (vpc-a926c2cc=4, vpc-c300 (...)
    VPC/VPCs                                               4
 
 
