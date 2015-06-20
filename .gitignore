@@ -60,3 +60,5 @@ target/
 # virtualenv
 bin/
 include/
+
+.idea/
