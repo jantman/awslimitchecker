@@ -50,249 +50,254 @@ from .utils import StoreKeyValuePair, dict2cols
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
 
-colorize = True
 
+class Runner(object):
 
-def parse_args(argv):
-    """
-    parse arguments/options
+    def __init__(self):
+        self.colorize = True
+        self.checker = None
 
-    :param argv: argument list to parse, usually ``sys.argv[1:]``
-    :type argv: list
-    :returns: parsed arguments
-    :rtype: :py:class:`argparse.Namespace`
-    """
-    desc = 'Report on AWS service limits and usage via boto, optionally warn ' \
-           'about any services with usage nearing or exceeding their limits. ' \
-           'For further help, see <http://awslimitchecker.readthedocs.org/>'
+    def parse_args(self, argv):
+        """
+        parse arguments/options
 
-    """
-    ####### IMPORTANT license notice ##########
-    In order to remain in compliance with the AGPLv3 license:
-    - this notice MUST NOT be removed, and MUST be displayed to all users
-    - _get_project_url() MUST point to the source code of the ACTUALLY RUNNING
-      version of this program. i.e. if you modify this program, you MUST have
-      the actually-running source available somewhere for your users.
-    ####### IMPORTANT license notice ##########
-    """
-    epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone using' \
-             ' this program, even remotely over a network, is entitled to a ' \
-             'copy of the source code. You can obtain the source code of ' \
-             'awslimitchecker ' + _get_version() + ' from: <' \
-             + _get_project_url() + '>'
-    p = argparse.ArgumentParser(description=desc, epilog=epilog)
-    p.add_argument('-s', '--list-services', action='store_true', default=False,
-                   help='print a list of all AWS service types that '
-                   'awslimitchecker knows how to check')
-    p.add_argument('-l', '--list-limits', action='store_true', default=False,
-                   help='print all AWS effective limits in "service_name/'
-                   'limit_name" format')
-    p.add_argument('--list-defaults', action='store_true', default=False,
-                   help='print all AWS default limits in "service_name/'
-                   'limit_name" format')
-    p.add_argument('-L', '--limit', action=StoreKeyValuePair,
-                   help='override a single AWS limit, specified in '
-                   '"service_name/limit_name=value" format; can be '
-                   'specified multiple times.')
-    p.add_argument('-u', '--show-usage', action='store_true', default=False,
-                   help='find and print the current usage of all AWS services'
-                   ' with known limits')
-    p.add_argument('--iam-policy', action='store_true',
-                   default=False,
-                   help='output a JSON serialized IAM Policy '
-                   'listing the required permissions for '
-                   'awslimitchecker to run correctly.')
-    p.add_argument('-W', '--warning-threshold', action='store',
-                   type=int, default=80,
-                   help='default warning threshold (percentage of '
-                   'limit); default: 80')
-    p.add_argument('-C', '--critical-threshold', action='store',
-                   type=int, default=99,
-                   help='default critical threshold (percentage of '
-                   'limit); default: 99')
-    p.add_argument('--no-color', action='store_true', default=False,
-                   help='do not colorize output')
-    p.add_argument('-v', '--verbose', dest='verbose', action='count',
-                   default=0,
-                   help='verbose output. specify twice for debug-level output.')
-    p.add_argument('-V', '--version', dest='version', action='store_true',
-                   default=False,
-                   help='print version number and exit.')
-    args = p.parse_args(argv)
-    return args
+        :param argv: argument list to parse, usually ``sys.argv[1:]``
+        :type argv: list
+        :returns: parsed arguments
+        :rtype: :py:class:`argparse.Namespace`
+        """
+        desc = 'Report on AWS service limits and usage via boto, optionally ' \
+               'warn about any services with usage nearing or exceeding their' \
+               ' limits. For further help, see ' \
+               '<http://awslimitchecker.readthedocs.org/>'
+        """
+        ####### IMPORTANT license notice ##########
+        In order to remain in compliance with the AGPLv3 license:
+        - this notice MUST NOT be removed, and MUST be displayed to all users
+        - _get_project_url() MUST point to the source code of the ACTUALLY
+          RUNNING version of this program. i.e. if you modify this program, you
+          MUST have the actually-running source available somewhere for your
+          users.
+        ####### IMPORTANT license notice ##########
+        """
+        epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
+                 'using this program, even remotely over a network, is ' \
+                 'entitled to a copy of the source code. You can obtain the ' \
+                 'source code of awslimitchecker ' + _get_version() + \
+                 ' from: <' + _get_project_url() + '>'
+        p = argparse.ArgumentParser(description=desc, epilog=epilog)
+        p.add_argument('-s', '--list-services', action='store_true',
+                       default=False,
+                       help='print a list of all AWS service types that '
+                       'awslimitchecker knows how to check')
+        p.add_argument('-l', '--list-limits', action='store_true',
+                       default=False,
+                       help='print all AWS effective limits in "service_name/'
+                       'limit_name" format')
+        p.add_argument('--list-defaults', action='store_true', default=False,
+                       help='print all AWS default limits in "service_name/'
+                       'limit_name" format')
+        p.add_argument('-L', '--limit', action=StoreKeyValuePair,
+                       help='override a single AWS limit, specified in '
+                       '"service_name/limit_name=value" format; can be '
+                       'specified multiple times.')
+        p.add_argument('-u', '--show-usage', action='store_true',
+                       default=False,
+                       help='find and print the current usage of all AWS '
+                       'services with known limits')
+        p.add_argument('--iam-policy', action='store_true',
+                       default=False,
+                       help='output a JSON serialized IAM Policy '
+                       'listing the required permissions for '
+                       'awslimitchecker to run correctly.')
+        p.add_argument('-W', '--warning-threshold', action='store',
+                       type=int, default=80,
+                       help='default warning threshold (percentage of '
+                       'limit); default: 80')
+        p.add_argument('-C', '--critical-threshold', action='store',
+                       type=int, default=99,
+                       help='default critical threshold (percentage of '
+                       'limit); default: 99')
+        p.add_argument('--no-color', action='store_true', default=False,
+                       help='do not colorize output')
+        p.add_argument('-v', '--verbose', dest='verbose', action='count',
+                       default=0,
+                       help='verbose output. specify twice for debug-level '
+                       'output.')
+        p.add_argument('-V', '--version', dest='version', action='store_true',
+                       default=False,
+                       help='print version number and exit.')
+        args = p.parse_args(argv)
+        return args
 
+    def list_services(self):
+        for x in sorted(self.checker.get_service_names()):
+            print(x)
 
-def list_services(checker):
-    for x in sorted(checker.get_service_names()):
-        print(x)
+    def list_limits(self):
+        limits = self.checker.get_limits()
+        data = {}
+        for svc in sorted(limits.keys()):
+            for lim in sorted(limits[svc].keys()):
+                data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
+                    v=limits[svc][lim].get_limit())
+        print(dict2cols(data))
 
+    def list_defaults(self):
+        limits = self.checker.get_limits()
+        data = {}
+        for svc in sorted(limits.keys()):
+            for lim in sorted(limits[svc].keys()):
+                data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
+                    v=limits[svc][lim].default_limit)
+        print(dict2cols(data))
 
-def list_limits(checker):
-    limits = checker.get_limits()
-    data = {}
-    for svc in sorted(limits.keys()):
-        for lim in sorted(limits[svc].keys()):
-            data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
-                v=limits[svc][lim].get_limit())
-    print(dict2cols(data))
+    def iam_policy(self):
+        policy = self.checker.get_required_iam_policy()
+        print(json.dumps(policy, sort_keys=True, indent=2))
 
+    def show_usage(self):
+        self.checker.find_usage()
+        limits = self.checker.get_limits()
+        data = {}
+        for svc in sorted(limits.keys()):
+            for lim in sorted(limits[svc].keys()):
+                data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
+                    v=limits[svc][lim].get_current_usage_str())
+        print(dict2cols(data))
 
-def list_defaults(checker):
-    limits = checker.get_limits()
-    data = {}
-    for svc in sorted(limits.keys()):
-        for lim in sorted(limits[svc].keys()):
-            data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
-                v=limits[svc][lim].default_limit)
-    print(dict2cols(data))
+    def color_output(self, s, color):
+        if not self.colorize:
+            return s
+        return termcolor.colored(s, color)
 
-
-def iam_policy(checker):
-    policy = checker.get_required_iam_policy()
-    print(json.dumps(policy, sort_keys=True, indent=2))
-
-
-def show_usage(checker):
-    checker.find_usage()
-    limits = checker.get_limits()
-    data = {}
-    for svc in sorted(limits.keys()):
-        for lim in sorted(limits[svc].keys()):
-            data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
-                v=limits[svc][lim].get_current_usage_str())
-    print(dict2cols(data))
-
-
-def color_output(s, color):
-    global colorize
-    if not colorize:
-        return s
-    return termcolor.colored(s, color)
-
-
-def print_issue(service_name, limit, crits, warns):
-    """
-    :param service_name: the name of the service
-    :type service_name: str
-    :param limit: the Limit this relates to
-    :type limit: :py:class:`~.AwsLimit`
-    :param crits: the specific usage values that crossed the critical threshold
-    :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-    :param crits: the specific usage values that crossed the warning threshold
-    :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-    """
-    usage_str = ''
-    if len(crits) > 0:
-        tmp = 'CRITICAL: '
-        tmp += ', '.join([str(x) for x in sorted(crits)])
-        usage_str += color_output(tmp, 'red')
-    if len(warns) > 0:
+    def print_issue(self, service_name, limit, crits, warns):
+        """
+        :param service_name: the name of the service
+        :type service_name: str
+        :param limit: the Limit this relates to
+        :type limit: :py:class:`~.AwsLimit`
+        :param crits: the specific usage values that crossed the critical
+          threshold
+        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+        :param crits: the specific usage values that crossed the warning
+          threshold
+        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+        """
+        usage_str = ''
         if len(crits) > 0:
-            usage_str += ' '
-        tmp = 'WARNING: '
-        tmp += ', '.join([str(x) for x in sorted(warns)])
-        usage_str += color_output(tmp, 'yellow')
-    k = "{s}/{l}".format(
-        s=service_name,
-        l=limit.name,
-    )
-    v = "(limit {v}) {u}".format(
-        v=limit.get_limit(),
-        u=usage_str,
-    )
-    return (k, v)
-
-
-def check_thresholds(checker):
-    have_warn = False
-    have_crit = False
-    problems = checker.check_thresholds()
-    columns = {}
-    for svc in sorted(problems.keys()):
-        for lim_name in sorted(problems[svc].keys()):
-            limit = problems[svc][lim_name]
-            warns = limit.get_warnings()
-            crits = limit.get_criticals()
+            tmp = 'CRITICAL: '
+            tmp += ', '.join([str(x) for x in sorted(crits)])
+            usage_str += self.color_output(tmp, 'red')
+        if len(warns) > 0:
             if len(crits) > 0:
-                have_crit = True
-            if len(warns) > 0:
-                have_warn = True
-            k, v = print_issue(svc, limit, crits, warns)
-            columns[k] = v
-    print(dict2cols(columns))
-    # might as well use the Nagios exit codes,
-    # even though our output doesn't work for that
-    if have_crit:
-        return 2
-    if have_warn:
-        return 1
-    return 0
+                usage_str += ' '
+            tmp = 'WARNING: '
+            tmp += ', '.join([str(x) for x in sorted(warns)])
+            usage_str += self.color_output(tmp, 'yellow')
+        k = "{s}/{l}".format(
+            s=service_name,
+            l=limit.name,
+        )
+        v = "(limit {v}) {u}".format(
+            v=limit.get_limit(),
+            u=usage_str,
+        )
+        return (k, v)
 
+    def check_thresholds(self):
+        have_warn = False
+        have_crit = False
+        problems = self.checker.check_thresholds()
+        columns = {}
+        for svc in sorted(problems.keys()):
+            for lim_name in sorted(problems[svc].keys()):
+                limit = problems[svc][lim_name]
+                warns = limit.get_warnings()
+                crits = limit.get_criticals()
+                if len(crits) > 0:
+                    have_crit = True
+                if len(warns) > 0:
+                    have_warn = True
+                k, v = self.print_issue(svc, limit, crits, warns)
+                columns[k] = v
+        print(dict2cols(columns))
+        # might as well use the Nagios exit codes,
+        # even though our output doesn't work for that
+        if have_crit:
+            return 2
+        if have_warn:
+            return 1
+        return 0
 
-def set_limit_overrides(checker, overrides):
-    for key in sorted(overrides.keys()):
-        if key.count('/') != 1:
-            raise ValueError("Limit names must be in 'service/limit' format; "
-                             "{k} is invalid.".format(k=key))
-        svc, limit = key.split('/')
-        checker.set_limit_override(svc, limit, int(overrides[key]))
+    def set_limit_overrides(self, overrides):
+        for key in sorted(overrides.keys()):
+            if key.count('/') != 1:
+                raise ValueError("Limit names must be in 'service/limit' "
+                                 "format; {k} is invalid.".format(k=key))
+            svc, limit = key.split('/')
+            self.checker.set_limit_override(svc, limit, int(overrides[key]))
+
+    def console_entry_point(self):
+        args = self.parse_args(sys.argv[1:])
+        if args.verbose == 1:
+            logger.setLevel(logging.INFO)
+        elif args.verbose > 1:
+            # debug-level logging hacks
+            FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - " \
+                     "%(name)s.%(funcName)s() ] %(message)s"
+            debug_formatter = logging.Formatter(fmt=FORMAT)
+            logger.handlers[0].setFormatter(debug_formatter)
+            logger.setLevel(logging.DEBUG)
+
+        if args.no_color:
+            self.colorize = False
+
+        if args.version:
+            print('awslimitchecker {v} (see <{s}> for source code)'.format(
+                s=_get_project_url(),
+                v=_get_version()
+            ))
+            raise SystemExit(0)
+
+        # the rest of these actually use the checker
+        self.checker = AwsLimitChecker(
+            warning_threshold=args.warning_threshold,
+            critical_threshold=args.critical_threshold
+        )
+
+        if len(args.limit) > 0:
+            self.set_limit_overrides(args.limit)
+
+        if args.list_services:
+            self.list_services()
+            raise SystemExit(0)
+
+        if args.list_defaults:
+            self.list_defaults()
+            raise SystemExit(0)
+
+        if args.list_limits:
+            self.list_limits()
+            raise SystemExit(0)
+
+        if args.iam_policy:
+            self.iam_policy()
+            raise SystemExit(0)
+
+        if args.show_usage:
+            self.show_usage()
+            raise SystemExit(0)
+
+        # else check
+        res = self.check_thresholds()
+        raise SystemExit(res)
 
 
 def console_entry_point():
-    global colorize
-    args = parse_args(sys.argv[1:])
-    if args.verbose == 1:
-        logger.setLevel(logging.INFO)
-    elif args.verbose > 1:
-        # debug-level logging hacks
-        FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - " \
-                 "%(name)s.%(funcName)s() ] %(message)s"
-        debug_formatter = logging.Formatter(fmt=FORMAT)
-        logger.handlers[0].setFormatter(debug_formatter)
-        logger.setLevel(logging.DEBUG)
+    r = Runner()
+    r.console_entry_point()
 
-    if args.no_color:
-        colorize = False
-
-    if args.version:
-        print('awslimitchecker {v} (see <{s}> for source code)'.format(
-            s=_get_project_url(),
-            v=_get_version()
-        ))
-        raise SystemExit(0)
-
-    # the rest of these actually use the checker
-    checker = AwsLimitChecker(
-        warning_threshold=args.warning_threshold,
-        critical_threshold=args.critical_threshold
-    )
-
-    if len(args.limit) > 0:
-        set_limit_overrides(checker, args.limit)
-
-    if args.list_services:
-        list_services(checker)
-        raise SystemExit(0)
-
-    if args.list_defaults:
-        list_defaults(checker)
-        raise SystemExit(0)
-
-    if args.list_limits:
-        list_limits(checker)
-        raise SystemExit(0)
-
-    if args.iam_policy:
-        iam_policy(checker)
-        raise SystemExit(0)
-
-    if args.show_usage:
-        show_usage(checker)
-        raise SystemExit(0)
-
-    # else check
-    res = check_thresholds(checker)
-    raise SystemExit(res)
 
 if __name__ == "__main__":
     console_entry_point()
