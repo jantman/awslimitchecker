@@ -52,6 +52,7 @@ class _Ec2Service(_AwsService):
     service_name = 'EC2'
 
     def connect(self):
+        """connect to API if not already connected; set self.conn"""
         if self.conn is None:
             logger.debug("Connecting to {n}".format(
                 n=self.service_name))

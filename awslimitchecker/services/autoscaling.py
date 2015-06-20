@@ -52,6 +52,7 @@ class _AutoscalingService(_AwsService):
     service_name = 'AutoScaling'
 
     def connect(self):
+        """connect to API if not already connected; set self.conn"""
         if self.conn is None:
             logger.debug("Connecting to {n}".format(
                 n=self.service_name))
