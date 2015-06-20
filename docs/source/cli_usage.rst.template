@@ -21,6 +21,8 @@ usage, the script will exit 0 of everything is OK, 1 if there are warnings, and 
 are critical thresholds exceeded (though the output is not currently suitable for direct
 use as a Nagios-compatible plugin).
 
+{help}
+
 Examples
 ---------
 

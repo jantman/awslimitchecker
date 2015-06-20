@@ -81,7 +81,10 @@ def parse_args(argv):
     p.add_argument('-s', '--list-services', action='store_true', default=False,
                    help='print a list of all AWS service types that '
                    'awslimitchecker knows how to check')
-    p.add_argument('-l', '--list-defaults', action='store_true', default=False,
+    p.add_argument('-l', '--list-limits', action='store_true', default=False,
+                   help='print all AWS effective limits in "service_name/'
+                   'limit_name" format')
+    p.add_argument('--list-defaults', action='store_true', default=False,
                    help='print all AWS default limits in "service_name/'
                    'limit_name" format')
     p.add_argument('-L', '--limit', action=StoreKeyValuePair,
@@ -127,6 +130,17 @@ def list_limits(checker):
                 s=svc,
                 l=lim,
                 n=limits[svc][lim].get_limit()
+            ))
+
+
+def list_defaults(checker):
+    limits = checker.get_limits()
+    for svc in sorted(limits.keys()):
+        for lim in sorted(limits[svc].keys()):
+            print("{s}/{l}\t{n}".format(
+                s=svc,
+                l=lim,
+                n=limits[svc][lim].default_limit
             ))
 
 
@@ -241,6 +255,10 @@ def console_entry_point():
         raise SystemExit(0)
 
     if args.list_defaults:
+        list_defaults(checker)
+        raise SystemExit(0)
+
+    if args.list_limits:
         list_limits(checker)
         raise SystemExit(0)
 

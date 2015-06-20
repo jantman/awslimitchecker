@@ -85,7 +85,11 @@ class TestAwsLimitCheckerRunner(object):
                                 default=False, action='store_true',
                                 help='print a list of all AWS service types '
                                 'that awslimitchecker knows how to check'),
-            call().add_argument('-l', '--list-defaults', action='store_true',
+            call().add_argument('-l', '--list-limits', action='store_true',
+                                default=False,
+                                help='print all AWS effective limits in '
+                                '"service_name/limit_name" format'),
+            call().add_argument('--list-defaults', action='store_true',
                                 default=False,
                                 help='print all AWS default limits in '
                                 '"service_name/limit_name" format'),
@@ -202,6 +206,35 @@ class TestAwsLimitCheckerRunner(object):
         assert err == ''
         assert mock_checker.mock_calls == [
             call.get_required_iam_policy()
+        ]
+
+    def test_entry_list_defaults(self):
+        argv = ['awslimitchecker', '--list-defaults']
+        with patch.object(sys, 'argv', argv):
+            with patch.multiple(
+                    'awslimitchecker.runner',
+                    AwsLimitChecker=DEFAULT,
+                    list_defaults=DEFAULT,
+            ) as mocks:
+                with pytest.raises(SystemExit) as excinfo:
+                    runner.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mocks['list_defaults'].mock_calls == [
+            call(mocks['AwsLimitChecker'].return_value)
+        ]
+
+    def test_list_defaults(self, capsys):
+        expected = 'SvcBar/bar limit2\t2\n' + \
+                   'SvcBar/barlimit1\t1\n' + \
+                   'SvcFoo/foo limit3\t3\n'
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_limits.return_value = sample_limits()
+        runner.list_defaults(mock_checker)
+        out, err = capsys.readouterr()
+        assert out == expected
+        assert err == ''
+        assert mock_checker.mock_calls == [
+            call.get_limits()
         ]
 
     def test_entry_list_limits(self):

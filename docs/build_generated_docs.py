@@ -174,6 +174,7 @@ def build_runner_examples():
         tmpl = fh.read()
     # examples to run
     examples = {
+        'help': ['awslimitchecker', '--help'],
         'list_defaults': ['awslimitchecker', '-l'],
         'show_usage': ['awslimitchecker', '-u'],
         'list_services': ['awslimitchecker', '-s'],
@@ -199,7 +200,7 @@ def build_runner_examples():
             output = subprocess.check_output(command)
         except subprocess.CalledProcessError as e:
             output = e.output
-        results[name] = format_cmd_output(cmd_str, output)
+        results[name] = format_cmd_output(cmd_str, output, name)
     tmpl = tmpl.format(**results)
     
     # write out the final .rst
@@ -207,16 +208,17 @@ def build_runner_examples():
         fh.write(tmpl)
     logger.critical("WARNING - some output may need to be fixed to provide good examples")
 
-def format_cmd_output(cmd, output):
+def format_cmd_output(cmd, output, name):
     """format command output for docs"""
     formatted = '.. code-block:: console\n\n'
     formatted += '   (venv)$ {c}\n'.format(c=cmd)
     lines = output.split("\n")
-    for idx, line in enumerate(lines):
-        if len(line) > 100:
-            lines[idx] = line[:100] + ' (...)'
-    if len(lines) > 12:
-        lines = lines[:5] + ['(...)'] + lines[-5:]
+    if name != 'help':
+        for idx, line in enumerate(lines):
+            if len(line) > 100:
+                lines[idx] = line[:100] + ' (...)'
+        if len(lines) > 12:
+            lines = lines[:5] + ['(...)'] + lines[-5:]
     for line in lines:
         if line.strip() == '':
             continue

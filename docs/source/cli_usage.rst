@@ -21,6 +21,47 @@ usage, the script will exit 0 of everything is OK, 1 if there are warnings, and 
 are critical thresholds exceeded (though the output is not currently suitable for direct
 use as a Nagios-compatible plugin).
 
+.. code-block:: console
+
+   (venv)$ awslimitchecker --help
+   usage: awslimitchecker [-h] [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
+                          [--iam-policy] [-W WARNING_THRESHOLD]
+                          [-C CRITICAL_THRESHOLD] [-v] [-V]
+   Report on AWS service limits and usage via boto, optionally warn about any
+   services with usage nearing or exceeding their limits. For further help, see
+   <http://awslimitchecker.readthedocs.org/>
+   optional arguments:
+     -h, --help            show this help message and exit
+     -s, --list-services   print a list of all AWS service types that
+                           awslimitchecker knows how to check
+     -l, --list-limits     print all AWS effective limits in
+                           "service_name/limit_name" format
+     --list-defaults       print all AWS default limits in
+                           "service_name/limit_name" format
+     -L LIMIT, --limit LIMIT
+                           override a single AWS limit, specified in
+                           "service_name/limit_name=value" format; can be
+                           specified multiple times.
+     -u, --show-usage      find and print the current usage of all AWS services
+                           with known limits
+     --iam-policy          output a JSON serialized IAM Policy listing the
+                           required permissions for awslimitchecker to run
+                           correctly.
+     -W WARNING_THRESHOLD, --warning-threshold WARNING_THRESHOLD
+                           default warning threshold (percentage of limit);
+                           default: 80
+     -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
+                           default critical threshold (percentage of limit);
+                           default: 99
+     -v, --verbose         verbose output. specify twice for debug-level output.
+     -V, --version         print version number and exit.
+   awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
+   even remotely over a network, is entitled to a copy of the source code. You
+   can obtain the source code of awslimitchecker 0.1.0 from:
+   <https://pypi.python.org/pypi/awslimitchecker/0.1.0>
+
+
+
 Examples
 ---------
 
@@ -88,7 +129,7 @@ using their IDs).
    EC2/EC2-VPC Elastic IPs	0
    EC2/General Purpose (SSD) volume storage (TiB)	4.501
    (...)
-   VPC/Route tables per VPC	max: vpc-a926c2cc=2 (vpc-1ee8937b=1, vpc-c300b9a6=1, vpc-73ec9716=1, vpc-a9 (...)
+   VPC/Route tables per VPC	max: vpc-a926c2cc=2 (vpc-c300b9a6=1, vpc-1ee8937b=1, vpc-73ec9716=1, vpc-a9 (...)
    VPC/Rules per network ACL	max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7aaa3=4, acl-7bbd581e=4, acl-b (...)
    VPC/Subnets per VPC	max: vpc-1ee8937b=8 (vpc-a926c2cc=4, vpc-c300b9a6=6, vpc-1ee8937b=8, vpc-73ec971 (...)
    VPC/VPCs	4
@@ -114,8 +155,8 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    (venv)$ awslimitchecker -L "EC2/EC2-Classic Elastic IPs"=100 --limit="EC2/EC2-VPC Elastic IPs"=200 --list-defaults
    AutoScaling/Auto Scaling Groups	20
    AutoScaling/Launch configurations	100
-   EC2/EC2-Classic Elastic IPs	100
-   EC2/EC2-VPC Elastic IPs	200
+   EC2/EC2-Classic Elastic IPs	5
+   EC2/EC2-VPC Elastic IPs	5
    EC2/General Purpose (SSD) volume storage (TiB)	20
    (...)
    VPC/Route tables per VPC	200
