@@ -225,6 +225,7 @@ class _Ec2Service(_AwsService):
         limits.update(self._get_limits_instances())
         limits.update(self._get_limits_ebs())
         limits.update(self._get_limits_networking())
+        self.limits = limits
         return limits
 
     def _get_limits_ebs(self):
