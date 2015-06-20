@@ -93,5 +93,18 @@ Running On-Demand t2.small instances              20
 Security groups per VPC                           100  
 VPC security groups per elastic network interface 5    
 ================================================= =====
+VPC
+++++
+
+======================= ===
+Limit                   Default
+======================= ===
+Entries per route table 50 
+Network ACLs per VPC    200
+Route tables per VPC    200
+Rules per network ACL   20 
+Subnets per VPC         200
+VPCs                    5  
+======================= ===
 
 

@@ -39,6 +39,7 @@ View the AWS services currently supported by ``awslimitchecker`` with the
 
    (venv)$ awslimitchecker -s
    EC2
+   VPC
 
 
 
@@ -59,10 +60,10 @@ option.
    EC2/Magnetic volume storage (TiB)	20
    EC2/Provisioned IOPS	40000
    (...)
-   EC2/Running On-Demand t2.micro instances	20
-   EC2/Running On-Demand t2.small instances	20
-   EC2/Security groups per VPC	100
-   EC2/VPC security groups per elastic network interface	5
+   VPC/Route tables per VPC	200
+   VPC/Rules per network ACL	20
+   VPC/Subnets per VPC	200
+   VPC/VPCs	5
 
 
 
@@ -86,10 +87,10 @@ using their IDs).
    EC2/Magnetic volume storage (TiB)	7.825
    EC2/Provisioned IOPS	5600
    (...)
-   EC2/Running On-Demand t2.micro instances	5
-   EC2/Running On-Demand t2.small instances	4
-   EC2/Security groups per VPC	max: vpc-c300b9a6=99 (vpc-a926c2cc=22, vpc-73ec9716=24, vpc-1ee8937b=28, (...)
-   EC2/VPC security groups per elastic network interface	max: eni-8cd846a6=2 (eni-46e63869=1, eni-1b2ee (...)
+   VPC/Route tables per VPC	max: vpc-a926c2cc=2 (vpc-1ee8937b=1, vpc-73ec9716=1, vpc-c300b9a6=1, vpc-a9 (...)
+   VPC/Rules per network ACL	max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7aaa3=4, acl-7bbd581e=4, acl-b (...)
+   VPC/Subnets per VPC	max: vpc-1ee8937b=8 (vpc-a926c2cc=4, vpc-c300b9a6=6, vpc-1ee8937b=8, vpc-73ec971 (...)
+   VPC/VPCs	4
 
 
 
@@ -116,10 +117,10 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    EC2/Magnetic volume storage (TiB)	20
    EC2/Provisioned IOPS	40000
    (...)
-   EC2/Running On-Demand t2.micro instances	20
-   EC2/Running On-Demand t2.small instances	20
-   EC2/Security groups per VPC	100
-   EC2/VPC security groups per elastic network interface	5
+   VPC/Route tables per VPC	200
+   VPC/Rules per network ACL	20
+   VPC/Subnets per VPC	200
+   VPC/VPCs	5
 
 
 
@@ -151,9 +152,10 @@ threshold only, and another has crossed the critical threshold):
 
    (venv)$ awslimitchecker
    EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 102
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 60
+   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 98
+   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 56
    EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=99
+   VPC/VPCs (limit 5) WARNING: 4
 
 
 
@@ -166,8 +168,8 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 
    (venv)$ awslimitchecker -W 97 --critical=98
    EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 102
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 60
+   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 98
+   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 56
    EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=99
 
 

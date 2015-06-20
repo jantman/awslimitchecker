@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import argparse
+import re
+
+def service_from_template(sname, sname_lower):
+    svc_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(svc_dir, 'newservice.py.example'), 'r') as fh:
+        tmpl = fh.read()
+    tmpl = tmpl.replace('XXnewserviceXX', sname_lower)
+    tmpl = tmpl.replace('XXNewServiceXX', sname)
+    fname = '{s}.py'.format(s=sname_lower)
+    print("Writing {f}".format(f=fname))
+    with open(os.path.join(svc_dir, fname), 'w') as fh:
+        fh.write(tmpl)
+
+def test_from_template(sname, sname_lower):
+    test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tests', 'services')
+    with open(os.path.join(test_dir, 'test_newservice.py.example'), 'r') as fh:
+        tmpl = fh.read()
+    tmpl = tmpl.replace('XXnewserviceXX', sname_lower)
+    tmpl = tmpl.replace('XXNewServiceXX', sname)
+    fname = 'test_{s}.py'.format(s=sname_lower)
+    print("Writing {f}".format(f=fname))
+    with open(os.path.join(test_dir, fname), 'w') as fh:
+        fh.write(tmpl)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Add a new service to awslimitchecker')
+    parser.add_argument('service_name', type=str, help='The name of the AWS service, in CamelCase')
+    args = parser.parse_args()
+    name_re = r'^[A-Za-z_]+$'
+    if not re.match(name_re, args.service_name):
+        sys.stderr.write('ERROR: service_name must match {r}\n'.format(r=name_re))
+        raise SystemExit(1)
+    svc_name = args.service_name.capitalize()
+    svc_name_lower = svc_name.lower()
+    service_from_template(svc_name, svc_name_lower)
+    test_from_template(svc_name, svc_name_lower)

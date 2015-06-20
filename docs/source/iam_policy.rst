@@ -19,9 +19,13 @@ permissions required for it to function correctly:
         {
           "Action": [
             "ec2:DescribeInstances", 
+            "ec2:DescribeNetworkAcls", 
             "ec2:DescribeReservedInstances", 
+            "ec2:DescribeRouteTables", 
             "ec2:DescribeSecurityGroups", 
-            "ec2:DescribeVolumes"
+            "ec2:DescribeSubnets", 
+            "ec2:DescribeVolumes", 
+            "ec2:DescribeVpcs"
           ], 
           "Effect": "Allow", 
           "Resource": "*"
