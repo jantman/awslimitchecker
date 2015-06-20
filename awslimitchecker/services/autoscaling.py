@@ -1,5 +1,5 @@
 """
-awslimitchecker/services/XXnewserviceXX.py
+awslimitchecker/services/autoscaling.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -47,16 +47,15 @@ from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
-class _XXNewServiceXXService(_AwsService):
+class _AutoscalingService(_AwsService):
 
-    service_name = 'XXNewServiceXX'
+    service_name = 'AutoScaling'
 
     def connect(self):
         if self.conn is None:
             logger.debug("Connecting to {n}".format(
                 n=self.service_name))
-            # TODO: set this to the correct connection method:
-            self.conn = boto.connect_XXnewserviceXX()
+            self.conn = boto.connect_autoscale()
             logger.info("Connected to {n}".format(
                 n=self.service_name))
 
@@ -71,12 +70,16 @@ class _XXNewServiceXXService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        # TODO: update your usage here, i.e.:
-        """
-        u = (count of something, from boto)
-        u_id = (resource id from AWS)
-        self.limits['Number of u']._add_current_usage(u, aws_type='U', id=u_id)
-        """
+
+        self.limits['Auto Scaling Groups']._add_current_usage(
+            len(self.conn.get_all_groups()),
+            aws_type='AWS::AutoScaling::AutoScalingGroup',
+        )
+
+        self.limits['Launch configurations']._add_current_usage(
+            len(self.conn.get_all_launch_configurations()),
+            aws_type='AWS::AutoScaling::LaunchConfiguration',
+        )
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -91,18 +94,24 @@ class _XXNewServiceXXService(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
-        # TODO: declare Limits here, i.e.:
-        """
-        limits['Number of u'] = AwsLimit(
-            'Number of u',
+        # autoscaleconnection.get_all_groups()
+        limits['Auto Scaling Groups'] = AwsLimit(
+            'Auto Scaling Groups',
             self,
-            40000,
+            20,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='U',
+            limit_type='AWS::AutoScaling::AutoScalingGroup',
         )
-
-        """
+        # autoscaleconnection.get_all_launch_configurations()
+        limits['Launch configurations'] = AwsLimit(
+            'Launch configurations',
+            self,
+            100,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::AutoScaling::LaunchConfiguration',
+        )
         self.limits = limits
         return limits
 
@@ -115,7 +124,7 @@ class _XXNewServiceXXService(_AwsService):
         :returns: list of IAM Action strings
         :rtype: list
         """
-        # TODO: update this to be all IAM permissions required for find_usage() to work
         return [
-            "XXNewServiceXX:SomeAction",
+            'autoscaling:DescribeAutoScalingGroups',
+            'autoscaling:DescribeLaunchConfigurations',
         ]

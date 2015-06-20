@@ -1,5 +1,5 @@
 """
-awslimitchecker/tests/services/test_XXnewserviceXX.py
+awslimitchecker/tests/services/test_autoscaling.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -38,18 +38,18 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from mock import Mock, patch, call
-from boto.XXnewserviceXX.connection import XXNewServiceXXConnection
-from awslimitchecker.services.XXnewserviceXX import _XXNewServiceXXService
+from boto.ec2.autoscale import AutoScaleConnection
+from awslimitchecker.services.autoscaling import _AutoscalingService
 
 
-class Test_XXNewServiceXXService(object):
+class Test_AutoscalingService(object):
 
-    pb = 'awslimitchecker.services.XXnewserviceXX._XXNewServiceXXService'  # patch base path
+    pb = 'awslimitchecker.services.autoscaling._AutoscalingService'
 
     def test_init(self):
         """test __init__()"""
-        cls = _XXNewServiceXXService(21, 43)
-        assert cls.service_name == 'XXNewServiceXX'
+        cls = _AutoscalingService(21, 43)
+        assert cls.service_name == 'AutoScaling'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
@@ -57,30 +57,33 @@ class Test_XXNewServiceXXService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
-        cls = _XXNewServiceXXService(21, 43)
-        with patch('awslimitchecker.services.XXnewserviceXX.boto.connect_XXnewserviceXX') as mock_XXnewserviceXX:
-            mock_XXnewserviceXX.return_value = mock_conn
+        cls = _AutoscalingService(21, 43)
+        with patch('awslimitchecker.services.autoscaling.boto.connect_'
+                   'autoscale') as mock_autoscaling:
+            mock_autoscaling.return_value = mock_conn
             cls.connect()
-        assert mock_XXnewserviceXX.mock_calls == [call()]
+        assert mock_autoscaling.mock_calls == [call()]
         assert mock_conn.mock_calls == []
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _AutoscalingService(21, 43)
         cls.conn = mock_conn
-        with patch('awslimitchecker.services.XXnewserviceXX.boto.connect_XXnewserviceXX') as mock_XXnewserviceXX:
-            mock_XXnewserviceXX.return_value = mock_conn
+        with patch('awslimitchecker.services.autoscaling.boto.connect_'
+                   'autoscale') as mock_autoscaling:
+            mock_autoscaling.return_value = mock_conn
             cls.connect()
-        assert mock_XXnewserviceXX.mock_calls == []
+        assert mock_autoscaling.mock_calls == []
         assert mock_conn.mock_calls == []
 
     def test_get_limits(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _AutoscalingService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            'SomeLimitNameHere',
+            'Auto Scaling Groups',
+            'Launch configurations',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -90,25 +93,33 @@ class Test_XXNewServiceXXService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _AutoscalingService(21, 43)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
 
     def test_find_usage(self):
-        mock_conn = Mock(spec_set=XXNewServiceXXConnection)
+        mock_conn = Mock(spec_set=AutoScaleConnection)
+        mock_conn.get_all_groups.return_value = [1, 2, 3]
+        mock_conn.get_all_launch_configurations.return_value = [1, 2]
+
         with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _XXNewServiceXXService(21, 43)
+            cls = _AutoscalingService(21, 43)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        # TODO - assert about usage
-
+        asgs = sorted(cls.limits['Auto Scaling Groups'].get_current_usage())
+        assert len(asgs) == 1
+        assert asgs[0].get_value() == 3
+        lcs = sorted(cls.limits['Launch configurations'].get_current_usage())
+        assert len(lcs) == 1
+        assert lcs[0].get_value() == 2
 
     def test_required_iam_permissions(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _AutoscalingService(21, 43)
         assert cls.required_iam_permissions() == [
-            # TODO - permissions here
+            'autoscaling:DescribeAutoScalingGroups',
+            'autoscaling:DescribeLaunchConfigurations',
         ]

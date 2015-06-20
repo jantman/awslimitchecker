@@ -24,6 +24,15 @@ Current Checks
 The section below lists every limit that this version of awslimitchecker knows
 how to check, and its hard-coded default value (per AWS documentation).
 
+AutoScaling
+++++++++++++
+
+===================== ===
+Limit                 Default
+===================== ===
+Auto Scaling Groups   20 
+Launch configurations 100
+===================== ===
 EC2
 ++++
 

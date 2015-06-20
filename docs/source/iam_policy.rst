@@ -18,6 +18,8 @@ permissions required for it to function correctly:
       "Statement": [
         {
           "Action": [
+            "autoscaling:DescribeAutoScalingGroups", 
+            "autoscaling:DescribeLaunchConfigurations", 
             "ec2:DescribeInstances", 
             "ec2:DescribeNetworkAcls", 
             "ec2:DescribeReservedInstances", 
