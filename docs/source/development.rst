@@ -66,14 +66,15 @@ Adding New Services
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
 
-1. The new service name should be all lowercase, preferably one word (if not one word, it should be underscore-separated).
-   In ``awslimitchecker/services``, where ``some_service`` is the name of the AWS Service you're adding support for:
+1. The new service name should be in CamelCase, preferably one word (if not one word, it should be underscore-separated).
+   In ``awslimitchecker/services``, use the ``addservice`` script; this will create a templated service class in the
+   current directory, and create a templated (but far from complete) unit test file in ``awslimitchecker/tests/services``:
 
 .. code-block:: bash
 
-   SVC_NAME='some_service' sed "s/NewService/${SVC_NAME}/gi" newservice.py.example > ${SVC_NAME}.py
+   ./addservice ServiceName
 
-2. Find all "TODO" comments in the newly-created file; these have instructions on things to change for new services.
+2. Find all "TODO" comments in the newly-created files; these have instructions on things to change for new services.
    Add yourself to the Authors section in the header if desired.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
 4. Write at least high-level tests; TDD is greatly preferred.
