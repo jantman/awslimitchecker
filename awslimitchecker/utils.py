@@ -64,3 +64,27 @@ class StoreKeyValuePair(argparse.Action):
         # handle quotes for values with spaces
         n = n.strip('"\'')
         getattr(namespace, self.dest)[n] = v
+
+
+def dict2cols(d, spaces=2, separator=' '):
+    """
+    Take a dict of string keys and string values, and return a string with
+    them formatted two columns separate by at least ``spaces`` ``separator``
+    characters.
+
+    :param d: dict of string keys, string values
+    :type d: dict
+    :param spaces: number of spaces to separate columns by
+    :type spaces: int
+    :param separator: character to fill in between columns
+    :type separator: string
+    """
+    s = ''
+    maxlen = max([len(k) for k in d.keys()])
+    fmt_str = '{k:' + separator + '<' + str(maxlen + spaces) + '}{v}\n'
+    for k in sorted(d.keys()):
+        s += fmt_str.format(
+            k=k,
+            v=d[k],
+        )
+    return s

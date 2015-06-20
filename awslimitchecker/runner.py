@@ -44,7 +44,7 @@ import json
 
 from .version import _get_version, _get_project_url
 from .checker import AwsLimitChecker
-from .utils import StoreKeyValuePair
+from .utils import StoreKeyValuePair, dict2cols
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
@@ -124,24 +124,22 @@ def list_services(checker):
 
 def list_limits(checker):
     limits = checker.get_limits()
+    data = {}
     for svc in sorted(limits.keys()):
         for lim in sorted(limits[svc].keys()):
-            print("{s}/{l}\t{n}".format(
-                s=svc,
-                l=lim,
-                n=limits[svc][lim].get_limit()
-            ))
+            data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
+                v=limits[svc][lim].get_limit())
+    print(dict2cols(data))
 
 
 def list_defaults(checker):
     limits = checker.get_limits()
+    data = {}
     for svc in sorted(limits.keys()):
         for lim in sorted(limits[svc].keys()):
-            print("{s}/{l}\t{n}".format(
-                s=svc,
-                l=lim,
-                n=limits[svc][lim].default_limit
-            ))
+            data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
+                v=limits[svc][lim].default_limit)
+    print(dict2cols(data))
 
 
 def iam_policy(checker):
@@ -152,13 +150,12 @@ def iam_policy(checker):
 def show_usage(checker):
     checker.find_usage()
     limits = checker.get_limits()
+    data = {}
     for svc in sorted(limits.keys()):
         for lim in sorted(limits[svc].keys()):
-            print("{s}/{l}\t{n}".format(
-                s=svc,
-                l=lim,
-                n=limits[svc][lim].get_current_usage_str()
-            ))
+            data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
+                v=limits[svc][lim].get_current_usage_str())
+    print(dict2cols(data))
 
 
 def print_issue(service_name, limit, crits, warns):
@@ -181,19 +178,22 @@ def print_issue(service_name, limit, crits, warns):
             usage_str += ' '
         usage_str += 'WARNING: '
         usage_str += ', '.join([str(x) for x in sorted(warns)])
-    s = "{s}/{l} (limit {v}) {u}".format(
+    k = "{s}/{l}".format(
         s=service_name,
         l=limit.name,
+    )
+    v = "(limit {v}) {u}".format(
         v=limit.get_limit(),
         u=usage_str,
     )
-    return s
+    return (k, v)
 
 
 def check_thresholds(checker):
     have_warn = False
     have_crit = False
     problems = checker.check_thresholds()
+    columns = {}
     for svc in sorted(problems.keys()):
         for lim_name in sorted(problems[svc].keys()):
             limit = problems[svc][lim_name]
@@ -203,7 +203,9 @@ def check_thresholds(checker):
                 have_crit = True
             if len(warns) > 0:
                 have_warn = True
-            print(print_issue(svc, limit, crits, warns))
+            k, v = print_issue(svc, limit, crits, warns)
+            columns[k] = v
+    print(dict2cols(columns))
     # might as well use the Nagios exit codes,
     # even though our output doesn't work for that
     if have_crit:

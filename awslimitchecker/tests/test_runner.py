@@ -224,17 +224,23 @@ class TestAwsLimitCheckerRunner(object):
         ]
 
     def test_list_defaults(self, capsys):
-        expected = 'SvcBar/bar limit2\t2\n' + \
-                   'SvcBar/barlimit1\t1\n' + \
-                   'SvcFoo/foo limit3\t3\n'
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_limits.return_value = sample_limits()
-        runner.list_defaults(mock_checker)
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = 'd2cval'
+            runner.list_defaults(mock_checker)
         out, err = capsys.readouterr()
-        assert out == expected
+        assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
             call.get_limits()
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
+                'SvcBar/bar limit2': '2',
+                'SvcBar/barlimit1': '1',
+                'SvcFoo/foo limit3': '3',
+            })
         ]
 
     def test_entry_list_limits(self):
@@ -253,17 +259,23 @@ class TestAwsLimitCheckerRunner(object):
         ]
 
     def test_list_limits(self, capsys):
-        expected = 'SvcBar/bar limit2\t99\n' + \
-                   'SvcBar/barlimit1\t1\n' + \
-                   'SvcFoo/foo limit3\t3\n'
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_limits.return_value = sample_limits()
-        runner.list_limits(mock_checker)
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = 'd2cval'
+            runner.list_limits(mock_checker)
         out, err = capsys.readouterr()
-        assert out == expected
+        assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
             call.get_limits()
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
+                'SvcBar/bar limit2': '99',
+                'SvcBar/barlimit1': '1',
+                'SvcFoo/foo limit3': '3',
+            })
         ]
 
     def test_entry_limit(self):
@@ -352,18 +364,24 @@ class TestAwsLimitCheckerRunner(object):
         limits['SvcFoo']['foo limit3']._add_current_usage(33)
         limits['SvcBar']['bar limit2']._add_current_usage(22)
         limits['SvcBar']['barlimit1']._add_current_usage(11)
-        expected = 'SvcBar/bar limit2\t22\n' + \
-                   'SvcBar/barlimit1\t11\n' + \
-                   'SvcFoo/foo limit3\t33\n'
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_limits.return_value = limits
-        runner.show_usage(mock_checker)
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = 'd2cval'
+            runner.show_usage(mock_checker)
         out, err = capsys.readouterr()
-        assert out == expected
+        assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
             call.find_usage(),
             call.get_limits()
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
+                'SvcBar/bar limit2': '22',
+                'SvcBar/barlimit1': '11',
+                'SvcFoo/foo limit3': '33',
+            })
         ]
 
     def test_entry_verbose(self, capsys):
@@ -456,9 +474,11 @@ class TestAwsLimitCheckerRunner(object):
         """no problems, return 0 and print nothing"""
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.check_thresholds.return_value = {}
-        res = runner.check_thresholds(mock_checker)
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = ''
+            res = runner.check_thresholds(mock_checker)
         out, err = capsys.readouterr()
-        assert out == ''
+        assert out == '\n'
         assert err == ''
         assert mock_checker.mock_calls == [
             call.check_thresholds()
@@ -468,22 +488,26 @@ class TestAwsLimitCheckerRunner(object):
     def test_check_thresholds_many_problems(self):
         """lots of problems"""
         mock_limit1 = Mock(spec_set=AwsLimit)
+        type(mock_limit1).name = 'limit1'
         mock_w1 = Mock(spec_set=AwsLimitUsage)
         mock_limit1.get_warnings.return_value = [mock_w1]
         mock_c1 = Mock(spec_set=AwsLimitUsage)
         mock_limit1.get_criticals.return_value = [mock_c1]
 
         mock_limit2 = Mock(spec_set=AwsLimit)
+        type(mock_limit2).name = 'limit2'
         mock_w2 = Mock(spec_set=AwsLimitUsage)
         mock_limit2.get_warnings.return_value = [mock_w2]
         mock_limit2.get_criticals.return_value = []
 
         mock_limit3 = Mock(spec_set=AwsLimit)
+        type(mock_limit3).name = 'limit3'
         mock_w3 = Mock(spec_set=AwsLimitUsage)
         mock_limit3.get_warnings.return_value = [mock_w3]
         mock_limit3.get_criticals.return_value = []
 
         mock_limit4 = Mock(spec_set=AwsLimit)
+        type(mock_limit4).name = 'limit4'
         mock_limit4.get_warnings.return_value = []
         mock_c2 = Mock(spec_set=AwsLimitUsage)
         mock_limit4.get_criticals.return_value = [mock_c2]
@@ -499,9 +523,15 @@ class TestAwsLimitCheckerRunner(object):
                 'limit2': mock_limit2,
             },
         }
+
+        def se_print(s, l, c, w):
+            return ('{s}/{l}'.format(s=s, l=l.name), '')
+
         with patch('awslimitchecker.runner.print_issue') as mock_print:
-            mock_print.return_value = ''
-            res = runner.check_thresholds(mock_checker)
+            mock_print.side_effect = se_print
+            with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+                mock_d2c.return_value = 'd2cval'
+                res = runner.check_thresholds(mock_checker)
         assert mock_checker.mock_calls == [
             call.check_thresholds()
         ]
@@ -510,6 +540,14 @@ class TestAwsLimitCheckerRunner(object):
             call('svc1', mock_limit2, [], [mock_w2]),
             call('svc2', mock_limit3, [], [mock_w3]),
             call('svc2', mock_limit4, [mock_c2], []),
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
+                'svc1/limit1': '',
+                'svc1/limit2': '',
+                'svc2/limit3': '',
+                'svc2/limit4': '',
+            })
         ]
         assert res == 2
 
@@ -536,8 +574,10 @@ class TestAwsLimitCheckerRunner(object):
             },
         }
         with patch('awslimitchecker.runner.print_issue') as mock_print:
-            mock_print.return_value = ''
-            res = runner.check_thresholds(mock_checker)
+            mock_print.return_value = ('', '')
+            with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+                mock_d2c.return_value = 'd2cval'
+                res = runner.check_thresholds(mock_checker)
         assert mock_checker.mock_calls == [
             call.check_thresholds()
         ]
@@ -562,7 +602,9 @@ class TestAwsLimitCheckerRunner(object):
             },
         }
         with patch('awslimitchecker.runner.print_issue') as mock_print:
-            mock_print.return_value = ''
+            mock_print.return_value = ('', '')
+            with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+                mock_d2c.return_value = 'd2cval'
             res = runner.check_thresholds(mock_checker)
         assert mock_checker.mock_calls == [
             call.check_thresholds()
@@ -585,7 +627,7 @@ class TestAwsLimitCheckerRunner(object):
             [c1],
             []
         )
-        assert res == 'svcname/limitname (limit 12) CRITICAL: 56'
+        assert res == ('svcname/limitname', '(limit 12) CRITICAL: 56')
 
     def test_print_issue_crit_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -602,8 +644,8 @@ class TestAwsLimitCheckerRunner(object):
             [c1, c2, c3],
             []
         )
-        assert res == 'svcname/limitname (limit 5) ' \
-            'CRITICAL: 8, 10, c2id=12'
+        assert res == ('svcname/limitname',
+                       '(limit 5) CRITICAL: 8, 10, c2id=12')
 
     def test_print_issue_warn_one(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -618,7 +660,7 @@ class TestAwsLimitCheckerRunner(object):
             [],
             [w1]
         )
-        assert res == 'svcname/limitname (limit 12) WARNING: 11'
+        assert res == ('svcname/limitname', '(limit 12) WARNING: 11')
 
     def test_print_issue_warn_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -635,8 +677,9 @@ class TestAwsLimitCheckerRunner(object):
             [],
             [w1, w2, w3]
         )
-        assert res == 'svcname/limitname (limit 12) WARNING: ' \
-            'w2id=10, w3id=10, 11'
+        assert res == ('svcname/limitname',
+                       '(limit 12) WARNING: '
+                       'w2id=10, w3id=10, 11')
 
     def test_print_issue_both_one(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -652,9 +695,10 @@ class TestAwsLimitCheckerRunner(object):
             [c1],
             [w1]
         )
-        assert res == 'svcname/limitname (limit 12) ' \
-            'CRITICAL: 10 ' \
-            'WARNING: w3id=10'
+        assert res == ('svcname/limitname',
+                       '(limit 12) '
+                       'CRITICAL: 10 '
+                       'WARNING: w3id=10')
 
     def test_print_issue_both_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -674,6 +718,7 @@ class TestAwsLimitCheckerRunner(object):
             [c1, c2, c3],
             [w1, w2, w3]
         )
-        assert res == 'svcname/limitname (limit 12) ' \
-            'CRITICAL: 8, 10, c2id=12 ' \
-            'WARNING: w2id=10, w3id=10, 11'
+        assert res == ('svcname/limitname',
+                       '(limit 12) '
+                       'CRITICAL: 8, 10, c2id=12 '
+                       'WARNING: w2id=10, w3id=10, 11')

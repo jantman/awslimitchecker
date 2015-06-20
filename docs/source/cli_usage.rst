@@ -96,16 +96,15 @@ option.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling Groups	20
-   AutoScaling/Launch configurations	100
-   EC2/EC2-Classic Elastic IPs	5
-   EC2/EC2-VPC Elastic IPs	5
-   EC2/General Purpose (SSD) volume storage (TiB)	20
+   AutoScaling/Auto Scaling Groups                        20
+   AutoScaling/Launch configurations                      100
+   EC2/EC2-Classic Elastic IPs                            5
+   EC2/EC2-VPC Elastic IPs                                5
+   EC2/General Purpose (SSD) volume storage (TiB)         20
    (...)
-   VPC/Route tables per VPC	200
-   VPC/Rules per network ACL	20
-   VPC/Subnets per VPC	200
-   VPC/VPCs	5
+   VPC/Rules per network ACL                              20
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               5
 
 
 
@@ -123,16 +122,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling Groups	38
-   AutoScaling/Launch configurations	50
-   EC2/EC2-Classic Elastic IPs	5
-   EC2/EC2-VPC Elastic IPs	0
-   EC2/General Purpose (SSD) volume storage (TiB)	4.501
+   AutoScaling/Auto Scaling Groups                        38
+   AutoScaling/Launch configurations                      50
+   EC2/EC2-Classic Elastic IPs                            5
+   EC2/EC2-VPC Elastic IPs                                0
+   EC2/General Purpose (SSD) volume storage (TiB)         4.501
    (...)
-   VPC/Route tables per VPC	max: vpc-a926c2cc=2 (vpc-c300b9a6=1, vpc-1ee8937b=1, vpc-73ec9716=1, vpc-a9 (...)
-   VPC/Rules per network ACL	max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7aaa3=4, acl-7bbd581e=4, acl-b (...)
-   VPC/Subnets per VPC	max: vpc-1ee8937b=8 (vpc-a926c2cc=4, vpc-c300b9a6=6, vpc-1ee8937b=8, vpc-73ec971 (...)
-   VPC/VPCs	4
+   VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
+   VPC/Subnets per VPC                                    max: vpc-73ec9716=8 (vpc-a926c2cc=4, vpc-c300 (...)
+   VPC/VPCs                                               4
 
 
 
@@ -153,16 +151,15 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 .. code-block:: console
 
    (venv)$ awslimitchecker -L "EC2/EC2-Classic Elastic IPs"=100 --limit="EC2/EC2-VPC Elastic IPs"=200 --list-defaults
-   AutoScaling/Auto Scaling Groups	20
-   AutoScaling/Launch configurations	100
-   EC2/EC2-Classic Elastic IPs	5
-   EC2/EC2-VPC Elastic IPs	5
-   EC2/General Purpose (SSD) volume storage (TiB)	20
+   AutoScaling/Auto Scaling Groups                        20
+   AutoScaling/Launch configurations                      100
+   EC2/EC2-Classic Elastic IPs                            5
+   EC2/EC2-VPC Elastic IPs                                5
+   EC2/General Purpose (SSD) volume storage (TiB)         20
    (...)
-   VPC/Route tables per VPC	200
-   VPC/Rules per network ACL	20
-   VPC/Subnets per VPC	200
-   VPC/VPCs	5
+   VPC/Rules per network ACL                              20
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               5
 
 
 
@@ -193,12 +190,12 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker
-   AutoScaling/Auto Scaling Groups (limit 20) CRITICAL: 38
-   EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 98
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 56
-   EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=99
-   VPC/VPCs (limit 5) WARNING: 4
+   AutoScaling/Auto Scaling Groups            (limit 20) CRITICAL: 38
+   EC2/EC2-Classic Elastic IPs                (limit 5) CRITICAL: 5
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 98
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 56
+   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=99
+   VPC/VPCs                                   (limit 5) WARNING: 4
 
 
 
@@ -210,11 +207,11 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98
-   AutoScaling/Auto Scaling Groups (limit 20) CRITICAL: 38
-   EC2/EC2-Classic Elastic IPs (limit 5) CRITICAL: 5
-   EC2/Running On-Demand EC2 instances (limit 20) CRITICAL: 98
-   EC2/Running On-Demand m3.medium instances (limit 20) CRITICAL: 56
-   EC2/Security groups per VPC (limit 100) CRITICAL: vpc-c300b9a6=99
+   AutoScaling/Auto Scaling Groups            (limit 20) CRITICAL: 38
+   EC2/EC2-Classic Elastic IPs                (limit 5) CRITICAL: 5
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 98
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 56
+   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=99
 
 
 

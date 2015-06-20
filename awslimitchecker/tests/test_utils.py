@@ -41,7 +41,7 @@ import argparse
 import pytest
 import sys
 
-from awslimitchecker.utils import StoreKeyValuePair
+from awslimitchecker.utils import StoreKeyValuePair, dict2cols
 
 
 class TestStoreKeyValuePair(object):
@@ -99,3 +99,33 @@ class TestStoreKeyValuePair(object):
             '--one="baz other"=blam'
         ])
         assert res.one == {'foo some': 'bar', 'baz other': 'blam'}
+
+
+class Test_dict2cols(object):
+
+    def test_simple(self):
+        d = {'foo': 'bar', 'baz': 'blam'}
+        res = dict2cols(d)
+        assert res == 'baz  blam\nfoo  bar\n'
+
+    def test_spaces(self):
+        d = {'foo': 'bar', 'baz': 'blam'}
+        res = dict2cols(d, spaces=4)
+        assert res == 'baz    blam\nfoo    bar\n'
+
+    def test_less_simple(self):
+        d = {
+            'zzz': 'bar',
+            'aaa': 'blam',
+            'abcdefghijklmnopqrstuv': 'someothervalue',
+        }
+        res = dict2cols(d)
+        assert res == '' + \
+            'aaa                     blam\n' + \
+            'abcdefghijklmnopqrstuv  someothervalue\n' + \
+            'zzz                     bar\n'
+
+    def test_separator(self):
+        d = {'foo': 'bar', 'baz': 'blam'}
+        res = dict2cols(d, spaces=4, separator='.')
+        assert res == 'baz....blam\nfoo....bar\n'
