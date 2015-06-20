@@ -26,7 +26,7 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
                           [--iam-policy] [-W WARNING_THRESHOLD]
-                          [-C CRITICAL_THRESHOLD] [-v] [-V]
+                          [-C CRITICAL_THRESHOLD] [--no-color] [-v] [-V]
    Report on AWS service limits and usage via boto, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -53,6 +53,7 @@ use as a Nagios-compatible plugin).
      -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
                            default critical threshold (percentage of limit);
                            default: 99
+     --no-color            do not colorize output
      -v, --verbose         verbose output. specify twice for debug-level output.
      -V, --version         print version number and exit.
    awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
@@ -189,7 +190,7 @@ threshold only, and another has crossed the critical threshold):
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker
+   (venv)$ awslimitchecker --no-color
    AutoScaling/Auto Scaling Groups            (limit 20) CRITICAL: 38
    EC2/EC2-Classic Elastic IPs                (limit 5) CRITICAL: 5
    EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 98
@@ -206,7 +207,7 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker -W 97 --critical=98
+   (venv)$ awslimitchecker -W 97 --critical=98 --no-color
    AutoScaling/Auto Scaling Groups            (limit 20) CRITICAL: 38
    EC2/EC2-Classic Elastic IPs                (limit 5) CRITICAL: 5
    EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 98

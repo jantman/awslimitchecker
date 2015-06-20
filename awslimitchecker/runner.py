@@ -41,6 +41,7 @@ import sys
 import argparse
 import logging
 import json
+import termcolor
 
 from .version import _get_version, _get_project_url
 from .checker import AwsLimitChecker
@@ -48,6 +49,8 @@ from .utils import StoreKeyValuePair, dict2cols
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
+
+colorize = True
 
 
 def parse_args(argv):
@@ -107,6 +110,8 @@ def parse_args(argv):
                    type=int, default=99,
                    help='default critical threshold (percentage of '
                    'limit); default: 99')
+    p.add_argument('--no-color', action='store_true', default=False,
+                   help='do not colorize output')
     p.add_argument('-v', '--verbose', dest='verbose', action='count',
                    default=0,
                    help='verbose output. specify twice for debug-level output.')
@@ -158,6 +163,13 @@ def show_usage(checker):
     print(dict2cols(data))
 
 
+def color_output(s, color):
+    global colorize
+    if not colorize:
+        return s
+    return termcolor.colored(s, color)
+
+
 def print_issue(service_name, limit, crits, warns):
     """
     :param service_name: the name of the service
@@ -171,13 +183,15 @@ def print_issue(service_name, limit, crits, warns):
     """
     usage_str = ''
     if len(crits) > 0:
-        usage_str += 'CRITICAL: '
-        usage_str += ', '.join([str(x) for x in sorted(crits)])
+        tmp = 'CRITICAL: '
+        tmp += ', '.join([str(x) for x in sorted(crits)])
+        usage_str += color_output(tmp, 'red')
     if len(warns) > 0:
         if len(crits) > 0:
             usage_str += ' '
-        usage_str += 'WARNING: '
-        usage_str += ', '.join([str(x) for x in sorted(warns)])
+        tmp = 'WARNING: '
+        tmp += ', '.join([str(x) for x in sorted(warns)])
+        usage_str += color_output(tmp, 'yellow')
     k = "{s}/{l}".format(
         s=service_name,
         l=limit.name,
@@ -225,6 +239,7 @@ def set_limit_overrides(checker, overrides):
 
 
 def console_entry_point():
+    global colorize
     args = parse_args(sys.argv[1:])
     if args.verbose == 1:
         logger.setLevel(logging.INFO)
@@ -235,6 +250,9 @@ def console_entry_point():
         debug_formatter = logging.Formatter(fmt=FORMAT)
         logger.handlers[0].setFormatter(debug_formatter)
         logger.setLevel(logging.DEBUG)
+
+    if args.no_color:
+        colorize = False
 
     if args.version:
         print('awslimitchecker {v} (see <{s}> for source code)'.format(

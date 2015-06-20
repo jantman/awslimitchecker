@@ -43,6 +43,7 @@ import sys
 import logging
 import json
 from mock import patch, call, Mock, DEFAULT
+import termcolor
 
 import awslimitchecker.runner as runner
 import awslimitchecker.version as version
@@ -50,6 +51,14 @@ from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 from awslimitchecker.utils import StoreKeyValuePair
 from .support import sample_limits
+
+
+def red(s):
+    return termcolor.colored(s, 'red')
+
+
+def yellow(s):
+    return termcolor.colored(s, 'yellow')
 
 
 class TestAwsLimitCheckerRunner(object):
@@ -114,6 +123,9 @@ class TestAwsLimitCheckerRunner(object):
                                 type=int, default=99,
                                 help='default critical threshold (percentage '
                                 'of limit); default: 99'),
+            call().add_argument('--no-color', action='store_true',
+                                default=False,
+                                help='do not colorize output'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,
@@ -627,7 +639,7 @@ class TestAwsLimitCheckerRunner(object):
             [c1],
             []
         )
-        assert res == ('svcname/limitname', '(limit 12) CRITICAL: 56')
+        assert res == ('svcname/limitname', '(limit 12) ' + red('CRITICAL: 56'))
 
     def test_print_issue_crit_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -645,7 +657,7 @@ class TestAwsLimitCheckerRunner(object):
             []
         )
         assert res == ('svcname/limitname',
-                       '(limit 5) CRITICAL: 8, 10, c2id=12')
+                       '(limit 5) ' + red('CRITICAL: 8, 10, c2id=12'))
 
     def test_print_issue_warn_one(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -660,7 +672,8 @@ class TestAwsLimitCheckerRunner(object):
             [],
             [w1]
         )
-        assert res == ('svcname/limitname', '(limit 12) WARNING: 11')
+        assert res == ('svcname/limitname', '(limit 12) ' +
+                       yellow('WARNING: 11'))
 
     def test_print_issue_warn_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -678,8 +691,8 @@ class TestAwsLimitCheckerRunner(object):
             [w1, w2, w3]
         )
         assert res == ('svcname/limitname',
-                       '(limit 12) WARNING: '
-                       'w2id=10, w3id=10, 11')
+                       '(limit 12) ' + yellow('WARNING: '
+                                              'w2id=10, w3id=10, 11'))
 
     def test_print_issue_both_one(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -696,9 +709,9 @@ class TestAwsLimitCheckerRunner(object):
             [w1]
         )
         assert res == ('svcname/limitname',
-                       '(limit 12) '
-                       'CRITICAL: 10 '
-                       'WARNING: w3id=10')
+                       '(limit 12) ' +
+                       red('CRITICAL: 10') + ' ' +
+                       yellow('WARNING: w3id=10'))
 
     def test_print_issue_both_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -719,6 +732,25 @@ class TestAwsLimitCheckerRunner(object):
             [w1, w2, w3]
         )
         assert res == ('svcname/limitname',
-                       '(limit 12) '
-                       'CRITICAL: 8, 10, c2id=12 '
-                       'WARNING: w2id=10, w3id=10, 11')
+                       '(limit 12) ' +
+                       red('CRITICAL: 8, 10, c2id=12') + ' ' +
+                       yellow('WARNING: w2id=10, w3id=10, 11'))
+
+    def test_entry_no_color(self):
+        argv = ['awslimitchecker', '--no-color']
+        with patch.object(sys, 'argv', argv):
+            with patch.multiple(
+                    'awslimitchecker.runner',
+                    AwsLimitChecker=DEFAULT,
+                    check_thresholds=DEFAULT,
+            ) as mocks:
+                mocks['check_thresholds'].return_value = 0
+                with pytest.raises(SystemExit) as excinfo:
+                    runner.console_entry_point()
+        assert excinfo.value.code == 0
+        assert runner.color_output('foo', 'red') == 'foo'
+        runner.colorize = True
+
+    def test_color_output(self):
+        assert runner.color_output('foo', 'yellow') == termcolor.colored(
+            'foo', 'yellow')

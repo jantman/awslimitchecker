@@ -185,8 +185,9 @@ def build_runner_examples():
             '--limit="EC2/EC2-VPC Elastic IPs"=200',
             '--list-defaults',
         ],
-        'check_thresholds': ['awslimitchecker'],
-        'check_thresholds_custom': ['awslimitchecker', '-W', '97', '--critical=98'],
+        'check_thresholds': ['awslimitchecker', '--no-color'],
+        'check_thresholds_custom': ['awslimitchecker', '-W', '97',
+                                    '--critical=98', '--no-color'],
         'iam_policy': ['awslimitchecker', '--iam-policy'],
     }
     results = {}

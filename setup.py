@@ -46,6 +46,7 @@ with open('README.rst') as file:
 
 requires = [
     'boto>=2.32.0',
+    'termcolor==1.1.0',
 ]
 
 classifiers = [
