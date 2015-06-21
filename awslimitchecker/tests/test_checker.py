@@ -42,6 +42,7 @@ from awslimitchecker.services.base import _AwsService
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.version import _get_version, _get_project_url
 from awslimitchecker.limit import AwsLimit
+from awslimitchecker.trustedadvisor import TrustedAdvisor
 from .support import sample_limits
 
 
@@ -52,6 +53,7 @@ class TestAwsLimitChecker(object):
         self.mock_svc2 = Mock(spec_set=_AwsService)
         self.mock_foo = Mock(spec_set=_AwsService)
         self.mock_bar = Mock(spec_set=_AwsService)
+        self.mock_ta = Mock(spec_set=TrustedAdvisor)
         self.mock_foo.return_value = self.mock_svc1
         self.mock_bar.return_value = self.mock_svc2
         self.svcs = {'SvcFoo': self.mock_foo, 'SvcBar': self.mock_bar}
@@ -62,11 +64,13 @@ class TestAwsLimitChecker(object):
                     logger=DEFAULT,
                     _get_version=DEFAULT,
                     _get_project_url=DEFAULT,
+                    TrustedAdvisor=DEFAULT,
                     autospec=True,
             ) as mocks:
                 self.mock_logger = mocks['logger']
                 self.mock_version = mocks['_get_version']
                 self.mock_project_url = mocks['_get_project_url']
+                mocks['TrustedAdvisor'].return_value = self.mock_ta
                 self.mock_version.return_value = 'MVER'
                 self.mock_project_url.return_value = 'PURL'
                 self.cls = AwsLimitChecker()
@@ -82,6 +86,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_bar.mock_calls == [call(80, 99)]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
+        assert self.cls.ta == self.mock_ta
 
     def test_init_thresholds(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -153,6 +158,20 @@ class TestAwsLimitChecker(object):
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
         res = self.cls.get_limits()
         assert res == limits
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+                'SvcBar': self.mock_svc2,
+            })
+        ]
+
+    def test_get_limits_no_ta(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.mock_svc2.get_limits.return_value = limits['SvcBar']
+        res = self.cls.get_limits(use_ta=False)
+        assert res == limits
+        assert self.mock_ta.mock_calls == []
 
     def test_get_limits_service(self):
         limits = sample_limits()
@@ -160,6 +179,11 @@ class TestAwsLimitChecker(object):
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
         res = self.cls.get_limits(service='SvcFoo')
         assert res == {'SvcFoo': limits['SvcFoo']}
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+            })
+        ]
 
     def test_find_usage(self):
         self.cls.find_usage()
@@ -169,6 +193,22 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc2.mock_calls == [
             call.find_usage()
         ]
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+                'SvcBar': self.mock_svc2,
+            })
+        ]
+
+    def test_find_usage_no_ta(self):
+        self.cls.find_usage(use_ta=False)
+        assert self.mock_svc1.mock_calls == [
+            call.find_usage()
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call.find_usage()
+        ]
+        assert self.mock_ta.mock_calls == []
 
     def test_find_usage_service(self):
         self.cls.find_usage(service='SvcFoo')
@@ -176,6 +216,9 @@ class TestAwsLimitChecker(object):
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == []
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({'SvcFoo': self.mock_svc1})
+        ]
 
     def test_set_threshold_overrides(self):
         limits = sample_limits()

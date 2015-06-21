@@ -81,6 +81,7 @@ class TestAwsLimitCheckerRunner(object):
     def test_init(self):
         assert self.cls.colorize is True
         assert self.cls.checker is None
+        assert self.cls.skip_ta is False
 
     def test_parse_args(self):
         argv = ['-V']
@@ -142,6 +143,9 @@ class TestAwsLimitCheckerRunner(object):
                                 type=int, default=99,
                                 help='default critical threshold (percentage '
                                 'of limit); default: 99'),
+            call().add_argument('--skip-ta', action='store_true', default=False,
+                                help='do not attempt to pull *any* information '
+                                'on limits from Trusted Advisor'),
             call().add_argument('--no-color', action='store_true',
                                 default=False,
                                 help='do not colorize output'),
@@ -184,12 +188,13 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_list_services(self):
         argv = ['awslimitchecker', '-s']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.list_services' % pb) as mock_list:
+            with patch('%s.Runner.list_services' % pb,
+                       autospec=True) as mock_list:
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_list.mock_calls == [
-            call()
+            call(self.cls)
         ]
 
     def test_list_services(self, capsys):
@@ -211,12 +216,12 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_iam_policy(self):
         argv = ['awslimitchecker', '--iam-policy']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.iam_policy' % pb) as mock_iam:
+            with patch('%s.Runner.iam_policy' % pb, autospec=True) as mock_iam:
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_iam.mock_calls == [
-            call()
+            call(self.cls)
         ]
 
     def test_iam_policy(self, capsys):
@@ -238,19 +243,21 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_list_defaults(self):
         argv = ['awslimitchecker', '--list-defaults']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.list_defaults' % pb) as mock_list:
+            with patch('%s.Runner.list_defaults' % pb,
+                       autospec=True) as mock_list:
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_list.mock_calls == [
-            call()
+            call(self.cls)
         ]
 
     def test_list_defaults(self, capsys):
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_limits.return_value = sample_limits()
         self.cls.checker = mock_checker
-        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+        with patch('awslimitchecker.runner.dict2cols',
+                   autospec=True) as mock_d2c:
             mock_d2c.return_value = 'd2cval'
             self.cls.list_defaults()
         out, err = capsys.readouterr()
@@ -270,12 +277,13 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_list_limits(self):
         argv = ['awslimitchecker', '-l']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.list_limits' % pb) as mock_list:
+            with patch('%s.Runner.list_limits' % pb,
+                       autospec=True) as mock_list:
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_list.mock_calls == [
-            call()
+            call(self.cls)
         ]
 
     def test_list_limits(self, capsys):
@@ -289,7 +297,7 @@ class TestAwsLimitCheckerRunner(object):
         assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
-            call.get_limits()
+            call.get_limits(use_ta=True)
         ]
         assert mock_d2c.mock_calls == [
             call({
@@ -304,27 +312,28 @@ class TestAwsLimitCheckerRunner(object):
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
                 with patch('%s.Runner.set_limit_overrides'
-                           '' % pb) as mock_slo:
+                           '' % pb, autospec=True) as mock_slo:
                     mock_ct.return_value = 0
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_slo.mock_calls == [
-            call({'foo': 'bar'})
+            call(self.cls, {'foo': 'bar'})
         ]
 
     def test_entry_limit_multi(self):
         argv = ['awslimitchecker', '--limit=foo=bar', '--limit=baz=blam']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
                 with patch('%s.Runner.set_limit_overrides'
-                           '' % pb) as mock_slo:
+                           '' % pb, autospec=True) as mock_slo:
                     mock_ct.return_value = 0
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_slo.mock_calls == [
-            call({'foo': 'bar', 'baz': 'blam'})
+            call(self.cls, {'foo': 'bar', 'baz': 'blam'})
         ]
 
     def test_set_limit_overrides(self):
@@ -363,12 +372,12 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_show_usage(self):
         argv = ['awslimitchecker', '-u']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.show_usage' % pb) as mock_show:
+            with patch('%s.Runner.show_usage' % pb, autospec=True) as mock_show:
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_show.mock_calls == [
-            call()
+            call(self.cls)
         ]
 
     def test_show_usage(self, capsys):
@@ -397,10 +406,25 @@ class TestAwsLimitCheckerRunner(object):
             })
         ]
 
+    def test_entry_skip_ta(self, capsys):
+        argv = ['awslimitchecker', '--skip-ta']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
+                with pytest.raises(SystemExit) as excinfo:
+                    mock_ct.return_value = 6
+                    self.cls.console_entry_point()
+        out, err = capsys.readouterr()
+        assert err == ''
+        assert out == ''
+        assert excinfo.value.code == 6
+        assert self.cls.skip_ta is True
+
     def test_entry_verbose(self, capsys):
         argv = ['awslimitchecker', '-v']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
                 with patch('awslimitchecker.runner.logger.setLevel'
                            '') as mock_set_level:
                     with pytest.raises(SystemExit) as excinfo:
@@ -415,7 +439,8 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_debug(self, capsys):
         argv = ['awslimitchecker', '-vv']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
                 with patch('awslimitchecker.runner.logger.setLevel'
                            '') as mock_set_level:
                     with pytest.raises(SystemExit) as excinfo:
@@ -430,8 +455,9 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_warning(self):
         argv = ['awslimitchecker', '-W', '50']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.AwsLimitChecker' % pb) as mock_alc:
-                with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_alc:
+                with patch('%s.Runner.check_thresholds' % pb,
+                           autospec=True) as mock_ct:
                     with pytest.raises(SystemExit) as excinfo:
                         mock_ct.return_value = 8
                         self.cls.console_entry_point()
@@ -443,8 +469,9 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_critical(self):
         argv = ['awslimitchecker', '-C', '95']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.AwsLimitChecker' % pb) as mock_alc:
-                with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_alc:
+                with patch('%s.Runner.check_thresholds' % pb,
+                           autospec=True) as mock_ct:
                     with pytest.raises(SystemExit) as excinfo:
                         mock_ct.return_value = 9
                         self.cls.console_entry_point()
@@ -456,13 +483,14 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_check_thresholds(self):
         argv = ['awslimitchecker']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
                 with pytest.raises(SystemExit) as excinfo:
                     mock_ct.return_value = 10
                     self.cls.console_entry_point()
         assert excinfo.value.code == 10
         assert mock_ct.mock_calls == [
-            call()
+            call(self.cls)
         ]
 
     def test_check_thresholds_ok(self, capsys):
@@ -477,7 +505,7 @@ class TestAwsLimitCheckerRunner(object):
         assert out == '\n'
         assert err == ''
         assert mock_checker.mock_calls == [
-            call.check_thresholds()
+            call.check_thresholds(use_ta=True)
         ]
         assert res == 0
 
@@ -520,23 +548,24 @@ class TestAwsLimitCheckerRunner(object):
             },
         }
 
-        def se_print(s, l, c, w):
+        def se_print(cls, s, l, c, w):
             return ('{s}/{l}'.format(s=s, l=l.name), '')
 
         self.cls.checker = mock_checker
-        with patch('awslimitchecker.runner.Runner.print_issue') as mock_print:
+        with patch('awslimitchecker.runner.Runner.print_issue',
+                   autospec=True) as mock_print:
             mock_print.side_effect = se_print
             with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
                 mock_d2c.return_value = 'd2cval'
                 res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds()
+            call.check_thresholds(use_ta=True)
         ]
         assert mock_print.mock_calls == [
-            call('svc1', mock_limit1, [mock_c1], [mock_w1]),
-            call('svc1', mock_limit2, [], [mock_w2]),
-            call('svc2', mock_limit3, [], [mock_w3]),
-            call('svc2', mock_limit4, [mock_c2], []),
+            call(self.cls, 'svc1', mock_limit1, [mock_c1], [mock_w1]),
+            call(self.cls, 'svc1', mock_limit2, [], [mock_w2]),
+            call(self.cls, 'svc2', mock_limit3, [], [mock_w3]),
+            call(self.cls, 'svc2', mock_limit4, [mock_c2], []),
         ]
         assert mock_d2c.mock_calls == [
             call({
@@ -572,17 +601,18 @@ class TestAwsLimitCheckerRunner(object):
         }
 
         self.cls.checker = mock_checker
-        with patch('awslimitchecker.runner.Runner.print_issue') as mock_print:
+        with patch('awslimitchecker.runner.Runner.print_issue',
+                   autospec=True) as mock_print:
             mock_print.return_value = ('', '')
             with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
                 mock_d2c.return_value = 'd2cval'
                 res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds()
+            call.check_thresholds(use_ta=True)
         ]
         assert mock_print.mock_calls == [
-            call('svc1', mock_limit1, [], [mock_w1, mock_w2]),
-            call('svc2', mock_limit2, [], [mock_w3]),
+            call(self.cls, 'svc1', mock_limit1, [], [mock_w1, mock_w2]),
+            call(self.cls, 'svc2', mock_limit2, [], [mock_w3]),
         ]
         assert res == 1
 
@@ -602,16 +632,18 @@ class TestAwsLimitCheckerRunner(object):
         }
 
         self.cls.checker = mock_checker
-        with patch('awslimitchecker.runner.Runner.print_issue') as mock_print:
+        self.cls.skip_ta = True
+        with patch('awslimitchecker.runner.Runner.print_issue',
+                   autospec=True) as mock_print:
             mock_print.return_value = ('', '')
             with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
                 mock_d2c.return_value = 'd2cval'
             res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds()
+            call.check_thresholds(use_ta=False)
         ]
         assert mock_print.mock_calls == [
-            call('svc1', mock_limit1, [mock_c1, mock_c2], []),
+            call(self.cls, 'svc1', mock_limit1, [mock_c1, mock_c2], []),
         ]
         assert res == 2
 
@@ -728,7 +760,8 @@ class TestAwsLimitCheckerRunner(object):
     def test_entry_no_color(self):
         argv = ['awslimitchecker', '--no-color']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
                 mock_ct.return_value = 0
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()

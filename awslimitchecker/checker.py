@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from .services import _services
 from .version import _get_version, _get_project_url
+from .trustedadvisor import TrustedAdvisor
 import logging
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,7 @@ class AwsLimitChecker(object):
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.services = {}
+        self.ta = TrustedAdvisor()
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold)
 
@@ -98,7 +100,7 @@ class AwsLimitChecker(object):
         """
         return _get_project_url()
 
-    def get_limits(self, service=None):
+    def get_limits(self, service=None, use_ta=True):
         """
         Return all :py:class:`~.AwsLimit` objects for the given
         service name, or for all services if ``service`` is None.
@@ -108,14 +110,19 @@ class AwsLimitChecker(object):
 
         :param service: the name of one service to return limits for
         :type service: string
+        :param use_ta: check Trusted Advisor for information on limits
+        :type use_ta: bool
         :returns: dict of service name (string) to nested dict
           of limit name (string) to limit (:py:class:`~.AwsLimit`)
         :rtype: dict
         """
         res = {}
+        to_get = self.services
         if service is not None:
-            return {service: self.services[service].get_limits()}
-        for sname, cls in self.services.items():
+            to_get = {service: self.services[service]}
+        if use_ta:
+            self.ta.update_limits(to_get)
+        for sname, cls in to_get.items():
             res[sname] = cls.get_limits()
         return res
 
@@ -128,7 +135,7 @@ class AwsLimitChecker(object):
         """
         return sorted(self.services.keys())
 
-    def find_usage(self, service=None):
+    def find_usage(self, service=None, use_ta=True):
         """
         For each limit in the specified service (or all services if
         ``service`` is ``None``), query the AWS API via :py:pkg:`boto`
@@ -141,13 +148,16 @@ class AwsLimitChecker(object):
         :param service: :py:class:`~._AwsService` name, or ``None`` to
           check all services.
         :type services: :py:obj:`None` or :py:obj:`string` service name
+        to_get = self.services
+        :param use_ta: check Trusted Advisor for information on limits
+        :type use_ta: bool
         """
+        to_get = self.services
         if service is not None:
-            logger.debug("Finding usage for service: {s}".format(
-                s=self.services[service].service_name))
-            self.services[service].find_usage()
-            return
-        for sname, cls in self.services.items():
+            to_get = {service: self.services[service]}
+        if use_ta:
+            self.ta.update_limits(to_get)
+        for sname, cls in to_get.items():
             logger.debug("Finding usage for service: {s}".format(
                 s=cls.service_name))
             cls.find_usage()
@@ -332,6 +342,7 @@ class AwsLimitChecker(object):
         :rtype: dict
         """
         res = {}
+        # @TODO trusted advisor here
         if service is not None:
             return {service: self.services[service].check_thresholds()}
         for sname, cls in self.services.items():

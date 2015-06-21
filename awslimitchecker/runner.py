@@ -56,6 +56,7 @@ class Runner(object):
     def __init__(self):
         self.colorize = True
         self.checker = None
+        self.skip_ta = False
 
     def parse_args(self, argv):
         """
@@ -118,6 +119,9 @@ class Runner(object):
                        type=int, default=99,
                        help='default critical threshold (percentage of '
                        'limit); default: 99')
+        p.add_argument('--skip-ta', action='store_true', default=False,
+                       help='do not attempt to pull *any* information on limits'
+                       ' from Trusted Advisor')
         p.add_argument('--no-color', action='store_true', default=False,
                        help='do not colorize output')
         p.add_argument('-v', '--verbose', dest='verbose', action='count',
@@ -135,7 +139,7 @@ class Runner(object):
             print(x)
 
     def list_limits(self):
-        limits = self.checker.get_limits()
+        limits = self.checker.get_limits(use_ta=(not self.skip_ta))
         data = {}
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
@@ -208,7 +212,7 @@ class Runner(object):
     def check_thresholds(self):
         have_warn = False
         have_crit = False
-        problems = self.checker.check_thresholds()
+        problems = self.checker.check_thresholds(use_ta=(not self.skip_ta))
         columns = {}
         for svc in sorted(problems.keys()):
             for lim_name in sorted(problems[svc].keys()):
@@ -252,6 +256,9 @@ class Runner(object):
 
         if args.no_color:
             self.colorize = False
+
+        if args.skip_ta:
+            self.skip_ta = True
 
         if args.version:
             print('awslimitchecker {v} (see <{s}> for source code)'.format(
