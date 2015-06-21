@@ -175,7 +175,7 @@ class Test_TrustedAdvisor(object):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         tmp.return_value = {
             'result': {
-                'timestamp': u'2015-06-15T20:27:42Z',
+                'timestamp': '2015-06-15T20:27:42Z',
                 'flaggedResources': [
                     {
                         'status': 'ok',
