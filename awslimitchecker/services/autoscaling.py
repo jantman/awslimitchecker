@@ -72,7 +72,7 @@ class _AutoscalingService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
 
-        self.limits['Auto Scaling Groups']._add_current_usage(
+        self.limits['Auto Scaling groups']._add_current_usage(
             len(self.conn.get_all_groups()),
             aws_type='AWS::AutoScaling::AutoScalingGroup',
         )
@@ -96,8 +96,8 @@ class _AutoscalingService(_AwsService):
             return self.limits
         limits = {}
         # autoscaleconnection.get_all_groups()
-        limits['Auto Scaling Groups'] = AwsLimit(
-            'Auto Scaling Groups',
+        limits['Auto Scaling groups'] = AwsLimit(
+            'Auto Scaling groups',
             self,
             20,
             self.warning_threshold,

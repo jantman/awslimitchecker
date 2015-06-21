@@ -82,7 +82,7 @@ class Test_AutoscalingService(object):
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            'Auto Scaling Groups',
+            'Auto Scaling groups',
             'Launch configurations',
         ])
         for name, limit in res.items():
@@ -110,7 +110,7 @@ class Test_AutoscalingService(object):
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        asgs = sorted(cls.limits['Auto Scaling Groups'].get_current_usage())
+        asgs = sorted(cls.limits['Auto Scaling groups'].get_current_usage())
         assert len(asgs) == 1
         assert asgs[0].get_value() == 3
         lcs = sorted(cls.limits['Launch configurations'].get_current_usage())
