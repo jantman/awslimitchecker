@@ -37,6 +37,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+SOURCE_DEFAULT = 0
+SOURCE_OVERRIDE = 1
+SOURCE_TA = 2
+
 
 class AwsLimit(object):
 
@@ -80,6 +84,7 @@ class AwsLimit(object):
         self.limit_subtype = limit_subtype
         self.limit_override = None
         self.override_ta = True
+        self.ta_limit = None
         self._current_usage = []
         self.def_warning_threshold = def_warning_threshold
         self.def_critical_threshold = def_critical_threshold
@@ -106,6 +111,35 @@ class AwsLimit(object):
         self.limit_override = limit_value
         self.override_ta = override_ta
 
+    def _set_ta_limit(self, limit_value):
+        """
+        Set the value for the limit as reported by Trusted Advisor.
+
+        This method should only be called by :py:class:`~.TrustedAdvisor`.
+
+        :param limit_value: the Trusted Advisor limit value
+        :type limit_value: int
+        """
+        self.ta_limit = limit_value
+
+    def get_limit_source(self):
+        """
+        Return :py:const:`~.SOURCE_DEFAULT` if :py:meth:`~.get_limit`
+        returns the default limit, :py:const:`~.SOURCE_OVERRIDE` if it returns
+        a manually-overridden limit, or :py:const:`~.SOURCE_TA` if it
+        returns a limit from Trusted Advisor.
+
+        :rtype: bool
+        """
+        if self.limit_override is not None and (
+                self.override_ta is True or
+                self.ta_limit is None
+        ):
+            return SOURCE_OVERRIDE
+        if self.ta_limit is not None:
+            return SOURCE_TA
+        return SOURCE_DEFAULT
+
     def get_limit(self):
         """
         Returns the effective limit value for this Limit,
@@ -115,8 +149,11 @@ class AwsLimit(object):
         :returns: effective limit value
         :rtype: int
         """
-        if self.limit_override is not None:
+        limit_type = self.get_limit_source()
+        if limit_type == SOURCE_OVERRIDE:
             return self.limit_override
+        elif limit_type == SOURCE_TA:
+            return self.ta_limit
         return self.default_limit
 
     def get_current_usage(self):

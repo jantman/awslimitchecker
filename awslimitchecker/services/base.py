@@ -174,6 +174,32 @@ class _AwsService(object):
                 s=self.service_name,
                 l=limit_name))
 
+    def _set_ta_limit(self, limit_name, value):
+        """
+        Set the value for the limit as reported by Trusted Advisor,
+        for the specified limit.
+
+        This method should only be called by :py:class:`~.TrustedAdvisor`.
+
+        :param limit_name: the name of the limit to override the value for
+        :type limit_name: string
+        :param value: the Trusted Advisor limit value
+        :type value: int
+        :raises: ValueError if limit_name is not known to this service
+        """
+        try:
+            self.limits[limit_name]._set_ta_limit(value)
+            logger.debug("Setting {s} limit {l} TA limit to {o}"
+                         "".format(
+                             s=self.service_name,
+                             l=limit_name,
+                             o=value,
+                         ))
+        except KeyError:
+            raise ValueError("{s} service has no '{l}' limit".format(
+                s=self.service_name,
+                l=limit_name))
+
     def set_threshold_override(self, limit_name, warn_percent=None,
                                warn_count=None, crit_percent=None,
                                crit_count=None):

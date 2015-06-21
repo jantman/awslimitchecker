@@ -39,10 +39,28 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from mock import patch, Mock, call
 from boto.support.layer1 import SupportConnection
+from boto.regioninfo import RegionInfo
 from awslimitchecker.trustedadvisor import TrustedAdvisor
+from awslimitchecker.services.base import _AwsService
+
+
+pb = 'awslimitchecker.trustedadvisor.TrustedAdvisor'
 
 
 class Test_TrustedAdvisor(object):
+
+    def setup(self):
+        self.mock_conn = Mock(spec_set=SupportConnection)
+        type(self.mock_conn).region = RegionInfo(name='us-east-1')
+        self.cls = TrustedAdvisor()
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
 
     def test_init(self):
         cls = TrustedAdvisor()
@@ -50,9 +68,9 @@ class Test_TrustedAdvisor(object):
 
     def test_connect(self):
         cls = TrustedAdvisor()
-        mock_conn = Mock(spec_set=SupportConnection)
+        mock_conn = Mock(spec_set=SupportConnection, name='mock_conn')
         with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                   '') as mock_connect:
+                   '', autospec=True) as mock_connect:
             mock_connect.return_value = mock_conn
             cls.connect()
         assert cls.conn == mock_conn
@@ -69,3 +87,205 @@ class Test_TrustedAdvisor(object):
             cls.connect()
         assert cls.conn == mock_original_conn
         assert mock_connect.mock_calls == []
+
+    def test_update_limits(self):
+        mock_results = Mock()
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            with patch('%s._poll' % pb, autospec=True) as mock_poll:
+                with patch('%s._update_services' % pb,
+                           autospec=True) as mock_update_services:
+                    mock_poll.return_value = mock_results
+                    self.cls.update_limits(self.services)
+        assert mock_connect.mock_calls == [call(self.cls)]
+        assert mock_poll.mock_calls == [call(self.cls)]
+        assert mock_update_services.mock_calls == [
+            call(self.cls, mock_results, self.services)
+        ]
+
+    def test_get_limit_check_id(self):
+        api_resp = {
+            'checks': [
+                {
+                    'category': 'performance',
+                    'name': 'Service Limits',
+                    'id': 'bar',
+                    'metadata': [
+                        'Region',
+                        'Service',
+                        'Limit Name',
+                        'Limit Amount',
+                        'Current Usage',
+                        'Status'
+                    ],
+                },
+                {
+                    'category': 'fault_tolerance',
+                    'name': 'ELB Cross-Zone Load Balancing',
+                    'id': 'foo',
+                },
+            ]
+        }
+        self.mock_conn.describe_trusted_advisor_checks.return_value = api_resp
+        res = self.cls._get_limit_check_id()
+        assert res == (
+            'bar',
+            [
+                'Region',
+                'Service',
+                'Limit Name',
+                'Limit Amount',
+                'Current Usage',
+                'Status'
+            ]
+        )
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks('en')
+        ]
+
+    def test_get_limit_check_id_none(self):
+        api_resp = {
+            'checks': [
+                {
+                    'category': 'performance',
+                    'name': 'Something Else',
+                    'id': 'bar',
+                },
+                {
+                    'category': 'fault_tolerance',
+                    'name': 'ELB Cross-Zone Load Balancing',
+                    'id': 'foo',
+                },
+            ]
+        }
+        self.mock_conn.describe_trusted_advisor_checks.return_value = api_resp
+        res = self.cls._get_limit_check_id()
+        assert res is None
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks('en')
+        ]
+
+    def test_poll_id_none(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            mock_id.return_value = None
+            self.cls._poll()
+        assert tmp.mock_calls == []
+
+    def test_poll(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        tmp.return_value = {
+            'result': {
+                'timestamp': u'2015-06-15T20:27:42Z',
+                'flaggedResources': [
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-west-2',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '20',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid2',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'AutoScaling',
+                            'Launch configurations',
+                            '20',
+                            '18',
+                            'Yellow'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid3',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '40',
+                            '10',
+                            'Green'
+                        ]
+                    },
+                ]
+            }
+        }
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            mock_id.return_value = (
+                'foo',
+                [
+                    'Region',
+                    'Service',
+                    'Limit Name',
+                    'Limit Amount',
+                    'Current Usage',
+                    'Status'
+                ]
+            )
+            res = self.cls._poll()
+        assert tmp.mock_calls == [call('foo')]
+        assert mock_id.mock_calls == [call(self.cls)]
+        assert res == {
+            'AutoScaling': {
+                'Launch configurations': 20,
+                'Auto Scaling groups': 40,
+            }
+        }
+
+    def test_update_services(self):
+
+        def se_set(lname, val):
+            if lname == 'blam':
+                raise ValueError("foo")
+
+        mock_autoscale = Mock(spec_set=_AwsService)
+        mock_ec2 = Mock(spec_set=_AwsService)
+        mock_ec2._set_ta_limit.side_effect = se_set
+        services = {
+            'AutoScaling': mock_autoscale,
+            'EC2': mock_ec2,
+        }
+        ta_results = {
+            'AutoScaling': {
+                'foo': 20,
+                'bar': 40,
+            },
+            'EC2': {
+                'baz': 5,
+                'blam': 10,
+            },
+            'OtherService': {
+                'blarg': 1,
+            }
+        }
+        with patch('awslimitchecker.trustedadvisor'
+                   '.logger', autospec=True) as mock_logger:
+            self.cls._update_services(ta_results, services)
+        assert mock_logger.mock_calls == [
+            call.debug("Updating TA limits on all services"),
+            call.warning("TrustedAdvisor returned check results for unknown "
+                         "limit '%s' (service %s)", 'blam', 'EC2'),
+            call.critical("TrustedAdvisor returned check results for unknown "
+                          "service '%s'", 'OtherService'),
+            call.info("Done updating TA limits on all services"),
+        ]
+        assert mock_autoscale.mock_calls == [
+            call._set_ta_limit('bar', 40),
+            call._set_ta_limit('foo', 20),
+        ]
+        assert mock_ec2.mock_calls == [
+            call._set_ta_limit('baz', 5),
+            call._set_ta_limit('blam', 10),
+        ]

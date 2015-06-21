@@ -303,7 +303,7 @@ class TestAwsLimitCheckerRunner(object):
             call({
                 'SvcBar/bar limit2': '99',
                 'SvcBar/barlimit1': '1',
-                'SvcFoo/foo limit3': '3',
+                'SvcFoo/foo limit3': '10 (TA)',
             })
         ]
 

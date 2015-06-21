@@ -75,4 +75,5 @@ def sample_limits():
         },
     }
     limits['SvcBar']['bar limit2'].set_limit_override(99)
+    limits['SvcFoo']['foo limit3']._set_ta_limit(10)
     return limits

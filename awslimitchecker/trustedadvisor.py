@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import boto
+from dateutil import parser
 import logging
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,98 @@ class TrustedAdvisor(object):
           :py:class:`~._AwsService` objects
         :type services: dict
         """
-        # @TODO call this in AwsLimitChecker.get_limits()
-        # also, make sure it's been done in get_usage, or anything else
-        #   that relies on limits
-        pass
+        self.connect()
+        ta_results = self._poll()
+        self._update_services(ta_results, services)
+
+    def _poll(self):
+        """
+        Poll Trusted Advisor (Support) API for limit checks.
+
+        Return a dict of service name (string) keys to nested dict vals, where
+        each key is a limit name and each value the current numeric limit.
+
+        e.g.:
+
+        {
+            'EC2': {
+                'SomeLimit': 10,
+            }
+        }
+        """
+        logger.info("Beginning TrustedAdvisor poll")
+        tmp = self._get_limit_check_id()
+        if tmp is None:
+            logger.critical("Unable to find 'Service Limits' Trusted Advisor "
+                            "check; not using Trusted Advisor data.")
+            return
+        check_id, metadata = tmp
+        region = self.conn.region.name
+        checks = self.conn.describe_trusted_advisor_check_result(check_id)
+        check_datetime = parser.parse(checks['result']['timestamp'])
+        logger.debug("Got TrustedAdvisor data for check %s as of %s",
+                     check_id, check_datetime)
+        res = {}
+        for check in checks['result']['flaggedResources']:
+            if check['region'] != region:
+                continue
+            data = dict(zip(metadata, check['metadata']))
+            if data['Service'] not in res:
+                res[data['Service']] = {}
+            res[data['Service']][data['Limit Name']] = int(data['Limit Amount'])
+        logger.info("Finished TrustedAdvisor poll")
+        return res
+
+    def _get_limit_check_id(self):
+        """
+        Query currently-available TA checks, return the check ID and metadata
+        of the 'performance/Service Limits' check.
+
+        :returns: 2-tuple of Service Limits TA check ID (string),
+          metadata (list)
+        :rtype: tuple
+        """
+        logger.debug("Querying Trusted Advisor checks")
+        checks = self.conn.describe_trusted_advisor_checks('en')['checks']
+        for check in checks:
+            if (
+                    check['category'] == 'performance' and
+                    check['name'] == 'Service Limits'
+            ):
+                logger.debug("Found TA check; id=%s", check['id'])
+                return (
+                    check['id'],
+                    check['metadata']
+                )
+        logger.debug("Unable to find check with category 'performance' and "
+                     "name 'Service Limits'.")
+        return None
+
+    def _update_services(self, ta_results, services):
+        """
+        Given a dict of TrustedAdvisor check results from :py:meth:`~._poll`
+        and a dict of Service objects passed in to :py:meth:`~.update_limits`,
+        updated the TrustedAdvisor limits for all services.
+
+        :param ta_results: results returned by :py:meth:`~._poll`
+        :type ta_results: dict
+        :param services: dict of service names to _AwsService objects
+        :type services: dict
+        """
+        logger.debug("Updating TA limits on all services")
+        for svc_name in sorted(ta_results.keys()):
+            limits = ta_results[svc_name]
+            if svc_name not in services:
+                logger.critical("TrustedAdvisor returned check results for "
+                                "unknown service '%s'", svc_name)
+                continue
+            service = services[svc_name]
+            for lim_name in sorted(limits.keys()):
+                try:
+                    service._set_ta_limit(lim_name, limits[lim_name])
+                except ValueError:
+                    logger.warning("TrustedAdvisor returned check results for "
+                                   "unknown limit '%s' (service %s)",
+                                   lim_name,
+                                   svc_name)
+        logger.info("Done updating TA limits on all services")

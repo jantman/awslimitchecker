@@ -11,6 +11,8 @@
 {u'category': u'performance', u'metadata': [u'Region', u'Service', u'Limit Name', u'Limit Amount', u'Current Usage', u'Status'], u'description': u'Checks for usage that is more than 80% of the service limit. Values are based on a snapshot, so your current usage might differ. Limit and usage data can take up to 24 hours to reflect any changes. In some cases, your usage might be greater than the indicated limit for a period of time.<br>\n<br>\n<b>Alert Criteria</b><br>\nYellow: Usage is more than 80% of the service limit.<br>\n<br>\n<b>Recommended Action</b><br>\nIf you anticipate exceeding a service limit, open a case in Support Center to <a href="https://aws.amazon.com/support/createCase?type=service_limit_increase" target="_blank">request a limit increase</a>.<br>\n<br>\n<b>Additional Resources</b><br>\n<a href="https://aws.amazon.com/premiumsupport/ta-faqs/" target="_blank">Trusted Advisor FAQs</a><br/>\n<a href="http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html" target="_blank">AWS Service Limits</a><br/>\n<a href="https://console.aws.amazon.com/ec2/v2/home?#Limits:" target="_blank">EC2 Service Limits</a> (per region) in the Amazon EC2 console', u'name': u'Service Limits', u'id': u'eW7HH0l7J9'}
 
 >>> r = conn.describe_trusted_advisor_check_result('eW7HH0l7J9')
+>>> print(r.keys())
+[u'result']
 >>> for x in r['result']:
 ...     print(x)
 ... 
@@ -20,6 +22,19 @@ flaggedResources
 timestamp
 resourcesSummary
 categorySpecificSummary
+
+>>> print(r['result']['status'])
+warning
+>>> print(r['result']['timestamp'])
+2015-06-15T20:27:42Z
+>>> print(r['result']['categorySpecificSummary'])
+{u'costOptimizing': {u'estimatedMonthlySavings': 0.0, u'estimatedPercentMonthlySavings': 0.0}}
+>>> print(r['result']['resourcesSummary'])
+{u'resourcesFlagged': 3, u'resourcesProcessed': 38, u'resourcesSuppressed': 0, u'resourcesIgnored': 0}
+
+>>> r['result']['flaggedResources'][0]
+{u'status': u'ok', u'resourceId': u'4KauPhs6tHUY1hN5im0Uu0-a87yWLXrgk5NP8KNfTX0', u'isSuppressed': False, u'region': u'us-west-2', u'metadata': [u'us-west-2', u'AutoScaling', u'Auto Scaling groups', u'20', u'2', u'Green']}
+
 >>> for t in r['result']['flaggedResources']:
 ...     print(t['metadata'][1], t['metadata'][2])
 ... 

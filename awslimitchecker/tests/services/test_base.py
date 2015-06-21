@@ -128,6 +128,33 @@ class Test_AwsService(object):
             "'bar' limit"
         assert mock_limit.mock_calls == []
 
+    def test_set_ta_limit(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        cls._set_ta_limit('foo', 10)
+        assert mock_limit.mock_calls == [
+            call._set_ta_limit(10)
+        ]
+
+    def test_set_ta_limit_keyerror(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        with pytest.raises(ValueError) as excinfo:
+            cls._set_ta_limit('bar', 10)
+
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+
+        assert msg == "AwsServiceTester service has no " \
+            "'bar' limit"
+        assert mock_limit.mock_calls == []
+
     def test_set_threshold_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
         type(mock_limit).default_limit = 5
