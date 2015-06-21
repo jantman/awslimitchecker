@@ -57,9 +57,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, DEFAULT
+    from mock import patch, call, Mock
 else:
-    from unittest.mock import patch, call, Mock, DEFAULT
+    from unittest.mock import patch, call, Mock
 
 
 def red(s):
