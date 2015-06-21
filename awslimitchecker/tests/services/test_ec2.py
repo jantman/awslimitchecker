@@ -37,7 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from mock import Mock, patch, call, DEFAULT
+import sys
 from boto.ec2.connection import EC2Connection
 from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance
@@ -47,6 +47,16 @@ from boto.ec2.volume import Volume
 from boto.ec2.networkinterface import NetworkInterface
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call, Mock, DEFAULT
+else:
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 
 class Test_Ec2Service(object):

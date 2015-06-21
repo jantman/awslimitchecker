@@ -37,11 +37,21 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
 """
 
-from mock import patch, Mock, call
+import sys
 from boto.support.layer1 import SupportConnection
 from boto.regioninfo import RegionInfo
 from awslimitchecker.trustedadvisor import TrustedAdvisor
 from awslimitchecker.services.base import _AwsService
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call, Mock, DEFAULT
+else:
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 
 pb = 'awslimitchecker.trustedadvisor.TrustedAdvisor'
