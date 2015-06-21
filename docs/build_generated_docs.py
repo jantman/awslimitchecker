@@ -203,7 +203,7 @@ def build_runner_examples():
             output = e.output
         results[name] = format_cmd_output(cmd_str, output, name)
     tmpl = tmpl.format(**results)
-    
+
     # write out the final .rst
     with open(os.path.join(my_dir, 'source', 'cli_usage.rst'), 'w') as fh:
         fh.write(tmpl)
@@ -232,6 +232,9 @@ def build_docs():
     Trigger rebuild of all documentation that is dynamically generated
     from awslimitchecker.
     """
+    if os.environ.get('CI', None) is not None:
+        print("Not building dynamic docs in CI environment")
+        raise SystemExit(0)
     logger.info("Beginning build of dynamically-generated docs")
     logger.info("Instantiating AwsLimitChecker")
     c = AwsLimitChecker()
