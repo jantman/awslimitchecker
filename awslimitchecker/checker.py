@@ -319,7 +319,7 @@ class AwsLimitChecker(object):
             crit_count=crit_count
         )
 
-    def check_thresholds(self, service=None):
+    def check_thresholds(self, service=None, use_ta=True):
         """
         Check all limits and current usage against their specified thresholds;
         return all :py:class:`~.AwsLimit` instances that have crossed
@@ -337,15 +337,19 @@ class AwsLimitChecker(object):
 
         :param service: the name of one service to return results for
         :type service: string
+        :param use_ta: check Trusted Advisor for information on limits
+        :type use_ta: bool
         :returns: dict of service name (string) to nested dict
           of limit name (string) to limit (:py:class:`~.AwsLimit`)
         :rtype: dict
         """
         res = {}
-        # @TODO trusted advisor here
+        to_get = self.services
         if service is not None:
-            return {service: self.services[service].check_thresholds()}
-        for sname, cls in self.services.items():
+            to_get = {service: self.services[service]}
+        if use_ta:
+            self.ta.update_limits(to_get)
+        for sname, cls in to_get.items():
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp

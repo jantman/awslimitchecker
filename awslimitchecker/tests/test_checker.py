@@ -404,7 +404,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == [call.required_iam_permissions()]
         assert self.mock_svc2.mock_calls == [call.required_iam_permissions()]
 
-    def test_check_limits(self):
+    def test_check_thresholds(self):
         self.mock_svc1.check_thresholds.return_value = {
             'foo': 'bar',
             'baz': 'blam',
@@ -417,8 +417,14 @@ class TestAwsLimitChecker(object):
                 'baz': 'blam',
             }
         }
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+                'SvcBar': self.mock_svc2
+            }),
+        ]
 
-    def test_check_limits_service(self):
+    def test_check_thresholds_service(self):
         self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
         self.mock_svc2.check_thresholds.return_value = {'baz': 'blam'}
         res = self.cls.check_thresholds(service='SvcFoo')
@@ -427,3 +433,22 @@ class TestAwsLimitChecker(object):
                 'foo': 'bar',
             }
         }
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({'SvcFoo': self.mock_svc1})
+        ]
+
+    def test_check_thresholds_no_ta(self):
+        self.mock_svc1.check_thresholds.return_value = {
+            'foo': 'bar',
+            'baz': 'blam',
+        }
+        self.mock_svc2.check_thresholds.return_value = {}
+        self.cls.use_ta = False
+        res = self.cls.check_thresholds(use_ta=False)
+        assert res == {
+            'SvcFoo': {
+                'foo': 'bar',
+                'baz': 'blam',
+            }
+        }
+        assert self.mock_ta.mock_calls == []
