@@ -79,6 +79,12 @@ files, or set as environment variables. See
 `the boto configuration documentation <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
 for further information.
 
+The recommended way of handling multiple accounts is to use one of the
+`credential configuration files <http://boto.readthedocs.org/en/latest/boto_config_tut.html#details>`_
+(``~/.aws/credentials`` is recommended, as it should be supported by all AWS SDKs and tools),
+define a `section per account <http://boto.readthedocs.org/en/latest/boto_config_tut.html#credentials>`_,
+and then export ``AWS_PROFILE=section_name`` to tell boto which section to use.
+
 .. _getting_started.permissions:
 
 Required Permissions
