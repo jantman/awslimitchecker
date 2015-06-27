@@ -30,7 +30,7 @@ AutoScaling
 ===================== ===
 Limit                 Default
 ===================== ===
-Auto Scaling Groups   20 
+Auto Scaling groups   20 
 Launch configurations 100
 ===================== ===
 EC2

@@ -26,7 +26,8 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
                           [--iam-policy] [-W WARNING_THRESHOLD]
-                          [-C CRITICAL_THRESHOLD] [--no-color] [-v] [-V]
+                          [-C CRITICAL_THRESHOLD] [--skip-ta] [--no-color] [-v]
+                          [-V]
    Report on AWS service limits and usage via boto, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -53,6 +54,8 @@ use as a Nagios-compatible plugin).
      -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
                            default critical threshold (percentage of limit);
                            default: 99
+     --skip-ta             do not attempt to pull *any* information on limits
+                           from Trusted Advisor
      --no-color            do not colorize output
      -v, --verbose         verbose output. specify twice for debug-level output.
      -V, --version         print version number and exit.
@@ -86,18 +89,60 @@ View the AWS services currently supported by ``awslimitchecker`` with the
 
 
 
+Listing Default Limits
++++++++++++++++++++++++
+
+To show the hard-coded default limits, ignoring any limit overrides
+or Trusted Advisor data, run with ``--list-defaults``:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --list-defaults
+   AutoScaling/Auto Scaling groups                        20
+   AutoScaling/Launch configurations                      100
+   EC2/EC2-Classic Elastic IPs                            5
+   EC2/EC2-VPC Elastic IPs                                5
+   EC2/General Purpose (SSD) volume storage (TiB)         20
+   (...)
+   VPC/Rules per network ACL                              20
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               5
+
+
+
 Viewing Limits
 +++++++++++++++
 
 View the limits that ``awslimitchecker`` currently knows how to check, and what
 the limit value is set as (if you specify limit overrides, they will be used
-instead of the default limit) by specifying the ``-l`` or ``--list-defaults``
-option.
+instead of the default limit) by specifying the ``-l`` or ``--list-limits``
+option. Limits followed by ``(TA)`` have been obtained from Trusted Advisor.
 
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling Groups                        20
+   AutoScaling/Auto Scaling groups                        100 (TA)
+   AutoScaling/Launch configurations                      200 (TA)
+   EC2/EC2-Classic Elastic IPs                            5
+   EC2/EC2-VPC Elastic IPs                                5
+   EC2/General Purpose (SSD) volume storage (TiB)         20
+   (...)
+   VPC/Rules per network ACL                              20
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               5 (TA)
+
+
+
+Disabling Trusted Advisor Checks
++++++++++++++++++++++++++++++++++
+
+Using the ``--skip-ta`` option will disable attempting to query limit information
+from Trusted Advisor for all commands.
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -l --skip-ta
+   AutoScaling/Auto Scaling groups                        20
    AutoScaling/Launch configurations                      100
    EC2/EC2-Classic Elastic IPs                            5
    EC2/EC2-VPC Elastic IPs                                5
@@ -123,14 +168,14 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling Groups                        38
+   AutoScaling/Auto Scaling groups                        38
    AutoScaling/Launch configurations                      50
    EC2/EC2-Classic Elastic IPs                            5
    EC2/EC2-VPC Elastic IPs                                0
    EC2/General Purpose (SSD) volume storage (TiB)         4.501
    (...)
    VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
-   VPC/Subnets per VPC                                    max: vpc-1ee8937b=8 (vpc-a926c2cc=4, vpc-c300 (...)
+   VPC/Subnets per VPC                                    max: vpc-73ec9716=8 (vpc-a926c2cc=4, vpc-c300 (...)
    VPC/VPCs                                               4
 
 
@@ -151,16 +196,16 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker -L "EC2/EC2-Classic Elastic IPs"=100 --limit="EC2/EC2-VPC Elastic IPs"=200 --list-defaults
-   AutoScaling/Auto Scaling Groups                        20
-   AutoScaling/Launch configurations                      100
-   EC2/EC2-Classic Elastic IPs                            5
-   EC2/EC2-VPC Elastic IPs                                5
+   (venv)$ awslimitchecker -L "EC2/EC2-Classic Elastic IPs"=100 --limit="EC2/EC2-VPC Elastic IPs"=200 -l
+   AutoScaling/Auto Scaling groups                        100 (TA)
+   AutoScaling/Launch configurations                      200 (TA)
+   EC2/EC2-Classic Elastic IPs                            100
+   EC2/EC2-VPC Elastic IPs                                200
    EC2/General Purpose (SSD) volume storage (TiB)         20
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
-   VPC/VPCs                                               5
+   VPC/VPCs                                               5 (TA)
 
 
 
@@ -171,8 +216,9 @@ Check Limits Against Thresholds
 
 The default mode of operation for ``awslimitchecker`` (when no other action-specific
 options are specified) is to check the usage of all known limits, compare them against
-the configured limit values (overrides if specified, otherwise hard-coded defaults),
-and then output a message and set an exit code depending on thresholds.
+the configured limit values, and then output a message and set an exit code depending
+on thresholds. The limit values used will be (in order of precedence) explicitly-set
+overrides, Trusted Advisor data, and hard-coded defaults.
 
 Currently, the ``awslimitchecker`` command line script only supports global warning and
 critical thresholds, which default to 80% and 99% respectively. If any limit's usage is
@@ -191,11 +237,10 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   AutoScaling/Auto Scaling Groups            (limit 20) CRITICAL: 38
    EC2/EC2-Classic Elastic IPs                (limit 5) CRITICAL: 5
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 98
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 56
-   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=99
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 99
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 57
+   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=100
    VPC/VPCs                                   (limit 5) WARNING: 4
 
 
@@ -208,11 +253,10 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   AutoScaling/Auto Scaling Groups            (limit 20) CRITICAL: 38
    EC2/EC2-Classic Elastic IPs                (limit 5) CRITICAL: 5
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 98
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 56
-   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=99
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 99
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 57
+   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=100
 
 
 
@@ -238,3 +282,6 @@ permissions for it to perform all limit checks. This can be viewed with the
    }
 
 
+
+For the current IAM Policy required by this version of awslimitchecker,
+see :ref:`IAM Policy <iam_policy>`.

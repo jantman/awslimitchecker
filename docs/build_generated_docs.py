@@ -175,7 +175,9 @@ def build_runner_examples():
     # examples to run
     examples = {
         'help': ['awslimitchecker', '--help'],
-        'list_defaults': ['awslimitchecker', '-l'],
+        'list_limits': ['awslimitchecker', '-l'],
+        'list_defaults': ['awslimitchecker', '--list-defaults'],
+        'skip_ta': ['awslimitchecker', '-l', '--skip-ta'],
         'show_usage': ['awslimitchecker', '-u'],
         'list_services': ['awslimitchecker', '-s'],
         'limit_overrides': [
@@ -183,7 +185,7 @@ def build_runner_examples():
             '-L',
             '"EC2/EC2-Classic Elastic IPs"=100',
             '--limit="EC2/EC2-VPC Elastic IPs"=200',
-            '--list-defaults',
+            '-l',
         ],
         'check_thresholds': ['awslimitchecker', '--no-color'],
         'check_thresholds_custom': ['awslimitchecker', '-W', '97',

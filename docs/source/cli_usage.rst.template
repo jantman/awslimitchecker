@@ -39,15 +39,31 @@ View the AWS services currently supported by ``awslimitchecker`` with the
 
 {list_services}
 
+Listing Default Limits
++++++++++++++++++++++++
+
+To show the hard-coded default limits, ignoring any limit overrides
+or Trusted Advisor data, run with ``--list-defaults``:
+
+{list_defaults}
+
 Viewing Limits
 +++++++++++++++
 
 View the limits that ``awslimitchecker`` currently knows how to check, and what
 the limit value is set as (if you specify limit overrides, they will be used
-instead of the default limit) by specifying the ``-l`` or ``--list-defaults``
-option.
+instead of the default limit) by specifying the ``-l`` or ``--list-limits``
+option. Limits followed by ``(TA)`` have been obtained from Trusted Advisor.
 
-{list_defaults}
+{list_limits}
+
+Disabling Trusted Advisor Checks
++++++++++++++++++++++++++++++++++
+
+Using the ``--skip-ta`` option will disable attempting to query limit information
+from Trusted Advisor for all commands.
+
+{skip_ta}
 
 Checking Usage
 +++++++++++++++
@@ -85,8 +101,9 @@ Check Limits Against Thresholds
 
 The default mode of operation for ``awslimitchecker`` (when no other action-specific
 options are specified) is to check the usage of all known limits, compare them against
-the configured limit values (overrides if specified, otherwise hard-coded defaults),
-and then output a message and set an exit code depending on thresholds.
+the configured limit values, and then output a message and set an exit code depending
+on thresholds. The limit values used will be (in order of precedence) explicitly-set
+overrides, Trusted Advisor data, and hard-coded defaults.
 
 Currently, the ``awslimitchecker`` command line script only supports global warning and
 critical thresholds, which default to 80% and 99% respectively. If any limit's usage is
@@ -119,3 +136,6 @@ permissions for it to perform all limit checks. This can be viewed with the
 ``--iam-policy`` option:
 
 {iam_policy}
+
+For the current IAM Policy required by this version of awslimitchecker,
+see :ref:`IAM Policy <iam_policy>`.
