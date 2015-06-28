@@ -84,10 +84,7 @@ class TestStoreKeyValuePair(object):
         if sys.version_info[0] > 2:
             msg = excinfo.value.args[0]
         else:
-            if sys.version_info[1] < 7:
-                msg = excinfo.value
-            else:
-                msg = excinfo.value.message
+            msg = excinfo.value.message
         assert msg == 2
 
     def test_quoted(self):
