@@ -125,6 +125,16 @@ crossed the critical threshold:
    ... 
    vpc-c300b9a6=100
 
+Disabling Trusted Advisor
+++++++++++++++++++++++++++
+
+To disable querying Trusted Advisor for limit information, simply call :py:meth:`~.AwsLimitChecker.get_limits`
+or :py:meth:`~.AwsLimitChecker.check_thresholds` with ``use_ta=False``:
+
+.. code-block:: pycon
+
+   >>> result = c.check_thresholds(use_ta=False)
+
 Advanced Examples
 ------------------
 

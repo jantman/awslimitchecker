@@ -14,7 +14,25 @@ Supported Limits
 Trusted Advisor Data
 ---------------------
 
-TBD; Trusted Advisor support is `not yet implemented <https://github.com/jantman/awslimitchecker/issues/14>`_
+
+So long as the Service and Limit names used by Trusted Advisor (and returned
+in its API responses) exactly match those shown below, all limits listed in
+Trusted Advisor "Service Limit" checks should be automatically used by
+awslimitchecker. The following service limits have been confirmed as being
+updated from Trusted Advisor:
+
+
+* AutoScaling
+
+  * Auto Scaling groups
+
+  * Launch configurations
+
+* VPC
+
+  * VPCs
+
+
 
 .. _limits.checks:
 
@@ -22,17 +40,18 @@ Current Checks
 ---------------
 
 The section below lists every limit that this version of awslimitchecker knows
-how to check, and its hard-coded default value (per AWS documentation).
+how to check, and its hard-coded default value (per AWS documentation). Limits
+marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 
 AutoScaling
 ++++++++++++
 
-===================== ===
-Limit                 Default
-===================== ===
-Auto Scaling groups   20 
-Launch configurations 100
-===================== ===
+================================= ===
+Limit                             Default
+================================= ===
+Auto Scaling groups :sup:`(TA)`   20 
+Launch configurations :sup:`(TA)` 100
+================================= ===
 EC2
 ++++
 
@@ -113,7 +132,7 @@ Network ACLs per VPC    200
 Route tables per VPC    200
 Rules per network ACL   20 
 Subnets per VPC         200
-VPCs                    5  
+VPCs :sup:`(TA)`        5  
 ======================= ===
 
 

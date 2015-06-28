@@ -29,3 +29,32 @@ string Service Name to the Service Class instance. These instances are used for 
 So, once an instance of :py:class:`~awslimitchecker.checker.AwsLimitChecker` is created, we should have instant access
 to the services and limits without any connection to AWS. This is utilized by the ``--list-services`` and
 ``--list-defaults`` options for the :ref:`command line client <_cli>`.
+
+.. _internals.trusted_advisor:
+
+Trusted Advisor
+-----------------
+
+When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is initialized, it also initializes an instance of
+:py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`. In :py:meth:`~.AwsLimitchecker.get_limits`,
+:py:meth:`~.AwsLimitchecker.find_usage` and :py:meth:`~.AwsLimitchecker.check_thresholds`, when called with
+``use_ta == True`` (the default), :py:meth:`~.TrustedAdvisor.update_limits` is called on the TrustedAdvisor
+instance.
+
+:py:meth:`~.TrustedAdvisor.update_limits` polls Trusted Advisor data is from the Support API via
+:py:meth:`~.TrustedAdvisor._poll`; this will retrieve the limits for all "flaggedResources" items in the
+``Service Limits`` Trusted Advisor check result for the current AWS account. It then calls
+:py:meth:`~.TrustedAdvisor._update_services`, passing in the Trusted Advisor check results and the
+dict of :py:class:`~._AwsService` objects it was called with (from :py:class:`~.AwsLimitChecker`).
+
+:py:meth:`~.TrustedAdvisor._update_services` iterates over the Services in the Trusted Advisor check result
+and attempts to find a matching :py:class:`~._AwsService` (by string service name) in the dict passed
+in from :py:class:`~.AwsLimitChecker`. If a match is found, it iterates over all limits for that service
+in the TA result and attempts to call the ``Service``'s :py:meth:`~._AwsService._set_ta_limit` method.
+If a matching Service is not found, or if ``_set_ta_limit`` raises a ValueError (matching Limit not found
+for that Service), an error is logged.
+
+Using this methodology, no additional code is needed to support new/additional Trusted Advisor limit checks;
+*so long as* the Service and Limit name strings match between the Trusted Advisor API response and their
+corresponding :py:class:`~._AwsService` and :py:class:`~.AwsLimit` instances, the TA limits will be automatically
+added to the corresponding ``AwsLimit``.

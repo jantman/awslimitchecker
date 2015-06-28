@@ -98,10 +98,14 @@ using the :py:mod:`abc` module.
 
 .. _development.adding_ta:
 
-Adding Trusted Advisor Checks
-------------------------------
+Trusted Advisor Checks
+-----------------------
 
-Currently not implemented; see `issue #14 <https://github.com/jantman/awslimitchecker/issues/14>`_
+So long as the ``Service`` and ``Limit`` name strings returned by the Trusted Advisor (Support) API exactly match
+how they are set on the corresponding :py:class:`~._AwsService` and :py:class:`~.AwsLimit` objects, no code changes
+are needed to support new limit checks from TA.
+
+For further information, see :ref:`Internals / Trusted Advisor <internals.trusted_advisor>`.
 
 .. _development.tests:
 

@@ -93,13 +93,13 @@ def build_iam_policy(checker):
 
 def build_limits(checker):
     logger.info("Beginning build of limits.rst")
-    # get the policy dict
+    ta_limits = {}
     logger.info("Getting Limits")
-    ta_info = 'TBD; Trusted Advisor support is `not yet implemented <https://github.com/jantman/awslimitchecker/issues/14>`_'  # @TODO trusted advisor data
     limit_info = ''
     limits = checker.get_limits()
     # this is a bit of a pain, because we need to know string lengths to build the table
     for svc_name in sorted(limits):
+        ta_limits[svc_name] = []
         limit_info += svc_name + "\n"
         limit_info += ('+' * (len(svc_name)+1)) + "\n"
         limit_info += "\n"
@@ -109,13 +109,16 @@ def build_limits(checker):
         max_name = 0
         max_default_limit = 0
         for limit in limits[svc_name].values():
+            lname = limit.name
+            if limit.ta_limit is not None:
+                lname += ' :sup:`(TA)`'
+                ta_limits[svc_name].append(limit.name)
+            slimits[lname] = str(limit.default_limit)
             # update max string length for table formatting
-            if len(limit.name) > max_name:
-                max_name = len(limit.name)
+            if len(lname) > max_name:
+                max_name = len(lname)
             if len(str(limit.default_limit)) > max_default_limit:
                 max_default_limit = len(str(limit.default_limit))
-            # @TODO trusted advisor, use :sup:`[TA]`
-            slimits[limit.name] = str(limit.default_limit)
         # create the format string
         sformat = '{name: <' + str(max_name) + '} ' \
                   '{limit: <' + str(max_default_limit) + '}\n'
@@ -130,6 +133,22 @@ def build_limits(checker):
             limit_info += sformat.format(name=lname, limit=limit)
         # footer
         limit_info += sep
+
+    # TA limit list
+    ta_info = """
+    So long as the Service and Limit names used by Trusted Advisor (and returned
+    in its API responses) exactly match those shown below, all limits listed in
+    Trusted Advisor "Service Limit" checks should be automatically used by
+    awslimitchecker. The following service limits have been confirmed as being
+    updated from Trusted Advisor:
+    """
+    ta_info = dedent(ta_info) + "\n\n"
+    for sname in sorted(ta_limits.keys()):
+        if len(ta_limits[sname]) < 1:
+            continue
+        ta_info += '* {s}\n\n'.format(s=sname)
+        for lname in sorted(ta_limits[sname]):
+            ta_info += '  * {l}\n\n'.format(l=lname)
 
     doc = """
     .. -- WARNING -- WARNING -- WARNING
@@ -155,7 +174,8 @@ def build_limits(checker):
     ---------------
 
     The section below lists every limit that this version of awslimitchecker knows
-    how to check, and its hard-coded default value (per AWS documentation).
+    how to check, and its hard-coded default value (per AWS documentation). Limits
+    marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 
     {limit_info}
 

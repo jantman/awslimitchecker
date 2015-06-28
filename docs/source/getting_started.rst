@@ -14,7 +14,7 @@ What It Does
 - Compare current usage to limits; return information about limits that
   exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
 - Define custom thresholds per-limit
-- Coming Soon: where possible, pull current limits from Trusted Advisor API
+- Where possible, pull current limits from Trusted Advisor API
 
 .. _getting_started.nomenclature:
 
