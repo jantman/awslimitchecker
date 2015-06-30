@@ -363,7 +363,9 @@ class _Ec2Service(_AwsService):
             sum(1 for a in addrs if a.domain == 'vpc'),
             aws_type='AWS::EC2::EIP',
         )
-        self.limits['EC2-Classic Elastic IPs']._add_current_usage(
+        # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
+        # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
+        self.limits['Elastic IP addresses (EIPs)']._add_current_usage(
             sum(1 for a in addrs if a.domain == 'standard'),
             aws_type='AWS::EC2::EIP',
         )
@@ -406,7 +408,6 @@ class _Ec2Service(_AwsService):
             limit_type='AWS::EC2::SecurityGroup',
             limit_subtype='AWS::EC2::VPC',
         )
-        # self.conn.get_all_addresses - domain == 'vpc'
         limits['EC2-VPC Elastic IPs'] = AwsLimit(
             'EC2-VPC Elastic IPs',
             self,
@@ -416,16 +417,16 @@ class _Ec2Service(_AwsService):
             limit_type='AWS::EC2::EIP',
             limit_subtype='AWS::EC2::VPC',
         )
-        # self.conn.get_all_addresses - domain == 'standard'
-        limits['EC2-Classic Elastic IPs'] = AwsLimit(
-            'EC2-Classic Elastic IPs',
+        # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
+        # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
+        limits['Elastic IP addresses (EIPs)'] = AwsLimit(
+            'Elastic IP addresses (EIPs)',
             self,
             5,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
         )
-        # self.conn.get_all_network_interfaces()
         limits['VPC security groups per elastic network interface'] = AwsLimit(
             'VPC security groups per elastic network interface',
             self,

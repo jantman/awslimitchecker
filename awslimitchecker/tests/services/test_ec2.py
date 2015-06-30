@@ -600,7 +600,7 @@ class Test_Ec2Service(object):
         assert usage[0].id is None
         assert usage[0].aws_type == 'AWS::EC2::EIP'
 
-        limit = cls.limits['EC2-Classic Elastic IPs']
+        limit = cls.limits['Elastic IP addresses (EIPs)']
         usage = limit.get_current_usage()
         assert len(usage) == 1
         assert usage[0].limit == limit
@@ -652,7 +652,7 @@ class Test_Ec2Service(object):
             'Security groups per VPC',
             'Rules per VPC security group',
             'EC2-VPC Elastic IPs',
-            'EC2-Classic Elastic IPs',
+            'Elastic IP addresses (EIPs)',
             'VPC security groups per elastic network interface',
         ]
         assert sorted(limits.keys()) == sorted(expected)
