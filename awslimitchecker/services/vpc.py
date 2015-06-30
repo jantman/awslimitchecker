@@ -127,6 +127,13 @@ class _VpcService(_AwsService):
                 aws_type='AWS::EC2::VPC',
                 id=vpc_id,
             )
+
+        # Internet gateways
+        gws = self.conn.get_all_internet_gateways()
+        self.limits['Internet gateways']._add_current_usage(
+            len(gws),
+            aws_type='AWS::EC2::InternetGateway',
+        )
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -199,6 +206,15 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Route',
             limit_subtype='AWS::EC2::RouteTable',
+        )
+
+        limits['Internet gateways'] = AwsLimit(
+            'Internet gateways',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::InternetGateway',
         )
         self.limits = limits
         return limits

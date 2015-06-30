@@ -44,6 +44,7 @@ from boto.vpc.vpc import VPC
 from boto.vpc.subnet import Subnet
 from boto.vpc.networkacl import NetworkAcl
 from boto.vpc.routetable import RouteTable
+from boto.vpc.internetgateway import InternetGateway
 
 from awslimitchecker.services.vpc import _VpcService
 
@@ -97,6 +98,7 @@ class Test_VpcService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Entries per route table',
+            'Internet gateways',
             'VPCs',
             'Subnets per VPC',
             'Network ACLs per VPC',
@@ -126,12 +128,14 @@ class Test_VpcService(object):
         subnets = []
         acls = []
         tables = []
+        gateways = []
 
         mock_conn = Mock(spec_set=VPCConnection)
         mock_conn.get_all_vpcs.return_value = vpcs
         mock_conn.get_all_subnets.return_value = subnets
         mock_conn.get_all_network_acls.return_value = acls
         mock_conn.get_all_route_tables.return_value = tables
+        mock_conn.get_all_internet_gateways.return_value = gateways
 
         with patch('%s.connect' % self.pb) as mock_connect:
             cls = _VpcService(21, 43)
@@ -147,6 +151,7 @@ class Test_VpcService(object):
             call.get_all_subnets(),
             call.get_all_network_acls(),
             call.get_all_route_tables(),
+            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_subnets(self):
@@ -161,12 +166,14 @@ class Test_VpcService(object):
         subnets = [mock1, mock2, mock3]
         acls = []
         tables = []
+        gateways = []
 
         mock_conn = Mock(spec_set=VPCConnection)
         mock_conn.get_all_vpcs.return_value = vpcs
         mock_conn.get_all_subnets.return_value = subnets
         mock_conn.get_all_network_acls.return_value = acls
         mock_conn.get_all_route_tables.return_value = tables
+        mock_conn.get_all_internet_gateways.return_value = gateways
 
         with patch('%s.connect' % self.pb) as mock_connect:
             cls = _VpcService(21, 43)
@@ -187,6 +194,7 @@ class Test_VpcService(object):
             call.get_all_subnets(),
             call.get_all_network_acls(),
             call.get_all_route_tables(),
+            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_acls(self):
@@ -207,12 +215,14 @@ class Test_VpcService(object):
         subnets = []
         acls = [mock1, mock2, mock3]
         tables = []
+        gateways = []
 
         mock_conn = Mock(spec_set=VPCConnection)
         mock_conn.get_all_vpcs.return_value = vpcs
         mock_conn.get_all_subnets.return_value = subnets
         mock_conn.get_all_network_acls.return_value = acls
         mock_conn.get_all_route_tables.return_value = tables
+        mock_conn.get_all_internet_gateways.return_value = gateways
 
         with patch('%s.connect' % self.pb) as mock_connect:
             cls = _VpcService(21, 43)
@@ -241,6 +251,7 @@ class Test_VpcService(object):
             call.get_all_subnets(),
             call.get_all_network_acls(),
             call.get_all_route_tables(),
+            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_route_tables(self):
@@ -261,12 +272,14 @@ class Test_VpcService(object):
         subnets = []
         acls = []
         tables = [mock1, mock2, mock3]
+        gateways = []
 
         mock_conn = Mock(spec_set=VPCConnection)
         mock_conn.get_all_vpcs.return_value = vpcs
         mock_conn.get_all_subnets.return_value = subnets
         mock_conn.get_all_network_acls.return_value = acls
         mock_conn.get_all_route_tables.return_value = tables
+        mock_conn.get_all_internet_gateways.return_value = gateways
 
         with patch('%s.connect' % self.pb) as mock_connect:
             cls = _VpcService(21, 43)
@@ -295,6 +308,44 @@ class Test_VpcService(object):
             call.get_all_subnets(),
             call.get_all_network_acls(),
             call.get_all_route_tables(),
+            call.get_all_internet_gateways(),
+        ]
+
+    def test_find_usage_internet_gateways(self):
+        mock1 = Mock(spec_set=InternetGateway)
+        type(mock1).id = 'gw-1'
+        mock2 = Mock(spec_set=InternetGateway)
+        type(mock2).id = 'gw-2'
+
+        vpcs = []
+        subnets = []
+        acls = []
+        tables = []
+        gateways = [mock1, mock2]
+
+        mock_conn = Mock(spec_set=VPCConnection)
+        mock_conn.get_all_vpcs.return_value = vpcs
+        mock_conn.get_all_subnets.return_value = subnets
+        mock_conn.get_all_network_acls.return_value = acls
+        mock_conn.get_all_route_tables.return_value = tables
+        mock_conn.get_all_internet_gateways.return_value = gateways
+
+        with patch('%s.connect' % self.pb) as mock_connect:
+            cls = _VpcService(21, 43)
+            cls.conn = mock_conn
+            assert cls._have_usage is False
+            cls.find_usage()
+        assert mock_connect.mock_calls == [call()]
+        assert cls._have_usage is True
+        assert len(cls.limits['Internet gateways'].get_current_usage()) == 1
+        assert cls.limits['Internet gateways'].get_current_usage()[
+            0].get_value() == 2
+        assert mock_conn.mock_calls == [
+            call.get_all_vpcs(),
+            call.get_all_subnets(),
+            call.get_all_network_acls(),
+            call.get_all_route_tables(),
+            call.get_all_internet_gateways(),
         ]
 
     def test_required_iam_permissions(self):
