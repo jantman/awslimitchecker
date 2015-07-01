@@ -133,98 +133,98 @@ class Test_ElastiCacheService(object):
             {
                 'Engine': 'memcached',
                 'CacheParameterGroup': {
-                    u'CacheNodeIdsToReboot': [],
-                    u'CacheParameterGroupName': u'default.memcached1.4',
-                    u'ParameterApplyStatus': u'in-sync'
+                    'CacheNodeIdsToReboot': [],
+                    'CacheParameterGroupName': 'default.memcached1.4',
+                    'ParameterApplyStatus': 'in-sync'
                 },
-                u'CacheClusterId': u'memcached1',
-                u'CacheSecurityGroups': [],
-                u'ConfigurationEndpoint': {
-                    u'Port': 11211,
-                    u'Address': u'memcached1.vfavzi.cfg.use1.'
+                'CacheClusterId': 'memcached1',
+                'CacheSecurityGroups': [],
+                'ConfigurationEndpoint': {
+                    'Port': 11211,
+                    'Address': 'memcached1.vfavzi.cfg.use1.'
                     'cache.amazonaws.com'
                 },
-                u'CacheClusterCreateTime': 1431109646.755,
-                u'ReplicationGroupId': None,
-                u'AutoMinorVersionUpgrade': True,
-                u'CacheClusterStatus': u'available',
-                u'NumCacheNodes': 1,
-                u'PreferredAvailabilityZone': u'us-east-1d',
-                u'SecurityGroups': [
+                'CacheClusterCreateTime': 1431109646.755,
+                'ReplicationGroupId': None,
+                'AutoMinorVersionUpgrade': True,
+                'CacheClusterStatus': 'available',
+                'NumCacheNodes': 1,
+                'PreferredAvailabilityZone': 'us-east-1d',
+                'SecurityGroups': [
                     {
-                        u'Status': u'active',
-                        u'SecurityGroupId': u'sg-11111111'
+                        'Status': 'active',
+                        'SecurityGroupId': 'sg-11111111'
                     }
                 ],
-                u'CacheSubnetGroupName': u'csg-memcached1',
-                u'EngineVersion': u'1.4.14',
-                u'PendingModifiedValues': {
-                    u'NumCacheNodes': None,
-                    u'EngineVersion': None,
-                    u'CacheNodeIdsToRemove': None
+                'CacheSubnetGroupName': 'csg-memcached1',
+                'EngineVersion': '1.4.14',
+                'PendingModifiedValues': {
+                    'NumCacheNodes': None,
+                    'EngineVersion': None,
+                    'CacheNodeIdsToRemove': None
                 },
-                u'CacheNodeType': u'cache.t2.small',
-                u'NotificationConfiguration': None,
-                u'PreferredMaintenanceWindow': u'mon:05:30-mon:06:30',
-                u'CacheNodes': [
+                'CacheNodeType': 'cache.t2.small',
+                'NotificationConfiguration': None,
+                'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
+                'CacheNodes': [
                     {
-                        u'CacheNodeId': u'0001',
-                        u'Endpoint': {
-                            u'Port': 11211,
-                            u'Address': u'memcached1.vfavzi.0001.'
+                        'CacheNodeId': '0001',
+                        'Endpoint': {
+                            'Port': 11211,
+                            'Address': 'memcached1.vfavzi.0001.'
                             'use1.cache.amazonaws.com'
                         },
-                        u'CacheNodeStatus': u'available',
-                        u'ParameterGroupStatus': u'in-sync',
-                        u'CacheNodeCreateTime': 1431109646.755,
-                        u'SourceCacheNodeId': None
+                        'CacheNodeStatus': 'available',
+                        'ParameterGroupStatus': 'in-sync',
+                        'CacheNodeCreateTime': 1431109646.755,
+                        'SourceCacheNodeId': None
                     }
                 ]
             },
             {
-                u'Engine': u'redis',
-                u'CacheParameterGroup': {
-                    u'CacheNodeIdsToReboot': [],
-                    u'CacheParameterGroupName': u'default.redis2.8',
-                    u'ParameterApplyStatus': u'in-sync'
+                'Engine': 'redis',
+                'CacheParameterGroup': {
+                    'CacheNodeIdsToReboot': [],
+                    'CacheParameterGroupName': 'default.redis2.8',
+                    'ParameterApplyStatus': 'in-sync'
                 },
-                u'CacheClusterId': u'redis1',
-                u'CacheSecurityGroups': [
+                'CacheClusterId': 'redis1',
+                'CacheSecurityGroups': [
                     {
-                        u'Status': u'active',
-                        u'CacheSecurityGroupName': u'csg-redis1'
+                        'Status': 'active',
+                        'CacheSecurityGroupName': 'csg-redis1'
                     }
                 ],
-                u'ConfigurationEndpoint': None,
-                u'CacheClusterCreateTime': 1412253787.914,
-                u'ReplicationGroupId': None,
-                u'AutoMinorVersionUpgrade': True,
-                u'CacheClusterStatus': u'available',
-                u'NumCacheNodes': 1,
-                u'PreferredAvailabilityZone': u'us-east-1a',
-                u'SecurityGroups': None,
-                u'CacheSubnetGroupName': None,
-                u'EngineVersion': u'2.8.6',
-                u'PendingModifiedValues': {
-                    u'NumCacheNodes': None,
-                    u'EngineVersion': None,
-                    u'CacheNodeIdsToRemove': None
+                'ConfigurationEndpoint': None,
+                'CacheClusterCreateTime': 1412253787.914,
+                'ReplicationGroupId': None,
+                'AutoMinorVersionUpgrade': True,
+                'CacheClusterStatus': 'available',
+                'NumCacheNodes': 1,
+                'PreferredAvailabilityZone': 'us-east-1a',
+                'SecurityGroups': None,
+                'CacheSubnetGroupName': None,
+                'EngineVersion': '2.8.6',
+                'PendingModifiedValues': {
+                    'NumCacheNodes': None,
+                    'EngineVersion': None,
+                    'CacheNodeIdsToRemove': None
                 },
-                u'CacheNodeType': u'cache.m3.medium',
-                u'NotificationConfiguration': None,
-                u'PreferredMaintenanceWindow': u'mon:05:30-mon:06:30',
-                u'CacheNodes': [
+                'CacheNodeType': 'cache.m3.medium',
+                'NotificationConfiguration': None,
+                'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
+                'CacheNodes': [
                     {
-                        u'CacheNodeId': u'0001',
-                        u'Endpoint': {
-                            u'Port': 6379,
-                            u'Address': u'redis1.vfavzi.0001.use1.cache.'
+                        'CacheNodeId': '0001',
+                        'Endpoint': {
+                            'Port': 6379,
+                            'Address': 'redis1.vfavzi.0001.use1.cache.'
                             'amazonaws.com'
                         },
-                        u'CacheNodeStatus': u'available',
-                        u'ParameterGroupStatus': u'in-sync',
-                        u'CacheNodeCreateTime': 1412253787.914,
-                        u'SourceCacheNodeId': None
+                        'CacheNodeStatus': 'available',
+                        'ParameterGroupStatus': 'in-sync',
+                        'CacheNodeCreateTime': 1412253787.914,
+                        'SourceCacheNodeId': None
                     }
                 ]
             },
