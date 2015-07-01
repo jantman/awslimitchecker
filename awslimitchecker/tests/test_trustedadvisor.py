@@ -285,10 +285,10 @@ class Test_TrustedAdvisor(object):
             self.cls._update_services(ta_results, services)
         assert mock_logger.mock_calls == [
             call.debug("Updating TA limits on all services"),
-            call.warning("TrustedAdvisor returned check results for unknown "
-                         "limit '%s' (service %s)", 'blam', 'EC2'),
-            call.critical("TrustedAdvisor returned check results for unknown "
-                          "service '%s'", 'OtherService'),
+            call.info("TrustedAdvisor returned check results for unknown "
+                      "limit '%s' (service %s)", 'blam', 'EC2'),
+            call.info("TrustedAdvisor returned check results for unknown "
+                      "service '%s'", 'OtherService'),
             call.info("Done updating TA limits on all services"),
         ]
         assert mock_autoscale.mock_calls == [

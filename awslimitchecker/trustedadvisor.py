@@ -55,7 +55,7 @@ class TrustedAdvisor(object):
         if self.conn is None:
             logger.debug("Connecting to Support API (TrustedAdvisor)")
             self.conn = boto.connect_support()
-            logger.info("Connected to Support API")
+            logger.debug("Connected to Support API")
 
     def update_limits(self, services):
         """
@@ -149,16 +149,16 @@ class TrustedAdvisor(object):
         for svc_name in sorted(ta_results.keys()):
             limits = ta_results[svc_name]
             if svc_name not in services:
-                logger.critical("TrustedAdvisor returned check results for "
-                                "unknown service '%s'", svc_name)
+                logger.info("TrustedAdvisor returned check results for "
+                            "unknown service '%s'", svc_name)
                 continue
             service = services[svc_name]
             for lim_name in sorted(limits.keys()):
                 try:
                     service._set_ta_limit(lim_name, limits[lim_name])
                 except ValueError:
-                    logger.warning("TrustedAdvisor returned check results for "
-                                   "unknown limit '%s' (service %s)",
-                                   lim_name,
-                                   svc_name)
+                    logger.info("TrustedAdvisor returned check results for "
+                                "unknown limit '%s' (service %s)",
+                                lim_name,
+                                svc_name)
         logger.info("Done updating TA limits on all services")
