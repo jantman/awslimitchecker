@@ -70,17 +70,20 @@ class _EbsService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_ebs()
+        self._find_usage_snapshots()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
     def _find_usage_ebs(self):
         """calculate usage for all EBS limits and update Limits"""
+        vols = 0
         piops = 0
         piops_gb = 0
         gp_gb = 0
         mag_gb = 0
         logger.debug("Getting usage for EBS volumes")
         for vol in self.conn.get_all_volumes():
+            vols += 1
             if vol.type == 'io1':
                 piops_gb += vol.size
                 piops += vol.iops
@@ -110,6 +113,19 @@ class _EbsService(_AwsService):
                         mag_gb / 1000.0,
                         aws_type='AWS::EC2::Volume'
                     )
+        self.limits['Active volumes']._add_current_usage(
+            vols,
+            aws_type='AWS::EC2::Volume'
+        )
+
+    def _find_usage_snapshots(self):
+        """find snapshot usage"""
+        logger.debug("Getting usage for EBS snapshots")
+        snaps = self.conn.get_all_snapshots(owner='self')
+        self.limits['Active snapshots']._add_current_usage(
+            len(snaps),
+            aws_type='AWS::EC2::VolumeSnapshot'
+        )
 
     def get_limits(self):
         """
@@ -171,6 +187,22 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
         )
+        limits['Active snapshots'] = AwsLimit(
+            'Active snapshots',
+            self,
+            10000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::VolumeSnapshot',
+        )
+        limits['Active volumes'] = AwsLimit(
+            'Active volumes',
+            self,
+            5000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+        )
         return limits
 
     def required_iam_permissions(self):
@@ -184,4 +216,5 @@ class _EbsService(_AwsService):
         """
         return [
             "ec2:DescribeVolumes",
+            "ec2:DescribeSnapshots"
         ]

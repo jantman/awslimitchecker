@@ -40,6 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 from boto.ec2.connection import EC2Connection
 from boto.ec2.volume import Volume
+from boto.ec2.snapshot import Snapshot
 from awslimitchecker.services.ebs import _EbsService
 from awslimitchecker.limit import AwsLimit
 
@@ -104,7 +105,7 @@ class Test_EbsService(object):
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
             assert limits[x].service == cls
-        assert len(limits) == 4
+        assert len(limits) == 6
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
@@ -117,19 +118,24 @@ class Test_EbsService(object):
         mag_tb = limits['Magnetic volume storage (TiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
+        act_snaps = limits['Active snapshots']
+        assert act_snaps.limit_type == 'AWS::EC2::VolumeSnapshot'
+        act_vols = limits['Active volumes']
+        assert act_vols.limit_type == 'AWS::EC2::Volume'
 
     def test_find_usage(self):
         with patch.multiple(
                 self.pb,
                 connect=DEFAULT,
                 _find_usage_ebs=DEFAULT,
+                _find_usage_snapshots=DEFAULT,
                 autospec=True,
         ) as mocks:
             cls = _EbsService(21, 43)
             assert cls._have_usage is False
             cls.find_usage()
         assert cls._have_usage is True
-        assert len(mocks) == 2
+        assert len(mocks) == 3
         for m in mocks:
             assert mocks[m].mock_calls == [call(cls)]
 
@@ -214,9 +220,43 @@ class Test_EbsService(object):
                               '(TiB)'].get_current_usage()) == 1
         assert cls.limits['Magnetic volume storage '
                           '(TiB)'].get_current_usage()[0].get_value() == 0.508
+        assert len(cls.limits['Active volumes'].get_current_usage()) == 1
+        assert cls.limits['Active volumes'
+                          ''].get_current_usage()[0].get_value() == 7
+
+    def test_find_usage_snapshots(self):
+        mock_snap1 = Mock(spec_set=Snapshot)
+        type(mock_snap1).id = 'snap-1'
+
+        mock_snap2 = Mock(spec_set=Snapshot)
+        type(mock_snap2).id = 'snap-2'
+
+        mock_snap3 = Mock(spec_set=Snapshot)
+        type(mock_snap3).id = 'snap-3'
+
+        mock_conn = Mock(spec_set=EC2Connection)
+        mock_conn.get_all_snapshots.return_value = [
+            mock_snap1,
+            mock_snap2,
+            mock_snap3,
+        ]
+        cls = _EbsService(21, 43)
+        cls.conn = mock_conn
+        with patch('awslimitchecker.services.ebs.logger') as mock_logger:
+            cls._find_usage_snapshots()
+        assert mock_logger.mock_calls == [
+            call.debug("Getting usage for EBS snapshots"),
+        ]
+        assert len(cls.limits['Active snapshots'].get_current_usage()) == 1
+        assert cls.limits['Active snapshots'
+                          ''].get_current_usage()[0].get_value() == 3
+        assert mock_conn.mock_calls == [
+            call.get_all_snapshots(owner='self')
+        ]
 
     def test_required_iam_permissions(self):
         cls = _EbsService(21, 43)
         assert cls.required_iam_permissions() == [
             "ec2:DescribeVolumes",
+            "ec2:DescribeSnapshots"
         ]
