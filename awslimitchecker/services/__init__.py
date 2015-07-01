@@ -43,6 +43,7 @@ from awslimitchecker.services.vpc import _VpcService
 from awslimitchecker.services.autoscaling import _AutoscalingService
 from awslimitchecker.services.ebs import _EbsService
 from awslimitchecker.services.elb import _ElbService
+from awslimitchecker.services.elasticache import _ElastiCacheService
 
 # dynamically generate the service name to class dict
 _services = {}
