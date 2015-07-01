@@ -55,7 +55,9 @@ Adding New Limits and Checks to Existing Services
 2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method
    called by that, in the case of large or complex services), get the usage information
    via `boto` and pass it to the appropriate AwsLimit object via its
-   :py:meth:`~.AwsLimit._add_current_usage` method.
+   :py:meth:`~.AwsLimit._add_current_usage` method. For anything more than trivial
+   services (those with only 2-3 limits), ``find_usage()`` should be broken into
+   multiple methods, generally one per AWS API call.
 3. Ensure complete test coverage for the above.
 
 .. _development.adding_services:
@@ -80,7 +82,7 @@ using the :py:mod:`abc` module.
 4. Write at least high-level tests; TDD is greatly preferred.
 5. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
    small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
-   to search for "TODO" in the new service class you created (#1).
+   to search for "TODO" in the new service class you created (#1). See :ref:`Adding New Limits <development.adding_checks>` for further information.
 6. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
 7. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
