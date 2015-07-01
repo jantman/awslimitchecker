@@ -72,7 +72,16 @@ class _VpcService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
+        self._find_usage_vpcs()
+        self._find_usage_subnets()
+        self._find_usage_ACLs()
+        self._find_usage_route_tables()
+        self._find_usage_gateways()
+        self._have_usage = True
+        logger.debug("Done checking usage.")
 
+    def _find_usage_vpcs(self):
+        """find usage for VPCs"""
         # overall number of VPCs
         vpcs = self.conn.get_all_vpcs()
         self.limits['VPCs']._add_current_usage(
@@ -80,6 +89,8 @@ class _VpcService(_AwsService):
             aws_type='AWS::EC2::VPC'
         )
 
+    def _find_usage_subnets(self):
+        """find usage for Subnets"""
         # subnets per VPC
         subnets = defaultdict(int)
         for subnet in self.conn.get_all_subnets():
@@ -92,6 +103,8 @@ class _VpcService(_AwsService):
                 id=vpc_id
             )
 
+    def _find_usage_ACLs(self):
+        """find usage for ACLs"""
         # Network ACLs per VPC
         acls = defaultdict(int)
         for acl in self.conn.get_all_network_acls():
@@ -110,6 +123,8 @@ class _VpcService(_AwsService):
                 id=vpc_id,
             )
 
+    def _find_usage_route_tables(self):
+        """find usage for route tables"""
         # Route tables per VPC
         tables = defaultdict(int)
         for table in self.conn.get_all_route_tables():
@@ -128,14 +143,14 @@ class _VpcService(_AwsService):
                 id=vpc_id,
             )
 
+    def _find_usage_gateways(self):
+        """find usage for Internet Gateways"""
         # Internet gateways
         gws = self.conn.get_all_internet_gateways()
         self.limits['Internet gateways']._add_current_usage(
             len(gws),
             aws_type='AWS::EC2::InternetGateway',
         )
-        self._have_usage = True
-        logger.debug("Done checking usage.")
 
     def get_limits(self):
         """

@@ -54,9 +54,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock
+    from mock import patch, call, Mock, DEFAULT
 else:
-    from unittest.mock import patch, call, Mock
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 
 class Test_VpcService(object):
@@ -118,40 +118,52 @@ class Test_VpcService(object):
         res = cls.get_limits()
         assert res == mock_limits
 
-    def test_find_usage_vpc(self):
+    def test_find_usage(self):
+        mock_conn = Mock(spec_set=VPCConnection)
+
+        with patch('%s.connect' % self.pb) as mock_connect:
+            with patch.multiple(
+                    self.pb,
+                    _find_usage_vpcs=DEFAULT,
+                    _find_usage_subnets=DEFAULT,
+                    _find_usage_ACLs=DEFAULT,
+                    _find_usage_route_tables=DEFAULT,
+                    _find_usage_gateways=DEFAULT,
+            ) as mocks:
+                cls = _VpcService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert mock_connect.mock_calls == [call()]
+        assert cls._have_usage is True
+        assert mock_conn.mock_calls == []
+        for x in [
+                '_find_usage_vpcs',
+                '_find_usage_subnets',
+                '_find_usage_ACLs',
+                '_find_usage_route_tables',
+                '_find_usage_gateways',
+        ]:
+            assert mocks[x].mock_calls == [call()]
+
+    def test_find_usage_vpcs(self):
         mock1 = Mock(spec_set=VPC)
         type(mock1).id = 'vpc-1'
         mock2 = Mock(spec_set=VPC)
         type(mock2).id = 'vpc-2'
 
         vpcs = [mock1, mock2]
-        subnets = []
-        acls = []
-        tables = []
-        gateways = []
 
         mock_conn = Mock(spec_set=VPCConnection)
         mock_conn.get_all_vpcs.return_value = vpcs
-        mock_conn.get_all_subnets.return_value = subnets
-        mock_conn.get_all_network_acls.return_value = acls
-        mock_conn.get_all_route_tables.return_value = tables
-        mock_conn.get_all_internet_gateways.return_value = gateways
 
-        with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _VpcService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
-        assert cls._have_usage is True
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_vpcs()
         assert len(cls.limits['VPCs'].get_current_usage()) == 1
         assert cls.limits['VPCs'].get_current_usage()[0].get_value() == 2
         assert mock_conn.mock_calls == [
             call.get_all_vpcs(),
-            call.get_all_subnets(),
-            call.get_all_network_acls(),
-            call.get_all_route_tables(),
-            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_subnets(self):
@@ -162,27 +174,12 @@ class Test_VpcService(object):
         mock3 = Mock(spec_set=Subnet)
         type(mock3).vpc_id = 'vpc-2'
 
-        vpcs = []
         subnets = [mock1, mock2, mock3]
-        acls = []
-        tables = []
-        gateways = []
-
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_vpcs.return_value = vpcs
         mock_conn.get_all_subnets.return_value = subnets
-        mock_conn.get_all_network_acls.return_value = acls
-        mock_conn.get_all_route_tables.return_value = tables
-        mock_conn.get_all_internet_gateways.return_value = gateways
-
-        with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _VpcService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
-        assert cls._have_usage is True
-        assert cls.limits['VPCs'].get_current_usage()[0].get_value() == 0
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_subnets()
         usage = sorted(cls.limits['Subnets per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
@@ -190,11 +187,7 @@ class Test_VpcService(object):
         assert usage[1].get_value() == 2
         assert usage[1].id == 'vpc-1'
         assert mock_conn.mock_calls == [
-            call.get_all_vpcs(),
             call.get_all_subnets(),
-            call.get_all_network_acls(),
-            call.get_all_route_tables(),
-            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_acls(self):
@@ -211,26 +204,13 @@ class Test_VpcService(object):
         type(mock3).vpc_id = 'vpc-2'
         type(mock3).network_acl_entries = [1, 2, 3, 4, 5]
 
-        vpcs = []
-        subnets = []
         acls = [mock1, mock2, mock3]
-        tables = []
-        gateways = []
-
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_vpcs.return_value = vpcs
-        mock_conn.get_all_subnets.return_value = subnets
         mock_conn.get_all_network_acls.return_value = acls
-        mock_conn.get_all_route_tables.return_value = tables
-        mock_conn.get_all_internet_gateways.return_value = gateways
 
-        with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _VpcService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
-        assert cls._have_usage is True
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_ACLs()
         usage = sorted(cls.limits['Network ACLs per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
@@ -247,11 +227,7 @@ class Test_VpcService(object):
         assert entries[2].id == 'acl-3'
         assert entries[2].get_value() == 5
         assert mock_conn.mock_calls == [
-            call.get_all_vpcs(),
-            call.get_all_subnets(),
             call.get_all_network_acls(),
-            call.get_all_route_tables(),
-            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_route_tables(self):
@@ -268,26 +244,14 @@ class Test_VpcService(object):
         type(mock3).vpc_id = 'vpc-2'
         type(mock3).routes = [1, 2, 3, 4, 5]
 
-        vpcs = []
-        subnets = []
-        acls = []
         tables = [mock1, mock2, mock3]
-        gateways = []
 
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_vpcs.return_value = vpcs
-        mock_conn.get_all_subnets.return_value = subnets
-        mock_conn.get_all_network_acls.return_value = acls
         mock_conn.get_all_route_tables.return_value = tables
-        mock_conn.get_all_internet_gateways.return_value = gateways
 
-        with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _VpcService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
-        assert cls._have_usage is True
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_route_tables()
         usage = sorted(cls.limits['Route tables per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
@@ -304,11 +268,7 @@ class Test_VpcService(object):
         assert entries[2].id == 'rt-3'
         assert entries[2].get_value() == 5
         assert mock_conn.mock_calls == [
-            call.get_all_vpcs(),
-            call.get_all_subnets(),
-            call.get_all_network_acls(),
             call.get_all_route_tables(),
-            call.get_all_internet_gateways(),
         ]
 
     def test_find_usage_internet_gateways(self):
@@ -317,34 +277,18 @@ class Test_VpcService(object):
         mock2 = Mock(spec_set=InternetGateway)
         type(mock2).id = 'gw-2'
 
-        vpcs = []
-        subnets = []
-        acls = []
-        tables = []
         gateways = [mock1, mock2]
 
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_vpcs.return_value = vpcs
-        mock_conn.get_all_subnets.return_value = subnets
-        mock_conn.get_all_network_acls.return_value = acls
-        mock_conn.get_all_route_tables.return_value = tables
         mock_conn.get_all_internet_gateways.return_value = gateways
 
-        with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _VpcService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
-        assert cls._have_usage is True
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_gateways()
         assert len(cls.limits['Internet gateways'].get_current_usage()) == 1
         assert cls.limits['Internet gateways'].get_current_usage()[
             0].get_value() == 2
         assert mock_conn.mock_calls == [
-            call.get_all_vpcs(),
-            call.get_all_subnets(),
-            call.get_all_network_acls(),
-            call.get_all_route_tables(),
             call.get_all_internet_gateways(),
         ]
 
