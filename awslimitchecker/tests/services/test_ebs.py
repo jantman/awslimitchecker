@@ -109,13 +109,13 @@ class Test_EbsService(object):
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
-        piops_tb = limits['Provisioned IOPS (SSD) volume storage (TiB)']
+        piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
-        gp_tb = limits['General Purpose (SSD) volume storage (TiB)']
+        gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
-        mag_tb = limits['Magnetic volume storage (TiB)']
+        mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
         act_snaps = limits['Active snapshots']
@@ -208,18 +208,18 @@ class Test_EbsService(object):
         assert len(cls.limits['Provisioned IOPS'].get_current_usage()) == 1
         assert cls.limits['Provisioned IOPS'
                           ''].get_current_usage()[0].get_value() == 1000
-        assert len(cls.limits['Provisioned IOPS (SSD) volume storage '
-                              '(TiB)'].get_current_usage()) == 1
-        assert cls.limits['Provisioned IOPS (SSD) volume storage '
-                          '(TiB)'].get_current_usage()[0].get_value() == 0.5
+        assert len(cls.limits['Provisioned IOPS (SSD) storage '
+                              '(GiB)'].get_current_usage()) == 1
+        assert cls.limits['Provisioned IOPS (SSD) storage '
+                          '(GiB)'].get_current_usage()[0].get_value() == 500
         assert len(cls.limits['General Purpose (SSD) volume storage '
-                              '(TiB)'].get_current_usage()) == 1
+                              '(GiB)'].get_current_usage()) == 1
         assert cls.limits['General Purpose (SSD) volume storage '
-                          '(TiB)'].get_current_usage()[0].get_value() == 0.045
+                          '(GiB)'].get_current_usage()[0].get_value() == 45
         assert len(cls.limits['Magnetic volume storage '
-                              '(TiB)'].get_current_usage()) == 1
+                              '(GiB)'].get_current_usage()) == 1
         assert cls.limits['Magnetic volume storage '
-                          '(TiB)'].get_current_usage()[0].get_value() == 0.508
+                          '(GiB)'].get_current_usage()[0].get_value() == 508
         assert len(cls.limits['Active volumes'].get_current_usage()) == 1
         assert cls.limits['Active volumes'
                           ''].get_current_usage()[0].get_value() == 7

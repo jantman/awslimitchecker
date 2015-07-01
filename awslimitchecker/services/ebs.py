@@ -98,19 +98,19 @@ class _EbsService(_AwsService):
             piops,
             aws_type='AWS::EC2::Volume'
         )
-        self.limits['Provisioned IOPS (SSD) volume storage '
-                    '(TiB)']._add_current_usage(
-                        piops_gb / 1000.0,
+        self.limits['Provisioned IOPS (SSD) storage '
+                    '(GiB)']._add_current_usage(
+                        piops_gb,
                         aws_type='AWS::EC2::Volume'
                     )
         self.limits['General Purpose (SSD) volume storage '
-                    '(TiB)']._add_current_usage(
-                        gp_gb / 1000.0,
+                    '(GiB)']._add_current_usage(
+                        gp_gb,
                         aws_type='AWS::EC2::Volume'
                     )
         self.limits['Magnetic volume storage '
-                    '(TiB)']._add_current_usage(
-                        mag_gb / 1000.0,
+                    '(GiB)']._add_current_usage(
+                        mag_gb,
                         aws_type='AWS::EC2::Volume'
                     )
         self.limits['Active volumes']._add_current_usage(
@@ -160,8 +160,8 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
         )
-        limits['Provisioned IOPS (SSD) volume storage (TiB)'] = AwsLimit(
-            'Provisioned IOPS (SSD) volume storage (TiB)',
+        limits['Provisioned IOPS (SSD) storage (GiB)'] = AwsLimit(
+            'Provisioned IOPS (SSD) storage (GiB)',
             self,
             20,
             self.warning_threshold,
@@ -169,8 +169,8 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
         )
-        limits['General Purpose (SSD) volume storage (TiB)'] = AwsLimit(
-            'General Purpose (SSD) volume storage (TiB)',
+        limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
+            'General Purpose (SSD) volume storage (GiB)',
             self,
             20,
             self.warning_threshold,
@@ -178,8 +178,8 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
         )
-        limits['Magnetic volume storage (TiB)'] = AwsLimit(
-            'Magnetic volume storage (TiB)',
+        limits['Magnetic volume storage (GiB)'] = AwsLimit(
+            'Magnetic volume storage (GiB)',
             self,
             20,
             self.warning_threshold,
