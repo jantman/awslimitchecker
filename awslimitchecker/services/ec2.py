@@ -72,7 +72,6 @@ class _Ec2Service(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_instances()
-        self._find_usage_ebs()
         self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
@@ -174,44 +173,6 @@ class _Ec2Service(_AwsService):
                                  "counting".format(t=inst.instance_type))
         return az_to_inst
 
-    def _find_usage_ebs(self):
-        """calculate usage for all EBS limits and update Limits"""
-        piops = 0
-        piops_gb = 0
-        gp_gb = 0
-        mag_gb = 0
-        logger.debug("Getting usage for EBS volumes")
-        for vol in self.conn.get_all_volumes():
-            if vol.type == 'io1':
-                piops_gb += vol.size
-                piops += vol.iops
-            elif vol.type == 'gp2':
-                gp_gb += vol.size
-            elif vol.type == 'standard':
-                mag_gb += vol.size
-            else:
-                logger.error("ERROR - unknown volume type '{t}' for volume {i};"
-                             " not counting".format(t=vol.type, i=vol.id))
-        self.limits['Provisioned IOPS']._add_current_usage(
-            piops,
-            aws_type='AWS::EC2::Volume'
-        )
-        self.limits['Provisioned IOPS (SSD) volume storage '
-                    '(TiB)']._add_current_usage(
-                        piops_gb / 1000.0,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['General Purpose (SSD) volume storage '
-                    '(TiB)']._add_current_usage(
-                        gp_gb / 1000.0,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['Magnetic volume storage '
-                    '(TiB)']._add_current_usage(
-                        mag_gb / 1000.0,
-                        aws_type='AWS::EC2::Volume'
-                    )
-
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -224,56 +185,8 @@ class _Ec2Service(_AwsService):
             return self.limits
         limits = {}
         limits.update(self._get_limits_instances())
-        limits.update(self._get_limits_ebs())
         limits.update(self._get_limits_networking())
         self.limits = limits
-        return limits
-
-    def _get_limits_ebs(self):
-        """
-        Return a dict of EBS-related limits only.
-        This method should only be used internally by
-        :py:meth:~.get_limits`.
-
-        :rtype: dict
-        """
-        limits = {}
-        limits['Provisioned IOPS'] = AwsLimit(
-            'Provisioned IOPS',
-            self,
-            40000,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='io1',
-        )
-        limits['Provisioned IOPS (SSD) volume storage (TiB)'] = AwsLimit(
-            'Provisioned IOPS (SSD) volume storage (TiB)',
-            self,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='io1',
-        )
-        limits['General Purpose (SSD) volume storage (TiB)'] = AwsLimit(
-            'General Purpose (SSD) volume storage (TiB)',
-            self,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='gp2',
-        )
-        limits['Magnetic volume storage (TiB)'] = AwsLimit(
-            'Magnetic volume storage (TiB)',
-            self,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='standard',
-        )
         return limits
 
     def _get_limits_instances(self):
@@ -450,7 +363,6 @@ class _Ec2Service(_AwsService):
         return [
             "ec2:DescribeInstances",
             "ec2:DescribeReservedInstances",
-            "ec2:DescribeVolumes",
             "ec2:DescribeSecurityGroups",
         ]
 

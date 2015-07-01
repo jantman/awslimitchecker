@@ -41,6 +41,7 @@ from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.services.vpc import _VpcService
 from awslimitchecker.services.autoscaling import _AutoscalingService
+from awslimitchecker.services.ebs import _EbsService
 
 # dynamically generate the service name to class dict
 _services = {}
