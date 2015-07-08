@@ -203,8 +203,8 @@ def build_runner_examples():
         'limit_overrides': [
             'awslimitchecker',
             '-L',
-            '"EC2/EC2-Classic Elastic IPs"=100',
-            '--limit="EC2/EC2-VPC Elastic IPs"=200',
+            '"AutoScaling/Auto Scaling groups"=321',
+            '--limit="AutoScaling/Launch configurations"=456',
             '-l',
         ],
         'check_thresholds': ['awslimitchecker', '--no-color'],

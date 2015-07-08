@@ -179,7 +179,7 @@ using their IDs).
    EBS/General Purpose (SSD) volume storage (GiB)         4123
    (...)
    VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
-   VPC/Subnets per VPC                                    max: vpc-73ec9716=8 (vpc-a926c2cc=4, vpc-c300 (...)
+   VPC/Subnets per VPC                                    max: vpc-1ee8937b=8 (vpc-a926c2cc=4, vpc-c300 (...)
    VPC/VPCs                                               4
 
 
@@ -200,7 +200,16 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker -L "EC2/EC2-Classic Elastic IPs"=100 --limit="EC2/EC2-VPC Elastic IPs"=200 -l
+   (venv)$ awslimitchecker -L "AutoScaling/Auto Scaling groups"=321 --limit="AutoScaling/Launch configurations"=456 -l
+   AutoScaling/Auto Scaling groups                        321
+   AutoScaling/Launch configurations                      456
+   EBS/Active snapshots                                   10000 (TA)
+   EBS/Active volumes                                     5000 (TA)
+   EBS/General Purpose (SSD) volume storage (GiB)         30720 (TA)
+   (...)
+   VPC/Rules per network ACL                              20
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               5 (TA)
 
 
 
@@ -232,8 +241,8 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 112
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 65
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 110
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 64
    EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=108
    ElastiCache/Nodes                          (limit 20) CRITICAL: 50
    RDS/DB instances                           (limit 40) WARNING: 33
@@ -253,8 +262,8 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 112
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 65
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 110
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 64
    EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=108
    ElastiCache/Nodes                          (limit 20) CRITICAL: 50
    RDS/DB snapshots per user                  (limit 50) CRITICAL: 100
