@@ -25,9 +25,20 @@ permissions required for it to function correctly:
             "ec2:DescribeReservedInstances", 
             "ec2:DescribeRouteTables", 
             "ec2:DescribeSecurityGroups", 
+            "ec2:DescribeSnapshots", 
             "ec2:DescribeSubnets", 
             "ec2:DescribeVolumes", 
-            "ec2:DescribeVpcs"
+            "ec2:DescribeVpcs", 
+            "elasticache:DescribeCacheClusters", 
+            "elasticloadbalancing:DescribeLoadBalancers", 
+            "rds:DescribeDBInstances", 
+            "rds:DescribeDBParameterGroups", 
+            "rds:DescribeDBSecurityGroups", 
+            "rds:DescribeDBSnapshots", 
+            "rds:DescribeDBSubnetGroups", 
+            "rds:DescribeEventSubscriptions", 
+            "rds:DescribeOptionGroups", 
+            "rds:DescribeReservedDBInstances"
           ], 
           "Effect": "Allow", 
           "Resource": "*"
