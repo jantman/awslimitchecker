@@ -875,7 +875,7 @@ class Test_RDSService(object):
                     'ReservedDBInstances': [1, 2]
                 },
                 'ResponseMetadata': {
-                    'RequestId': u'75366d86-25a9-11e5-b6fa-c9da955772c6'
+                    'RequestId': '75366d86-25a9-11e5-b6fa-c9da955772c6'
                 }
             }
         }
