@@ -53,7 +53,7 @@ else:
     from unittest.mock import patch, call, Mock, DEFAULT
 
 
-class Test_ElastiCacheService(object):
+class TestElastiCacheService(object):
 
     pb = 'awslimitchecker.services.elasticache._ElastiCacheService'  # patch
 
@@ -94,6 +94,11 @@ class Test_ElastiCacheService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Nodes',
+            'Clusters',
+            'Nodes per Cluster',
+            'Parameter Groups',
+            'Subnet Groups',
+            'Security Groups',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -109,12 +114,16 @@ class Test_ElastiCacheService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
+        """overall find usage method"""
         mock_conn = Mock(spec_set=ElastiCacheConnection)
 
         with patch('%s.connect' % self.pb) as mock_connect:
             with patch.multiple(
-                    self.pb,
-                    _find_usage_nodes=DEFAULT,
+                self.pb,
+                _find_usage_nodes=DEFAULT,
+                _find_usage_subnet_groups=DEFAULT,
+                _find_usage_parameter_groups=DEFAULT,
+                _find_usage_security_groups=DEFAULT,
             ) as mocks:
                 cls = _ElastiCacheService(21, 43)
                 cls.conn = mock_conn
@@ -124,11 +133,15 @@ class Test_ElastiCacheService(object):
         assert cls._have_usage is True
         assert mock_conn.mock_calls == []
         for x in [
-                '_find_usage_nodes',
+            '_find_usage_nodes',
+            '_find_usage_subnet_groups',
+            '_find_usage_parameter_groups',
+            '_find_usage_security_groups',
         ]:
             assert mocks[x].mock_calls == [call()]
 
     def test_find_usage_nodes(self):
+        """test find usage for nodes"""
         clusters = [
             {
                 'Engine': 'memcached',
@@ -200,7 +213,7 @@ class Test_ElastiCacheService(object):
                 'ReplicationGroupId': None,
                 'AutoMinorVersionUpgrade': True,
                 'CacheClusterStatus': 'available',
-                'NumCacheNodes': 1,
+                'NumCacheNodes': 2,
                 'PreferredAvailabilityZone': 'us-east-1a',
                 'SecurityGroups': None,
                 'CacheSubnetGroupName': None,
@@ -225,6 +238,18 @@ class Test_ElastiCacheService(object):
                         'ParameterGroupStatus': 'in-sync',
                         'CacheNodeCreateTime': 1412253787.914,
                         'SourceCacheNodeId': None
+                    },
+                    {
+                        'CacheNodeId': '0002',
+                        'Endpoint': {
+                            'Port': 6379,
+                            'Address': 'redis1.vfavzi.0002.use1.cache.'
+                            'amazonaws.com'
+                        },
+                        'CacheNodeStatus': 'available',
+                        'ParameterGroupStatus': 'in-sync',
+                        'CacheNodeCreateTime': 1412253787.914,
+                        'SourceCacheNodeId': None
                     }
                 ]
             },
@@ -242,15 +267,213 @@ class Test_ElastiCacheService(object):
         cls = _ElastiCacheService(21, 43)
         cls.conn = mock_conn
         cls._find_usage_nodes()
+
         usage = cls.limits['Nodes'].get_current_usage()
         assert len(usage) == 1
+        assert usage[0].get_value() == 3
+
+        usage = cls.limits['Clusters'].get_current_usage()
+        assert len(usage) == 1
         assert usage[0].get_value() == 2
+
+        usage = sorted(cls.limits['Nodes per Cluster'].get_current_usage())
+        assert len(usage) == 2
+        assert usage[0].get_value() == 1
+        assert usage[0].id == 'memcached1'
+        assert usage[1].get_value() == 2
+        assert usage[1].id == 'redis1'
+
         assert mock_conn.mock_calls == [
             call.describe_cache_clusters(show_cache_node_info=True),
         ]
 
+    def test_find_usage_subnet_groups(self):
+        """test find usage for subnet groups"""
+        data = {
+            'DescribeCacheSubnetGroupsResponse': {
+                'DescribeCacheSubnetGroupsResult': {
+                    'CacheSubnetGroups': [
+                        {
+                            'Subnets': [
+                                {
+                                    'SubnetIdentifier': 'subnet-62e8783b',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1d'}
+                                },
+                                {
+                                    'SubnetIdentifier': 'subnet-0b037e7c',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1a'
+                                    }
+                                }
+                            ],
+                            'CacheSubnetGroupName': 'break-memca-135tjabqoyywd',
+                            'VpcId': 'vpc-73ec9716',
+                            'CacheSubnetGroupDescription': 'memcached'
+                        },
+                        {
+                            'Subnets': [
+                                {
+                                    'SubnetIdentifier': 'subnet-38e87861',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1d'
+                                    }
+                                },
+                                {
+                                    'SubnetIdentifier': 'subnet-4f027f38',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1a'
+                                    }
+                                }
+                            ],
+                            'CacheSubnetGroupName': 'break-memca-6yi6axon9ol9',
+                            'VpcId': 'vpc-1ee8937b',
+                            'CacheSubnetGroupDescription': 'memcached'
+                        },
+                        {
+                            'Subnets': [
+                                {
+                                    'SubnetIdentifier': 'subnet-49071f61',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1e'
+                                    }
+                                },
+                                {
+                                    'SubnetIdentifier': 'subnet-6fe23c18',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1a'
+                                    }
+                                },
+                                {
+                                    'SubnetIdentifier': 'subnet-a9b54df0',
+                                    'SubnetAvailabilityZone': {
+                                        'Name': 'us-east-1d'
+                                    }
+                                }
+                            ],
+                            'CacheSubnetGroupName': 'lsp-d-redis-14d9407dl05er',
+                            'VpcId': 'vpc-c300b9a6',
+                            'CacheSubnetGroupDescription': 'redis'
+                        },
+                    ],
+                    'Marker': None
+                },
+                'ResponseMetadata': {
+                    'RequestId': '79654b0b-26ac-11e5-aaab-63850f3e3bca'
+                }
+            }
+        }
+
+        mock_conn = Mock(spec_set=ElastiCacheConnection)
+        mock_conn.describe_cache_subnet_groups.return_value = data
+        cls = _ElastiCacheService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_subnet_groups()
+
+        assert mock_conn.mock_calls == [
+            call.describe_cache_subnet_groups(),
+        ]
+
+        usage = cls.limits['Subnet Groups'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 3
+
+    def test_find_usage_parameter_groups(self):
+        """test find usage for parameter groups"""
+        data = {
+            'DescribeCacheParameterGroupsResponse': {
+                'DescribeCacheParameterGroupsResult': {
+                    'Marker': None,
+                    'CacheParameterGroups': [
+                        {
+                            'CacheParameterGroupName': 'default.memcached1.4',
+                            'CacheParameterGroupFamily': 'memcached1.4',
+                            'Description': 'Default for memcached1.4'
+                        },
+                        {
+                            'CacheParameterGroupName': 'default.redis2.6',
+                            'CacheParameterGroupFamily': 'redis2.6',
+                            'Description': 'Default for redis2.6'
+                        },
+                        {
+                            'CacheParameterGroupName': 'default.redis2.8',
+                            'CacheParameterGroupFamily': 'redis2.8',
+                            'Description': 'Default for redis2.8'
+                        }
+                    ]
+                },
+                'ResponseMetadata': {
+                    'RequestId': 'ab5d593f-26ac-11e5-a6dd-17ec0aded872'
+                }
+            }
+        }
+
+        mock_conn = Mock(spec_set=ElastiCacheConnection)
+        mock_conn.describe_cache_parameter_groups.return_value = data
+        cls = _ElastiCacheService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_parameter_groups()
+
+        assert mock_conn.mock_calls == [
+            call.describe_cache_parameter_groups(),
+        ]
+
+        usage = cls.limits['Parameter Groups'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 3
+
+    def test_find_usage_security_groups(self):
+        """test find usage for security groups"""
+        data = {
+            'DescribeCacheSecurityGroupsResponse': {
+                'DescribeCacheSecurityGroupsResult': {
+                    'Marker': None,
+                    'CacheSecurityGroups': [
+                        {
+                            'OwnerId': '123456789012',
+                            'CacheSecurityGroupName': 'default',
+                            'Description': 'default',
+                            'EC2SecurityGroups': []
+                        },
+                        {
+                            'OwnerId': '123456789012',
+                            'CacheSecurityGroupName': 'csg1',
+                            'Description': 'foo bar',
+                            'EC2SecurityGroups': [
+                                {
+                                    'EC2SecurityGroupName': 'ec2-sg1',
+                                    'Status': 'authorized',
+                                    'EC2SecurityGroupOwnerId': '123456789012'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                'ResponseMetadata': {
+                    'RequestId': 'be15fa9c-26ac-11e5-a849-894e77ed58a8'
+                }
+            }
+        }
+
+        mock_conn = Mock(spec_set=ElastiCacheConnection)
+        mock_conn.describe_cache_security_groups.return_value = data
+        cls = _ElastiCacheService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_security_groups()
+
+        assert mock_conn.mock_calls == [
+            call.describe_cache_security_groups(),
+        ]
+
+        usage = cls.limits['Security Groups'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 2
+
     def test_required_iam_permissions(self):
         cls = _ElastiCacheService(21, 43)
         assert cls.required_iam_permissions() == [
-            "elasticache:DescribeCacheClusters"
+            "elasticache:DescribeCacheClusters",
+            "elasticache:DescribeCacheParameterGroups",
+            "elasticache:DescribeCacheSecurityGroups",
+            "elasticache:DescribeCacheSubnetGroups",
         ]

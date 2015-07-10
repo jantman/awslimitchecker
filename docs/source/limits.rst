@@ -178,11 +178,16 @@ Listeners per load balancer       100
 ElastiCache
 ++++++++++++
 
-===== ==
-Limit Default
-===== ==
-Nodes 20
-===== ==
+================= ==
+Limit             Default
+================= ==
+Clusters          50
+Nodes             50
+Nodes per Cluster 20
+Parameter Groups  20
+Security Groups   50
+Subnet Groups     50
+================= ==
 RDS
 ++++
 

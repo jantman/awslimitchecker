@@ -71,6 +71,9 @@ class _ElastiCacheService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_nodes()
+        self._find_usage_subnet_groups()
+        self._find_usage_parameter_groups()
+        self._find_usage_security_groups()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -82,9 +85,52 @@ class _ElastiCacheService(_AwsService):
                 'CacheClusters']
         for cluster in clusters:
             nodes += len(cluster['CacheNodes'])
+            self.limits['Nodes per Cluster']._add_current_usage(
+                len(cluster['CacheNodes']),
+                aws_type='AWS::ElastiCache::CacheCluster',
+                id=cluster['CacheClusterId'],
+            )
+
+        self.limits['Clusters']._add_current_usage(
+            len(clusters),
+            aws_type='AWS::ElastiCache::CacheCluster'
+        )
         self.limits['Nodes']._add_current_usage(
             nodes,
             aws_type='AWS::ElastiCache::CacheNode'
+        )
+
+    def _find_usage_subnet_groups(self):
+        """find usage for elasticache subnet groups"""
+        groups = self.conn.describe_cache_subnet_groups()[
+            'DescribeCacheSubnetGroupsResponse'][
+            'DescribeCacheSubnetGroupsResult'][
+            'CacheSubnetGroups']
+        self.limits['Subnet Groups']._add_current_usage(
+            len(groups),
+            aws_type='AWS::ElastiCache::SubnetGroup'
+        )
+
+    def _find_usage_parameter_groups(self):
+        """find usage for elasticache parameter groups"""
+        groups = self.conn.describe_cache_parameter_groups()[
+            'DescribeCacheParameterGroupsResponse'][
+            'DescribeCacheParameterGroupsResult'][
+            'CacheParameterGroups']
+        self.limits['Parameter Groups']._add_current_usage(
+            len(groups),
+            aws_type='AWS::ElastiCache::ParameterGroup'
+        )
+
+    def _find_usage_security_groups(self):
+        """find usage for elasticache security groups"""
+        groups = self.conn.describe_cache_security_groups()[
+            'DescribeCacheSecurityGroupsResponse'][
+            'DescribeCacheSecurityGroupsResult'][
+            'CacheSecurityGroups']
+        self.limits['Security Groups']._add_current_usage(
+            len(groups),
+            aws_type='WS::ElastiCache::SecurityGroup'
         )
 
     def get_limits(self):
@@ -98,13 +144,59 @@ class _ElastiCacheService(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
+
         limits['Nodes'] = AwsLimit(
             'Nodes',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElastiCache::CacheNode',
+        )
+
+        limits['Clusters'] = AwsLimit(
+            'Clusters',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElastiCache::CacheCluster',
+        )
+
+        limits['Nodes per Cluster'] = AwsLimit(
+            'Nodes per Cluster',
             self,
             20,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElastiCache::CacheNode',
+        )
+
+        limits['Subnet Groups'] = AwsLimit(
+            'Subnet Groups',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElastiCache::SubnetGroup',
+        )
+
+        limits['Parameter Groups'] = AwsLimit(
+            'Parameter Groups',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElastiCache::ParameterGroup',
+        )
+
+        limits['Security Groups'] = AwsLimit(
+            'Security Groups',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='WS::ElastiCache::SecurityGroup',
         )
         self.limits = limits
         return limits
@@ -120,4 +212,7 @@ class _ElastiCacheService(_AwsService):
         """
         return [
             "elasticache:DescribeCacheClusters",
+            "elasticache:DescribeCacheParameterGroups",
+            "elasticache:DescribeCacheSecurityGroups",
+            "elasticache:DescribeCacheSubnetGroups",
         ]
