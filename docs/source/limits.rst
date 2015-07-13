@@ -88,6 +88,7 @@ Limit                             Default
 Auto Scaling groups :sup:`(TA)`   20 
 Launch configurations :sup:`(TA)` 100
 ================================= ===
+
 EBS
 ++++
 
@@ -101,6 +102,7 @@ Magnetic volume storage (GiB) :sup:`(TA)`              20
 Provisioned IOPS (SSD) storage (GiB) :sup:`(TA)`       20   
 Provisioned IOPS :sup:`(TA)`                           40000
 ====================================================== =====
+
 EC2
 ++++
 
@@ -166,6 +168,7 @@ Running On-Demand t2.small instances              20
 Security groups per VPC                           100
 VPC security groups per elastic network interface 5  
 ================================================= ===
+
 ELB
 ++++
 
@@ -175,6 +178,7 @@ Limit                             Default
 Active load balancers :sup:`(TA)` 20 
 Listeners per load balancer       100
 ================================= ===
+
 ElastiCache
 ++++++++++++
 
@@ -188,6 +192,7 @@ Parameter Groups  20
 Security Groups   50
 Subnet Groups     50
 ================= ==
+
 RDS
 ++++
 
@@ -208,6 +213,7 @@ Subnet Groups                            20
 Subnets per Subnet Group                 20    
 VPC Security Groups                      5     
 ======================================== ======
+
 VPC
 ++++
 
@@ -222,5 +228,6 @@ Rules per network ACL         20
 Subnets per VPC               200
 VPCs :sup:`(TA)`              5  
 ============================= ===
+
 
 

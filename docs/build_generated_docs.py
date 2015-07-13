@@ -133,6 +133,7 @@ def build_limits(checker):
             limit_info += sformat.format(name=lname, limit=limit)
         # footer
         limit_info += sep
+        limit_info += "\n"
 
     # TA limit list
     ta_info = """

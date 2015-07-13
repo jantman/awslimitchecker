@@ -79,12 +79,14 @@ class TrustedAdvisor(object):
         each key is a limit name and each value the current numeric limit.
 
         e.g.:
+        ::
 
-        {
-            'EC2': {
-                'SomeLimit': 10,
+            {
+                'EC2': {
+                    'SomeLimit': 10,
+                }
             }
-        }
+
         """
         logger.info("Beginning TrustedAdvisor poll")
         tmp = self._get_limit_check_id()

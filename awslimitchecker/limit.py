@@ -37,8 +37,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+#: indicates a limit value that came from hard-coded defaults in awslimitchecker
 SOURCE_DEFAULT = 0
+
+#: indicates a limit value that came from user-defined limit overrides
 SOURCE_OVERRIDE = 1
+
+#: indicates a limit value that came from Trusted Advisor
 SOURCE_TA = 2
 
 
@@ -105,7 +110,7 @@ class AwsLimit(object):
         :param limit_value: the new limit value
         :type limit_value: int
         :param override_ta: whether or not to also override Trusted
-        Advisor information
+          Advisor information
         :type override_ta: bool
         """
         self.limit_override = limit_value
@@ -124,12 +129,17 @@ class AwsLimit(object):
 
     def get_limit_source(self):
         """
-        Return :py:const:`~.SOURCE_DEFAULT` if :py:meth:`~.get_limit`
-        returns the default limit, :py:const:`~.SOURCE_OVERRIDE` if it returns
-        a manually-overridden limit, or :py:const:`~.SOURCE_TA` if it
-        returns a limit from Trusted Advisor.
+        Return :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT` if
+        :py:meth:`~.get_limit` returns the default limit,
+        :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE` if it returns a
+        manually-overridden limit, or
+        :py:const:`~awslimitchecker.limit.SOURCE_TA` if it returns a limit from
+        Trusted Advisor.
 
-        :rtype: bool
+        :returns: one of :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT`,
+          :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE`, or
+          :py:const:`~awslimitchecker.limit.SOURCE_TA`
+        :rtype: int
         """
         if self.limit_override is not None and (
                 self.override_ta is True or
@@ -174,13 +184,13 @@ class AwsLimit(object):
         "<unknown>".
 
         If the limit has only one current usage instance, this will be
-        that instance's :py:meth:`~.AwsLimitUsage.__repr__` value.
+        that instance's :py:meth:`~.AwsLimitUsage.__str__` value.
 
         If the limit has more than one current usage instance, this
         will be the a string of the form ``max: X (Y)`` where ``X`` is
-        the :py:meth:`~.AwsLimitUsage.__repr__` value of the instance
+        the :py:meth:`~.AwsLimitUsage.__str__` value of the instance
         with the maximum value, and ``Y`` is a comma-separated list
-        of the :py:meth:`~.AwsLimitUsage.__repr__` values of all usage
+        of the :py:meth:`~.AwsLimitUsage.__str__` values of all usage
         instances in ascending order.
 
         :returns: representation of current usage

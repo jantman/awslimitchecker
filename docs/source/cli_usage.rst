@@ -174,12 +174,12 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        42
    AutoScaling/Launch configurations                      50
-   EBS/Active snapshots                                   948
-   EBS/Active volumes                                     851
+   EBS/Active snapshots                                   949
+   EBS/Active volumes                                     853
    EBS/General Purpose (SSD) volume storage (GiB)         4123
    (...)
    VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
-   VPC/Subnets per VPC                                    max: vpc-1ee8937b=11 (vpc-a926c2cc=4, vpc-c30 (...)
+   VPC/Subnets per VPC                                    max: vpc-73ec9716=11 (vpc-a926c2cc=4, vpc-c30 (...)
    VPC/VPCs                                               4
 
 

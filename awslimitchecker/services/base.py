@@ -153,7 +153,7 @@ class _AwsService(object):
         :param value: the new value to set for the limit
         :type value: int
         :param override_ta: whether or not to also override Trusted
-        Advisor information
+          Advisor information
         :type override_ta: bool
         :raises: ValueError if limit_name is not known to this service
         """

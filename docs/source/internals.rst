@@ -20,7 +20,7 @@ Service Classes are instantiated, they build a dict of all of their limits, corr
 with an :py:class:`~awslimitchecker.limit.AwsLimit` object. The Service Class constructors *must not* make any network
 connections; connections are created lazily as needed and stored as a class attribute. This allows us to inspect the
 services, limits and default limit values without ever connecting to AWS (this is also used to generate the
-:ref:`Supported Limits <_limits>` documentation automatically).
+:ref:`Supported Limits <limits>` documentation automatically).
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is instantiated, it imports :py:mod:`~awslimitchecker.services`
 which in turn creates instances of all ``awslimitchecker.services.*`` classes and adds them to a dict mapping the
@@ -28,7 +28,7 @@ string Service Name to the Service Class instance. These instances are used for 
 
 So, once an instance of :py:class:`~awslimitchecker.checker.AwsLimitChecker` is created, we should have instant access
 to the services and limits without any connection to AWS. This is utilized by the ``--list-services`` and
-``--list-defaults`` options for the :ref:`command line client <_cli>`.
+``--list-defaults`` options for the :ref:`command line client <cli_usage>`.
 
 .. _internals.trusted_advisor:
 
@@ -36,8 +36,8 @@ Trusted Advisor
 -----------------
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is initialized, it also initializes an instance of
-:py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`. In :py:meth:`~.AwsLimitchecker.get_limits`,
-:py:meth:`~.AwsLimitchecker.find_usage` and :py:meth:`~.AwsLimitchecker.check_thresholds`, when called with
+:py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`. In :py:meth:`~.AwsLimitChecker.get_limits`,
+:py:meth:`~.AwsLimitChecker.find_usage` and :py:meth:`~.AwsLimitChecker.check_thresholds`, when called with
 ``use_ta == True`` (the default), :py:meth:`~.TrustedAdvisor.update_limits` is called on the TrustedAdvisor
 instance.
 

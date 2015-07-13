@@ -6,7 +6,7 @@ Python Usage
 
 The full feature set of awslimitchecker is available through the Python API.
 This page attempts to document some examples of usage, but the best resources are
-:py:mod:`~AwsLimitchecker.runner`, the command line wrapper, and the
+:py:mod:`~.runner`, the command line wrapper, and the
 :ref:`API documentation <modindex>`.
 
 Simple Examples
@@ -17,7 +17,7 @@ Many of these examples use :py:mod:`pprint` to make output a bit nicer.
 Instantiating the Class
 ++++++++++++++++++++++++
 
-Here we import and instantiate the :py:class:`class <~.AwsLimitChecker>`; note that we also setup
+Here we import and instantiate the :py:class:`~.AwsLimitChecker` class; note that we also setup
 Python's :py:mod:`logging` module, which is used by ``awslimitchecker``.
 We also import :py:mod:`pprint` to make the output nicer.
 
@@ -120,6 +120,7 @@ As this limit is per-VPC, our string representation of the current usage include
 crossed the critical threshold:
 
 .. code-block:: pycon
+
    >>> for usage in result['EC2']['Security groups per VPC'].get_criticals():
    ...     print(str(usage))
    ... 

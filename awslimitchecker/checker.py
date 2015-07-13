@@ -138,7 +138,7 @@ class AwsLimitChecker(object):
     def find_usage(self, service=None, use_ta=True):
         """
         For each limit in the specified service (or all services if
-        ``service`` is ``None``), query the AWS API via :py:pkg:`boto`
+        ``service`` is ``None``), query the AWS API via :py:mod:`boto`
         and find the current usage amounts for that limit.
 
         This method updates the ``current_usage`` attribute of the
@@ -147,8 +147,7 @@ class AwsLimitChecker(object):
 
         :param service: :py:class:`~._AwsService` name, or ``None`` to
           check all services.
-        :type services: :py:obj:`None` or :py:obj:`string` service name
-        to_get = self.services
+        :type service: :py:obj:`None`, or :py:obj:`string` service name to get
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         """
@@ -169,11 +168,12 @@ class AwsLimitChecker(object):
         the same form as that returned by :py:meth:`~.get_limits`,
         i.e. service_name (str) keys to nested dict of limit_name
         (str) to limit value (int) like:
+        ::
 
             {
                 'EC2': {
-                    'Running On-Demand t2.micro Instances': 1000,
-                    'Running On-Demand r3.4xlarge Instances': 1000,
+                  'Running On-Demand t2.micro Instances': 1000,
+                  'Running On-Demand r3.4xlarge Instances': 1000,
                 }
             }
 
@@ -192,7 +192,8 @@ class AwsLimitChecker(object):
         :param override_ta: whether or not to use this value even if Trusted
           Advisor supplies limit information
         :type override_ta: bool
-        :raises: ValueError if limit_name is not known to the service instance
+        :raises: :py:exc:`exceptions.ValueError` if limit_name is not known to
+          the service instance
         """
         for svc_name in override_dict:
             for lim_name in override_dict[svc_name]:
@@ -247,6 +248,7 @@ class AwsLimitChecker(object):
         keys 'percent' or 'count', to an integer value.
 
         Example:
+        ::
 
             {
                 'EC2': {
