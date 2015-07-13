@@ -18,6 +18,8 @@ import shlex
 # to let sphinx find the actual source...
 sys.path.insert(0, os.path.abspath("../.."))
 from awslimitchecker.version import _get_version
+import sphinx.environment
+from docutils.utils import get_source_line
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -292,6 +294,13 @@ nitpick_ignore = [('py:class', 'ABCMeta')]
 def remove_module_docstring(app, what, name, obj, options, lines):
     if what == "module":
         del lines[:]
+
+# ignore non-local image warnings
+def _warn_node(self, msg, node):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node))
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
 
 def setup(app):
     app.connect("autodoc-process-docstring", remove_module_docstring)
