@@ -15,7 +15,7 @@ and should be the only portion directly used by external code.
 
 Each AWS Service is represented by a subclass of the :py:class:`~awslimitchecker.services.base._AwsService` abstract base
 class; these Service Classes are responsible for knowing which limits exist for the service they represent, what the
-default values for these limits are, and how to check the current usage via the AWS API (via :py:pkg:`boto`). When the
+default values for these limits are, and how to check the current usage via the AWS API (via :py:mod:`boto`). When the
 Service Classes are instantiated, they build a dict of all of their limits, correlating a string key (the "limit name")
 with an :py:class:`~awslimitchecker.limit.AwsLimit` object. The Service Class constructors *must not* make any network
 connections; connections are created lazily as needed and stored as a class attribute. This allows us to inspect the
