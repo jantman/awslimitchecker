@@ -400,9 +400,18 @@ class Test_Ec2Service(object):
     def test_required_iam_permissions(self):
         cls = _Ec2Service(21, 43)
         assert cls.required_iam_permissions() == [
+            "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
+            "ec2:DescribeInternetGateways"
+            "ec2:DescribeNetworkAcls",
+            "ec2:DescribeNetworkInterfaces",
             "ec2:DescribeReservedInstances",
+            "ec2:DescribeRouteTables",
             "ec2:DescribeSecurityGroups",
+            "ec2:DescribeSnapshots",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeVpcs",
         ]
 
     def test_find_usage_networking_sgs(self):

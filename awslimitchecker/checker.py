@@ -369,7 +369,10 @@ class AwsLimitChecker(object):
         :returns: dict representation of IAM Policy
         :rtype: dict
         """
-        required_actions = []
+        required_actions = [
+            'support:*',
+            'trustedadvisor:Describe*',
+        ]
         for sname, cls in self.services.items():
             required_actions.extend(cls.required_iam_permissions())
         policy = {

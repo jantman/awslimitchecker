@@ -400,6 +400,8 @@ class TestAwsLimitChecker(object):
                     'ec2:foo',
                     'foo:perm1',
                     'foo:perm2',
+                    'support:*',
+                    'trustedadvisor:Describe*'
                 ],
             }],
         }
