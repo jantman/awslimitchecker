@@ -40,8 +40,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 from boto.support.layer1 import SupportConnection
 from boto.regioninfo import RegionInfo
+from boto.exception import JSONResponseError, BotoServerError
 from awslimitchecker.trustedadvisor import TrustedAdvisor
 from awslimitchecker.services.base import _AwsService
+import pytest
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -174,6 +176,56 @@ class Test_TrustedAdvisor(object):
             call.describe_trusted_advisor_checks('en')
         ]
 
+    def test_get_limit_check_id_subscription_required(self):
+
+        def se_api(language):
+            status = 400
+            reason = 'Bad Request'
+            body = {
+                'message': 'AWS Premium Support Subscription is required to '
+                'use this service.',
+                '__type': 'SubscriptionRequiredException'
+            }
+            raise JSONResponseError(status, reason, body)
+
+        self.mock_conn.describe_trusted_advisor_checks.side_effect = se_api
+        assert self.cls.have_ta is True
+        with patch('awslimitchecker.trustedadvisor'
+                   '.logger', autospec=True) as mock_logger:
+            res = self.cls._get_limit_check_id()
+        assert self.cls.have_ta is False
+        assert res == {}
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks('en')
+        ]
+        assert mock_logger.mock_calls == [
+            call.debug("Querying Trusted Advisor checks"),
+            call.warning("Cannot check TrustedAdvisor: %s",
+                         "AWS Premium Support "
+                         "Subscription is required to use this service.")
+        ]
+
+    def test_get_limit_check_id_other_exception(self):
+
+        def se_api(language):
+            status = 400
+            reason = 'foobar'
+            body = {
+                'message': 'other message',
+                '__type': 'OtherException'
+            }
+            raise JSONResponseError(status, reason, body)
+
+        self.mock_conn.describe_trusted_advisor_checks.side_effect = se_api
+        with pytest.raises(BotoServerError) as excinfo:
+            self.cls._get_limit_check_id()
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks('en')
+        ]
+        assert excinfo.value.status == 400
+        assert excinfo.value.reason == 'foobar'
+        assert excinfo.value.body['__type'] == 'OtherException'
+
     def test_poll_id_none(self):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
@@ -253,6 +305,23 @@ class Test_TrustedAdvisor(object):
                 'Auto Scaling groups': 40,
             }
         }
+
+    def test_poll_dont_have_ta(self):
+        self.cls.have_ta = False
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            with patch('awslimitchecker.trustedadvisor'
+                       '.logger', autospec=True) as mock_logger:
+                res = self.cls._poll()
+        assert tmp.mock_calls == []
+        assert mock_id.mock_calls == [
+            call(self.cls)
+        ]
+        assert mock_logger.mock_calls == [
+            call.info('Beginning TrustedAdvisor poll'),
+            call.info('TrustedAdvisor.have_ta is False; not polling TA')
+        ]
+        assert res == {}
 
     def test_update_services(self):
 

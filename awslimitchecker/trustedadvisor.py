@@ -50,6 +50,7 @@ class TrustedAdvisor(object):
         Class to contain all TrustedAdvisor-related logic.
         """
         self.conn = None
+        self.have_ta = True
 
     def connect(self):
         if self.conn is None:
@@ -90,6 +91,9 @@ class TrustedAdvisor(object):
         """
         logger.info("Beginning TrustedAdvisor poll")
         tmp = self._get_limit_check_id()
+        if not self.have_ta:
+            logger.info('TrustedAdvisor.have_ta is False; not polling TA')
+            return {}
         if tmp is None:
             logger.critical("Unable to find 'Service Limits' Trusted Advisor "
                             "check; not using Trusted Advisor data.")
@@ -121,7 +125,21 @@ class TrustedAdvisor(object):
         :rtype: tuple
         """
         logger.debug("Querying Trusted Advisor checks")
-        checks = self.conn.describe_trusted_advisor_checks('en')['checks']
+        try:
+            checks = self.conn.describe_trusted_advisor_checks('en')['checks']
+        except boto.exception.JSONResponseError as ex:
+            if (
+                    '__type' in ex.body and
+                    ex.body['__type'] == 'SubscriptionRequiredException'
+            ):
+                logger.warning(
+                    "Cannot check TrustedAdvisor: %s",
+                    ex.message
+                )
+                self.have_ta = False
+                return {}
+            else:
+                raise ex
         for check in checks:
             if (
                     check['category'] == 'performance' and
