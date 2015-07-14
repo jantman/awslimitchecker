@@ -72,16 +72,15 @@ class Runner(object):
                'warn about any services with usage nearing or exceeding their' \
                ' limits. For further help, see ' \
                '<http://awslimitchecker.readthedocs.org/>'
-        """
-        ####### IMPORTANT license notice ##########
-        In order to remain in compliance with the AGPLv3 license:
-        - this notice MUST NOT be removed, and MUST be displayed to all users
-        - _get_project_url() MUST point to the source code of the ACTUALLY
-          RUNNING version of this program. i.e. if you modify this program, you
-          MUST have the actually-running source available somewhere for your
-          users.
-        ####### IMPORTANT license notice ##########
-        """
+        # ###### IMPORTANT license notice ##########
+        # In order to remain in compliance with the AGPLv3 license, when
+        # applicable:
+        # - this notice MUST NOT be removed, and MUST be displayed to all users
+        # - _get_project_url() MUST point to the source code of the ACTUALLY
+        #   RUNNING version of this program. i.e. if you modify this program,
+        #   you MUST have the actually-running source available somewhere for
+        #   your users.
+        # ###### IMPORTANT license notice ##########
         epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \
                  'entitled to a copy of the source code. You can obtain the ' \
