@@ -73,7 +73,7 @@ usage for each limit that ``awslimitchecker`` knows about. It will connect to th
 AWS API and determine the current usage for each limit. In cases where limits are
 per-resource instead of account-wide (i.e. "Rules per VPC security group" or
 "Security groups per VPC"), the usage will be reported for each possible resource
-in ``id=value`` format (i.e. for each VPC security group and each VPC, respectively,
+in ``resource_id=value`` format (i.e. for each VPC security group and each VPC, respectively,
 using their IDs).
 
 {show_usage}

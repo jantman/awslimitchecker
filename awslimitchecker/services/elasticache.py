@@ -88,7 +88,7 @@ class _ElastiCacheService(_AwsService):
             self.limits['Nodes per Cluster']._add_current_usage(
                 len(cluster['CacheNodes']),
                 aws_type='AWS::ElastiCache::CacheCluster',
-                id=cluster['CacheClusterId'],
+                resource_id=cluster['CacheClusterId'],
             )
 
         self.limits['Clusters']._add_current_usage(

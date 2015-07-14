@@ -260,13 +260,13 @@ class _Ec2Service(_AwsService):
             self.limits['Security groups per VPC']._add_current_usage(
                 count,
                 aws_type='AWS::EC2::VPC',
-                id=vpc_id,
+                resource_id=vpc_id,
             )
         for sg_id, count in rules_per_sg.items():
             self.limits['Rules per VPC security group']._add_current_usage(
                 count,
                 aws_type='AWS::EC2::SecurityGroupRule',
-                id=sg_id,
+                resource_id=sg_id,
             )
 
     def _find_usage_networking_eips(self):
@@ -291,7 +291,7 @@ class _Ec2Service(_AwsService):
                         'interface']._add_current_usage(
                             len(iface.groups),
                             aws_type='AWS::EC2::NetworkInterface',
-                            id=iface.id,
+                            resource_id=iface.id,
                         )
 
     def _get_limits_networking(self):

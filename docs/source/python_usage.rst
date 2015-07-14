@@ -81,7 +81,7 @@ In this particular case, there is no resource ID associated with the usage, beca
 
 .. code-block:: pycon
 
-   >>> result['EC2']['Magnetic volume storage (TiB)'].get_criticals()[0].id
+   >>> result['EC2']['Magnetic volume storage (TiB)'].get_criticals()[0].resource_id
    >>> 
 
 The usage is of the EC2 Volume resource type (where one exists, we use the

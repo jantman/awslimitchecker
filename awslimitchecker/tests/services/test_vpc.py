@@ -183,9 +183,9 @@ class Test_VpcService(object):
         usage = sorted(cls.limits['Subnets per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
-        assert usage[0].id == 'vpc-2'
+        assert usage[0].resource_id == 'vpc-2'
         assert usage[1].get_value() == 2
-        assert usage[1].id == 'vpc-1'
+        assert usage[1].resource_id == 'vpc-1'
         assert mock_conn.mock_calls == [
             call.get_all_subnets(),
         ]
@@ -214,17 +214,17 @@ class Test_VpcService(object):
         usage = sorted(cls.limits['Network ACLs per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
-        assert usage[0].id == 'vpc-2'
+        assert usage[0].resource_id == 'vpc-2'
         assert usage[1].get_value() == 2
-        assert usage[1].id == 'vpc-1'
+        assert usage[1].resource_id == 'vpc-1'
         entries = sorted(cls.limits['Rules per network '
                                     'ACL'].get_current_usage())
         assert len(entries) == 3
-        assert entries[0].id == 'acl-2'
+        assert entries[0].resource_id == 'acl-2'
         assert entries[0].get_value() == 1
-        assert entries[1].id == 'acl-1'
+        assert entries[1].resource_id == 'acl-1'
         assert entries[1].get_value() == 3
-        assert entries[2].id == 'acl-3'
+        assert entries[2].resource_id == 'acl-3'
         assert entries[2].get_value() == 5
         assert mock_conn.mock_calls == [
             call.get_all_network_acls(),
@@ -255,17 +255,17 @@ class Test_VpcService(object):
         usage = sorted(cls.limits['Route tables per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
-        assert usage[0].id == 'vpc-2'
+        assert usage[0].resource_id == 'vpc-2'
         assert usage[1].get_value() == 2
-        assert usage[1].id == 'vpc-1'
+        assert usage[1].resource_id == 'vpc-1'
         entries = sorted(cls.limits['Entries per route '
                                     'table'].get_current_usage())
         assert len(entries) == 3
-        assert entries[0].id == 'rt-2'
+        assert entries[0].resource_id == 'rt-2'
         assert entries[0].get_value() == 1
-        assert entries[1].id == 'rt-1'
+        assert entries[1].resource_id == 'rt-1'
         assert entries[1].get_value() == 3
-        assert entries[2].id == 'rt-3'
+        assert entries[2].resource_id == 'rt-3'
         assert entries[2].get_value() == 5
         assert mock_conn.mock_calls == [
             call.get_all_route_tables(),

@@ -452,24 +452,24 @@ class Test_Ec2Service(object):
         assert len(sorted_usage) == 2
         assert sorted_usage[0].limit == limit
         assert sorted_usage[0].get_value() == 1
-        assert sorted_usage[0].id == 'vpc-bbb'
+        assert sorted_usage[0].resource_id == 'vpc-bbb'
         assert sorted_usage[0].aws_type == 'AWS::EC2::VPC'
         assert sorted_usage[1].limit == limit
         assert sorted_usage[1].get_value() == 2
-        assert sorted_usage[1].id == 'vpc-aaa'
+        assert sorted_usage[1].resource_id == 'vpc-aaa'
         assert sorted_usage[1].aws_type == 'AWS::EC2::VPC'
 
         limit = cls.limits['Rules per VPC security group']
         sorted_usage = sorted(limit.get_current_usage())
         assert len(sorted_usage) == 3
         assert sorted_usage[0].limit == limit
-        assert sorted_usage[0].id == 'sg-1'
+        assert sorted_usage[0].resource_id == 'sg-1'
         assert sorted_usage[0].get_value() == 0
         assert sorted_usage[1].limit == limit
-        assert sorted_usage[1].id == 'sg-4'
+        assert sorted_usage[1].resource_id == 'sg-4'
         assert sorted_usage[1].get_value() == 3
         assert sorted_usage[2].limit == limit
-        assert sorted_usage[2].id == 'sg-3'
+        assert sorted_usage[2].resource_id == 'sg-3'
         assert sorted_usage[2].get_value() == 9
 
     def test_find_usage_networking_eips(self):
@@ -498,7 +498,7 @@ class Test_Ec2Service(object):
         assert len(usage) == 1
         assert usage[0].limit == limit
         assert usage[0].get_value() == 2
-        assert usage[0].id is None
+        assert usage[0].resource_id is None
         assert usage[0].aws_type == 'AWS::EC2::EIP'
 
         limit = cls.limits['Elastic IP addresses (EIPs)']
@@ -506,7 +506,7 @@ class Test_Ec2Service(object):
         assert len(usage) == 1
         assert usage[0].limit == limit
         assert usage[0].get_value() == 1
-        assert usage[0].id is None
+        assert usage[0].resource_id is None
         assert usage[0].aws_type == 'AWS::EC2::EIP'
 
     def test_find_usage_networking_eni_sg(self):
@@ -537,13 +537,13 @@ class Test_Ec2Service(object):
         sorted_usage = sorted(limit.get_current_usage())
         assert len(sorted_usage) == 3
         assert sorted_usage[0].limit == limit
-        assert sorted_usage[0].id == 'if-1'
+        assert sorted_usage[0].resource_id == 'if-1'
         assert sorted_usage[0].get_value() == 0
         assert sorted_usage[1].limit == limit
-        assert sorted_usage[1].id == 'if-2'
+        assert sorted_usage[1].resource_id == 'if-2'
         assert sorted_usage[1].get_value() == 3
         assert sorted_usage[2].limit == limit
-        assert sorted_usage[2].id == 'if-3'
+        assert sorted_usage[2].resource_id == 'if-3'
         assert sorted_usage[2].get_value() == 8
 
     def test_get_limits_networking(self):

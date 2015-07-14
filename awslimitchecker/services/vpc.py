@@ -100,7 +100,7 @@ class _VpcService(_AwsService):
             self.limits['Subnets per VPC']._add_current_usage(
                 subnets[vpc_id],
                 aws_type='AWS::EC2::VPC',
-                id=vpc_id
+                resource_id=vpc_id
             )
 
     def _find_usage_ACLs(self):
@@ -114,13 +114,13 @@ class _VpcService(_AwsService):
             self.limits['Rules per network ACL']._add_current_usage(
                 len(acl.network_acl_entries),
                 aws_type='AWS::EC2::NetworkAcl',
-                id=acl.id
+                resource_id=acl.id
             )
         for vpc_id in acls:
             self.limits['Network ACLs per VPC']._add_current_usage(
                 acls[vpc_id],
                 aws_type='AWS::EC2::VPC',
-                id=vpc_id,
+                resource_id=vpc_id,
             )
 
     def _find_usage_route_tables(self):
@@ -134,13 +134,13 @@ class _VpcService(_AwsService):
             self.limits['Entries per route table']._add_current_usage(
                 len(table.routes),
                 aws_type='AWS::EC2::RouteTable',
-                id=table.id
+                resource_id=table.id
             )
         for vpc_id in tables:
             self.limits['Route tables per VPC']._add_current_usage(
                 tables[vpc_id],
                 aws_type='AWS::EC2::VPC',
-                id=vpc_id,
+                resource_id=vpc_id,
             )
 
     def _find_usage_gateways(self):

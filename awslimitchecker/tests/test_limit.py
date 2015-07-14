@@ -207,7 +207,7 @@ class TestAwsLimit(object):
             1,
             2
         )
-        limit._add_current_usage(4, id='foobar')
+        limit._add_current_usage(4, resource_id='foobar')
         assert limit.get_current_usage_str() == 'foobar=4'
 
     def test_get_current_usage_str_multi(self):
@@ -231,9 +231,9 @@ class TestAwsLimit(object):
             1,
             2
         )
-        limit._add_current_usage(4, id='foo4bar')
-        limit._add_current_usage(3, id='foo3bar')
-        limit._add_current_usage(2, id='foo2bar')
+        limit._add_current_usage(4, resource_id='foo4bar')
+        limit._add_current_usage(3, resource_id='foo3bar')
+        limit._add_current_usage(2, resource_id='foo2bar')
         assert limit.get_current_usage_str() == 'max: foo4bar=4 (foo2bar=2, ' \
             'foo3bar=3, foo4bar=4)'
 
@@ -280,9 +280,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_pct(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
-        u1 = AwsLimitUsage(limit, 4, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 3, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 2, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 2, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -299,9 +299,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_pct_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
-        u1 = AwsLimitUsage(limit, 4, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 50, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 2, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 50, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 2, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -318,9 +318,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_int_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
-        u1 = AwsLimitUsage(limit, 4, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 1, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 2, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 1, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 2, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -337,9 +337,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_int_warn_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
-        u1 = AwsLimitUsage(limit, 4, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 1, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 7, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 1, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 7, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -356,9 +356,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_pct_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
-        u1 = AwsLimitUsage(limit, 4, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 3, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 95, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 95, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -375,9 +375,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_int_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
-        u1 = AwsLimitUsage(limit, 9, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 3, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 95, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 9, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 95, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -394,9 +394,9 @@ class TestAwsLimit(object):
 
     def test_check_thresholds_pct_warn_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
-        u1 = AwsLimitUsage(limit, 50, id='foo4bar')
-        u2 = AwsLimitUsage(limit, 3, id='foo3bar')
-        u3 = AwsLimitUsage(limit, 95, id='foo2bar')
+        u1 = AwsLimitUsage(limit, 50, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 95, resource_id='foo2bar')
         limit._current_usage = [u1, u2, u3]
         with patch('awslimitchecker.limit.AwsLimit.'
                    '_get_thresholds') as mock_get_thresh:
@@ -469,18 +469,18 @@ class TestAwsLimitUsage(object):
         )
         assert u.limit == mock_limit
         assert u.value == 1.23
-        assert u.id is None
+        assert u.resource_id is None
         assert u.aws_type is None
 
         u2 = AwsLimitUsage(
             mock_limit,
             3,
-            id='foobar',
+            resource_id='foobar',
             aws_type='mytype',
         )
         assert u2.limit == mock_limit
         assert u2.value == 3
-        assert u2.id == 'foobar'
+        assert u2.resource_id == 'foobar'
         assert u2.aws_type == 'mytype'
 
     def test_get_value(self):
@@ -502,7 +502,7 @@ class TestAwsLimitUsage(object):
         u2 = AwsLimitUsage(
             mock_limit,
             3.456,
-            id='foobar'
+            resource_id='foobar'
         )
         assert str(u2) == 'foobar=3.456'
 

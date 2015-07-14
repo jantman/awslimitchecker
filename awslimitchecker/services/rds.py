@@ -100,7 +100,7 @@ class _RDSService(_AwsService):
             self.limits['Read Replicas per Master']._add_current_usage(
                 len(i['ReadReplicaDBInstanceIdentifiers']),
                 aws_type='AWS::RDS::DBInstance',
-                id=i['DBInstanceIdentifier']
+                resource_id=i['DBInstanceIdentifier']
             )
 
         # overall storage quota
@@ -153,7 +153,7 @@ class _RDSService(_AwsService):
             self.limits['Subnets per Subnet Group']._add_current_usage(
                 len(group['Subnets']),
                 aws_type='AWS::RDS::DBSubnetGroup',
-                id=group["DBSubnetGroupName"],
+                resource_id=group["DBSubnetGroupName"],
             )
         self.limits['Subnet Groups']._add_current_usage(
             count,
@@ -197,7 +197,7 @@ class _RDSService(_AwsService):
             self.limits['Max auths per security group']._add_current_usage(
                 len(group["EC2SecurityGroups"]) + len(group["IPRanges"]),
                 aws_type='AWS::RDS::DBSecurityGroup',
-                id=group['DBSecurityGroupName']
+                resource_id=group['DBSecurityGroupName']
             )
 
         self.limits['DB security groups']._add_current_usage(

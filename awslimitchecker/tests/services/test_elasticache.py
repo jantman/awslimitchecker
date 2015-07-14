@@ -279,9 +279,9 @@ class TestElastiCacheService(object):
         usage = sorted(cls.limits['Nodes per Cluster'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
-        assert usage[0].id == 'memcached1'
+        assert usage[0].resource_id == 'memcached1'
         assert usage[1].get_value() == 2
-        assert usage[1].id == 'redis1'
+        assert usage[1].resource_id == 'redis1'
 
         assert mock_conn.mock_calls == [
             call.describe_cache_clusters(show_cache_node_info=True),

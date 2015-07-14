@@ -166,20 +166,20 @@ usage for each limit that ``awslimitchecker`` knows about. It will connect to th
 AWS API and determine the current usage for each limit. In cases where limits are
 per-resource instead of account-wide (i.e. "Rules per VPC security group" or
 "Security groups per VPC"), the usage will be reported for each possible resource
-in ``id=value`` format (i.e. for each VPC security group and each VPC, respectively,
+in ``resource_id=value`` format (i.e. for each VPC security group and each VPC, respectively,
 using their IDs).
 
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        42
+   AutoScaling/Auto Scaling groups                        45
    AutoScaling/Launch configurations                      50
-   EBS/Active snapshots                                   949
-   EBS/Active volumes                                     853
+   EBS/Active snapshots                                   968
+   EBS/Active volumes                                     862
    EBS/General Purpose (SSD) volume storage (GiB)         4123
    (...)
    VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
-   VPC/Subnets per VPC                                    max: vpc-73ec9716=11 (vpc-a926c2cc=4, vpc-c30 (...)
+   VPC/Subnets per VPC                                    max: vpc-1ee8937b=11 (vpc-a926c2cc=4, vpc-c30 (...)
    VPC/VPCs                                               4
 
 
@@ -241,13 +241,13 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 110
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 62
-   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=112
-   ElastiCache/Clusters                       (limit 50) CRITICAL: 51
-   ElastiCache/Nodes                          (limit 50) CRITICAL: 51
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 113
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 65
+   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=125
+   ElastiCache/Clusters                       (limit 50) CRITICAL: 55
+   ElastiCache/Nodes                          (limit 50) CRITICAL: 55
    (...)
-   RDS/VPC Security Groups                    (limit 5) CRITICAL: 35
+   RDS/VPC Security Groups                    (limit 5) CRITICAL: 38
    VPC/Internet gateways                      (limit 5) WARNING: 4
    VPC/VPCs                                   (limit 5) WARNING: 4
 
@@ -261,15 +261,15 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 110
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 62
-   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=112
-   ElastiCache/Clusters                       (limit 50) CRITICAL: 51
-   ElastiCache/Nodes                          (limit 50) CRITICAL: 51
-   ElastiCache/Subnet Groups                  (limit 50) CRITICAL: 51
+   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 113
+   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 65
+   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=125
+   ElastiCache/Clusters                       (limit 50) CRITICAL: 55
+   ElastiCache/Nodes                          (limit 50) CRITICAL: 55
+   ElastiCache/Subnet Groups                  (limit 50) CRITICAL: 55
    RDS/DB snapshots per user                  (limit 50) CRITICAL: 100
-   RDS/Subnet Groups                          (limit 20) CRITICAL: 35
-   RDS/VPC Security Groups                    (limit 5) CRITICAL: 35
+   RDS/Subnet Groups                          (limit 20) CRITICAL: 38
+   RDS/VPC Security Groups                    (limit 5) CRITICAL: 38
 
 
 

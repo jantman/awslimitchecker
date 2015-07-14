@@ -20,14 +20,22 @@ permissions required for it to function correctly:
           "Action": [
             "autoscaling:DescribeAutoScalingGroups", 
             "autoscaling:DescribeLaunchConfigurations", 
+            "ec2:DescribeAddresses", 
             "ec2:DescribeInstances", 
+            "ec2:DescribeInternetGatewaysec2:DescribeNetworkAcls", 
             "ec2:DescribeNetworkAcls", 
+            "ec2:DescribeNetworkInterfaces", 
             "ec2:DescribeReservedInstances", 
+            "ec2:DescribeRouteTables", 
             "ec2:DescribeRouteTables", 
             "ec2:DescribeSecurityGroups", 
             "ec2:DescribeSnapshots", 
+            "ec2:DescribeSnapshots", 
+            "ec2:DescribeSubnets", 
             "ec2:DescribeSubnets", 
             "ec2:DescribeVolumes", 
+            "ec2:DescribeVolumes", 
+            "ec2:DescribeVpcs", 
             "ec2:DescribeVpcs", 
             "elasticache:DescribeCacheClusters", 
             "elasticache:DescribeCacheParameterGroups", 
@@ -41,7 +49,9 @@ permissions required for it to function correctly:
             "rds:DescribeDBSubnetGroups", 
             "rds:DescribeEventSubscriptions", 
             "rds:DescribeOptionGroups", 
-            "rds:DescribeReservedDBInstances"
+            "rds:DescribeReservedDBInstances", 
+            "support:*", 
+            "trustedadvisor:Describe*"
           ], 
           "Effect": "Allow", 
           "Resource": "*"

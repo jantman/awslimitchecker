@@ -79,7 +79,7 @@ class _ElbService(_AwsService):
             self.limits['Listeners per load balancer']._add_current_usage(
                 len(lb.listeners),
                 aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
-                id=lb.name,
+                resource_id=lb.name,
             )
         self._have_usage = True
         logger.debug("Done checking usage.")

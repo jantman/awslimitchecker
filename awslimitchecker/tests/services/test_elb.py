@@ -145,13 +145,13 @@ class Test_ElbService(object):
         entries = sorted(cls.limits['Listeners per load balancer'
                                     ''].get_current_usage())
         assert len(entries) == 4
-        assert entries[0].id == 'elb-1'
+        assert entries[0].resource_id == 'elb-1'
         assert entries[0].get_value() == 1
-        assert entries[1].id == 'elb-2'
+        assert entries[1].resource_id == 'elb-2'
         assert entries[1].get_value() == 2
-        assert entries[2].id == 'elb-3'
+        assert entries[2].resource_id == 'elb-3'
         assert entries[2].get_value() == 3
-        assert entries[3].id == 'elb-4'
+        assert entries[3].resource_id == 'elb-4'
         assert entries[3].get_value() == 6
 
     def test_required_iam_permissions(self):

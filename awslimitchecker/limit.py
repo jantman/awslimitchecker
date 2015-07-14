@@ -207,7 +207,7 @@ class AwsLimit(object):
         )
         return s
 
-    def _add_current_usage(self, value, id=None, aws_type=None):
+    def _add_current_usage(self, value, resource_id=None, aws_type=None):
         """
         Add a new current usage value for this limit.
 
@@ -221,9 +221,9 @@ class AwsLimit(object):
 
         :param value: the numeric usage value
         :type value: :py:obj:`int` or :py:obj:`float`
-        :param id: If there can be multiple usage values for one limit,
+        :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type id: string
+        :type resource_id: string
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
@@ -231,7 +231,12 @@ class AwsLimit(object):
         :type aws_type: string
         """
         self._current_usage.append(
-            AwsLimitUsage(self, value, id=id, aws_type=aws_type)
+            AwsLimitUsage(
+                self,
+                value,
+                resource_id=resource_id,
+                aws_type=aws_type
+            )
         )
 
     def _reset_usage(self):
@@ -345,7 +350,7 @@ class AwsLimit(object):
 
 class AwsLimitUsage(object):
 
-    def __init__(self, limit, value, id=None, aws_type=None):
+    def __init__(self, limit, value, resource_id=None, aws_type=None):
         """
         This object describes the usage of an AWS resource, with the capability
         of containing information about the resource beyond an integer usage.
@@ -366,9 +371,9 @@ class AwsLimitUsage(object):
         :type limit: :py:class:`~.AwsLimit`
         :param value: the numeric usage value
         :type value: :py:obj:`int` or :py:obj:`float`
-        :param id: If there can be multiple usage values for one limit,
+        :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type id: string
+        :type resource_id: string
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
@@ -377,7 +382,7 @@ class AwsLimitUsage(object):
         """
         self.limit = limit
         self.value = value
-        self.id = id
+        self.resource_id = resource_id
         self.aws_type = aws_type
 
     def get_value(self):
@@ -399,8 +404,8 @@ class AwsLimitUsage(object):
         :rtype: string
         """
         s = '{v}'.format(v=self.value)
-        if self.id is not None:
-            s = self.id + '=' + s
+        if self.resource_id is not None:
+            s = self.resource_id + '=' + s
         return s
 
     def __eq__(self, other):

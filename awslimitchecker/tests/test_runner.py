@@ -677,7 +677,7 @@ class TestAwsLimitCheckerRunner(object):
         mock_limit.get_limit.return_value = 5
 
         c1 = AwsLimitUsage(mock_limit, 10)
-        c2 = AwsLimitUsage(mock_limit, 12, id='c2id')
+        c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
         c3 = AwsLimitUsage(mock_limit, 8)
 
         res = self.cls.print_issue(
@@ -711,8 +711,8 @@ class TestAwsLimitCheckerRunner(object):
         mock_limit.get_limit.return_value = 12
 
         w1 = AwsLimitUsage(mock_limit, 11)
-        w2 = AwsLimitUsage(mock_limit, 10, id='w2id')
-        w3 = AwsLimitUsage(mock_limit, 10, id='w3id')
+        w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
 
         res = self.cls.print_issue(
             'svcname',
@@ -730,7 +730,7 @@ class TestAwsLimitCheckerRunner(object):
         mock_limit.get_limit.return_value = 12
 
         c1 = AwsLimitUsage(mock_limit, 10)
-        w1 = AwsLimitUsage(mock_limit, 10, id='w3id')
+        w1 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
 
         res = self.cls.print_issue(
             'svcname',
@@ -749,11 +749,11 @@ class TestAwsLimitCheckerRunner(object):
         mock_limit.get_limit.return_value = 12
 
         c1 = AwsLimitUsage(mock_limit, 10)
-        c2 = AwsLimitUsage(mock_limit, 12, id='c2id')
+        c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
         c3 = AwsLimitUsage(mock_limit, 8)
         w1 = AwsLimitUsage(mock_limit, 11)
-        w2 = AwsLimitUsage(mock_limit, 10, id='w2id')
-        w3 = AwsLimitUsage(mock_limit, 10, id='w3id')
+        w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
 
         res = self.cls.print_issue(
             'svcname',
