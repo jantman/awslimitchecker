@@ -69,12 +69,13 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         """
-        logger.warning("awslimitchecker {v} is AGPL-licensed free software; "
-                       "all users have a right to the full source code of "
-                       "this version. See <{u}>".format(
-                           v=_get_version(),
-                           u=_get_project_url(),
-                       ))
+        logger.warning(
+            "awslimitchecker %s is AGPL-licensed free software; "
+            "all users have a right to the full source code of "
+            "this version. See <%s>",
+            _get_version(),
+            _get_project_url(),
+        )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.services = {}
@@ -157,8 +158,7 @@ class AwsLimitChecker(object):
         if use_ta:
             self.ta.update_limits(to_get)
         for sname, cls in to_get.items():
-            logger.debug("Finding usage for service: {s}".format(
-                s=cls.service_name))
+            logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
     def set_limit_overrides(self, override_dict, override_ta=True):
@@ -373,7 +373,7 @@ class AwsLimitChecker(object):
             'support:*',
             'trustedadvisor:Describe*',
         ]
-        for sname, cls in self.services.items():
+        for cls in self.services.values():
             required_actions.extend(cls.required_iam_permissions())
         policy = {
             'Version': '2012-10-17',

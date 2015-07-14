@@ -139,9 +139,9 @@ class TestAwsLimitChecker(object):
     def test_init_logger(self):
         """ensure we log a license message"""
         assert self.mock_logger.mock_calls == [
-            call.warning("awslimitchecker MVER is AGPL-licensed free software; "
+            call.warning("awslimitchecker %s is AGPL-licensed free software; "
                          "all users have a right to the full source code of "
-                         "this version. See <PURL>")
+                         "this version. See <%s>", 'MVER', 'PURL')
         ]
 
     def test_get_version(self):
