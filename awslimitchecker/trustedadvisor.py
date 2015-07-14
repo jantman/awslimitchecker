@@ -121,7 +121,7 @@ class TrustedAdvisor(object):
         of the 'performance/Service Limits' check.
 
         :returns: 2-tuple of Service Limits TA check ID (string),
-          metadata (list)
+          metadata (list), or (None, None).
         :rtype: tuple
         """
         logger.debug("Querying Trusted Advisor checks")
@@ -137,7 +137,7 @@ class TrustedAdvisor(object):
                     ex.message
                 )
                 self.have_ta = False
-                return {}
+                return (None, None)
             else:
                 raise ex
         for check in checks:
@@ -152,7 +152,7 @@ class TrustedAdvisor(object):
                 )
         logger.debug("Unable to find check with category 'performance' and "
                      "name 'Service Limits'.")
-        return None
+        return (None, None)
 
     def _update_services(self, ta_results, services):
         """

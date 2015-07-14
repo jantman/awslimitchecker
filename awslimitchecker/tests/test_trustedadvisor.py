@@ -171,7 +171,7 @@ class Test_TrustedAdvisor(object):
         }
         self.mock_conn.describe_trusted_advisor_checks.return_value = api_resp
         res = self.cls._get_limit_check_id()
-        assert res is None
+        assert res == (None, None)
         assert self.mock_conn.mock_calls == [
             call.describe_trusted_advisor_checks('en')
         ]
@@ -194,7 +194,7 @@ class Test_TrustedAdvisor(object):
                    '.logger', autospec=True) as mock_logger:
             res = self.cls._get_limit_check_id()
         assert self.cls.have_ta is False
-        assert res == {}
+        assert res == (None, None)
         assert self.mock_conn.mock_calls == [
             call.describe_trusted_advisor_checks('en')
         ]
