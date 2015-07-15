@@ -202,8 +202,9 @@ class Test_EbsService(object):
             cls._find_usage_ebs()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS volumes"),
-            call.error("ERROR - unknown volume type 'othertype' for volume "
-                       "vol-7; not counting")
+            call.error(
+                "ERROR - unknown volume type '%s' for volume "
+                "%s; not counting", 'othertype', 'vol-7')
         ]
         assert len(cls.limits['Provisioned IOPS'].get_current_usage()) == 1
         assert cls.limits['Provisioned IOPS'

@@ -92,8 +92,11 @@ class _EbsService(_AwsService):
             elif vol.type == 'standard':
                 mag_gb += vol.size
             else:
-                logger.error("ERROR - unknown volume type '{t}' for volume {i};"
-                             " not counting".format(t=vol.type, i=vol.id))
+                logger.error(
+                    "ERROR - unknown volume type '%s' for volume %s;"
+                    " not counting",
+                    vol.type,
+                    vol.id)
         self.limits['Provisioned IOPS']._add_current_usage(
             piops,
             aws_type='AWS::EC2::Volume'
