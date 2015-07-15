@@ -1,1 +1,6 @@
 doc-warnings: true
+strictness: medium
+test-warnings: false
+pylint:
+  disable:
+    - protected-access
