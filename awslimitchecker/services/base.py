@@ -162,13 +162,13 @@ class _AwsService(object):
                 value,
                 override_ta=override_ta
             )
-            logger.debug("Overriding {s} limit {l}; default={d} override={o}"
-                         "".format(
-                             s=self.service_name,
-                             l=limit_name,
-                             o=value,
-                             d=self.limits[limit_name].default_limit,
-                         ))
+            logger.debug(
+                "Overriding %s limit %s; default=%d override=%d",
+                self.service_name,
+                limit_name,
+                value,
+                self.limits[limit_name].default_limit,
+            )
         except KeyError:
             raise ValueError("{s} service has no '{l}' limit".format(
                 s=self.service_name,
@@ -189,12 +189,12 @@ class _AwsService(object):
         """
         try:
             self.limits[limit_name]._set_ta_limit(value)
-            logger.debug("Setting {s} limit {l} TA limit to {o}"
-                         "".format(
-                             s=self.service_name,
-                             l=limit_name,
-                             o=value,
-                         ))
+            logger.debug(
+                "Setting %s limit %s TA limit to %d",
+                self.service_name,
+                limit_name,
+                value,
+            )
         except KeyError:
             raise ValueError("{s} service has no '{l}' limit".format(
                 s=self.service_name,
