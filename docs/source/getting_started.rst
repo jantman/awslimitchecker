@@ -6,7 +6,7 @@ Getting Started
 .. _getting_started.features:
 
 What It Does
--------------
+------------
 
 - Check current AWS resource usage against AWS Service Limits
 - Show and inspect current usage
@@ -19,7 +19,7 @@ What It Does
 .. _getting_started.nomenclature:
 
 Nomenclature
--------------
+------------
 
 Service
    An AWS Service or Product, such as EC2, VPC, RDS or ElastiCache. More specifically, Services in AwsLimitChecker correspond to
@@ -71,7 +71,7 @@ can be whatever you want):
 .. _getting_started.credentials:
 
 Credentials
-------------
+-----------
 
 awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
@@ -85,10 +85,35 @@ The recommended way of handling multiple accounts is to use one of the
 define a `section per account <http://boto.readthedocs.org/en/latest/boto_config_tut.html#credentials>`_,
 and then export ``AWS_PROFILE=section_name`` to tell boto which section to use.
 
+.. _getting_started.regions:
+
+Regions
+-------
+
+At this time, AWS Limit Checker has no knowledge of AWS regions. As most (all?)
+limits are calculated on a per-region basis, this isn't a major issue. To check
+multiple regions, simply run awslimitchecker multiple times, once for each
+region, using a different ``AWS_PROFILE`` environment variable setting, and
+entries in ``~/.aws/credentials`` like:
+
+    [myuser-us-east-1]
+    region = us-east-1
+    aws_access_key_id = <your access key>
+    aws_secret_access_key = <your secret key>
+
+    [myuser-us-west-2]
+    region = us-west-2
+    aws_access_key_id = <your access key>
+    aws_secret_access_key = <your secret key>
+
+Support for setting the region, or multiple regions, directly through
+awslimitchecker will be implemented in the future depending on demand;
+it shouldn't be too complicated to retrofit into the existing code.
+
 .. _getting_started.permissions:
 
 Required Permissions
----------------------
+--------------------
 
 You can view a sample IAM policy listing the permissions required for awslimitchecker to function properly
 either via the CLI client:

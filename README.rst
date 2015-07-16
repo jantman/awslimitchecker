@@ -45,14 +45,14 @@ Advisor where available), notifying you when you are approaching or at your limi
 Full project documentation is available at `http://awslimitchecker.readthedocs.org <http://awslimitchecker.readthedocs.org>`_.
 
 Status
--------
+------
 
 This project is currently in very early development. At this time please consider it alpha code and not reliable;
 furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
 use, but contributions are certainly welcome.
 
 What It Does
--------------
+------------
 
 - Check current AWS resource usage against AWS Service Limits
 - Show and inspect current usage
@@ -82,11 +82,14 @@ system-wide, you can (using sudo).
     pip install awslimitchecker
 
 Credentials
-------------
+-----------
 
 awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
-files, or set as environment variables. See `boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+files, or set as environment variables. See
+`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+and
+`this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
 
 Usage
@@ -98,7 +101,8 @@ For basic usage, see:
 
     awslimitchecker --help
 
-See the `project documentation <http://awslimitchecker.readthedocs.org>`_ for further information.
+See the `project documentation <http://awslimitchecker.readthedocs.org>`_
+for further information.
 
 Bugs and Feature Requests
 -------------------------
@@ -110,7 +114,7 @@ Pull requests are always welcome.
 Please see the [Development]() and [Getting Help]() documentation for more information.
 
 License
---------
+-------
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
 This shouldn't be much of a concern to most people.
