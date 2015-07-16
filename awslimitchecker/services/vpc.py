@@ -55,11 +55,9 @@ class _VpcService(_AwsService):
     def connect(self):
         """connect to API if not already connected; set self.conn"""
         if self.conn is None:
-            logger.debug("Connecting to {n}".format(
-                n=self.service_name))
+            logger.debug("Connecting to %s", self.service_name)
             self.conn = boto.connect_vpc()
-            logger.info("Connected to {n}".format(
-                n=self.service_name))
+            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
@@ -67,8 +65,7 @@ class _VpcService(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
-        logger.debug("Checking usage for service {n}".format(
-            n=self.service_name))
+        logger.debug("Checking usage for service %s", self.service_name)
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()

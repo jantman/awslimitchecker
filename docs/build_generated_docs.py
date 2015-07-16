@@ -87,7 +87,7 @@ def build_iam_policy(checker):
     doc = dedent(doc)
     doc = doc.format(policy_str=policy_str)
     fname = os.path.join(my_dir, 'source', 'iam_policy.rst')
-    logger.info("Writing {f}".format(f=fname))
+    logger.info("Writing %s", fname)
     with open(fname, 'w') as fh:
         fh.write(doc)
 
@@ -184,7 +184,7 @@ def build_limits(checker):
     doc = dedent(doc)
     doc = doc.format(ta_info=ta_info, limit_info=limit_info)
     fname = os.path.join(my_dir, 'source', 'limits.rst')
-    logger.info("Writing {f}".format(f=fname))
+    logger.info("Writing %s", fname)
     with open(fname, 'w') as fh:
         fh.write(doc)
 
@@ -214,12 +214,10 @@ def build_runner_examples():
         'iam_policy': ['awslimitchecker', '--iam-policy'],
     }
     results = {}
-    logger.info("Activating venv...")
-    activate_path = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'activate_this.py')
     # run the commands
     for name, command in examples.items():
         cmd_str = ' '.join(command)
-        logger.info("Running: {s}".format(s=cmd_str))
+        logger.info("Running: %s", cmd_str)
         try:
             output = subprocess.check_output(command)
         except subprocess.CalledProcessError as e:

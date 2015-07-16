@@ -54,11 +54,9 @@ class _Ec2Service(_AwsService):
     def connect(self):
         """connect to API if not already connected; set self.conn"""
         if self.conn is None:
-            logger.debug("Connecting to {n}".format(
-                n=self.service_name))
+            logger.debug("Connecting to %s", self.service_name)
             self.conn = boto.connect_ec2()
-            logger.info("Connected to {n}".format(
-                n=self.service_name))
+            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
@@ -66,8 +64,7 @@ class _Ec2Service(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
-        logger.debug("Checking usage for service {n}".format(
-            n=self.service_name))
+        logger.debug("Checking usage for service %s", self.service_name)
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
@@ -131,8 +128,8 @@ class _Ec2Service(_AwsService):
         res = self.conn.get_all_reserved_instances()
         for x in res:
             if x.state != 'active':
-                logger.debug("Skipping ReservedInstance {i} with state "
-                             "{s}".format(i=x.id, s=x.state))
+                logger.debug("Skipping ReservedInstance %s with state %s",
+                             x.id, x.state)
                 continue
             if x.availability_zone not in az_to_res:
                 az_to_res[x.availability_zone] = deepcopy(reservations)
@@ -160,17 +157,17 @@ class _Ec2Service(_AwsService):
         for res in self.conn.get_all_reservations():
             for inst in res.instances:
                 if inst.spot_instance_request_id:
-                    logger.warning("Spot instance found ({i}); awslimitchecker "
+                    logger.warning("Spot instance found (%s); awslimitchecker "
                                    "does not yet support spot "
-                                   "instances.".format(i=inst.id))
+                                   "instances.", inst.id)
                     continue
                 if inst.placement not in az_to_inst:
                     az_to_inst[inst.placement] = deepcopy(ondemand)
                 try:
                     az_to_inst[inst.placement][inst.instance_type] += 1
                 except KeyError:
-                    logger.error("ERROR - unknown instance type '{t}'; not "
-                                 "counting".format(t=inst.instance_type))
+                    logger.error("ERROR - unknown instance type '%s'; not "
+                                 "counting", inst.instance_type)
         return az_to_inst
 
     def get_limits(self):

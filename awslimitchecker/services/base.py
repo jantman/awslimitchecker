@@ -81,11 +81,9 @@ class _AwsService(object):
         """
         """
         if self.conn is None:
-            logger.debug("Connecting to {n}".format(
-                n=self.service_name))
+            logger.debug("Connecting to %s", self.service_name)
             # self.conn = boto.<connect to something>
-            logger.info("Connected to {n}".format(
-                n=self.service_name))
+            logger.info("Connected to %s", self.service_name)
         """
         raise NotImplementedError('abstract base class')
 
