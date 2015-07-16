@@ -394,7 +394,8 @@ class Test_Ec2Service(object):
                 cls._instance_usage()
         assert mock_logger.mock_calls == [
             call.debug('Getting usage for on-demand instances'),
-            call.error("ERROR - unknown instance type 'foobar'; not counting"),
+            call.error("ERROR - unknown instance type '%s'; not counting",
+                       'foobar'),
         ]
 
     def test_required_iam_permissions(self):
