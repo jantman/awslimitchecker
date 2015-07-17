@@ -4,3 +4,5 @@ test-warnings: false
 pylint:
   disable:
     - protected-access
+ignore-paths:
+  - awslimitchecker/services/__init__.py
