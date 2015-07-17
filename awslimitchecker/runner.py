@@ -58,6 +58,7 @@ class Runner(object):
         self.colorize = True
         self.checker = None
         self.skip_ta = False
+        self.service_name = None
 
     def parse_args(self, argv):
         """
@@ -87,6 +88,9 @@ class Runner(object):
                  'source code of awslimitchecker ' + _get_version() + \
                  ' from: <' + _get_project_url() + '>'
         p = argparse.ArgumentParser(description=desc, epilog=epilog)
+        p.add_argument('-S', '--service', action='store', default=None,
+                       help='perform action for only the specified service name'
+                       '; see -s|--list-services for valid names')
         p.add_argument('-s', '--list-services', action='store_true',
                        default=False,
                        help='print a list of all AWS service types that '
@@ -139,7 +143,9 @@ class Runner(object):
             print(x)
 
     def list_limits(self):
-        limits = self.checker.get_limits(use_ta=(not self.skip_ta))
+        limits = self.checker.get_limits(
+            use_ta=(not self.skip_ta),
+            service=self.service_name)
         data = {}
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
@@ -152,7 +158,7 @@ class Runner(object):
         print(dict2cols(data))
 
     def list_defaults(self):
-        limits = self.checker.get_limits()
+        limits = self.checker.get_limits(service=self.service_name)
         data = {}
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
@@ -165,8 +171,8 @@ class Runner(object):
         print(json.dumps(policy, sort_keys=True, indent=2))
 
     def show_usage(self):
-        self.checker.find_usage()
-        limits = self.checker.get_limits()
+        self.checker.find_usage(service=self.service_name)
+        limits = self.checker.get_limits(service=self.service_name)
         data = {}
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
@@ -216,7 +222,9 @@ class Runner(object):
     def check_thresholds(self):
         have_warn = False
         have_crit = False
-        problems = self.checker.check_thresholds(use_ta=(not self.skip_ta))
+        problems = self.checker.check_thresholds(
+            use_ta=(not self.skip_ta),
+            service=self.service_name)
         columns = {}
         for svc in sorted(problems.keys()):
             for lim_name in sorted(problems[svc].keys()):
@@ -248,6 +256,7 @@ class Runner(object):
 
     def console_entry_point(self):
         args = self.parse_args(sys.argv[1:])
+        self.service_name = args.service
         if args.verbose == 1:
             logger.setLevel(logging.INFO)
         elif args.verbose > 1:

@@ -91,6 +91,7 @@ class TestAwsLimitCheckerRunner(object):
         assert self.cls.colorize is True
         assert self.cls.checker is None
         assert self.cls.skip_ta is False
+        assert self.cls.service_name is None
 
     def test_parse_args(self):
         argv = ['-V']
@@ -119,6 +120,10 @@ class TestAwsLimitCheckerRunner(object):
                     self.cls.parse_args(argv)
         assert mock_parser.mock_calls == [
             call(description=desc, epilog=epilog),
+            call().add_argument('-S', '--service', action='store', default=None,
+                                help='perform action for only the specified '
+                                     'service name; see -s|--list-services for '
+                                     'valid names'),
             call().add_argument('-s', '--list-services',
                                 default=False, action='store_true',
                                 help='print a list of all AWS service types '
@@ -273,12 +278,35 @@ class TestAwsLimitCheckerRunner(object):
         assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
-            call.get_limits()
+            call.get_limits(service=None)
         ]
         assert mock_d2c.mock_calls == [
             call({
                 'SvcBar/bar limit2': '2',
                 'SvcBar/barlimit1': '1',
+                'SvcFoo/foo limit3': '3',
+            })
+        ]
+
+    def test_list_defaults_one_service(self, capsys):
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_limits.return_value = {
+            'SvcFoo': sample_limits()['SvcFoo'],
+        }
+        self.cls.checker = mock_checker
+        self.cls.service_name = 'SvcFoo'
+        with patch('awslimitchecker.runner.dict2cols',
+                   autospec=True) as mock_d2c:
+            mock_d2c.return_value = 'd2cval'
+            self.cls.list_defaults()
+        out, err = capsys.readouterr()
+        assert out == 'd2cval\n'
+        assert err == ''
+        assert mock_checker.mock_calls == [
+            call.get_limits(service='SvcFoo')
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
                 'SvcFoo/foo limit3': '3',
             })
         ]
@@ -306,12 +334,34 @@ class TestAwsLimitCheckerRunner(object):
         assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
-            call.get_limits(use_ta=True)
+            call.get_limits(use_ta=True, service=None)
         ]
         assert mock_d2c.mock_calls == [
             call({
                 'SvcBar/bar limit2': '99',
                 'SvcBar/barlimit1': '1',
+                'SvcFoo/foo limit3': '10 (TA)',
+            })
+        ]
+
+    def test_list_limits_one_service(self, capsys):
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_limits.return_value = {
+            'SvcFoo': sample_limits()['SvcFoo'],
+        }
+        self.cls.checker = mock_checker
+        self.cls.service_name = 'SvcFoo'
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = 'd2cval'
+            self.cls.list_limits()
+        out, err = capsys.readouterr()
+        assert out == 'd2cval\n'
+        assert err == ''
+        assert mock_checker.mock_calls == [
+            call.get_limits(use_ta=True, service='SvcFoo')
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
                 'SvcFoo/foo limit3': '10 (TA)',
             })
         ]
@@ -404,13 +454,38 @@ class TestAwsLimitCheckerRunner(object):
         assert out == 'd2cval\n'
         assert err == ''
         assert mock_checker.mock_calls == [
-            call.find_usage(),
-            call.get_limits()
+            call.find_usage(service=None),
+            call.get_limits(service=None)
         ]
         assert mock_d2c.mock_calls == [
             call({
                 'SvcBar/bar limit2': '22',
                 'SvcBar/barlimit1': '11',
+                'SvcFoo/foo limit3': '33',
+            })
+        ]
+
+    def test_show_usage_one_service(self, capsys):
+        limits = {
+            'SvcFoo': sample_limits()['SvcFoo'],
+        }
+        limits['SvcFoo']['foo limit3']._add_current_usage(33)
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.get_limits.return_value = limits
+        self.cls.checker = mock_checker
+        self.cls.service_name = 'SvcFoo'
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = 'd2cval'
+            self.cls.show_usage()
+        out, err = capsys.readouterr()
+        assert out == 'd2cval\n'
+        assert err == ''
+        assert mock_checker.mock_calls == [
+            call.find_usage(service='SvcFoo'),
+            call.get_limits(service='SvcFoo')
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
                 'SvcFoo/foo limit3': '33',
             })
         ]
@@ -428,6 +503,34 @@ class TestAwsLimitCheckerRunner(object):
         assert out == ''
         assert excinfo.value.code == 6
         assert self.cls.skip_ta is True
+
+    def test_entry_service_name(self, capsys):
+        argv = ['awslimitchecker', '-S', 'foo']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
+                with pytest.raises(SystemExit) as excinfo:
+                    mock_ct.return_value = 6
+                    self.cls.console_entry_point()
+        out, err = capsys.readouterr()
+        assert err == ''
+        assert out == ''
+        assert excinfo.value.code == 6
+        assert self.cls.service_name == 'foo'
+
+    def test_entry_no_service_name(self, capsys):
+        argv = ['awslimitchecker']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
+                with pytest.raises(SystemExit) as excinfo:
+                    mock_ct.return_value = 6
+                    self.cls.console_entry_point()
+        out, err = capsys.readouterr()
+        assert err == ''
+        assert out == ''
+        assert excinfo.value.code == 6
+        assert self.cls.service_name is None
 
     def test_entry_verbose(self, capsys):
         argv = ['awslimitchecker', '-v']
@@ -514,7 +617,7 @@ class TestAwsLimitCheckerRunner(object):
         assert out == '\n'
         assert err == ''
         assert mock_checker.mock_calls == [
-            call.check_thresholds(use_ta=True)
+            call.check_thresholds(use_ta=True, service=None)
         ]
         assert res == 0
 
@@ -568,7 +671,7 @@ class TestAwsLimitCheckerRunner(object):
                 mock_d2c.return_value = 'd2cval'
                 res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds(use_ta=True)
+            call.check_thresholds(use_ta=True, service=None)
         ]
         assert mock_print.mock_calls == [
             call(self.cls, 'svc1', mock_limit1, [mock_c1], [mock_w1]),
@@ -617,10 +720,46 @@ class TestAwsLimitCheckerRunner(object):
                 mock_d2c.return_value = 'd2cval'
                 res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds(use_ta=True)
+            call.check_thresholds(use_ta=True, service=None)
         ]
         assert mock_print.mock_calls == [
             call(self.cls, 'svc1', mock_limit1, [], [mock_w1, mock_w2]),
+            call(self.cls, 'svc2', mock_limit2, [], [mock_w3]),
+        ]
+        assert res == 1
+
+    def test_check_thresholds_warn_one_service(self):
+        """just warnings"""
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        mock_w1 = Mock(spec_set=AwsLimitUsage)
+        mock_w2 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_warnings.return_value = [mock_w1, mock_w2]
+        mock_limit1.get_criticals.return_value = []
+
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        mock_w3 = Mock(spec_set=AwsLimitUsage)
+        mock_limit2.get_warnings.return_value = [mock_w3]
+        mock_limit2.get_criticals.return_value = []
+
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.check_thresholds.return_value = {
+            'svc2': {
+                'limit2': mock_limit2,
+            },
+        }
+
+        self.cls.checker = mock_checker
+        self.cls.service_name = 'svc2'
+        with patch('awslimitchecker.runner.Runner.print_issue',
+                   autospec=True) as mock_print:
+            mock_print.return_value = ('', '')
+            with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+                mock_d2c.return_value = 'd2cval'
+                res = self.cls.check_thresholds()
+        assert mock_checker.mock_calls == [
+            call.check_thresholds(use_ta=True, service='svc2')
+        ]
+        assert mock_print.mock_calls == [
             call(self.cls, 'svc2', mock_limit2, [], [mock_w3]),
         ]
         assert res == 1
@@ -649,7 +788,7 @@ class TestAwsLimitCheckerRunner(object):
                 mock_d2c.return_value = 'd2cval'
             res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds(use_ta=False)
+            call.check_thresholds(use_ta=False, service=None)
         ]
         assert mock_print.mock_calls == [
             call(self.cls, 'svc1', mock_limit1, [mock_c1, mock_c2], []),
