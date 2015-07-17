@@ -157,7 +157,7 @@ class AwsLimitChecker(object):
             to_get = {service: self.services[service]}
         if use_ta:
             self.ta.update_limits(to_get)
-        for sname, cls in to_get.items():
+        for cls in to_get.values():
             logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
