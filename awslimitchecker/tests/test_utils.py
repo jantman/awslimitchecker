@@ -126,3 +126,8 @@ class Test_dict2cols(object):
         d = {'foo': 'bar', 'baz': 'blam'}
         res = dict2cols(d, spaces=4, separator='.')
         assert res == 'baz....blam\nfoo....bar\n'
+
+    def test_empty(self):
+        d = {}
+        res = dict2cols(d)
+        assert res == ''

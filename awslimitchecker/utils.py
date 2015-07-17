@@ -69,8 +69,8 @@ class StoreKeyValuePair(argparse.Action):
 def dict2cols(d, spaces=2, separator=' '):
     """
     Take a dict of string keys and string values, and return a string with
-    them formatted two columns separate by at least ``spaces`` ``separator``
-    characters.
+    them formatted as two columns separated by at least ``spaces`` number of
+    ``separator`` characters.
 
     :param d: dict of string keys, string values
     :type d: dict
@@ -79,6 +79,8 @@ def dict2cols(d, spaces=2, separator=' '):
     :param separator: character to fill in between columns
     :type separator: string
     """
+    if len(d) == 0:
+        return ''
     s = ''
     maxlen = max([len(k) for k in d.keys()])
     fmt_str = '{k:' + separator + '<' + str(maxlen + spaces) + '}{v}\n'
