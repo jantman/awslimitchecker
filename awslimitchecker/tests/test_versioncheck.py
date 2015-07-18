@@ -78,6 +78,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
     git_tag = None
 
     def setup_method(self, method):
+        self._set_git_config()
         self.current_venv_path = sys.prefix
         self.source_dir = self._get_source_dir()
         self.git_commit = self._get_git_commit()
@@ -105,6 +106,38 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 'remote',
                 'remove',
                 'testremote'
+            ])
+
+    def _set_git_config(self):
+        try:
+            res = subprocess.check_output([
+                'git',
+                'config',
+                'user.email'
+            ]).strip()
+        except subprocess.CalledProcessError:
+            res = None
+        if res == '':
+            subprocess.call([
+                'git',
+                'config',
+                'user.email',
+                'travisci@jasonantman.com'
+            ])
+        try:
+            res = subprocess.check_output([
+                'git',
+                'config',
+                'user.name'
+            ]).strip()
+        except subprocess.CalledProcessError:
+            res = None
+        if res == '':
+            subprocess.call([
+                'git',
+                'config',
+                'user.name',
+                'travisci'
             ])
 
     def _get_git_tag(self, commit):
