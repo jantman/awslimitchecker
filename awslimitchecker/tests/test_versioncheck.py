@@ -169,7 +169,8 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 '--tags',
                 commit
             ], stderr=subprocess.STDOUT).strip()
-        except subprocess.CalledProcessError:
+        except Exception as ex:
+            print(ex)
             tag = None
         return tag
 
@@ -319,7 +320,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         print("# cwd: %s\n" % os.getcwd())
         try:
             subprocess.call(args)
-        except subprocess.CalledProcessError as ex:
+        except Exception as ex:
             print("\nFAILED:")
             print(ex)
             print("\n")
