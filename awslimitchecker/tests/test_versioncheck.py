@@ -316,6 +316,12 @@ class Test_AGPLVersionChecker_Acceptance(object):
             '--dist-dir',
             pkgdir
         ]
+        assert os.path.exists(
+            args[0]) is True, "path does not exist: %s" % args[0]
+        assert os.path.exists(
+            args[1]) is True, "path does not exist: %s" % args[1]
+        assert os.path.exists(
+            args[4]) is True, "path does not exist: %s" % args[4]
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
         print("# cwd: %s\n" % os.getcwd())
         try:
