@@ -43,7 +43,7 @@ import logging
 import json
 import termcolor
 
-from .version import _get_version, _get_project_url
+from .version import _get_version_info
 from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols
 from .limit import SOURCE_TA
@@ -82,19 +82,20 @@ class Runner(object):
         #   you MUST have the actually-running source available somewhere for
         #   your users.
         # ###### IMPORTANT license notice ##########
+        ver_info = _get_version_info()
         epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \
                  'entitled to a copy of the source code. You can obtain the ' \
-                 'source code of awslimitchecker ' + _get_version() + \
-                 ' from: <' + _get_project_url() + '>'
+                 'source code of awslimitchecker {v} from: <{u}>'
+        epilog = epilog.format(v=ver_info.version_str, u=ver_info.url)
         p = argparse.ArgumentParser(description=desc, epilog=epilog)
         p.add_argument('-S', '--service', action='store', default=None,
                        help='perform action for only the specified service name'
-                       '; see -s|--list-services for valid names')
+                            '; see -s|--list-services for valid names')
         p.add_argument('-s', '--list-services', action='store_true',
                        default=False,
                        help='print a list of all AWS service types that '
-                       'awslimitchecker knows how to check')
+                            'awslimitchecker knows how to check')
         p.add_argument('-l', '--list-limits', action='store_true',
                        default=False,
                        help='print all AWS effective limits in "service_name/'
@@ -274,9 +275,10 @@ class Runner(object):
             self.skip_ta = True
 
         if args.version:
+            ver_info = _get_version_info()
             print('awslimitchecker {v} (see <{s}> for source code)'.format(
-                s=_get_project_url(),
-                v=_get_version()
+                s=ver_info.url,
+                v=ver_info.version_str
             ))
             raise SystemExit(0)
 

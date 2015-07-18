@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import awslimitchecker.version as version
+from awslimitchecker.version import AWSLimitCheckerVersion
 
 import re
 
@@ -49,11 +50,10 @@ class TestVersion(object):
             v=version._VERSION)
         assert version._PROJECT_URL == expected
 
-    def test__get_project_url(self):
-        assert version._get_project_url() == version._PROJECT_URL
-
-    def test__get_version(self):
-        assert version._get_version() == version._VERSION
+    def test__get_version_info(self):
+        v = version._get_version_info()
+        assert v.release == version._VERSION
+        assert v.url == version._PROJECT_URL
 
     def test_is_semver(self):
         # see:
@@ -80,3 +80,50 @@ class TestVersion(object):
             r'$'
         )
         assert semver_ptn.match(version._VERSION) is not None
+
+
+class Test_AWSLimitCheckerVersionInfo(object):
+
+    def test_simple(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit is None
+        assert x.tag is None
+        assert str(x) == '1.0 <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag=None, " \
+                          "commit=None)"
+        assert x.version_str == '1.0'
+
+    def test_tag(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo', tag='mytag')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit is None
+        assert x.tag == 'mytag'
+        assert str(x) == '1.0@mytag <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag='mytag'" \
+                          ", commit=None)"
+        assert x.version_str == '1.0@mytag'
+
+    def test_commit(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo', commit='abcd')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit == 'abcd'
+        assert x.tag is None
+        assert str(x) == '1.0@abcd <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag=None, " \
+                          "commit='abcd')"
+        assert x.version_str == '1.0@abcd'
+
+    def test_tag_commit(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo', tag='mytag', commit='abcd')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit == 'abcd'
+        assert x.tag == 'mytag'
+        assert str(x) == '1.0@mytag <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag='mytag'," \
+                          " commit='abcd')"
+        assert x.version_str == '1.0@mytag'

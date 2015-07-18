@@ -16,7 +16,7 @@ import sys
 import os
 # to let sphinx find the actual source...
 sys.path.insert(0, os.path.abspath("../.."))
-from awslimitchecker.version import _get_version
+from awslimitchecker.version import _get_version_info
 import sphinx.environment
 from docutils.utils import get_source_line
 
@@ -65,7 +65,7 @@ author = u'Jason Antman'
 # built documents.
 #
 # The short X.Y version.
-version = _get_version()
+version = _get_version_info().version_str
 # The full version, including alpha/beta/rc tags.
 release = version
 

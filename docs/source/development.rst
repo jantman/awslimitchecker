@@ -1,7 +1,7 @@
 .. _development:
 
 Development
-============
+===========
 
 
 .. _development.installing:
@@ -35,7 +35,7 @@ To setup awslimitchecker for development:
 .. _development.guidelines:
 
 Guidelines
------------
+----------
 
 * pep8 compliant with some exceptions (see pytest.ini)
 * 100% test coverage with pytest (with valid tests)
@@ -48,7 +48,7 @@ Guidelines
 .. _development.adding_checks:
 
 Adding New Limits and Checks to Existing Services
---------------------------------------------------
+-------------------------------------------------
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method.
@@ -63,7 +63,7 @@ Adding New Limits and Checks to Existing Services
 .. _development.adding_services:
 
 Adding New Services
---------------------
+-------------------
 
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
@@ -101,7 +101,7 @@ using the :py:mod:`abc` module.
 .. _development.adding_ta:
 
 Trusted Advisor Checks
------------------------
+----------------------
 
 So long as the ``Service`` and ``Limit`` name strings returned by the Trusted Advisor (Support) API exactly match
 how they are set on the corresponding :py:class:`~._AwsService` and :py:class:`~.AwsLimit` objects, no code changes
@@ -112,7 +112,7 @@ For further information, see :ref:`Internals / Trusted Advisor <internals.truste
 .. _development.tests:
 
 Unit Testing
--------------
+------------
 
 Testing is done via `pytest <http://pytest.org/latest/>`_, driven by `tox <http://tox.testrun.org/>`_.
 
@@ -134,7 +134,7 @@ is ready for it when boto is.
 .. _development.integration_tests:
 
 Integration Testing
---------------------
+-------------------
 
 currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_
 
@@ -153,7 +153,7 @@ Output will be in the ``docs/build/html`` directory under the project root.
 .. _development.agpl:
 
 AGPL License
--------------
+------------
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
 
@@ -162,10 +162,9 @@ awslimitchecker is licensed under the `GNU Affero General Public License, versio
   deployment or monitoring systems), but not modifying it, you also don't need to do anything special; awslimitchecker will log a
   WARNING-level message indicating where the source code of the currently-running version can be obtained from. This suffices for the
   AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
-* If you wish to modify the source code of awslimitchecker, all you need to do is ensure that :py:meth:`~awslimitchecker.version._get_project_url`
-  returns a publicly-accessible URL to the exact version of the running source code. A `future version <https://github.com/jantman/awslimitchecker/issues/28>`_
-  of awslimitchecker will automatically provide the correct URL if you install it as an editable (``pip install -e``)
-  fork of the original GitHub repository.
+* If you wish to modify the source code of awslimitchecker, all you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
+  returns the correct information (a publicly-accessible URL to the exact version of the running source code, and a version number).
+  It should do this automatically as long as you install it as an editable (``pip install -e``) fork of the original GitHub repository.
 * If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply a
   requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
 * If you are running awslimitchecker as part of a hosted service that users somehow interact with, please

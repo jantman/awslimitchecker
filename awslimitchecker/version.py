@@ -42,7 +42,40 @@ _PROJECT_URL = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
     v=_VERSION)
 
 
-def _get_version():
+class AWSLimitCheckerVersion(object):
+
+    def __init__(self, release, url, commit=None, tag=None):
+        self.release = release
+        self.url = url
+        self.commit = commit
+        self.tag = tag
+
+    @property
+    def version_str(self):
+        vs = self.release
+        if self.tag is not None:
+            vs += '@{t}'.format(t=self.tag)
+        elif self.commit is not None:
+            vs += '@{c}'.format(c=self.commit)
+        return vs
+
+    def __str__(self):
+        spec = self.version_str
+        return '{s} <{u}>'.format(
+            s=spec,
+            u=self.url
+        )
+
+    def __repr__(self):
+        return 'AWSLimitCheckerVersion({r}, {u}, tag={t}, commit={c})'.format(
+            r=repr(self.release),
+            u=repr(self.url),
+            t=repr(self.tag),
+            c=repr(self.commit),
+        )
+
+
+def _get_version_info():
     """
     Returns the currently-installed awslimitchecker version.
 
@@ -52,17 +85,4 @@ def _get_version():
     :returns: awslimitchecker version
     :rtype: string
     """
-    return _VERSION
-
-
-def _get_project_url():
-    """
-    Returns the awslimitchecker project URL.
-
-    This is a future hook for a more AGPL-y way of getting the actual
-    currently-running project URL, even if it's installed from git.
-
-    :returns: awslimitchecker project URL
-    :rtype: string
-    """
-    return _PROJECT_URL
+    return AWSLimitCheckerVersion(_VERSION, _PROJECT_URL)

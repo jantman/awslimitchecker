@@ -41,7 +41,7 @@ import sys
 
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.checker import AwsLimitChecker
-from awslimitchecker.version import _get_version, _get_project_url
+from awslimitchecker.version import _get_version_info
 from awslimitchecker.limit import AwsLimit
 from awslimitchecker.trustedadvisor import TrustedAdvisor
 from .support import sample_limits
@@ -61,6 +61,14 @@ else:
 class TestAwsLimitChecker(object):
 
     def setup(self):
+        self.mock_ver_info = Mock(
+            release='1.2.3',
+            url='http://myurl',
+            commit='abcd',
+            tag='mytag',
+            version_str='1.2.3@mytag'
+        )
+
         self.mock_svc1 = Mock(spec_set=_AwsService)
         self.mock_svc2 = Mock(spec_set=_AwsService)
         self.mock_foo = Mock(spec_set=_AwsService)
@@ -74,17 +82,14 @@ class TestAwsLimitChecker(object):
             with patch.multiple(
                     'awslimitchecker.checker',
                     logger=DEFAULT,
-                    _get_version=DEFAULT,
-                    _get_project_url=DEFAULT,
+                    _get_version_info=DEFAULT,
                     TrustedAdvisor=DEFAULT,
                     autospec=True,
             ) as mocks:
                 self.mock_logger = mocks['logger']
-                self.mock_version = mocks['_get_version']
-                self.mock_project_url = mocks['_get_project_url']
+                self.mock_version = mocks['_get_version_info']
                 mocks['TrustedAdvisor'].return_value = self.mock_ta
-                self.mock_version.return_value = 'MVER'
-                self.mock_project_url.return_value = 'PURL'
+                self.mock_version.return_value = self.mock_ver_info
                 self.cls = AwsLimitChecker()
 
     def test_init(self):
@@ -113,14 +118,11 @@ class TestAwsLimitChecker(object):
             with patch.multiple(
                     'awslimitchecker.checker',
                     logger=DEFAULT,
-                    _get_version=DEFAULT,
-                    _get_project_url=DEFAULT,
+                    _get_version_info=DEFAULT,
                     autospec=True,
             ) as mocks:
-                mock_version = mocks['_get_version']
-                mock_project_url = mocks['_get_project_url']
-                mock_version.return_value = 'MVER'
-                mock_project_url.return_value = 'PURL'
+                mock_version = mocks['_get_version_info']
+                mock_version.return_value = self.mock_ver_info
                 cls = AwsLimitChecker(
                     warning_threshold=5,
                     critical_threshold=22,
@@ -141,24 +143,25 @@ class TestAwsLimitChecker(object):
         assert self.mock_logger.mock_calls == [
             call.warning("awslimitchecker %s is AGPL-licensed free software; "
                          "all users have a right to the full source code of "
-                         "this version. See <%s>", 'MVER', 'PURL')
+                         "this version. See <%s>", '1.2.3@mytag',
+                         'http://myurl')
         ]
 
     def test_get_version(self):
-        with patch('awslimitchecker.checker._get_version',
-                   spec_set=_get_version) as mock_version:
-            mock_version.return_value = 'a.b.c'
+        with patch('awslimitchecker.checker._get_version_info',
+                   spec_set=_get_version_info) as mock_version:
+            mock_version.return_value = self.mock_ver_info
             res = self.cls.get_version()
-        assert res == 'a.b.c'
+        assert res == '1.2.3@mytag'
         assert mock_version.mock_calls == [call()]
 
     def test_get_project_url(self):
-        with patch('awslimitchecker.checker._get_project_url',
-                   spec_set=_get_project_url) as mock_url:
-            mock_url.return_value = 'myurl'
+        with patch('awslimitchecker.checker._get_version_info',
+                   spec_set=_get_version_info) as mock_version:
+            mock_version.return_value = self.mock_ver_info
             res = self.cls.get_project_url()
-        assert res == 'myurl'
-        assert mock_url.mock_calls == [call()]
+        assert res == 'http://myurl'
+        assert mock_version.mock_calls == [call()]
 
     def test_get_service_names(self):
         res = self.cls.get_service_names()

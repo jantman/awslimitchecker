@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from .services import _services
-from .version import _get_version, _get_project_url
+from .version import _get_version_info
 from .trustedadvisor import TrustedAdvisor
 import logging
 logger = logging.getLogger(__name__)
@@ -69,12 +69,13 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         """
+        vinfo = _get_version_info()
         logger.warning(
             "awslimitchecker %s is AGPL-licensed free software; "
             "all users have a right to the full source code of "
             "this version. See <%s>",
-            _get_version(),
-            _get_project_url(),
+            vinfo.version_str,
+            vinfo.url,
         )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
@@ -90,7 +91,7 @@ class AwsLimitChecker(object):
         :returns: current awslimitchecker version
         :rtype: string
         """
-        return _get_version()
+        return _get_version_info().version_str
 
     def get_project_url(self):
         """
@@ -99,7 +100,7 @@ class AwsLimitChecker(object):
         :returns: URL of where to find awslimitchecker
         :rtype: string
         """
-        return _get_project_url()
+        return _get_version_info().url
 
     def get_limits(self, service=None, use_ta=True):
         """

@@ -78,6 +78,13 @@ class TestAwsLimitCheckerRunner(object):
 
     def setup(self):
         self.cls = Runner()
+        self.mock_ver_info = Mock(
+            release='1.2.3',
+            url='http://myurl',
+            commit='abcd',
+            tag='mytag',
+            version_str='1.2.3@mytag'
+        )
 
     def test_module_entry_point(self):
         with patch('%s.Runner' % pb) as mock_runner:
@@ -108,15 +115,13 @@ class TestAwsLimitCheckerRunner(object):
         epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \
                  'entitled to a copy of the source code. You can obtain ' \
-                 'the source code of awslimitchecker myver from: <myurl>'
+                 'the source code of awslimitchecker 1.2.3@mytag from: ' \
+                 '<http://myurl>'
         with patch('awslimitchecker.runner.argparse.ArgumentParser',
                    spec_set=argparse.ArgumentParser) as mock_parser:
-            with patch('awslimitchecker.runner._get_version',
-                       spec_set=version._get_version) as mock_version:
-                with patch('awslimitchecker.runner._get_project_url',
-                           spec_set=version._get_project_url) as mock_url:
-                    mock_version.return_value = 'myver'
-                    mock_url.return_value = 'myurl'
+            with patch('awslimitchecker.runner._get_version_info',
+                       spec_set=version._get_version_info) as mock_version:
+                    mock_version.return_value = self.mock_ver_info
                     self.cls.parse_args(argv)
         assert mock_parser.mock_calls == [
             call(description=desc, epilog=epilog),
@@ -175,24 +180,19 @@ class TestAwsLimitCheckerRunner(object):
             call().parse_args(argv),
         ]
         assert mock_version.mock_calls == [call()]
-        assert mock_url.mock_calls == [call()]
 
     def test_entry_version(self, capsys):
         argv = ['awslimitchecker', '-V']
-        expected = 'awslimitchecker myver (see <myurl> for source code)\n'
+        expected = 'awslimitchecker 1.2.3@mytag (see <http://myurl> for ' \
+                   'source code)\n'
         with patch.object(sys, 'argv', argv):
-            with patch('%s._get_version' % pb,
-                       spec_set=version._get_version) as mock_version:
-                with patch('%s._get_project_url' % pb,
-                           spec_set=version._get_project_url) as mock_url:
-                    with patch('%s.AwsLimitChecker' % pb,
-                               spec_set=AwsLimitChecker) as mock_alc:
-                        mock_version.return_value = 'myver'
-                        mock_url.return_value = 'myurl'
-                        with pytest.raises(SystemExit) as excinfo:
-                            mock_version.return_value = 'myver'
-                            mock_url.return_value = 'myurl'
-                            self.cls.console_entry_point()
+            with patch('%s._get_version_info' % pb,
+                       spec_set=version._get_version_info) as mock_version:
+                with patch('%s.AwsLimitChecker' % pb,
+                           spec_set=AwsLimitChecker) as mock_alc:
+                    mock_version.return_value = self.mock_ver_info
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
         assert err == ''
