@@ -37,8 +37,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
 """
 
-from awslimitchecker.versioncheck import AGPLVersionChecker
-from awslimitchecker.version import _VERSION
 import pytest
 import sys
 import os
@@ -51,6 +49,7 @@ logger = logging.getLogger(__name__)
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
+"""
 if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
@@ -58,6 +57,7 @@ if (
     from mock import patch, call, Mock
 else:
     from unittest.mock import patch, call, Mock
+"""
 
 
 class Test_AGPLVersionChecker(object):
@@ -115,7 +115,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 'describe',
                 '--exact-match',
                 '--tags',
-                 commit
+                commit
             ], stderr=subprocess.STDOUT).strip()
         except subprocess.CalledProcessError:
             tag = None
@@ -151,7 +151,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             '--short',
             'HEAD'
         ]).strip()
-        #print("Found source git commit: %s" % commit)
+        # print("Found source git commit: %s" % commit)
         return commit
 
     def _get_git_url(self):
@@ -265,7 +265,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         ]
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
         print("# cwd: %s\n" % os.getcwd())
-        res = subprocess.call(args)
+        subprocess.call(args)
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         files = os.listdir(pkgdir)
         assert len(files) == 1
@@ -282,7 +282,6 @@ class Test_AGPLVersionChecker_Acceptance(object):
 
         :return: int
         """
-        local_rev = self._get_git_commit()
         status = subprocess.check_output([
             'git',
             'status',
@@ -368,7 +367,6 @@ class Test_AGPLVersionChecker_Acceptance(object):
         path = str(tmpdir)
         # make the venv
         self._make_venv(path)
-        pip = os.path.join(path, 'bin', 'pip')
         # build the sdist
         pkg_path = self._make_package('sdist', path)
         # install ALC in it
@@ -384,7 +382,6 @@ class Test_AGPLVersionChecker_Acceptance(object):
         path = str(tmpdir)
         # make the venv
         self._make_venv(path)
-        pip = os.path.join(path, 'bin', 'pip')
         # build the sdist
         pkg_path = self._make_package('bdist_wheel', path)
         # install ALC in it
@@ -406,7 +403,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         # make the venv
         self._make_venv(path)
         self._pip_install(path, [
-            'git+https://github.com/jantman/awslimitchecker.git' \
+            'git+https://github.com/jantman/awslimitchecker.git'
             '@{c}#egg=awslimitchecker'.format(c=commit)
         ])
         version_output = self._get_alc_version(path)
@@ -427,7 +424,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._make_venv(path)
         self._pip_install(path, [
             '-e',
-            'git+https://github.com/jantman/awslimitchecker.git' \
+            'git+https://github.com/jantman/awslimitchecker.git'
             '@{c}#egg=awslimitchecker'.format(c=commit)
         ])
         version_output = self._get_alc_version(path)

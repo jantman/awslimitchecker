@@ -207,7 +207,7 @@ class AGPLVersionChecker(object):
                 'describe',
                 '--exact-match',
                 '--tags',
-                 commit
+                commit
             ]).strip()
         except subprocess.CalledProcessError:
             tag = None
@@ -241,7 +241,7 @@ class AGPLVersionChecker(object):
             'status',
             '-uno'
         ]).strip()
-        if 'Your branch is up-to-date with' not in status or \
-            'nothing to commit' not in status:
+        if ('Your branch is up-to-date with' not in status or
+                'nothing to commit' not in status):
             return True
         return False

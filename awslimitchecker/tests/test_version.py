@@ -76,7 +76,7 @@ class TestVersion(object):
         assert v.tag == 'foobar'
         assert mock_checker.mock_calls == [
             call(),
-            call().find_package_version('awslimitchecker'),
+            call().find_package_version(),
         ]
 
     def test__get_version_info_fallback(self):
@@ -94,7 +94,7 @@ class TestVersion(object):
         assert v.commit is None
         assert mock_checker.mock_calls == [
             call(),
-            call().find_package_version('awslimitchecker'),
+            call().find_package_version(),
         ]
         assert mock_logger.mock_calls == [
             call.exception('Error checking installed version; this installation'
