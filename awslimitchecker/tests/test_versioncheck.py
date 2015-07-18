@@ -109,6 +109,11 @@ class Test_AGPLVersionChecker_Acceptance(object):
             ])
 
     def _set_git_config(self):
+        print("cwd=%s CI=%s TRAVIS=%s" % (
+            os.getcwd(),
+            os.environ.get('CI', '<unset>'),
+            os.environ.get('TRAVIS', '<unset>'),
+        ))
         try:
             res = subprocess.check_output([
                 'git',
@@ -117,13 +122,17 @@ class Test_AGPLVersionChecker_Acceptance(object):
             ]).strip()
         except subprocess.CalledProcessError:
             res = None
-        if res == '':
+        if res != '':
+            print("Got git config user.email as %s", res)
+        else:
+            print("Setting git config user.email")
             subprocess.call([
                 'git',
                 'config',
                 'user.email',
                 'travisci@jasonantman.com'
             ])
+            print("set.")
         try:
             res = subprocess.check_output([
                 'git',
@@ -132,13 +141,17 @@ class Test_AGPLVersionChecker_Acceptance(object):
             ]).strip()
         except subprocess.CalledProcessError:
             res = None
-        if res == '':
+        if res != '':
+            print("Got git config user.name as %s", res)
+        else:
+            print("Setting git config user.name")
             subprocess.call([
                 'git',
                 'config',
                 'user.name',
                 'travisci'
             ])
+            print("set.")
 
     def _get_git_tag(self, commit):
         """get the git tag for the specified commit, or None"""
