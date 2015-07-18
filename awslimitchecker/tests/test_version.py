@@ -39,8 +39,19 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import awslimitchecker.version as version
 from awslimitchecker.version import AWSLimitCheckerVersion
+from awslimitchecker.versioncheck import AGPLVersionChecker
 
 import re
+import sys
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call
+else:
+    from unittest.mock import patch, call
 
 
 class TestVersion(object):
@@ -51,9 +62,44 @@ class TestVersion(object):
         assert version._PROJECT_URL == expected
 
     def test__get_version_info(self):
-        v = version._get_version_info()
+        with patch('awslimitchecker.version.AGPLVersionChecker',
+                   spec_set=AGPLVersionChecker) as mock_checker:
+            mock_checker.return_value.find_package_version.return_value = {
+                'version': version._VERSION,
+                'url': version._PROJECT_URL,
+                'tag': 'foobar',
+                'commit': None,
+            }
+            v = version._get_version_info()
         assert v.release == version._VERSION
         assert v.url == version._PROJECT_URL
+        assert v.tag == 'foobar'
+        assert mock_checker.mock_calls == [
+            call(),
+            call().find_package_version('awslimitchecker'),
+        ]
+
+    def test__get_version_info_fallback(self):
+        def se(foo):
+            raise Exception("foo")
+
+        with patch('awslimitchecker.version.AGPLVersionChecker',
+                   spec_set=AGPLVersionChecker) as mock_checker:
+            with patch('awslimitchecker.version.logger') as mock_logger:
+                mock_checker.return_value.find_package_version.side_effect = se
+                v = version._get_version_info()
+        assert v.release == version._VERSION
+        assert v.url == version._PROJECT_URL
+        assert v.tag is None
+        assert v.commit is None
+        assert mock_checker.mock_calls == [
+            call(),
+            call().find_package_version('awslimitchecker'),
+        ]
+        assert mock_logger.mock_calls == [
+            call.exception('Error checking installed version; this installation'
+                           ' may not be in compliance with the AGPLv3 license:')
+        ]
 
     def test_is_semver(self):
         # see:

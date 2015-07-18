@@ -37,6 +37,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+from awslimitchecker.versioncheck import AGPLVersionChecker
+
+import logging
+logger = logging.getLogger(__name__)
+
 _VERSION = '0.1.0'
 _PROJECT_URL = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
     v=_VERSION)
@@ -52,7 +57,7 @@ class AWSLimitCheckerVersion(object):
 
     @property
     def version_str(self):
-        vs = self.release
+        vs = str(self.release)
         if self.tag is not None:
             vs += '@{t}'.format(t=self.tag)
         elif self.commit is not None:
@@ -77,12 +82,24 @@ class AWSLimitCheckerVersion(object):
 
 def _get_version_info():
     """
-    Returns the currently-installed awslimitchecker version.
-
-    This is a future hook for a more AGPL-y way of getting the actual
-    currently-running version, even if it's a git commit, etc.
+    Returns the currently-installed awslimitchecker version, and a best-effort
+    attempt at finding the origin URL and commit/tag if installed from an
+    editable git clone.
 
     :returns: awslimitchecker version
     :rtype: string
     """
+    try:
+        vc = AGPLVersionChecker()
+        vinfo = vc.find_package_version()
+        return AWSLimitCheckerVersion(
+            vinfo['version'],
+            vinfo['url'],
+            tag=vinfo['tag'],
+            commit=vinfo['commit'],
+        )
+    except Exception:
+        logger.exception("Error checking installed version; this installation "
+                         "may not be in compliance with the AGPLv3 license:")
+    # fall back to returning just the hard-coded release information
     return AWSLimitCheckerVersion(_VERSION, _PROJECT_URL)
