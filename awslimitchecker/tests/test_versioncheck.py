@@ -237,9 +237,12 @@ class Test_AGPLVersionChecker_Acceptance(object):
         args = [virtualenv, path]
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
         res = subprocess.call(args)
-        print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
-        assert res == 0
-        assert os.path.exists(os.path.join(path, 'bin', 'python'))
+        if res == 0:
+            print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
+        else:
+            print("\n" + "#" * 20 + " FAILED: " + ' '.join(args) + "#" * 20)
+        pypath = os.path.join(path, 'bin', 'python')
+        assert os.path.exists(pypath), "path does not exist: %s" % pypath
 
     def _get_source_dir(self):
         """
