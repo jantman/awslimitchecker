@@ -120,9 +120,10 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 'config',
                 'user.email'
             ]).strip()
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as ex:
+            print(ex)
             res = None
-        if res != '':
+        if res != '' and res is not None:
             print("Got git config user.email as %s" % res)
         else:
             print("Setting git config user.email")
@@ -139,9 +140,10 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 'config',
                 'user.name'
             ]).strip()
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as ex:
+            print(ex)
             res = None
-        if res != '':
+        if res != '' and res is not None:
             print("Got git config user.name as %s" % res)
         else:
             print("Setting git config user.name")
