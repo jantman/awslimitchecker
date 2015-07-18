@@ -6,14 +6,21 @@ cache:
     - $HOME/.pip-cache/
 
 env:
-  - TOXENV=py26 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py27 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py32 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py33 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py34 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py26-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py27-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py32-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py33-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py26-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py27-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py32-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py33-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py34-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy3-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=pypy PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=pypy3 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=cov PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 
 install:
