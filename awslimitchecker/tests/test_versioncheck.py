@@ -100,7 +100,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             'remote',
             '-v'
         ]):
-            print("Removing 'restremote' git remote")
+            print("Removing 'testremote' git remote")
             subprocess.call([
                 'git',
                 'remote',
@@ -109,7 +109,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             ])
 
     def _set_git_config(self):
-        print("cwd=%s CI=%s TRAVIS=%s" % (
+        print("\n# cwd=%s CI=%s TRAVIS=%s" % (
             os.getcwd(),
             os.environ.get('CI', '<unset>'),
             os.environ.get('TRAVIS', '<unset>'),
@@ -313,7 +313,12 @@ class Test_AGPLVersionChecker_Acceptance(object):
         ]
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
         print("# cwd: %s\n" % os.getcwd())
-        subprocess.call(args)
+        try:
+            subprocess.call(args)
+        except subprocess.CalledProcessError as ex:
+            print("\nFAILED:")
+            print(ex)
+            print("\n")
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         files = os.listdir(pkgdir)
         assert len(files) == 1
