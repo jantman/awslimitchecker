@@ -81,9 +81,13 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._set_git_config()
         self.current_venv_path = sys.prefix
         self.source_dir = self._get_source_dir()
+        print("# self.source_dir=%s" % self.source_dir)
         self.git_commit = self._get_git_commit()
+        print("# self.git_commit=%s" % self.git_commit)
         self.git_tag = self._get_git_tag(self.git_commit)
+        print("# self.git_tag=%s" % self.git_tag)
         self.git_url = self._get_git_url()
+        print("# self.git_url=%s" % self.git_url)
 
     def teardown_method(self, method):
         tag = self._get_git_tag(self.git_commit)
@@ -228,7 +232,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         :param path: filesystem path to directory to make the venv base
         """
         virtualenv = os.path.join(self.current_venv_path, 'bin', 'virtualenv')
-        assert os.path.exists(virtualenv) is True
+        assert os.path.exists(virtualenv) is True, 'virtualenv not found'
         args = [virtualenv, path]
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
         res = subprocess.call(args)
@@ -473,6 +477,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         assert status != 2, 'git clone is dirty'
         commit = self._get_git_commit()
         path = str(tmpdir)
+        print("# commit=%s path=%s" % (commit, path))
         # make the venv
         self._make_venv(path)
         self._pip_install(path, [
