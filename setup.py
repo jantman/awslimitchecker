@@ -37,7 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##################################################################################
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from sys import version_info
 from awslimitchecker.version import _VERSION, _PROJECT_URL
 
@@ -75,7 +75,7 @@ setup(
     version=_VERSION,
     author='Jason Antman',
     author_email='jason@jasonantman.com',
-    packages=['awslimitchecker', 'awslimitchecker.tests'],
+    packages=find_packages(),
     entry_points="""
     [console_scripts]
     awslimitchecker = awslimitchecker.runner:console_entry_point
