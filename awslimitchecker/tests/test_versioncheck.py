@@ -78,6 +78,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
     git_tag = None
 
     def setup_method(self, method):
+        print("\n")
         self._set_git_config()
         self.current_venv_path = sys.prefix
         self.source_dir = self._get_source_dir()
@@ -170,6 +171,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 commit
             ], stderr=subprocess.STDOUT).strip()
         except Exception as ex:
+            print("\n_get_git_tag failed:")
             print(ex)
             tag = None
         return tag
@@ -242,7 +244,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         else:
             print("\n" + "#" * 20 + " FAILED: " + ' '.join(args) + "#" * 20)
         pypath = os.path.join(path, 'bin', 'python')
-        assert os.path.exists(pypath), "path does not exist: %s" % pypath
+        assert os.path.exists(pypath) is True, "does not exist: %s" % pypath
 
     def _get_source_dir(self):
         """
@@ -311,6 +313,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         """
         pkgdir = os.path.join(test_tmp_dir, 'pkg')
         if os.path.exists(pkgdir):
+            print("removing: %s" % pkgdir)
             shutil.rmtree(pkgdir)
         args = [
             os.path.join(self.source_dir, 'bin', 'python'),
