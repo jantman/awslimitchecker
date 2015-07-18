@@ -316,7 +316,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             print("removing: %s" % pkgdir)
             shutil.rmtree(pkgdir)
         args = [
-            os.path.join(self.source_dir, 'bin', 'python'),
+            sys.executable,
             os.path.join(self.source_dir, 'setup.py'),
             pkg_type,
             '--dist-dir',
