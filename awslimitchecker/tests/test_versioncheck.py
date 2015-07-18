@@ -123,7 +123,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         except subprocess.CalledProcessError:
             res = None
         if res != '':
-            print("Got git config user.email as %s", res)
+            print("Got git config user.email as %s" % res)
         else:
             print("Setting git config user.email")
             subprocess.call([
@@ -142,7 +142,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         except subprocess.CalledProcessError:
             res = None
         if res != '':
-            print("Got git config user.name as %s", res)
+            print("Got git config user.name as %s" % res)
         else:
             print("Setting git config user.name")
             subprocess.call([
