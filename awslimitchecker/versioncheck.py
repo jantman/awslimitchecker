@@ -45,6 +45,7 @@ try:
     from subprocess import DEVNULL
 except ImportError:
     DEVNULL = open(os.devnull, 'wb')
+import locale
 logger = logging.getLogger(__name__)
 
 
@@ -209,6 +210,11 @@ def _check_output(args, stderr=None):
     """
     if hasattr(subprocess, 'check_output'):
         res = subprocess.check_output(args, stderr=stderr)
+        # python3
+        try:
+            res.strip().split("\n")
+        except TypeError:
+            res = res.decode(locale.getdefaultlocale()[1])
     else:
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
         (res, err) = p.communicate()
