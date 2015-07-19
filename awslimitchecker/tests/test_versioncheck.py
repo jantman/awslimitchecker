@@ -358,7 +358,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             '-uno'
         ]).strip()
         if ('Your branch is up-to-date with' not in status and
-                'HEAD detatched at' not in status):
+                'HEAD detached at' not in status):
             print("\ngit status -uno:\n" + status + "\n")
             return 1
         if 'nothing to commit' not in status:
