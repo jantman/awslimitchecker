@@ -171,7 +171,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 '--tags',
                 commit
             ], stderr=subprocess.STDOUT).strip()
-        except Exception as ex:
+        except Exception:
             tag = None
         return tag
 
