@@ -301,6 +301,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         # confirm the git status
         print(self._get_git_status(path))
+        print(self._get_git_status(os.path.dirname(__file__)))
         return res
 
     def _get_git_status(self, path):
