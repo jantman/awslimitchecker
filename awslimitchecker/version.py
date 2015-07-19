@@ -65,9 +65,8 @@ class AWSLimitCheckerVersion(object):
         return vs
 
     def __str__(self):
-        spec = self.version_str
         return '{s} <{u}>'.format(
-            s=spec,
+            s=self.version_str,
             u=self.url
         )
 
