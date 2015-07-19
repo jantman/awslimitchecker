@@ -85,13 +85,9 @@ class AGPLVersionChecker(object):
         for k, v in git_info.items():
             if v is not None:
                 res[k] = v
-        try:
-            dirty = self._is_git_dirty()
-        except Exception:
-            dirty = False
-        if dirty and res['tag'] is not None:
+        if res['dirty'] and res['tag'] is not None:
             res['tag'] += '*'
-        if dirty and res['commit'] is not None:
+        if res['dirty'] and res['commit'] is not None:
             res['commit'] += '*'
         try:
             pip_info = self._find_pip_info()
@@ -181,6 +177,10 @@ class AGPLVersionChecker(object):
         if res['commit'] is not None:
             res['tag'] = self._get_git_tag(res['commit'])
             res['url'] = self._get_git_url()
+        try:
+            res['dirty'] = self._is_git_dirty()
+        except Exception:
+            pass
         logger.debug("cd back to %s", oldcwd)
         os.chdir(oldcwd)
         return res
