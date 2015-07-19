@@ -114,11 +114,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
             ])
 
     def _set_git_config(self):
-        print("\n# cwd=%s CI=%s TRAVIS=%s" % (
-            os.getcwd(),
-            os.environ.get('CI', '<unset>'),
-            os.environ.get('TRAVIS', '<unset>'),
-        ))
+        if os.environ.get('TRAVIS', '') != 'true':
+            print("not running in Travis; not setting git config")
+            return
         try:
             res = subprocess.check_output([
                 'git',
@@ -139,6 +137,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 'travisci@jasonantman.com'
             ])
             print("set.")
+        # name
         try:
             res = subprocess.check_output([
                 'git',
@@ -171,8 +170,6 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 commit
             ], stderr=subprocess.STDOUT).strip()
         except Exception as ex:
-            print("\n_get_git_tag failed:")
-            print(ex)
             tag = None
         return tag
 
@@ -296,6 +293,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         args = [alc, '--version', '-vv']
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
         res = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        print(res)
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         return res
 
