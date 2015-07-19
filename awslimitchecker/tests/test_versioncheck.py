@@ -297,14 +297,22 @@ class Test_AGPLVersionChecker_Acceptance(object):
         print(res)
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         # confirm the git status
-        print("#" * 20 + " running: git status " + "#" * 20)
+        print(self._get_git_status(path))
+        return res
+
+    def _get_git_status(self, path):
+        header = "#" * 20 + " running: git status in: %s " % path + "#" * 20
         oldcwd = os.getcwd()
         os.chdir(path)
-        status = subprocess.check_output(['git', 'status'])
+        try:
+            status = subprocess.check_output(['git', 'status'])
+        except subprocess.CalledProcessError:
+            status = ''
         os.chdir(oldcwd)
-        print(status)
-        print("#" * 20 + " DONE: git status " + "#" * 20)
-        return res
+        footer = "#" * 20 + " DONE: git status " + "#" * 20
+        if status == '':
+            return "\n# git status exited non-0\n"
+        return "\n" + header + "\n" + status + "\n" + footer + "\n"
 
     def _make_package(self, pkg_type, test_tmp_dir):
         """
