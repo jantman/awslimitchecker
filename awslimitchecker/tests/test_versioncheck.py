@@ -101,18 +101,21 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 '--delete',
                 tag
             ])
-        if 'testremote' in subprocess.check_output([
-            'git',
-            'remote',
-            '-v'
-        ]):
-            print("Removing 'testremote' git remote")
-            subprocess.call([
+        try:
+            if 'testremote' in subprocess.check_output([
                 'git',
                 'remote',
-                'remove',
-                'testremote'
-            ])
+                '-v'
+            ]):
+                print("Removing 'testremote' git remote")
+                subprocess.call([
+                    'git',
+                    'remote',
+                    'remove',
+                    'testremote'
+                ])
+        except subprocess.CalledProcessError:
+            pass
 
     def _set_git_config(self):
         if os.environ.get('TRAVIS', '') != 'true':
@@ -305,7 +308,8 @@ class Test_AGPLVersionChecker_Acceptance(object):
         oldcwd = os.getcwd()
         os.chdir(path)
         try:
-            status = subprocess.check_output(['git', 'status'])
+            status = subprocess.check_output(['git', 'status'],
+                                             stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
             status = ''
         os.chdir(oldcwd)
