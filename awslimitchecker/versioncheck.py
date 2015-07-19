@@ -255,6 +255,8 @@ def _get_git_tag(commit):
         ]).strip()
     except subprocess.CalledProcessError:
         tag = None
+    if tag == '':
+        return None
     return tag
 
 
