@@ -42,7 +42,6 @@ import sys
 import os
 import subprocess
 import shutil
-import re
 
 from awslimitchecker.versioncheck import (
     _get_git_commit, _get_git_url, _get_git_tag, _check_output
@@ -264,7 +263,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         os.chdir(path)
         try:
             status = _check_output(['git', 'status'],
-                                             stderr=subprocess.STDOUT)
+                                   stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
             status = ''
         os.chdir(oldcwd)
