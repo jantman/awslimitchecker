@@ -293,9 +293,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
         :rtype: str
         """
         alc = os.path.join(path, 'bin', 'awslimitchecker')
-        args = [alc, '--version']
+        args = [alc, '--version', '-vv']
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
-        res = subprocess.check_output(args)
+        res = subprocess.check_output(args, stderr=subprocess.STDOUT)
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         return res
 

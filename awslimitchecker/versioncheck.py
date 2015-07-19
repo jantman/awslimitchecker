@@ -41,6 +41,10 @@ import os
 import subprocess
 import logging
 import re
+try:
+    from subprocess import DEVNULL
+except ImportError:
+    DEVNULL = open(os.devnull, 'wb')
 logger = logging.getLogger(__name__)
 
 
@@ -192,7 +196,7 @@ class AGPLVersionChecker(object):
                 'rev-parse',
                 '--short',
                 'HEAD'
-            ]).strip()
+            ], stderr=DEVNULL).strip()
             logger.debug("Found source git commit: %s", commit)
         except Exception:
             logger.debug("Unable to run git to get commit")
@@ -242,6 +246,8 @@ class AGPLVersionChecker(object):
             '-uno'
         ]).strip()
         if ('Your branch is up-to-date with' not in status or
-                'nothing to commit' not in status):
+                'HEAD detached at' not in status):
+            return True
+        if 'nothing to commit' not in status:
             return True
         return False
