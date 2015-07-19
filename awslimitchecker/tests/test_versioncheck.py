@@ -92,6 +92,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
 
     def teardown_method(self, method):
         tag = self._get_git_tag(self.git_commit)
+        print("\n")
         if tag is not None:
             print("Deleting git tag %s" % tag)
             subprocess.call([
@@ -295,6 +296,14 @@ class Test_AGPLVersionChecker_Acceptance(object):
         res = subprocess.check_output(args, stderr=subprocess.STDOUT)
         print(res)
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
+        # confirm the git status
+        print("#" * 20 + " running: git status " + "#" * 20)
+        oldcwd = os.getcwd()
+        os.chdir(path)
+        status = subprocess.check_output(['git', 'status'])
+        os.chdir(oldcwd)
+        print(status)
+        print("#" * 20 + " DONE: git status " + "#" * 20)
         return res
 
     def _make_package(self, pkg_type, test_tmp_dir):

@@ -246,8 +246,7 @@ class AGPLVersionChecker(object):
             '-uno'
         ]).strip()
         if ('Your branch is up-to-date with' not in status or
-                'HEAD detached at' not in status):
-            return True
-        if 'nothing to commit' not in status:
+                'HEAD detached at' not in status or
+                'nothing to commit' not in status):
             return True
         return False
