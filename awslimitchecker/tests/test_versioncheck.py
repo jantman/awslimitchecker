@@ -541,7 +541,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             'git+https://github.com/jantman/awslimitchecker.git'
             '@{c}#egg=awslimitchecker'.format(c=commit)
         ])
-        fpath = os.path.join(path, 'bin', 'testfile')
+        fpath = os.path.join(path, 'src', 'awslimitchecker', 'testfile')
         print("Creating junk file at %s" % fpath)
         with open(fpath, 'w') as fh:
             fh.write("testing")
