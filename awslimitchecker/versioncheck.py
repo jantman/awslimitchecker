@@ -173,6 +173,7 @@ class AGPLVersionChecker(object):
         res = {'url': None, 'tag': None, 'commit': None}
         oldcwd = os.getcwd()
         logger.debug("Current directory: %s", oldcwd)
+        logger.debug("This file: %s (%s)", __file__, os.path.abspath(__file__))
         newdir = os.path.dirname(os.path.abspath(__file__))
         logger.debug("cd to %s", newdir)
         os.chdir(newdir)
