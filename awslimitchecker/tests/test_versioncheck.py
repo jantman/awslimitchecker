@@ -82,19 +82,20 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._set_git_config()
         self.current_venv_path = sys.prefix
         self.source_dir = self._get_source_dir()
-        print("# self.source_dir=%s" % self.source_dir)
         self.git_commit = self._get_git_commit()
-        print("# self.git_commit=%s" % self.git_commit)
         self.git_tag = self._get_git_tag(self.git_commit)
-        print("# self.git_tag=%s" % self.git_tag)
         self.git_url = self._get_git_url()
-        print("# self.git_url=%s" % self.git_url)
+        print({
+            'self.source_dir': self.source_dir,
+            'self.git_commit': self.git_commit,
+            'self.git_tag': self.git_tag,
+            'self.git_url': self.git_url,
+        })
 
     def teardown_method(self, method):
         tag = self._get_git_tag(self.git_commit)
         print("\n")
         if tag is not None:
-            print("Deleting git tag %s" % tag)
             subprocess.call([
                 'git',
                 'tag',
@@ -128,19 +129,17 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 'user.email'
             ]).strip()
         except subprocess.CalledProcessError as ex:
-            print(ex)
             res = None
         if res != '' and res is not None:
             print("Got git config user.email as %s" % res)
         else:
-            print("Setting git config user.email")
             subprocess.call([
                 'git',
                 'config',
                 'user.email',
                 'travisci@jasonantman.com'
             ])
-            print("set.")
+            print("Set git config user.email")
         # name
         try:
             res = subprocess.check_output([
@@ -154,14 +153,13 @@ class Test_AGPLVersionChecker_Acceptance(object):
         if res != '' and res is not None:
             print("Got git config user.name as %s" % res)
         else:
-            print("Setting git config user.name")
             subprocess.call([
                 'git',
                 'config',
                 'user.name',
                 'travisci'
             ])
-            print("set.")
+            print("Set git config user.name")
 
     def _get_git_tag(self, commit):
         """get the git tag for the specified commit, or None"""
@@ -301,7 +299,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         # confirm the git status
         print(self._get_git_status(path))
-        print(self._get_git_status(os.path.dirname(__file__)))
+        # print(self._get_git_status(os.path.dirname(__file__)))
         return res
 
     def _get_git_status(self, path):
@@ -501,8 +499,8 @@ class Test_AGPLVersionChecker_Acceptance(object):
         ])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s' % commit,
-            u='https://github.com/jantman/awslimitchecker.git'
+            v='0.1.0',
+            u='https://pypi.python.org/pypi/awslimitchecker/0.1.0'
         )
         assert expected in version_output
 
