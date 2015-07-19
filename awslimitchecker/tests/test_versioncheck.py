@@ -526,6 +526,32 @@ class Test_AGPLVersionChecker_Acceptance(object):
         )
         assert expected in version_output
 
+    def test_install_git_e_dirty(self, tmpdir):
+        # https://pip.pypa.io/en/latest/reference/pip_install.html#git
+        status = self._check_git_pushed()
+        assert status != 1, "git clone not equal to origin"
+        assert status != 2, 'git clone is dirty'
+        commit = self._get_git_commit()
+        path = str(tmpdir)
+        print("# commit=%s path=%s" % (commit, path))
+        # make the venv
+        self._make_venv(path)
+        self._pip_install(path, [
+            '-e',
+            'git+https://github.com/jantman/awslimitchecker.git'
+            '@{c}#egg=awslimitchecker'.format(c=commit)
+        ])
+        fpath = os.path.join(path, 'bin', 'testfile')
+        print("Creating junk file at %s" % fpath)
+        with open(fpath, 'w') as fh:
+            fh.write("testing")
+        version_output = self._get_alc_version(path)
+        expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
+            v='0.1.0@%s*' % commit,
+            u='https://github.com/jantman/awslimitchecker.git'
+        )
+        assert expected in version_output
+
     def test_install_pypi(self, tmpdir):
         # @TODO - can't do this until the first release is out
         pass
