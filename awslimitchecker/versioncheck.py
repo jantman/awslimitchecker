@@ -173,10 +173,10 @@ class AGPLVersionChecker(object):
         newdir = os.path.dirname(os.path.abspath(__file__))
         logger.debug("cd to %s", newdir)
         os.chdir(newdir)
-        res['commit'] = self._get_git_commit()
+        res['commit'] = _get_git_commit()
         if res['commit'] is not None:
-            res['tag'] = self._get_git_tag(res['commit'])
-            res['url'] = self._get_git_url()
+            res['tag'] = _get_git_tag(res['commit'])
+            res['url'] = _get_git_url()
         try:
             res['dirty'] = self._is_git_dirty()
         except Exception:
@@ -185,63 +185,8 @@ class AGPLVersionChecker(object):
         os.chdir(oldcwd)
         return res
 
-    def _get_git_commit(self):
-        """
-        Get the current git commit of the source directory.
-
-        :return: string short git hash
-        """
-        try:
-            commit = subprocess.check_output([
-                'git',
-                'rev-parse',
-                '--short',
-                'HEAD'
-            ], stderr=DEVNULL).strip()
-            logger.debug("Found source git commit: %s", commit)
-        except Exception:
-            logger.debug("Unable to run git to get commit")
-            commit = None
-        return commit
-
-    def _get_git_tag(self, commit):
-        """get the git tag for the specified commit, or None"""
-        try:
-            tag = subprocess.check_output([
-                'git',
-                'describe',
-                '--exact-match',
-                '--tags',
-                commit
-            ]).strip()
-        except subprocess.CalledProcessError:
-            tag = None
-        return tag
-
-    def _get_git_url(self):
-        try:
-            url = None
-            lines = subprocess.check_output([
-                'git',
-                'remote',
-                '-v'
-            ]).strip().split("\n")
-            urls = {}
-            for line in lines:
-                parts = re.split(r'\s+', line)
-                if parts[2] != '(fetch)':
-                    continue
-                urls[parts[0]] = parts[1]
-            if 'origin' in urls:
-                return urls['origin']
-            for k, v in urls.items():
-                return v
-        except subprocess.CalledProcessError:
-            url = None
-        return url
-
     def _is_git_dirty(self):
-        status = subprocess.check_output([
+        status = _check_output([
             'git',
             'status',
             '-u'
@@ -252,3 +197,79 @@ class AGPLVersionChecker(object):
             logger.debug("Git repository dirty based on status: %s", status)
             return True
         return False
+
+
+def _check_output(args, stderr=None):
+    """
+    Python version compatibility wrapper for subprocess.check_output
+
+    :param stderr: what to do with STDERR - None or an appropriate argument
+     to subprocess.check_output / subprocess.Popen
+    :return: string output
+    """
+    if hasattr(subprocess, 'check_output'):
+        res = subprocess.check_output(args, stderr=stderr)
+    else:
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
+        (res, err) = p.communicate()
+    return res
+
+
+def _get_git_commit():
+    """
+    Get the current git commit of the current directory.
+
+    :return: string short git hash
+    """
+    try:
+        commit = _check_output([
+            'git',
+            'rev-parse',
+            '--short',
+            'HEAD'
+        ], stderr=DEVNULL).strip()
+        logger.debug("Found source git commit: %s", commit)
+    except Exception:
+        logger.debug("Unable to run git to get commit")
+        commit = None
+    return commit
+
+
+def _get_git_tag(commit):
+    """get the git tag for the specified commit, or None"""
+    if commit is None:
+        return None
+    try:
+        tag = _check_output([
+            'git',
+            'describe',
+            '--exact-match',
+            '--tags',
+            commit
+        ]).strip()
+    except subprocess.CalledProcessError:
+        tag = None
+    return tag
+
+
+def _get_git_url():
+    try:
+        url = None
+        lines = _check_output([
+            'git',
+            'remote',
+            '-v'
+        ]).strip().split("\n")
+        urls = {}
+        for line in lines:
+            parts = re.split(r'\s+', line)
+            if parts[2] != '(fetch)':
+                continue
+            urls[parts[0]] = parts[1]
+        if 'origin' in urls:
+            return urls['origin']
+        for k, v in urls.items():
+            return v
+    except subprocess.CalledProcessError:
+        url = None
+    return url

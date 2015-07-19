@@ -44,6 +44,10 @@ import subprocess
 import shutil
 import re
 
+from awslimitchecker.versioncheck import (
+    _get_git_commit, _get_git_url, _get_git_tag, _check_output
+)
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -82,9 +86,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._set_git_config()
         self.current_venv_path = sys.prefix
         self.source_dir = self._get_source_dir()
-        self.git_commit = self._get_git_commit()
-        self.git_tag = self._get_git_tag(self.git_commit)
-        self.git_url = self._get_git_url()
+        self.git_commit = _get_git_commit()
+        self.git_tag = _get_git_tag(self.git_commit)
+        self.git_url = _get_git_url()
         print({
             'self.source_dir': self.source_dir,
             'self.git_commit': self.git_commit,
@@ -93,7 +97,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         })
 
     def teardown_method(self, method):
-        tag = self._get_git_tag(self.git_commit)
+        tag = _get_git_tag(self.git_commit)
         print("\n")
         if tag is not None:
             subprocess.call([
@@ -103,7 +107,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 tag
             ])
         try:
-            if 'testremote' in subprocess.check_output([
+            if 'testremote' in _check_output([
                 'git',
                 'remote',
                 '-v'
@@ -123,7 +127,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             print("not running in Travis; not setting git config")
             return
         try:
-            res = subprocess.check_output([
+            res = _check_output([
                 'git',
                 'config',
                 'user.email'
@@ -142,7 +146,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             print("Set git config user.email")
         # name
         try:
-            res = subprocess.check_output([
+            res = _check_output([
                 'git',
                 'config',
                 'user.name'
@@ -161,23 +165,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
             ])
             print("Set git config user.name")
 
-    def _get_git_tag(self, commit):
-        """get the git tag for the specified commit, or None"""
-        try:
-            tag = subprocess.check_output([
-                'git',
-                'describe',
-                '--exact-match',
-                '--tags',
-                commit
-            ], stderr=subprocess.STDOUT).strip()
-        except Exception:
-            tag = None
-        return tag
-
     def _set_git_tag(self, tagname):
         """set a git tag for the current commit"""
-        tag = self._get_git_tag(self.git_commit)
+        tag = _get_git_tag(self.git_commit)
         if tag != tagname:
             print("Creating git tag 'versiontest' of %s" % self.git_commit)
             subprocess.call([
@@ -188,44 +178,10 @@ class Test_AGPLVersionChecker_Acceptance(object):
                 tagname,
                 tagname
             ])
-            tag = self._get_git_tag(self.git_commit)
+            tag = _get_git_tag(self.git_commit)
         print("Source git tag: %s" % tag)
         self.git_tag = tag
         return tag
-
-    def _get_git_commit(self):
-        """
-        Get the current git commit of the source directory.
-
-        :return: string short git hash
-        """
-        commit = subprocess.check_output([
-            'git',
-            'rev-parse',
-            '--short',
-            'HEAD'
-        ]).strip()
-        # print("Found source git commit: %s" % commit)
-        return commit
-
-    def _get_git_url(self):
-        try:
-            url = None
-            lines = subprocess.check_output([
-                'git',
-                'remote',
-                '-v'
-            ]).strip().split("\n")
-            urls = []
-            for line in lines:
-                parts = re.split(r'\s+', line)
-                if parts[2] != '(fetch)':
-                    continue
-                urls.append(parts[1])
-            url = ';'.join(sorted(urls))
-        except subprocess.CalledProcessError:
-            url = None
-        return url
 
     def _make_venv(self, path):
         """
@@ -294,7 +250,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         alc = os.path.join(path, 'bin', 'awslimitchecker')
         args = [alc, '--version', '-vv']
         print("\n" + "#" * 20 + " running: " + ' '.join(args) + "#" * 20)
-        res = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        res = _check_output(args, stderr=subprocess.STDOUT)
         print(res)
         print("\n" + "#" * 20 + " DONE: " + ' '.join(args) + "#" * 20)
         # confirm the git status
@@ -307,7 +263,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         oldcwd = os.getcwd()
         os.chdir(path)
         try:
-            status = subprocess.check_output(['git', 'status'],
+            status = _check_output(['git', 'status'],
                                              stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError:
             status = ''
@@ -370,7 +326,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
 
         :return: int
         """
-        status = subprocess.check_output([
+        status = _check_output([
             'git',
             'status',
             '-u'
@@ -508,7 +464,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
-        commit = self._get_git_commit()
+        commit = _get_git_commit()
         path = str(tmpdir)
         # make the venv
         self._make_venv(path)
@@ -528,7 +484,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
-        commit = self._get_git_commit()
+        commit = _get_git_commit()
         path = str(tmpdir)
         print("# commit=%s path=%s" % (commit, path))
         # make the venv
@@ -550,7 +506,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
-        commit = self._get_git_commit()
+        commit = _get_git_commit()
         path = str(tmpdir)
         print("# commit=%s path=%s" % (commit, path))
         # make the venv
