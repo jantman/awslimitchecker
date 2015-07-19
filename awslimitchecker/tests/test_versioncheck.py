@@ -415,6 +415,25 @@ class Test_AGPLVersionChecker_Acceptance(object):
         )
         assert expected in version_output
 
+    def test_install_local_e_dirty(self, tmpdir):
+        path = str(tmpdir)
+        # make the venv
+        self._make_venv(path)
+        self._pip_install(path, ['-e', self.source_dir])
+        fpath = os.path.join(self.source_dir, 'awslimitchecker', 'testfile')
+        print("Creating junk file at %s" % fpath)
+        with open(fpath, 'w') as fh:
+            fh.write("testing")
+        version_output = self._get_alc_version(path)
+        print("Removing junk file at %s" % fpath)
+        os.unlink(fpath)
+        expected_commit = self.git_commit + '*'
+        expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
+            v='0.1.0@%s' % expected_commit,
+            u=self.git_url
+        )
+        assert expected in version_output
+
     def test_install_local_e_tag(self, tmpdir):
         path = str(tmpdir)
         # make the venv
