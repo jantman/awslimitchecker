@@ -286,7 +286,7 @@ def _get_git_url():
             urls[parts[0]] = parts[1]
         if 'origin' in urls:
             return urls['origin']
-        for k, v in urls.items():
+        for k, v in sorted(urls.items()):
             return v
     except subprocess.CalledProcessError:
         url = None

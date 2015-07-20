@@ -765,14 +765,14 @@ class Test_VersionCheck_Funcs(object):
                   "r.git (fetch)\n" \
                   "upstream        https://github.com/jantman/awslimitchecker" \
                   ".git (push)\n" \
-                  "another        https://github.com/jantman/awslimitchecke" \
+                  "another        https://github.com/foo/awslimitchecke" \
                   "r.git (fetch)\n" \
-                  "another        https://github.com/jantman/awslimitchecker" \
+                  "another        https://github.com/foo/awslimitchecker" \
                   ".git (push)\n"
         with patch('%s._check_output' % self.pb) as mock_check_out:
             mock_check_out.return_value = cmd_out
             res = _get_git_url()
-        assert res == 'git@github.com:someone/awslimitchecker.git'
+        assert res == 'https://github.com/foo/awslimitchecker.git'
         assert mock_check_out.mock_calls == [
             call(['git', 'remote', '-v'])
         ]
@@ -877,31 +877,64 @@ class Test_VersionCheck_Funcs(object):
                  stderr=DEVNULL)
         ]
 
-    @pytest.mark.skipif(sys.version_info > (2, 6),
-                        reason='py26 test')
+    @pytest.mark.skipif(
+        (
+                sys.version_info[0] != 2 or
+                (sys.version_info[0] == 2 and sys.version_info[1] != 6)
+        ),
+        reason='not running py26 test on %d.%d.%d' % (
+                sys.version_info[0],
+                sys.version_info[1],
+                sys.version_info[2]
+        ))
     def test_check_output_py26(self):
-        pass
+        mock_p = Mock(spec_set=subprocess.Popen)
+        mock_p.communicate.return_value = ('foo', 'bar')
+        with patch('%s.subprocess.Popen' % self.pb) as mock_popen:
+            mock_popen.return_value = mock_p
+            res = _check_output(['mycmd'], stderr='something')
+        assert res == 'foo'
+        assert mock_popen.mock_calls == [
+            call(
+                ['mycmd'],
+                stderr='something',
+                stdout=subprocess.PIPE
+            ),
+            call().communicate()
+        ]
 
-    @pytest.mark.skipif((sys.version_info[0] != 2 and sys.version_info[1] != 7),
-                        reason='py27 test')
+    @pytest.mark.skipif(
+        (
+                sys.version_info[0] != 2 or
+                (sys.version_info[0] == 2 and sys.version_info[1] != 7)
+        ),
+        reason='not running py27 test on %d.%d.%d' % (
+                sys.version_info[0],
+                sys.version_info[1],
+                sys.version_info[2]
+        ))
     def test_check_output_py27(self):
         with patch('%s.subprocess.check_output' % self.pb) as mock_check_out:
             mock_check_out.return_value = 'foobar'
-            res = _check_output(['foo', 'bar'])
+            res = _check_output(['foo', 'bar'], stderr='something')
         assert res == 'foobar'
         assert mock_check_out.mock_calls == [
-            call(['foo', 'bar'], stderr=None)
+            call(['foo', 'bar'], stderr='something')
         ]
 
     @pytest.mark.skipif(sys.version_info[0] < 3,
-                        reason='py3 test')
+                        reason='not running py3 test on %d.%d.%d' % (
+                            sys.version_info[0],
+                            sys.version_info[1],
+                            sys.version_info[2]
+                        ))
     def test_check_output_py3(self):
         with patch('%s.subprocess.check_output' % self.pb) as mock_check_out:
             mock_check_out.return_value = 'foobar'.encode('utf-8')
-            res = _check_output(['foo', 'bar'])
+            res = _check_output(['foo', 'bar'], stderr='something')
         assert res == 'foobar'
         assert mock_check_out.mock_calls == [
-            call(['foo', 'bar'], stderr=None)
+            call(['foo', 'bar'], stderr='something')
         ]
 
 
