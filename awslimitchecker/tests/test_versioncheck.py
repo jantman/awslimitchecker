@@ -888,7 +888,7 @@ class Test_VersionCheck_Funcs(object):
                 sys.version_info[2]
         ))
     def test_check_output_py26(self):
-        mock_p = Mock(spec_set=subprocess.Popen)
+        mock_p = Mock(returncode=0)
         mock_p.communicate.return_value = ('foo', 'bar')
         with patch('%s.subprocess.Popen' % self.pb) as mock_popen:
             mock_popen.return_value = mock_p
@@ -902,6 +902,34 @@ class Test_VersionCheck_Funcs(object):
             ),
             call().communicate()
         ]
+
+    @pytest.mark.skipif(
+        (
+                sys.version_info[0] != 2 or
+                (sys.version_info[0] == 2 and sys.version_info[1] != 6)
+        ),
+        reason='not running py26 test on %d.%d.%d' % (
+                sys.version_info[0],
+                sys.version_info[1],
+                sys.version_info[2]
+        ))
+    def test_check_output_py26_exception(self):
+        mock_p = Mock(returncode=2)
+        mock_p.communicate.return_value = ('foo', 'bar')
+        with patch('%s.subprocess.Popen' % self.pb) as mock_popen:
+            mock_popen.return_value = mock_p
+            with pytest.raises(subprocess.CalledProcessError) as exc:
+                _check_output(['mycmd'], stderr='something')
+        assert mock_popen.mock_calls == [
+            call(
+                ['mycmd'],
+                stderr='something',
+                stdout=subprocess.PIPE
+            ),
+            call().communicate()
+        ]
+        assert exc.value.cmd == ['mycmd']
+        assert exc.value.returncode == 2
 
     @pytest.mark.skipif(
         (

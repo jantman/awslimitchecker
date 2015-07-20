@@ -224,6 +224,8 @@ def _check_output(args, stderr=None):
     if sys.version_info < (2, 7):
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
         (res, err) = p.communicate()
+        if p.returncode != 0:
+            raise subprocess.CalledProcessError(p.returncode, args)
     else:
         res = subprocess.check_output(args, stderr=stderr)
         if sys.version_info >= (3, 0):
