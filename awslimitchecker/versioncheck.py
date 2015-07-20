@@ -41,11 +41,26 @@ import os
 import subprocess
 import logging
 import re
-try:
-    from subprocess import DEVNULL
-except ImportError:
-    DEVNULL = open(os.devnull, 'wb')
+import sys
 import locale
+
+if sys.version_info >= (3, 3):
+    from subprocess import DEVNULL
+else:
+    DEVNULL = open(os.devnull, 'wb')
+
+try:
+    import pip
+except ImportError:
+    # this is used within try blocks; NBD if they fail
+    pass
+
+try:
+    import pkg_resources
+except ImportError:
+    # this is used within try blocks; NBD if they fail
+    pass
+
 logger = logging.getLogger(__name__)
 
 
@@ -86,9 +101,9 @@ class AGPLVersionChecker(object):
         for k, v in git_info.items():
             if v is not None:
                 res[k] = v
-        if res['dirty'] and res['tag'] is not None:
+        if git_info['dirty'] and res['tag'] is not None:
             res['tag'] += '*'
-        if res['dirty'] and res['commit'] is not None:
+        if git_info['dirty'] and res['commit'] is not None:
             res['commit'] += '*'
         try:
             pip_info = self._find_pip_info()
@@ -118,7 +133,6 @@ class AGPLVersionChecker(object):
 
         :return: dict of information from pkg_resources
         """
-        import pkg_resources
         dist = pkg_resources.require('awslimitchecker')[0]
         ver, url = self._dist_version_url(dist)
         return {'version': ver, 'url': url}
@@ -130,7 +144,6 @@ class AGPLVersionChecker(object):
 
         :return: dict of information from pip
         """
-        import pip
         res = {}
         dist = None
         for d in pip.get_installed_distributions():
@@ -167,7 +180,7 @@ class AGPLVersionChecker(object):
 
         :rtype: dict
         """
-        res = {'url': None, 'tag': None, 'commit': None}
+        res = {'url': None, 'tag': None, 'commit': None, 'dirty': None}
         oldcwd = os.getcwd()
         logger.debug("Current directory: %s", oldcwd)
         logger.debug("This file: %s (%s)", __file__, os.path.abspath(__file__))
@@ -208,16 +221,13 @@ def _check_output(args, stderr=None):
      to subprocess.check_output / subprocess.Popen
     :return: string output
     """
-    if hasattr(subprocess, 'check_output'):
-        res = subprocess.check_output(args, stderr=stderr)
-        # python3
-        try:
-            res.strip().split("\n")
-        except TypeError:
-            res = res.decode(locale.getdefaultlocale()[1])
-    else:
+    if sys.version_info < (2, 7):
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
         (res, err) = p.communicate()
+    else:
+        res = subprocess.check_output(args, stderr=stderr)
+        if sys.version_info >= (3, 0):
+            res = res.decode(locale.getdefaultlocale()[1])
     return res
 
 
@@ -279,5 +289,7 @@ def _get_git_url():
         for k, v in urls.items():
             return v
     except subprocess.CalledProcessError:
+        url = None
+    except IndexError:
         url = None
     return url
