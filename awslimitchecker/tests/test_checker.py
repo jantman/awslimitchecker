@@ -104,7 +104,8 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
         assert self.cls.ta == self.mock_ta
-        self.mock_version == [call()]
+        assert self.mock_version.mock_calls == [call()]
+        assert self.cls.vinfo == self.mock_ver_info
 
     def test_init_thresholds(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -138,7 +139,8 @@ class TestAwsLimitChecker(object):
         assert mock_bar.mock_calls == [call(5, 22)]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
-        self.mock_version == [call()]
+        assert self.mock_version.mock_calls == [call()]
+        assert self.cls.vinfo == self.mock_ver_info
 
     def test_init_logger(self):
         """ensure we log a license message"""

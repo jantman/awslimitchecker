@@ -69,13 +69,13 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         """
-        vinfo = _get_version_info()
+        self.vinfo = _get_version_info()
         logger.warning(
             "awslimitchecker %s is AGPL-licensed free software; "
             "all users have a right to the full source code of "
             "this version. See <%s>",
-            vinfo.version_str,
-            vinfo.url,
+            self.vinfo.version_str,
+            self.vinfo.url,
         )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
