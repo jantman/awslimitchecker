@@ -104,6 +104,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
         assert self.cls.ta == self.mock_ta
+        self.mock_version == [call()]
 
     def test_init_thresholds(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -137,6 +138,7 @@ class TestAwsLimitChecker(object):
         assert mock_bar.mock_calls == [call(5, 22)]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
+        self.mock_version == [call()]
 
     def test_init_logger(self):
         """ensure we log a license message"""
@@ -150,18 +152,18 @@ class TestAwsLimitChecker(object):
     def test_get_version(self):
         with patch('awslimitchecker.checker._get_version_info',
                    spec_set=_get_version_info) as mock_version:
-            mock_version.return_value = self.mock_ver_info
+            self.cls.vinfo = self.mock_ver_info
             res = self.cls.get_version()
         assert res == '1.2.3@mytag'
-        assert mock_version.mock_calls == [call()]
+        assert mock_version.mock_calls == []
 
     def test_get_project_url(self):
         with patch('awslimitchecker.checker._get_version_info',
                    spec_set=_get_version_info) as mock_version:
-            mock_version.return_value = self.mock_ver_info
+            self.cls.vinfo = self.mock_ver_info
             res = self.cls.get_project_url()
         assert res == 'http://myurl'
-        assert mock_version.mock_calls == [call()]
+        assert mock_version.mock_calls == []
 
     def test_get_service_names(self):
         res = self.cls.get_service_names()

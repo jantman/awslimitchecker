@@ -43,7 +43,6 @@ import logging
 import json
 import termcolor
 
-from .version import _get_version_info
 from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols
 from .limit import SOURCE_TA
@@ -82,12 +81,10 @@ class Runner(object):
         #   you MUST have the actually-running source available somewhere for
         #   your users.
         # ###### IMPORTANT license notice ##########
-        ver_info = _get_version_info()
         epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \
-                 'entitled to a copy of the source code. You can obtain the ' \
-                 'source code of awslimitchecker {v} from: <{u}>'
-        epilog = epilog.format(v=ver_info.version_str, u=ver_info.url)
+                 'entitled to a copy of the source code. Use `--version` for ' \
+                 'information on the source code location.'
         p = argparse.ArgumentParser(description=desc, epilog=epilog)
         p.add_argument('-S', '--service', action='store', default=None,
                        help='perform action for only the specified service name'
@@ -274,19 +271,18 @@ class Runner(object):
         if args.skip_ta:
             self.skip_ta = True
 
-        if args.version:
-            ver_info = _get_version_info()
-            print('awslimitchecker {v} (see <{s}> for source code)'.format(
-                s=ver_info.url,
-                v=ver_info.version_str
-            ))
-            raise SystemExit(0)
-
         # the rest of these actually use the checker
         self.checker = AwsLimitChecker(
             warning_threshold=args.warning_threshold,
             critical_threshold=args.critical_threshold
         )
+
+        if args.version:
+            print('awslimitchecker {v} (see <{s}> for source code)'.format(
+                s=self.checker.get_project_url(),
+                v=self.checker.get_version()
+            ))
+            raise SystemExit(0)
 
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)

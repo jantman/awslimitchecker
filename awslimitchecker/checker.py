@@ -91,7 +91,7 @@ class AwsLimitChecker(object):
         :returns: current awslimitchecker version
         :rtype: string
         """
-        return _get_version_info().version_str
+        return self.vinfo.version_str
 
     def get_project_url(self):
         """
@@ -100,7 +100,7 @@ class AwsLimitChecker(object):
         :returns: URL of where to find awslimitchecker
         :rtype: string
         """
-        return _get_version_info().url
+        return self.vinfo.url
 
     def get_limits(self, service=None, use_ta=True):
         """
