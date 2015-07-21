@@ -90,6 +90,14 @@ class AGPLVersionChecker(object):
         :returns: information about the installed version of the package
         :rtype: dict
         """
+        if os.environ.get('VERSIONCHECK_DEBUG', '') != 'true':
+            # silence logging
+            logger.setLevel(logging.WARNING)
+            # silence pip logging
+            pip_log = logging.getLogger("pip")
+            pip_log.setLevel(logging.WARNING)
+            pip_log.propagate = True
+
         res = {
             'version': None,
             'url': None,

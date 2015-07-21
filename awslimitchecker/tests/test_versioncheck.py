@@ -719,6 +719,109 @@ class Test_AGPLVersionChecker(object):
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
 
+    def test_find_package_version_debug(self):
+        mock_pip_logger = Mock(spec_set=logging.Logger)
+
+        with patch.dict('%s.os.environ' % self.mpb,
+                        {'VERSIONCHECK_DEBUG': 'true'}):
+            with patch('%s.logging' % self.mpb) as mock_logging:
+                cls = AGPLVersionChecker()
+                with patch.multiple(
+                        self.pb,
+                        autospec=True,
+                        _find_git_info=DEFAULT,
+                        _find_pip_info=DEFAULT,
+                        _find_pkg_info=DEFAULT,
+                ) as mocks:
+                    mocks['_find_git_info'].return_value = {
+                        'url': None,
+                        'tag': None,
+                        'commit': None,
+                        'dirty': None,
+                    }
+                    mocks['_find_pip_info'].return_value = {
+                        'version': '1.2.3',
+                        'url': 'http://my.package.url/pip'
+                    }
+                    mocks['_find_pkg_info'].return_value = {
+                        'version': '1.2.3',
+                        'url': 'http://my.package.url/pkg_resources'
+                    }
+                    with patch('%s.logger' % self.mpb,
+                               spec_set=logging.Logger) as mock_mod_logger:
+                        mock_logging.getLogger.return_value = mock_pip_logger
+                        cls.find_package_version()
+        assert mock_logging.mock_calls == []
+        assert mock_pip_logger.mock_calls == []
+        assert mock_mod_logger.mock_calls == [
+            call.debug('Git info: %s',
+                       {'url': None, 'commit': None, 'tag': None,
+                        'dirty': None}),
+            call.debug('pip info: %s', {'url': 'http://my.package.url/pip',
+                                        'version': '1.2.3'}),
+            call.debug('pkg_resources info: %s',
+                       {'url': 'http://my.package.url/pkg_resources',
+                        'version': '1.2.3'}),
+            call.debug('Final package info: %s',
+                       {'url': 'http://my.package.url/pip', 'commit': None,
+                        'version': '1.2.3', 'tag': None})
+        ]
+
+    def test_find_package_version_no_debug(self):
+        mock_pip_logger = Mock()
+        type(mock_pip_logger).propagate = False
+
+        with patch.dict('%s.os.environ' % self.mpb,
+                        {'VERSIONCHECK_DEBUG': 'false'}):
+            with patch('%s.logging' % self.mpb) as mock_logging:
+                mock_logging.getLogger.return_value = mock_pip_logger
+                cls = AGPLVersionChecker()
+                with patch.multiple(
+                        self.pb,
+                        autospec=True,
+                        _find_git_info=DEFAULT,
+                        _find_pip_info=DEFAULT,
+                        _find_pkg_info=DEFAULT,
+                ) as mocks:
+                    mocks['_find_git_info'].return_value = {
+                        'url': None,
+                        'tag': None,
+                        'commit': None,
+                        'dirty': None,
+                    }
+                    mocks['_find_pip_info'].return_value = {
+                        'version': '1.2.3',
+                        'url': 'http://my.package.url/pip'
+                    }
+                    mocks['_find_pkg_info'].return_value = {
+                        'version': '1.2.3',
+                        'url': 'http://my.package.url/pkg_resources'
+                    }
+                    with patch('%s.logger' % self.mpb,
+                               spec_set=logging.Logger) as mock_mod_logger:
+                        cls.find_package_version()
+        assert mock_logging.mock_calls == [
+            call.getLogger("pip"),
+            call.getLogger().setLevel(mock_logging.WARNING)
+        ]
+        assert mock_pip_logger.mock_calls == [
+            call.setLevel(mock_logging.WARNING),
+        ]
+        assert mock_mod_logger.mock_calls == [
+            call.setLevel(mock_logging.WARNING),
+            call.debug('Git info: %s',
+                       {'url': None, 'commit': None, 'tag': None,
+                        'dirty': None}),
+            call.debug('pip info: %s', {'url': 'http://my.package.url/pip',
+                                        'version': '1.2.3'}),
+            call.debug('pkg_resources info: %s',
+                       {'url': 'http://my.package.url/pkg_resources',
+                        'version': '1.2.3'}),
+            call.debug('Final package info: %s',
+                       {'url': 'http://my.package.url/pip', 'commit': None,
+                        'version': '1.2.3', 'tag': None})
+        ]
+
 
 class Test_VersionCheck_Funcs(object):
     """
