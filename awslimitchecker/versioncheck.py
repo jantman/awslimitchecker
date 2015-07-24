@@ -212,7 +212,7 @@ class AGPLVersionChecker(object):
             'git',
             'status',
             '-u'
-        ]).strip()
+        ], stderr=DEVNULL).strip()
         if (('Your branch is up-to-date with' not in status and
                 'HEAD detached at' not in status) or
                 'nothing to commit' not in status):
@@ -272,7 +272,7 @@ def _get_git_tag(commit):
             '--exact-match',
             '--tags',
             commit
-        ]).strip()
+        ], stderr=DEVNULL).strip()
     except subprocess.CalledProcessError:
         tag = None
     if tag == '':
@@ -287,7 +287,7 @@ def _get_git_url():
             'git',
             'remote',
             '-v'
-        ]).strip().split("\n")
+        ], stderr=DEVNULL).strip().split("\n")
         urls = {}
         for line in lines:
             parts = re.split(r'\s+', line)

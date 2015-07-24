@@ -83,7 +83,7 @@ class Test_AGPLVersionChecker(object):
             res = cls._is_git_dirty()
         assert res is False
         assert mock_check_out.mock_calls == [
-            call(['git', 'status', '-u'])
+            call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
     def test_is_git_dirty_false_detatched(self):
@@ -96,7 +96,7 @@ class Test_AGPLVersionChecker(object):
             res = cls._is_git_dirty()
         assert res is False
         assert mock_check_out.mock_calls == [
-            call(['git', 'status', '-u'])
+            call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
     def test_is_git_dirty_true_ahead(self):
@@ -118,7 +118,7 @@ class Test_AGPLVersionChecker(object):
             res = cls._is_git_dirty()
         assert res is True
         assert mock_check_out.mock_calls == [
-            call(['git', 'status', '-u'])
+            call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
     def test_is_git_dirty_true_detatched(self):
@@ -136,7 +136,7 @@ class Test_AGPLVersionChecker(object):
             res = cls._is_git_dirty()
         assert res is True
         assert mock_check_out.mock_calls == [
-            call(['git', 'status', '-u'])
+            call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
     def test_is_git_dirty_true_changes(self):
@@ -157,7 +157,7 @@ class Test_AGPLVersionChecker(object):
             res = cls._is_git_dirty()
         assert res is True
         assert mock_check_out.mock_calls == [
-            call(['git', 'status', '-u'])
+            call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
     def test_find_git_info(self):
@@ -839,7 +839,7 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_url()
         assert res == 'git@github.com:jantman/awslimitchecker.git'
         assert mock_check_out.mock_calls == [
-            call(['git', 'remote', '-v'])
+            call(['git', 'remote', '-v'], stderr=DEVNULL)
         ]
 
     def test_get_git_url_fork(self):
@@ -856,7 +856,7 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_url()
         assert res == 'git@github.com:someone/awslimitchecker.git'
         assert mock_check_out.mock_calls == [
-            call(['git', 'remote', '-v'])
+            call(['git', 'remote', '-v'], stderr=DEVNULL)
         ]
 
     def test_get_git_url_no_origin(self):
@@ -877,12 +877,12 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_url()
         assert res == 'https://github.com/foo/awslimitchecker.git'
         assert mock_check_out.mock_calls == [
-            call(['git', 'remote', '-v'])
+            call(['git', 'remote', '-v'], stderr=DEVNULL)
         ]
 
     def test_get_git_url_exception(self):
 
-        def se(foo):
+        def se(foo, stderr=None):
             raise subprocess.CalledProcessError(3, 'mycommand')
 
         with patch('%s._check_output' % self.pb) as mock_check_out:
@@ -890,7 +890,7 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_url()
         assert res is None
         assert mock_check_out.mock_calls == [
-            call(['git', 'remote', '-v'])
+            call(['git', 'remote', '-v'], stderr=DEVNULL)
         ]
 
     def test_get_git_url_none(self):
@@ -900,7 +900,7 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_url()
         assert res is None
         assert mock_check_out.mock_calls == [
-            call(['git', 'remote', '-v'])
+            call(['git', 'remote', '-v'], stderr=DEVNULL)
         ]
 
     def test_get_git_url_no_fetch(self):
@@ -915,7 +915,7 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_url()
         assert res is None
         assert mock_check_out.mock_calls == [
-            call(['git', 'remote', '-v'])
+            call(['git', 'remote', '-v'], stderr=DEVNULL)
         ]
 
     def test_get_git_tag(self):
@@ -924,7 +924,8 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_tag('abcd')
         assert res == 'mytag'
         assert mock_check_out.mock_calls == [
-            call(['git', 'describe', '--exact-match', '--tags', 'abcd'])
+            call(['git', 'describe', '--exact-match', '--tags', 'abcd'],
+                 stderr=DEVNULL)
         ]
 
     def test_get_git_tag_commit_none(self):
@@ -940,12 +941,13 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_tag('abcd')
         assert res is None
         assert mock_check_out.mock_calls == [
-            call(['git', 'describe', '--exact-match', '--tags', 'abcd'])
+            call(['git', 'describe', '--exact-match', '--tags', 'abcd'],
+                 stderr=DEVNULL)
         ]
 
     def test_get_git_tag_exception(self):
 
-        def se(foo):
+        def se(foo, stderr=None):
             raise subprocess.CalledProcessError(3, 'mycommand')
 
         with patch('%s._check_output' % self.pb) as mock_check_out:
@@ -953,7 +955,8 @@ class Test_VersionCheck_Funcs(object):
             res = _get_git_tag('abcd')
         assert res is None
         assert mock_check_out.mock_calls == [
-            call(['git', 'describe', '--exact-match', '--tags', 'abcd'])
+            call(['git', 'describe', '--exact-match', '--tags', 'abcd'],
+                 stderr=DEVNULL)
         ]
 
     def test_get_git_commit(self):
