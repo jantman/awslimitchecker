@@ -139,7 +139,8 @@ class AGPLVersionChecker(object):
         """
         Find information about the installed awslimitchecker from pkg_resources.
 
-        :return: dict of information from pkg_resources
+        :returns: information from pkg_resources about 'awslimitchecker'
+        :rtype: dict
         """
         dist = pkg_resources.require('awslimitchecker')[0]
         ver, url = self._dist_version_url(dist)
@@ -150,7 +151,8 @@ class AGPLVersionChecker(object):
         Try to find information about the installed awslimitchecker from pip.
         This should be wrapped in a try/except.
 
-        :return: dict of information from pip
+        :returns: information from pip about 'awslimitchecker'
+        :rtype: dict
         """
         res = {}
         dist = None
@@ -170,7 +172,13 @@ class AGPLVersionChecker(object):
         return res
 
     def _dist_version_url(self, dist):
-        """get version and homepage for a pkg_resources.Distribution"""
+        """
+        Get version and homepage for a pkg_resources.Distribution
+
+        :param dist: the pkg_resources.Distribution to get information for
+        :returns: 2-tuple of (version, homepage URL)
+        :rtype: tuple
+        """
         ver = str(dist.parsed_version)
         url = None
         for line in dist.get_metadata_lines(dist.PKG_INFO):
@@ -186,6 +194,7 @@ class AGPLVersionChecker(object):
         """
         Find information about the git repository, if this file is in a clone.
 
+        :returns: information about the git clone
         :rtype: dict
         """
         res = {'url': None, 'tag': None, 'commit': None, 'dirty': None}
@@ -208,6 +217,12 @@ class AGPLVersionChecker(object):
         return res
 
     def _is_git_dirty(self):
+        """
+        Determine if the git clone has uncommitted changes or is behind origin
+
+        :returns: True if clone is dirty, False otherwise
+        :rtype: bool
+        """
         status = _check_output([
             'git',
             'status',
@@ -227,7 +242,9 @@ def _check_output(args, stderr=None):
 
     :param stderr: what to do with STDERR - None or an appropriate argument
      to subprocess.check_output / subprocess.Popen
-    :return: string output
+    :raises: subprocess.CalledProcessError
+    :returns: command output
+    :rtype: string
     """
     if sys.version_info < (2, 7):
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
@@ -243,9 +260,10 @@ def _check_output(args, stderr=None):
 
 def _get_git_commit():
     """
-    Get the current git commit of the current directory.
+    Get the current (short) git commit hash of the current directory.
 
-    :return: string short git hash
+    :returns: short git hash
+    :rtype: string
     """
     try:
         commit = _check_output([
@@ -262,7 +280,14 @@ def _get_git_commit():
 
 
 def _get_git_tag(commit):
-    """get the git tag for the specified commit, or None"""
+    """
+    Get the git tag for the specified commit, or None
+
+    :param commit: git commit hash to get the tag for
+    :type commit: string
+    :returns: tag name pointing to commit
+    :rtype: string
+    """
     if commit is None:
         return None
     try:
@@ -281,6 +306,12 @@ def _get_git_tag(commit):
 
 
 def _get_git_url():
+    """
+    Get the origin URL for the git repository.
+
+    :returns: repository origin URL
+    :rtype: string
+    """
     try:
         url = None
         lines = _check_output([

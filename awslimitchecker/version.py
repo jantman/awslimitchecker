@@ -57,6 +57,12 @@ class AWSLimitCheckerVersion(object):
 
     @property
     def version_str(self):
+        """
+        The version string for the currently-running awslimitchecker;
+        includes git branch and tag information.
+
+        :rtype: string
+        """
         vs = str(self.release)
         if self.tag is not None:
             vs += '@{t}'.format(t=self.tag)
@@ -65,12 +71,24 @@ class AWSLimitCheckerVersion(object):
         return vs
 
     def __str__(self):
+        """
+        Human-readable string representation of this version object, in the
+        format: "version_str <url>"
+
+        :rtype: string
+        """
         return '{s} <{u}>'.format(
             s=self.version_str,
             u=self.url
         )
 
     def __repr__(self):
+        """
+        Return a representation of this object that is valid Python and will
+        create an idential AWSLimitCheckerVersion object.
+
+        :rtype: string
+        """
         return 'AWSLimitCheckerVersion({r}, {u}, tag={t}, commit={c})'.format(
             r=repr(self.release),
             u=repr(self.url),
