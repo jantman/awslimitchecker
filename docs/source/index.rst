@@ -34,6 +34,22 @@ awslimitchecker
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
    :alt: sphinx documentation for develop branch
 
+.. image:: https://img.shields.io/github/release/jantman/awslimitchecker.svg
+   :alt: GitHub latest release version
+   :target: https://github.com/jantman/awslimitchecker/releases
+
+.. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
+   :alt: GitHub Forks
+   :target: https://github.com/jantman/awslimitchecker/network
+
+.. image:: https://img.shields.io/github/stars/jantman/awslimitchecker.svg
+   :alt: GitHub Stars
+   :target: https://github.com/jantman/awslimitchecker
+
+.. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
+   :alt: GitHub Open Issues
+   :target: https://github.com/jantman/awslimitchecker/issues
+
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
@@ -53,6 +69,17 @@ Status
 This project is currently in very early development. At this time please consider it alpha code and not reliable;
 furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
 use, but contributions are certainly welcome.
+
+What It Does
+------------
+
+- Check current AWS resource usage against AWS Service Limits
+- Show and inspect current usage
+- Override default Service Limits (for accounts with increased limits)
+- Compare current usage to limits; return information about limits that
+  exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
+- Define custom thresholds per-limit
+- where possible, pull current limits from Trusted Advisor API
 
 Requirements
 ------------

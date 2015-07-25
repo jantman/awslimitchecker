@@ -29,6 +29,22 @@ awslimitchecker
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
    :alt: sphinx documentation for develop branch
 
+.. image:: https://img.shields.io/github/release/jantman/awslimitchecker.svg
+   :alt: GitHub latest release version
+   :target: https://github.com/jantman/awslimitchecker/releases
+
+.. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
+   :alt: GitHub Forks
+   :target: https://github.com/jantman/awslimitchecker/network
+
+.. image:: https://img.shields.io/github/stars/jantman/awslimitchecker.svg
+   :alt: GitHub Stars
+   :target: https://github.com/jantman/awslimitchecker
+
+.. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
+   :alt: GitHub Open Issues
+   :target: https://github.com/jantman/awslimitchecker/issues
+
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
@@ -65,7 +81,8 @@ What It Does
 Requirements
 ------------
 
-* Python 2.6 or 2.7 (`boto <http://docs.pythonboto.org/en/latest/>`_ currently has incomplete python3 support)
+* Python 2.6 through 3.4. Python 2.x is recommended, as `boto <http://docs.pythonboto.org/en/latest/>`_ (the AWS client library) currently has
+  incomplete Python3 support. See the `boto documentation <http://boto.readthedocs.org/en/latest/>`_ for a list of AWS services that are Python3-compatible.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.32.0
 
