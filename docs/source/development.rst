@@ -190,30 +190,32 @@ Release Checklist
 
 1. Open an issue for the release; cut a branch off ``develop`` for that issue.
 2. Build docs (``tox -e docs``) and ensure they're current; commit any changes.
-3. Confirm that there are CHANGES.rst entries for all major changes.
-4. Ensure that Travis tests passing in all environments.
-5. Ensure that test coverage is no less than the last release (ideally, 100%).
-6. Create or update an actual IAM user with the policy from ``awslimitchecker --iam-policy``;
+3. Ensure that Travis tests passing in all environments.
+4. Ensure that test coverage is no less than the last release (ideally, 100%).
+5. Create or update an actual IAM user with the policy from ``awslimitchecker --iam-policy``;
    run the command line wrapper and ensure that the policy works and contains all needed permissions.
-7. Build docs for the branch (locally) and ensure they look correct.
-8. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst, then push to GitHub.
-9. Confirm that README.rst renders correctly on GitHub.
-10. Upload package to testpypi, confirm that README.rst renders correctly.
+6. Build docs for the branch (locally) and ensure they look correct.
+7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst.
+   Ensure that there are CHANGES.rst entries for all major changes since the last release. Mention the issue
+   in the commit for this, and push to GitHub.
+8. Confirm that README.rst renders correctly on GitHub.
+9. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct
    * ``python setup.py register -r https://testpypi.python.org/pypi``
    * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
-11. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
-12. Tag the release in Git, push tag to GitHub:
+10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
+11. Tag the release in Git, push tag to GitHub:
 
    * tag the release. for now the message is quite simple: ``git tag -a vX.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
    * push the tag to GitHub: ``git push origin vX.Y.Z``
 
-13. Upload package to live pypi:
+12. Upload package to live pypi:
 
     * ``python setup.py sdist upload``
 
-14. make sure any GH issues fixed in the release were closed.
-15. merge master back into develop
+13. make sure any GH issues fixed in the release were closed.
+14. merge master back into develop
+15. Blog, tweet, etc. about the new version.

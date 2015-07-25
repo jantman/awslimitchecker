@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.1 (YYYY-MM-DD)
+0.1.0 (2015-07-25)
 ------------------
 
-* initial minimal smoke-test release
+* initial released version
