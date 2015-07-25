@@ -57,8 +57,7 @@ else:
 class TestVersion(object):
 
     def test_project_url(self):
-        expected = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
-            v=version._VERSION)
+        expected = 'https://github.com/jantman/awslimitchecker'
         assert version._PROJECT_URL == expected
 
     def test__get_version_info(self):

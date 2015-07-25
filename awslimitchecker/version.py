@@ -43,8 +43,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 _VERSION = '0.1.0'
-_PROJECT_URL = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
-    v=_VERSION)
+_PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
 
 
 class AWSLimitCheckerVersion(object):

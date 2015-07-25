@@ -264,7 +264,7 @@ class Test_AGPLVersionChecker(object):
             'Name: awslimitchecker',
             'Version: 0.1.0',
             'Summary: A script and python module to check your AWS service ',
-            'Home-page: https://pypi.python.org/pypi/awslimitchecker/0.1.0',
+            'Home-page: https://github.com/jantman/awslimitchecker',
             'Author: Jason Antman',
             'Author-email: jason@jasonantman.com',
             'License: UNKNOWN',
@@ -288,7 +288,7 @@ class Test_AGPLVersionChecker(object):
         cls = AGPLVersionChecker()
         res = cls._dist_version_url(dist)
         assert res == ('1.2.3',
-                       'https://pypi.python.org/pypi/awslimitchecker/0.1.0')
+                       'https://github.com/jantman/awslimitchecker')
 
     def test_get_dist_version_url_no_homepage(self):
         dist = Mock(
@@ -1353,7 +1353,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
             v='0.1.0',
-            u='https://pypi.python.org/pypi/awslimitchecker/0.1.0'
+            u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
 
@@ -1441,7 +1441,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
             v='0.1.0',
-            u='https://pypi.python.org/pypi/awslimitchecker/0.1.0'
+            u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
 
@@ -1456,7 +1456,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
             v='0.1.0',
-            u='https://pypi.python.org/pypi/awslimitchecker/0.1.0'
+            u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
 
@@ -1476,7 +1476,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
             v='0.1.0',
-            u='https://pypi.python.org/pypi/awslimitchecker/0.1.0'
+            u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
 
