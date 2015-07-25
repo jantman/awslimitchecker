@@ -73,13 +73,15 @@ class Runner(object):
                ' limits. For further help, see ' \
                '<http://awslimitchecker.readthedocs.org/>'
         # ###### IMPORTANT license notice ##########
-        # In order to remain in compliance with the AGPLv3 license, when
-        # applicable:
-        # - this notice MUST NOT be removed, and MUST be displayed to all users
-        # - _get_project_url() MUST point to the source code of the ACTUALLY
-        #   RUNNING version of this program. i.e. if you modify this program,
-        #   you MUST have the actually-running source available somewhere for
-        #   your users.
+        # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
+        # License, version 3, this notice MUST NOT be removed, and MUST be
+        # displayed to ALL USERS of this software, even if they interact with
+        # it remotely over a network.
+        #
+        # See the "Development" section of the awslimitchecker documentation
+        # (docs/source/development.rst or
+        # <http://awslimitchecker.readthedocs.org/en/latest/development.html> )
+        # for further information.
         # ###### IMPORTANT license notice ##########
         epilog = 'awslimitchecker is AGPLv3-licensed Free Software. Anyone ' \
                  'using this program, even remotely over a network, is ' \

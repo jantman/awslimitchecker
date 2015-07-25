@@ -69,6 +69,20 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         """
+        # ###### IMPORTANT license notice ##########
+        # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
+        # License, version 3, this notice MUST NOT be removed, and MUST be
+        # displayed to ALL USERS of this software, even if they interact with
+        # it remotely over a network.
+        #
+        # Furthermore, _get_version_info() MUST return a valid URL pointing
+        # to the EXACT identical source code that is currently running.
+        #
+        # See the "Development" section of the awslimitchecker documentation
+        # (docs/source/development.rst or
+        # <http://awslimitchecker.readthedocs.org/en/latest/development.html> )
+        # for further information.
+        # ###### IMPORTANT license notice ##########
         self.vinfo = _get_version_info()
         logger.warning(
             "awslimitchecker %s is AGPL-licensed free software; "

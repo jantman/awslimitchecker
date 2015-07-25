@@ -157,18 +157,31 @@ AGPL License
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
 
-* If you're simply *running* awslimitchecker via the command line, there's nothing to worry about; just use it like any other software.
+Pursuant to Sections `5(b) <http://www.gnu.org/licenses/agpl-3.0.en.html#section5>`_
+and `13 <http://www.gnu.org/licenses/agpl-3.0.en.html#section13>`_ of the license,
+all users of awslimitchecker - including those interacting with it remotely over
+a network - have a right to obtain the exact, unmodified running source code. We
+have done as much as possible to make this transparent to developers, with no additional
+work needed. See the guidelines below for information.
+
+* If you're simply *running* awslimitchecker via the command line, there's nothing to worry about;
+  just use it like any other software.
 * If you're using awslimitchecker in your own software in a way that allows users to interact with it over the network (i.e. in your
   deployment or monitoring systems), but not modifying it, you also don't need to do anything special; awslimitchecker will log a
-  WARNING-level message indicating where the source code of the currently-running version can be obtained from. This suffices for the
-  AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
-* If you wish to modify the source code of awslimitchecker, all you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
-  returns the correct information (a publicly-accessible URL to the exact version of the running source code, and a version number).
-  It should do this automatically as long as you install it as an editable (``pip install -e``) fork of the original GitHub repository.
-* If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply a
-  requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
+  WARNING-level message indicating where the source code of the currently-running version can be obtained. So long as you've installed
+  awslimitchecker via Python's packaging system (i.e. with `pip`), its current version and source will be automatically detected. This
+  suffices for the AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
+* If you wish to modify the source code of awslimitchecker, you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
+  always returns correct and accutate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
+  If you install your modified version directly from an editable (i.e. ``pip install -e``), publicly-accessible Git repository, and ensure
+  that changes are available in the repository before they are present in the code running for your users, this should be automatically
+  detected by awslimitchecker and the correct URL provided. It is strongly recommended that any such repository is a fork of the
+  project's original GitHub repository. It is solely your responsibility to ensure that the URL and version information presented
+  to users is accurate and reflects source code identical to what is running.
+* If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply an
+  editable requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
 * If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
-  ensure that the source code URL is visible in the output given to users.
+  ensure that the source code URL and version is correct and visible in the output given to users.
 
 .. _development.release_checklist:
 

@@ -24,4 +24,5 @@ Submodules
    awslimitchecker.trustedadvisor
    awslimitchecker.utils
    awslimitchecker.version
+   awslimitchecker.versioncheck
 
