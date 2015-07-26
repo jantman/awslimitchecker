@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -38,7 +38,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from .services import _services
-from .version import _get_version, _get_project_url
+from .version import _get_version_info
+from .trustedadvisor import TrustedAdvisor
 import logging
 logger = logging.getLogger(__name__)
 
@@ -68,16 +69,33 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         """
-        logger.warning("awslimitchecker {v} is AGPL-licensed free software; "
-                       "all users have a right to the full source code of "
-                       "this version. See <{u}>".format(
-                           v=_get_version(),
-                           u=_get_project_url(),
-                       ))
+        # ###### IMPORTANT license notice ##########
+        # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
+        # License, version 3, this notice MUST NOT be removed, and MUST be
+        # displayed to ALL USERS of this software, even if they interact with
+        # it remotely over a network.
+        #
+        # Furthermore, _get_version_info() MUST return a valid URL pointing
+        # to the EXACT identical source code that is currently running.
+        #
+        # See the "Development" section of the awslimitchecker documentation
+        # (docs/source/development.rst or
+        # <http://awslimitchecker.readthedocs.org/en/latest/development.html> )
+        # for further information.
+        # ###### IMPORTANT license notice ##########
+        self.vinfo = _get_version_info()
+        logger.warning(
+            "awslimitchecker %s is AGPL-licensed free software; "
+            "all users have a right to the full source code of "
+            "this version. See <%s>",
+            self.vinfo.version_str,
+            self.vinfo.url,
+        )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.services = {}
-        for sname, cls in _services.iteritems():
+        self.ta = TrustedAdvisor()
+        for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold)
 
     def get_version(self):
@@ -87,7 +105,7 @@ class AwsLimitChecker(object):
         :returns: current awslimitchecker version
         :rtype: string
         """
-        return _get_version()
+        return self.vinfo.version_str
 
     def get_project_url(self):
         """
@@ -96,9 +114,9 @@ class AwsLimitChecker(object):
         :returns: URL of where to find awslimitchecker
         :rtype: string
         """
-        return _get_project_url()
+        return self.vinfo.url
 
-    def get_limits(self, service=None):
+    def get_limits(self, service=None, use_ta=True):
         """
         Return all :py:class:`~.AwsLimit` objects for the given
         service name, or for all services if ``service`` is None.
@@ -108,14 +126,19 @@ class AwsLimitChecker(object):
 
         :param service: the name of one service to return limits for
         :type service: string
+        :param use_ta: check Trusted Advisor for information on limits
+        :type use_ta: bool
         :returns: dict of service name (string) to nested dict
           of limit name (string) to limit (:py:class:`~.AwsLimit`)
         :rtype: dict
         """
         res = {}
+        to_get = self.services
         if service is not None:
-            return {service: self.services[service].get_limits()}
-        for sname, cls in self.services.iteritems():
+            to_get = {service: self.services[service]}
+        if use_ta:
+            self.ta.update_limits(to_get)
+        for sname, cls in to_get.items():
             res[sname] = cls.get_limits()
         return res
 
@@ -128,10 +151,10 @@ class AwsLimitChecker(object):
         """
         return sorted(self.services.keys())
 
-    def find_usage(self, service=None):
+    def find_usage(self, service=None, use_ta=True):
         """
         For each limit in the specified service (or all services if
-        ``service`` is ``None``), query the AWS API via :py:pkg:`boto`
+        ``service`` is ``None``), query the AWS API via :py:mod:`boto`
         and find the current usage amounts for that limit.
 
         This method updates the ``current_usage`` attribute of the
@@ -140,16 +163,17 @@ class AwsLimitChecker(object):
 
         :param service: :py:class:`~._AwsService` name, or ``None`` to
           check all services.
-        :type services: :py:obj:`None` or :py:obj:`string` service name
+        :type service: :py:obj:`None`, or :py:obj:`string` service name to get
+        :param use_ta: check Trusted Advisor for information on limits
+        :type use_ta: bool
         """
+        to_get = self.services
         if service is not None:
-            logger.debug("Finding usage for service: {s}".format(
-                s=self.services[service].service_name))
-            self.services[service].find_usage()
-            return
-        for sname, cls in self.services.iteritems():
-            logger.debug("Finding usage for service: {s}".format(
-                s=cls.service_name))
+            to_get = {service: self.services[service]}
+        if use_ta:
+            self.ta.update_limits(to_get)
+        for cls in to_get.values():
+            logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
     def set_limit_overrides(self, override_dict, override_ta=True):
@@ -159,11 +183,12 @@ class AwsLimitChecker(object):
         the same form as that returned by :py:meth:`~.get_limits`,
         i.e. service_name (str) keys to nested dict of limit_name
         (str) to limit value (int) like:
+        ::
 
             {
                 'EC2': {
-                    'Running On-Demand t2.micro Instances': 1000,
-                    'Running On-Demand r3.4xlarge Instances': 1000,
+                  'Running On-Demand t2.micro Instances': 1000,
+                  'Running On-Demand r3.4xlarge Instances': 1000,
                 }
             }
 
@@ -180,9 +205,10 @@ class AwsLimitChecker(object):
         :param override_dict: dict of overrides to default limits
         :type override_dict: dict
         :param override_ta: whether or not to use this value even if Trusted
-        Advisor supplies limit information
+          Advisor supplies limit information
         :type override_ta: bool
-        :raises: ValueError if limit_name is not known to the service instance
+        :raises: :py:exc:`exceptions.ValueError` if limit_name is not known to
+          the service instance
         """
         for svc_name in override_dict:
             for lim_name in override_dict[svc_name]:
@@ -213,7 +239,7 @@ class AwsLimitChecker(object):
         :param value: the new (overridden) limit value)
         :type value: int
         :param override_ta: whether or not to use this value even if Trusted
-        Advisor supplies limit information
+          Advisor supplies limit information
         :type override_ta: bool
         :raises: ValueError if limit_name is not known to the service instance
         """
@@ -223,7 +249,94 @@ class AwsLimitChecker(object):
             override_ta=override_ta
         )
 
-    def check_thresholds(self, service=None):
+    def set_threshold_overrides(self, override_dict):
+        """
+        Set manual overrides on the threshold (used for determining
+        warning/critical status) a dict of limits. See
+        :py:class:`~.AwsLimitChecker` for information on Warning and
+        Critical thresholds.
+
+        Dict is composed of service name keys (string) to dict of
+        limit names (string), to dict of threshold specifications.
+        Each threhold specification dict can contain keys 'warning'
+        or 'critical', each having a value of a dict containing
+        keys 'percent' or 'count', to an integer value.
+
+        Example:
+        ::
+
+            {
+                'EC2': {
+                    'SomeLimit': {
+                        'warning': {
+                            'percent': 80,
+                            'count': 8,
+                        },
+                        'critical': {
+                            'percent': 90,
+                            'count': 9,
+                        }
+                    }
+                }
+            }
+
+        See :py:meth:`~.AwsLimit.set_threshold_override`.
+
+        :param override_dict: nested dict of threshold overrides
+        :type override_dict: dict
+        """
+        for svc_name in sorted(override_dict):
+            for lim_name in sorted(override_dict[svc_name]):
+                d = override_dict[svc_name][lim_name]
+                kwargs = {}
+                if 'warning' in d:
+                    if 'percent' in d['warning']:
+                        kwargs['warn_percent'] = d['warning']['percent']
+                    if 'count' in d['warning']:
+                        kwargs['warn_count'] = d['warning']['count']
+                if 'critical' in d:
+                    if 'percent' in d['critical']:
+                        kwargs['crit_percent'] = d['critical']['percent']
+                    if 'count' in d['critical']:
+                        kwargs['crit_count'] = d['critical']['count']
+                self.services[svc_name].set_threshold_override(
+                    lim_name,
+                    **kwargs
+                )
+
+    def set_threshold_override(self, service_name, limit_name,
+                               warn_percent=None, warn_count=None,
+                               crit_percent=None, crit_count=None):
+        """
+        Set a manual override on the threshold (used for determining
+        warning/critical status) for a specific limit. See
+        :py:class:`~.AwsLimitChecker` for information on Warning and
+        Critical thresholds.
+
+        See :py:meth:`~.AwsLimit.set_threshold_override`.
+
+        :param service_name: the name of the service to override limit for
+        :type service_name: string
+        :param limit_name: the name of the limit to override:
+        :type limit_name: string
+        :param warn_percent: new warning threshold, percentage used
+        :type warn_percent: int
+        :param warn_count: new warning threshold, actual count/number
+        :type warn_count: int
+        :param crit_percent: new critical threshold, percentage used
+        :type crit_percent: int
+        :param crit_count: new critical threshold, actual count/number
+        :type crit_count: int
+        """
+        self.services[service_name].set_threshold_override(
+            limit_name,
+            warn_percent=warn_percent,
+            warn_count=warn_count,
+            crit_percent=crit_percent,
+            crit_count=crit_count
+        )
+
+    def check_thresholds(self, service=None, use_ta=True):
         """
         Check all limits and current usage against their specified thresholds;
         return all :py:class:`~.AwsLimit` instances that have crossed
@@ -241,14 +354,19 @@ class AwsLimitChecker(object):
 
         :param service: the name of one service to return results for
         :type service: string
+        :param use_ta: check Trusted Advisor for information on limits
+        :type use_ta: bool
         :returns: dict of service name (string) to nested dict
           of limit name (string) to limit (:py:class:`~.AwsLimit`)
         :rtype: dict
         """
         res = {}
+        to_get = self.services
         if service is not None:
-            return {service: self.services[service].check_thresholds()}
-        for sname, cls in self.services.iteritems():
+            to_get = {service: self.services[service]}
+        if use_ta:
+            self.ta.update_limits(to_get)
+        for sname, cls in to_get.items():
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp
@@ -266,8 +384,11 @@ class AwsLimitChecker(object):
         :returns: dict representation of IAM Policy
         :rtype: dict
         """
-        required_actions = []
-        for sname, cls in self.services.iteritems():
+        required_actions = [
+            'support:*',
+            'trustedadvisor:Describe*',
+        ]
+        for cls in self.services.values():
             required_actions.extend(cls.required_iam_permissions())
         policy = {
             'Version': '2012-10-17',

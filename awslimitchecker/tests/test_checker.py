@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -37,42 +37,60 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from mock import Mock, patch, call
-from contextlib import nested
+import sys
+
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.checker import AwsLimitChecker
-from awslimitchecker.version import _get_version, _get_project_url
+from awslimitchecker.version import _get_version_info
+from awslimitchecker.limit import AwsLimit
+from awslimitchecker.trustedadvisor import TrustedAdvisor
 from .support import sample_limits
+
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call, Mock, DEFAULT
+else:
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 
 class TestAwsLimitChecker(object):
 
     def setup(self):
+        self.mock_ver_info = Mock(
+            release='1.2.3',
+            url='http://myurl',
+            commit='abcd',
+            tag='mytag',
+            version_str='1.2.3@mytag'
+        )
+
         self.mock_svc1 = Mock(spec_set=_AwsService)
         self.mock_svc2 = Mock(spec_set=_AwsService)
         self.mock_foo = Mock(spec_set=_AwsService)
         self.mock_bar = Mock(spec_set=_AwsService)
+        self.mock_ta = Mock(spec_set=TrustedAdvisor)
         self.mock_foo.return_value = self.mock_svc1
         self.mock_bar.return_value = self.mock_svc2
         self.svcs = {'SvcFoo': self.mock_foo, 'SvcBar': self.mock_bar}
-        with nested(
-                patch.dict('awslimitchecker.checker._services',
-                           values=self.svcs, clear=True),
-                patch('awslimitchecker.checker.logger',
-                      autospec=True),
-                patch('awslimitchecker.checker._get_version',
-                      spec_set=_get_version),
-                patch('awslimitchecker.checker._get_project_url',
-                      spec_set=_get_project_url)
-        ) as (
-            mock_services,
-            self.mock_logger,
-            self.mock_version,
-            self.mock_project_url,
-        ):
-            self.mock_version.return_value = 'MVER'
-            self.mock_project_url.return_value = 'PURL'
-            self.cls = AwsLimitChecker()
+        with patch.dict('awslimitchecker.checker._services',
+                        values=self.svcs, clear=True):
+            with patch.multiple(
+                    'awslimitchecker.checker',
+                    logger=DEFAULT,
+                    _get_version_info=DEFAULT,
+                    TrustedAdvisor=DEFAULT,
+                    autospec=True,
+            ) as mocks:
+                self.mock_logger = mocks['logger']
+                self.mock_version = mocks['_get_version_info']
+                mocks['TrustedAdvisor'].return_value = self.mock_ta
+                self.mock_version.return_value = self.mock_ver_info
+                self.cls = AwsLimitChecker()
 
     def test_init(self):
         # dict should be of _AwsService instances
@@ -85,6 +103,9 @@ class TestAwsLimitChecker(object):
         assert self.mock_bar.mock_calls == [call(80, 99)]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
+        assert self.cls.ta == self.mock_ta
+        assert self.mock_version.mock_calls == [call()]
+        assert self.cls.vinfo == self.mock_ver_info
 
     def test_init_thresholds(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -94,27 +115,20 @@ class TestAwsLimitChecker(object):
         mock_foo.return_value = mock_svc1
         mock_bar.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with nested(
-                patch.dict('awslimitchecker.checker._services',
-                           values=svcs, clear=True),
-                patch('awslimitchecker.checker.logger',
-                      autospec=True),
-                patch('awslimitchecker.checker._get_version',
-                      spec_set=_get_version),
-                patch('awslimitchecker.checker._get_project_url',
-                      spec_set=_get_project_url)
-        ) as (
-            mock_services,
-            mock_logger,
-            mock_version,
-            mock_project_url,
-        ):
-            mock_version.return_value = 'MVER'
-            mock_project_url.return_value = 'PURL'
-            cls = AwsLimitChecker(
-                warning_threshold=5,
-                critical_threshold=22,
-            )
+        with patch.dict('awslimitchecker.checker._services',
+                        values=svcs, clear=True):
+            with patch.multiple(
+                    'awslimitchecker.checker',
+                    logger=DEFAULT,
+                    _get_version_info=DEFAULT,
+                    autospec=True,
+            ) as mocks:
+                mock_version = mocks['_get_version_info']
+                mock_version.return_value = self.mock_ver_info
+                cls = AwsLimitChecker(
+                    warning_threshold=5,
+                    critical_threshold=22,
+                )
         # dict should be of _AwsService instances
         assert cls.services == {
             'SvcFoo': mock_svc1,
@@ -125,30 +139,33 @@ class TestAwsLimitChecker(object):
         assert mock_bar.mock_calls == [call(5, 22)]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
+        assert self.mock_version.mock_calls == [call()]
+        assert self.cls.vinfo == self.mock_ver_info
 
     def test_init_logger(self):
         """ensure we log a license message"""
         assert self.mock_logger.mock_calls == [
-            call.warning("awslimitchecker MVER is AGPL-licensed free software; "
+            call.warning("awslimitchecker %s is AGPL-licensed free software; "
                          "all users have a right to the full source code of "
-                         "this version. See <PURL>")
+                         "this version. See <%s>", '1.2.3@mytag',
+                         'http://myurl')
         ]
 
     def test_get_version(self):
-        with patch('awslimitchecker.checker._get_version',
-                   spec_set=_get_version) as mock_version:
-            mock_version.return_value = 'a.b.c'
+        with patch('awslimitchecker.checker._get_version_info',
+                   spec_set=_get_version_info) as mock_version:
+            self.cls.vinfo = self.mock_ver_info
             res = self.cls.get_version()
-        assert res == 'a.b.c'
-        assert mock_version.mock_calls == [call()]
+        assert res == '1.2.3@mytag'
+        assert mock_version.mock_calls == []
 
     def test_get_project_url(self):
-        with patch('awslimitchecker.checker._get_project_url',
-                   spec_set=_get_project_url) as mock_url:
-            mock_url.return_value = 'myurl'
+        with patch('awslimitchecker.checker._get_version_info',
+                   spec_set=_get_version_info) as mock_version:
+            self.cls.vinfo = self.mock_ver_info
             res = self.cls.get_project_url()
-        assert res == 'myurl'
-        assert mock_url.mock_calls == [call()]
+        assert res == 'http://myurl'
+        assert mock_version.mock_calls == []
 
     def test_get_service_names(self):
         res = self.cls.get_service_names()
@@ -160,6 +177,20 @@ class TestAwsLimitChecker(object):
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
         res = self.cls.get_limits()
         assert res == limits
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+                'SvcBar': self.mock_svc2,
+            })
+        ]
+
+    def test_get_limits_no_ta(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.mock_svc2.get_limits.return_value = limits['SvcBar']
+        res = self.cls.get_limits(use_ta=False)
+        assert res == limits
+        assert self.mock_ta.mock_calls == []
 
     def test_get_limits_service(self):
         limits = sample_limits()
@@ -167,6 +198,11 @@ class TestAwsLimitChecker(object):
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
         res = self.cls.get_limits(service='SvcFoo')
         assert res == {'SvcFoo': limits['SvcFoo']}
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+            })
+        ]
 
     def test_find_usage(self):
         self.cls.find_usage()
@@ -176,6 +212,22 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc2.mock_calls == [
             call.find_usage()
         ]
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+                'SvcBar': self.mock_svc2,
+            })
+        ]
+
+    def test_find_usage_no_ta(self):
+        self.cls.find_usage(use_ta=False)
+        assert self.mock_svc1.mock_calls == [
+            call.find_usage()
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call.find_usage()
+        ]
+        assert self.mock_ta.mock_calls == []
 
     def test_find_usage_service(self):
         self.cls.find_usage(service='SvcFoo')
@@ -183,6 +235,80 @@ class TestAwsLimitChecker(object):
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == []
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({'SvcFoo': self.mock_svc1})
+        ]
+
+    def test_set_threshold_overrides(self):
+        limits = sample_limits()
+        limits['SvcFoo']['zz3'] = AwsLimit(
+            'zz3',
+            self.mock_svc1,
+            1,
+            2,
+            3,
+        )
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.mock_svc2.get_limits.return_value = limits['SvcBar']
+        overrides = {
+            'SvcBar': {
+                'barlimit1': {
+                    'warning': {
+                        'percent': 10,
+                        'count': 12
+                    },
+                    'critical': {
+                        'percent': 14,
+                        'count': 16
+                    }
+                },
+                'bar limit2': {
+                    'critical': {
+                        'count': 15,
+                    }
+                },
+                'zz3': {
+                    'warning': {
+                        'count': 41
+                    },
+                    'critical': {
+                        'percent': 52
+                    }
+                }
+            },
+            'SvcFoo': {
+                'foo limit3': {
+                    'warning': {
+                        'percent': 91
+                    },
+                }
+            },
+        }
+        self.cls.set_threshold_overrides(overrides)
+        assert self.mock_svc1.mock_calls == [
+            call.set_threshold_override(
+                'foo limit3',
+                warn_percent=91,
+            )
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call.set_threshold_override(
+                'bar limit2',
+                crit_count=15
+            ),
+            call.set_threshold_override(
+                'barlimit1',
+                warn_percent=10,
+                warn_count=12,
+                crit_percent=14,
+                crit_count=16
+            ),
+            call.set_threshold_override(
+                'zz3',
+                warn_count=41,
+                crit_percent=52
+            ),
+        ]
 
     def test_set_limit_overrides(self):
         limits = sample_limits()
@@ -249,6 +375,27 @@ class TestAwsLimitChecker(object):
             )
         ]
 
+    def test_set_threshold_override(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.cls.set_threshold_override(
+            'SvcFoo',
+            'foo limit3',
+            warn_percent=10,
+            warn_count=12,
+            crit_percent=14,
+            crit_count=16
+        )
+        assert self.mock_svc1.mock_calls == [
+            call.set_threshold_override(
+                'foo limit3',
+                warn_percent=10,
+                warn_count=12,
+                crit_percent=14,
+                crit_count=16
+            )
+        ]
+
     def test_get_required_iam_policy(self):
         expected = {
             'Version': '2012-10-17',
@@ -260,6 +407,8 @@ class TestAwsLimitChecker(object):
                     'ec2:foo',
                     'foo:perm1',
                     'foo:perm2',
+                    'support:*',
+                    'trustedadvisor:Describe*'
                 ],
             }],
         }
@@ -276,7 +425,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == [call.required_iam_permissions()]
         assert self.mock_svc2.mock_calls == [call.required_iam_permissions()]
 
-    def test_check_limits(self):
+    def test_check_thresholds(self):
         self.mock_svc1.check_thresholds.return_value = {
             'foo': 'bar',
             'baz': 'blam',
@@ -289,8 +438,14 @@ class TestAwsLimitChecker(object):
                 'baz': 'blam',
             }
         }
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcFoo': self.mock_svc1,
+                'SvcBar': self.mock_svc2
+            }),
+        ]
 
-    def test_check_limits_service(self):
+    def test_check_thresholds_service(self):
         self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
         self.mock_svc2.check_thresholds.return_value = {'baz': 'blam'}
         res = self.cls.check_thresholds(service='SvcFoo')
@@ -299,3 +454,22 @@ class TestAwsLimitChecker(object):
                 'foo': 'bar',
             }
         }
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({'SvcFoo': self.mock_svc1})
+        ]
+
+    def test_check_thresholds_no_ta(self):
+        self.mock_svc1.check_thresholds.return_value = {
+            'foo': 'bar',
+            'baz': 'blam',
+        }
+        self.mock_svc2.check_thresholds.return_value = {}
+        self.cls.use_ta = False
+        res = self.cls.check_thresholds(use_ta=False)
+        assert res == {
+            'SvcFoo': {
+                'foo': 'bar',
+                'baz': 'blam',
+            }
+        }
+        assert self.mock_ta.mock_calls == []

@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -37,11 +37,21 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from mock import Mock, patch, call
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services import _services
 from awslimitchecker.limit import AwsLimit
 import pytest
+import sys
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call, Mock
+else:
+    from unittest.mock import patch, call, Mock
 
 
 class AwsServiceTester(_AwsService):
@@ -64,15 +74,33 @@ class AwsServiceTester(_AwsService):
 
 class Test_AwsService(object):
 
-    def test_init(self):
+    @pytest.mark.skipif(sys.version_info != (2, 6), reason='test for py26')
+    def test_init_py26(self):
         with pytest.raises(TypeError) as excinfo:
-            _AwsService()
+            _AwsService(1, 2)
+        assert excinfo.value == "Can't instantiate abstract class " \
+            "_AwsService with abstract methods " \
+            "connect" \
+            ", find_usage" \
+            ", get_limits" \
+            ", required_iam_permissions"
+
+    @pytest.mark.skipif(sys.version_info != (2, 7), reason='test for py27')
+    def test_init_py27(self):
+        with pytest.raises(TypeError) as excinfo:
+            _AwsService(1, 2)
         assert excinfo.value.message == "Can't instantiate abstract class " \
             "_AwsService with abstract methods " \
             "connect" \
             ", find_usage" \
             ", get_limits" \
             ", required_iam_permissions"
+
+    @pytest.mark.skipif(sys.version_info < (3, 0), reason='test for py3')
+    def test_init_py3(self):
+        with pytest.raises(NotImplementedError) as excinfo:
+            _AwsService(1, 2)
+        assert excinfo.value.args[0] == "abstract base class"
 
     def test_init_subclass(self):
         cls = AwsServiceTester(1, 2)
@@ -99,7 +127,78 @@ class Test_AwsService(object):
         cls.limits['foo'] = mock_limit
         with pytest.raises(ValueError) as excinfo:
             cls.set_limit_override('bar', 10)
-        assert excinfo.value.message == "AwsServiceTester service has no " \
+
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+
+        assert msg == "AwsServiceTester service has no " \
+            "'bar' limit"
+        assert mock_limit.mock_calls == []
+
+    def test_set_ta_limit(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        cls._set_ta_limit('foo', 10)
+        assert mock_limit.mock_calls == [
+            call._set_ta_limit(10)
+        ]
+
+    def test_set_ta_limit_keyerror(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        with pytest.raises(ValueError) as excinfo:
+            cls._set_ta_limit('bar', 10)
+
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+
+        assert msg == "AwsServiceTester service has no " \
+            "'bar' limit"
+        assert mock_limit.mock_calls == []
+
+    def test_set_threshold_override(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        cls.set_threshold_override(
+            'foo',
+            warn_percent=10,
+            warn_count=12,
+            crit_percent=14,
+            crit_count=16
+        )
+        assert mock_limit.mock_calls == [
+            call.set_threshold_override(
+                warn_percent=10,
+                warn_count=12,
+                crit_percent=14,
+                crit_count=16
+            )
+        ]
+
+    def test_set_threshold_override_keyerror(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).default_limit = 5
+        cls = AwsServiceTester(1, 2)
+        cls.limits['foo'] = mock_limit
+        with pytest.raises(ValueError) as excinfo:
+            cls.set_threshold_override('bar', warn_percent=10)
+
+        if sys.version_info[0] > 2:
+            msg = excinfo.value.args[0]
+        else:
+            msg = excinfo.value.message
+
+        assert msg == "AwsServiceTester service has no " \
             "'bar' limit"
         assert mock_limit.mock_calls == []
 
@@ -173,6 +272,6 @@ class Test_AwsServiceSubclasses(object):
         assert inst.critical_threshold == 7
 
     def test_subclass_init(self):
-        for clsname, cls in _services.iteritems():
+        for clsname, cls in _services.items():
             yield "verify_subclass %s" % clsname, \
                 self.verify_subclass, clsname, cls

@@ -3,9 +3,11 @@ awslimitchecker
 
 .. image:: https://pypip.in/v/awslimitchecker/badge.png
    :target: https://crate.io/packages/awslimitchecker
+   :alt: PyPi package version
 
 .. image:: https://pypip.in/d/awslimitchecker/badge.png
    :target: https://crate.io/packages/awslimitchecker
+   :alt: PyPi downloads
 
 .. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
    :target: https://landscape.io/github/jantman/awslimitchecker/master
@@ -18,6 +20,30 @@ awslimitchecker
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=master
    :alt: coverage report for master branch
+
+.. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=latest
+   :target: https://readthedocs.org/projects/awslimitchecker/?badge=latest
+   :alt: sphinx documentation for latest release
+
+.. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=develop
+   :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
+   :alt: sphinx documentation for develop branch
+
+.. image:: https://img.shields.io/github/release/jantman/awslimitchecker.svg
+   :alt: GitHub latest release version
+   :target: https://github.com/jantman/awslimitchecker/releases
+
+.. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
+   :alt: GitHub Forks
+   :target: https://github.com/jantman/awslimitchecker/network
+
+.. image:: https://img.shields.io/github/stars/jantman/awslimitchecker.svg
+   :alt: GitHub Stars
+   :target: https://github.com/jantman/awslimitchecker
+
+.. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
+   :alt: GitHub Open Issues
+   :target: https://github.com/jantman/awslimitchecker/issues
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
@@ -35,18 +61,30 @@ Advisor where available), notifying you when you are approaching or at your limi
 Full project documentation is available at `http://awslimitchecker.readthedocs.org <http://awslimitchecker.readthedocs.org>`_.
 
 Status
--------
+------
 
 This project is currently in very early development. At this time please consider it alpha code and not reliable;
 furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
 use, but contributions are certainly welcome.
 
+What It Does
+------------
+
+- Check current AWS resource usage against AWS Service Limits
+- Show and inspect current usage
+- Override default Service Limits (for accounts with increased limits)
+- Compare current usage to limits; return information about limits that
+  exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
+- Define custom thresholds per-limit
+- where possible, pull current limits from Trusted Advisor API
+
 Requirements
 ------------
 
-* Python 2.6 or 2.7 (`boto <http://docs.pythonboto.org/en/latest/>`_ currently has incomplete python3 support)
+* Python 2.6 through 3.4. Python 2.x is recommended, as `boto <http://docs.pythonboto.org/en/latest/>`_ (the AWS client library) currently has
+  incomplete Python3 support. See the `boto documentation <http://boto.readthedocs.org/en/latest/>`_ for a list of AWS services that are Python3-compatible.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.30.0
+* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.32.0
 
 Installation
 ------------
@@ -61,11 +99,14 @@ system-wide, you can (using sudo).
     pip install awslimitchecker
 
 Credentials
-------------
+-----------
 
 awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
-files, or set as environment variables. See `boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+files, or set as environment variables. See
+`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+and
+`this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
 
 Usage
@@ -77,7 +118,8 @@ For basic usage, see:
 
     awslimitchecker --help
 
-See the `project documentation <http://awslimitchecker.readthedocs.org>`_ for further information.
+See the `project documentation <http://awslimitchecker.readthedocs.org>`_
+for further information.
 
 Bugs and Feature Requests
 -------------------------
@@ -89,7 +131,7 @@ Pull requests are always welcome.
 Please see the [Development]() and [Getting Help]() documentation for more information.
 
 License
---------
+-------
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
 This shouldn't be much of a concern to most people.

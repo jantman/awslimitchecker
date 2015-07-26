@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -52,12 +52,11 @@ class _Ec2Service(_AwsService):
     service_name = 'EC2'
 
     def connect(self):
+        """connect to API if not already connected; set self.conn"""
         if self.conn is None:
-            logger.debug("Connecting to {n}".format(
-                n=self.service_name))
+            logger.debug("Connecting to %s", self.service_name)
             self.conn = boto.connect_ec2()
-            logger.info("Connected to {n}".format(
-                n=self.service_name))
+            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
@@ -65,13 +64,11 @@ class _Ec2Service(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
-        logger.debug("Checking usage for service {n}".format(
-            n=self.service_name))
+        logger.debug("Checking usage for service %s", self.service_name)
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_instances()
-        self._find_usage_ebs()
         self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
@@ -87,11 +84,11 @@ class _Ec2Service(_AwsService):
         ondemand_usage = defaultdict(int)
         for az in inst_usage:
             if az not in res_usage:
-                for i_type, count in inst_usage[az].iteritems():
+                for i_type, count in inst_usage[az].items():
                     ondemand_usage[i_type] += count
                 continue
             # else we have reservations for this AZ
-            for i_type, count in inst_usage[az].iteritems():
+            for i_type, count in inst_usage[az].items():
                 if i_type not in res_usage[az]:
                     # no reservations for this type
                     ondemand_usage[i_type] += count
@@ -102,7 +99,7 @@ class _Ec2Service(_AwsService):
                     continue
                 ondemand_usage[i_type] += od
         total_instances = 0
-        for i_type, usage in ondemand_usage.iteritems():
+        for i_type, usage in ondemand_usage.items():
             key = 'Running On-Demand {t} instances'.format(
                 t=i_type)
             self.limits[key]._add_current_usage(
@@ -131,8 +128,8 @@ class _Ec2Service(_AwsService):
         res = self.conn.get_all_reserved_instances()
         for x in res:
             if x.state != 'active':
-                logger.debug("Skipping ReservedInstance {i} with state "
-                             "{s}".format(i=x.id, s=x.state))
+                logger.debug("Skipping ReservedInstance %s with state %s",
+                             x.id, x.state)
                 continue
             if x.availability_zone not in az_to_res:
                 az_to_res[x.availability_zone] = deepcopy(reservations)
@@ -152,62 +149,26 @@ class _Ec2Service(_AwsService):
         :rtype: dict
         """
         # On-Demand instances by type
-        ondemand = {k: 0 for k in self._instance_types()}
+        ondemand = {}
+        for t in self._instance_types():
+            ondemand[t] = 0
         az_to_inst = {}
         logger.debug("Getting usage for on-demand instances")
         for res in self.conn.get_all_reservations():
             for inst in res.instances:
                 if inst.spot_instance_request_id:
-                    logger.warning("Spot instance found ({i}); awslimitchecker "
+                    logger.warning("Spot instance found (%s); awslimitchecker "
                                    "does not yet support spot "
-                                   "instances.".format(i=inst.id))
+                                   "instances.", inst.id)
                     continue
                 if inst.placement not in az_to_inst:
                     az_to_inst[inst.placement] = deepcopy(ondemand)
                 try:
                     az_to_inst[inst.placement][inst.instance_type] += 1
                 except KeyError:
-                    logger.error("ERROR - unknown instance type '{t}'; not "
-                                 "counting".format(t=inst.instance_type))
+                    logger.error("ERROR - unknown instance type '%s'; not "
+                                 "counting", inst.instance_type)
         return az_to_inst
-
-    def _find_usage_ebs(self):
-        """calculate usage for all EBS limits and update Limits"""
-        piops = 0
-        piops_gb = 0
-        gp_gb = 0
-        mag_gb = 0
-        logger.debug("Getting usage for EBS volumes")
-        for vol in self.conn.get_all_volumes():
-            if vol.type == 'io1':
-                piops_gb += vol.size
-                piops += vol.iops
-            elif vol.type == 'gp2':
-                gp_gb += vol.size
-            elif vol.type == 'standard':
-                mag_gb += vol.size
-            else:
-                logger.error("ERROR - unknown volume type '{t}' for volume {i};"
-                             " not counting".format(t=vol.type, i=vol.id))
-        self.limits['Provisioned IOPS']._add_current_usage(
-            piops,
-            aws_type='AWS::EC2::Volume'
-        )
-        self.limits['Provisioned IOPS (SSD) volume storage '
-                    '(TiB)']._add_current_usage(
-                        piops_gb / 1000.0,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['General Purpose (SSD) volume storage '
-                    '(TiB)']._add_current_usage(
-                        gp_gb / 1000.0,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['Magnetic volume storage '
-                    '(TiB)']._add_current_usage(
-                        mag_gb / 1000.0,
-                        aws_type='AWS::EC2::Volume'
-                    )
 
     def get_limits(self):
         """
@@ -221,55 +182,8 @@ class _Ec2Service(_AwsService):
             return self.limits
         limits = {}
         limits.update(self._get_limits_instances())
-        limits.update(self._get_limits_ebs())
         limits.update(self._get_limits_networking())
-        return limits
-
-    def _get_limits_ebs(self):
-        """
-        Return a dict of EBS-related limits only.
-        This method should only be used internally by
-        :py:meth:~.get_limits`.
-
-        :rtype: dict
-        """
-        limits = {}
-        limits['Provisioned IOPS'] = AwsLimit(
-            'Provisioned IOPS',
-            self.service_name,
-            40000,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='io1',
-        )
-        limits['Provisioned IOPS (SSD) volume storage (TiB)'] = AwsLimit(
-            'Provisioned IOPS (SSD) volume storage (TiB)',
-            self.service_name,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='io1',
-        )
-        limits['General Purpose (SSD) volume storage (TiB)'] = AwsLimit(
-            'General Purpose (SSD) volume storage (TiB)',
-            self.service_name,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='gp2',
-        )
-        limits['Magnetic volume storage (TiB)'] = AwsLimit(
-            'Magnetic volume storage (TiB)',
-            self.service_name,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::Volume',
-            limit_subtype='standard',
-        )
+        self.limits = limits
         return limits
 
     def _get_limits_instances(self):
@@ -310,7 +224,7 @@ class _Ec2Service(_AwsService):
                 lim = special_limits[i_type][0]
             limits[key] = AwsLimit(
                 key,
-                self.service_name,
+                self,
                 lim,
                 self.warning_threshold,
                 self.critical_threshold,
@@ -321,7 +235,7 @@ class _Ec2Service(_AwsService):
         key = 'Running On-Demand EC2 instances'
         limits[key] = AwsLimit(
             key,
-            self.service_name,
+            self,
             default_limits[0],
             self.warning_threshold,
             self.critical_threshold,
@@ -339,17 +253,17 @@ class _Ec2Service(_AwsService):
                 sgs_per_vpc[sg.vpc_id] += 1
                 rules_per_sg[sg.id] = len(sg.rules)
         # set usage
-        for vpc_id, count in sgs_per_vpc.iteritems():
+        for vpc_id, count in sgs_per_vpc.items():
             self.limits['Security groups per VPC']._add_current_usage(
                 count,
                 aws_type='AWS::EC2::VPC',
-                id=vpc_id,
+                resource_id=vpc_id,
             )
-        for sg_id, count in rules_per_sg.iteritems():
+        for sg_id, count in rules_per_sg.items():
             self.limits['Rules per VPC security group']._add_current_usage(
                 count,
                 aws_type='AWS::EC2::SecurityGroupRule',
-                id=sg_id,
+                resource_id=sg_id,
             )
 
     def _find_usage_networking_eips(self):
@@ -359,7 +273,9 @@ class _Ec2Service(_AwsService):
             sum(1 for a in addrs if a.domain == 'vpc'),
             aws_type='AWS::EC2::EIP',
         )
-        self.limits['EC2-Classic Elastic IPs']._add_current_usage(
+        # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
+        # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
+        self.limits['Elastic IP addresses (EIPs)']._add_current_usage(
             sum(1 for a in addrs if a.domain == 'standard'),
             aws_type='AWS::EC2::EIP',
         )
@@ -372,7 +288,7 @@ class _Ec2Service(_AwsService):
                         'interface']._add_current_usage(
                             len(iface.groups),
                             aws_type='AWS::EC2::NetworkInterface',
-                            id=iface.id,
+                            resource_id=iface.id,
                         )
 
     def _get_limits_networking(self):
@@ -386,7 +302,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits['Security groups per VPC'] = AwsLimit(
             'Security groups per VPC',
-            self.service_name,
+            self,
             100,
             self.warning_threshold,
             self.critical_threshold,
@@ -395,36 +311,35 @@ class _Ec2Service(_AwsService):
         )
         limits['Rules per VPC security group'] = AwsLimit(
             'Rules per VPC security group',
-            self.service_name,
+            self,
             50,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::SecurityGroup',
             limit_subtype='AWS::EC2::VPC',
         )
-        # self.conn.get_all_addresses - domain == 'vpc'
         limits['EC2-VPC Elastic IPs'] = AwsLimit(
             'EC2-VPC Elastic IPs',
-            self.service_name,
+            self,
             5,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
             limit_subtype='AWS::EC2::VPC',
         )
-        # self.conn.get_all_addresses - domain == 'standard'
-        limits['EC2-Classic Elastic IPs'] = AwsLimit(
-            'EC2-Classic Elastic IPs',
-            self.service_name,
+        # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
+        # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
+        limits['Elastic IP addresses (EIPs)'] = AwsLimit(
+            'Elastic IP addresses (EIPs)',
+            self,
             5,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
         )
-        # self.conn.get_all_network_interfaces()
         limits['VPC security groups per elastic network interface'] = AwsLimit(
             'VPC security groups per elastic network interface',
-            self.service_name,
+            self,
             5,
             self.warning_threshold,
             self.critical_threshold,
@@ -443,10 +358,18 @@ class _Ec2Service(_AwsService):
         :rtype: list
         """
         return [
+            "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
+            "ec2:DescribeInternetGateways"
+            "ec2:DescribeNetworkAcls",
+            "ec2:DescribeNetworkInterfaces",
             "ec2:DescribeReservedInstances",
-            "ec2:DescribeVolumes",
+            "ec2:DescribeRouteTables",
             "ec2:DescribeSecurityGroups",
+            "ec2:DescribeSnapshots",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeVpcs",
         ]
 
     def _instance_types(self):

@@ -8,9 +8,11 @@ awslimitchecker
 
 .. image:: https://pypip.in/v/awslimitchecker/badge.png
    :target: https://crate.io/packages/awslimitchecker
+   :alt: PyPi package version
 
 .. image:: https://pypip.in/d/awslimitchecker/badge.png
    :target: https://crate.io/packages/awslimitchecker
+   :alt: PyPi downloads
 
 .. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
    :target: https://landscape.io/github/jantman/awslimitchecker/master
@@ -23,6 +25,30 @@ awslimitchecker
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=master
    :alt: coverage report for master branch
+
+.. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=latest
+   :target: https://readthedocs.org/projects/awslimitchecker/?badge=latest
+   :alt: sphinx documentation for latest release
+
+.. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=develop
+   :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
+   :alt: sphinx documentation for develop branch
+
+.. image:: https://img.shields.io/github/release/jantman/awslimitchecker.svg
+   :alt: GitHub latest release version
+   :target: https://github.com/jantman/awslimitchecker/releases
+
+.. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
+   :alt: GitHub Forks
+   :target: https://github.com/jantman/awslimitchecker/network
+
+.. image:: https://img.shields.io/github/stars/jantman/awslimitchecker.svg
+   :alt: GitHub Stars
+   :target: https://github.com/jantman/awslimitchecker
+
+.. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
+   :alt: GitHub Open Issues
+   :target: https://github.com/jantman/awslimitchecker/issues
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
@@ -44,12 +70,24 @@ This project is currently in very early development. At this time please conside
 furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
 use, but contributions are certainly welcome.
 
+What It Does
+------------
+
+- Check current AWS resource usage against AWS Service Limits
+- Show and inspect current usage
+- Override default Service Limits (for accounts with increased limits)
+- Compare current usage to limits; return information about limits that
+  exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
+- Define custom thresholds per-limit
+- where possible, pull current limits from Trusted Advisor API
+
 Requirements
 ------------
 
-* Python 2.6 or 2.7 (`boto <http://docs.pythonboto.org/en/latest/>`_ currently has incomplete python3 support)
+* Python 2.6 through 3.4. Python 2.x is recommended, as `boto <http://docs.pythonboto.org/en/latest/>`_ (the AWS client library) currently has
+  incomplete Python3 support. See the `boto documentation <http://boto.readthedocs.org/en/latest/>`_ for a list of AWS services that are Python3-compatible.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.30.0
+* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.32.0
 
 Installation and Usage
 -----------------------
@@ -68,6 +106,8 @@ Contents
    :maxdepth: 4
 
    Getting Started <getting_started>
+   Command Line Usage <cli_usage>
+   Python Usage <python_usage>
    Required IAM Permissions <iam_policy>
    Supported Limits <limits>
    Development <development>
@@ -87,14 +127,4 @@ License
 --------
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
-This shouldn't be much of a concern to most people.
-
-If you're simply *running* awslimitchecker, all you must do is provide a notice on where to get the source code
-in your output; this is already handled via a warning-level log message in the package. If you modify awslimitchecker's
-code, you must update this URL to reflect your modifications (see ``awslimitchecker/version.py``).
-
-If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply a
-requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
-
-If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
-ensure that the source code URL is visible in the output given to users.
+This shouldn't be much of a concern to most people; see :ref:`Development / AGPL <development.agpl>` for more information.

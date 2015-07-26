@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -39,6 +39,12 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.ec2 import _Ec2Service
+from awslimitchecker.services.vpc import _VpcService
+from awslimitchecker.services.autoscaling import _AutoscalingService
+from awslimitchecker.services.ebs import _EbsService
+from awslimitchecker.services.elb import _ElbService
+from awslimitchecker.services.elasticache import _ElastiCacheService
+from awslimitchecker.services.rds import _RDSService
 
 # dynamically generate the service name to class dict
 _services = {}

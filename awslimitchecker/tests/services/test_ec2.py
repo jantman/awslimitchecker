@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -37,17 +37,25 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from mock import Mock, patch, call
-from contextlib import nested
+import sys
 from boto.ec2.connection import EC2Connection
 from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance
 from boto.ec2.securitygroup import SecurityGroup
 from boto.ec2.address import Address
-from boto.ec2.volume import Volume
 from boto.ec2.networkinterface import NetworkInterface
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call, Mock, DEFAULT
+else:
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 
 class Test_Ec2Service(object):
@@ -100,45 +108,27 @@ class Test_Ec2Service(object):
     def test_get_limits(self):
         cls = _Ec2Service(21, 43)
         cls.limits = {}
-        with nested(
-                patch('%s._get_limits_instances' % self.pb),
-                patch('%s._get_limits_ebs' % self.pb),
-                patch('%s._get_limits_networking' % self.pb),
-        ) as (
-            mock_instances,
-            mock_ebs,
-            mock_vpc
-        ):
-            mock_instances.return_value = {'ec2lname': 'ec2lval'}
-            mock_ebs.return_value = {'ebslname': 'ebslval'}
-            mock_vpc.return_value = {'vpck': 'vpcv'}
-            res = cls.get_limits()
+        with patch('%s._get_limits_instances' % self.pb) as mock_instances:
+            with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
+                mock_instances.return_value = {'ec2lname': 'ec2lval'}
+                mock_vpc.return_value = {'vpck': 'vpcv'}
+                res = cls.get_limits()
         assert res == {
             'ec2lname': 'ec2lval',
-            'ebslname': 'ebslval',
             'vpck': 'vpcv',
         }
         assert mock_instances.mock_calls == [call()]
-        assert mock_ebs.mock_calls == [call()]
         assert mock_vpc.mock_calls == [call()]
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         cls = _Ec2Service(21, 43)
         cls.limits = {'foo': 'bar'}
-        with nested(
-                patch('%s._get_limits_instances' % self.pb),
-                patch('%s._get_limits_ebs' % self.pb),
-                patch('%s._get_limits_networking' % self.pb),
-        ) as (
-            mock_instances,
-            mock_ebs,
-            mock_vpc,
-        ):
-            res = cls.get_limits()
+        with patch('%s._get_limits_instances' % self.pb) as mock_instances:
+            with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
+                res = cls.get_limits()
         assert res == {'foo': 'bar'}
         assert mock_instances.mock_calls == []
-        assert mock_ebs.mock_calls == []
         assert mock_vpc.mock_calls == []
 
     def test_get_limits_all(self):
@@ -148,24 +138,7 @@ class Test_Ec2Service(object):
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
-            assert limits[x].service_name == 'EC2'
-
-    def test_get_limits_ebs(self):
-        cls = _Ec2Service(21, 43)
-        limits = cls._get_limits_ebs()
-        assert len(limits) == 4
-        piops = limits['Provisioned IOPS']
-        assert piops.limit_type == 'AWS::EC2::Volume'
-        assert piops.limit_subtype == 'io1'
-        piops_tb = limits['Provisioned IOPS (SSD) volume storage (TiB)']
-        assert piops_tb.limit_type == 'AWS::EC2::Volume'
-        assert piops_tb.limit_subtype == 'io1'
-        gp_tb = limits['General Purpose (SSD) volume storage (TiB)']
-        assert gp_tb.limit_type == 'AWS::EC2::Volume'
-        assert gp_tb.limit_subtype == 'gp2'
-        mag_tb = limits['Magnetic volume storage (TiB)']
-        assert mag_tb.limit_type == 'AWS::EC2::Volume'
-        assert mag_tb.limit_subtype == 'standard'
+            assert limits[x].service == cls
 
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
@@ -191,33 +164,22 @@ class Test_Ec2Service(object):
         assert 'Running On-Demand m4.4xlarge instances' in limits
 
     def test_find_usage(self):
-        with nested(
-                patch('%s.connect' % self.pb, autospec=True),
-                patch('%s._find_usage_instances' % self.pb, autospec=True),
-                patch('%s._find_usage_ebs' % self.pb, autospec=True),
-                patch('%s._find_usage_networking_sgs' % self.pb, autospec=True),
-                patch('%s._find_usage_networking_eips' % self.pb,
-                      autospec=True),
-                patch('%s._find_usage_networking_eni_sg' % self.pb,
-                      autospec=True),
-        ) as (
-            mock_connect,
-            mock_instances,
-            mock_ebs,
-            mock_vpc,
-            mock_eips,
-            mock_eni_sg,
-        ):
+        with patch.multiple(
+                self.pb,
+                connect=DEFAULT,
+                _find_usage_instances=DEFAULT,
+                _find_usage_networking_sgs=DEFAULT,
+                _find_usage_networking_eips=DEFAULT,
+                _find_usage_networking_eni_sg=DEFAULT,
+                autospec=True,
+        ) as mocks:
             cls = _Ec2Service(21, 43)
             assert cls._have_usage is False
             cls.find_usage()
         assert cls._have_usage is True
-        assert mock_connect.mock_calls == [call(cls)]
-        assert mock_instances.mock_calls == [call(cls)]
-        assert mock_ebs.mock_calls == [call(cls)]
-        assert mock_vpc.mock_calls == [call(cls)]
-        assert mock_eips.mock_calls == [call(cls)]
-        assert mock_eni_sg.mock_calls == [call(cls)]
+        assert len(mocks) == 5
+        for m in mocks:
+            assert mocks[m].mock_calls == [call(cls)]
 
     def test_instance_usage(self):
         mock_t2_micro = Mock(spec_set=AwsLimit)
@@ -385,18 +347,14 @@ class Test_Ec2Service(object):
         mock_conn = Mock(spec_set=EC2Connection)
         cls.conn = mock_conn
         cls.limits = limits
-        with nested(
-                patch('awslimitchecker.services.ec2._Ec2Service.'
-                      '_instance_usage', autospec=True),
-                patch('awslimitchecker.services.ec2._Ec2Service.'
-                      '_get_reserved_instance_count', autospec=True),
-        ) as (
-            mock_inst_usage,
-            mock_res_inst_count,
-        ):
-            mock_inst_usage.return_value = iusage
-            mock_res_inst_count.return_value = ri_count
-            cls._find_usage_instances()
+        with patch('awslimitchecker.services.ec2._Ec2Service.'
+                   '_instance_usage', autospec=True) as mock_inst_usage:
+            with patch('awslimitchecker.services.ec2._Ec2Service.'
+                       '_get_reserved_instance_count',
+                       autospec=True) as mock_res_inst_count:
+                mock_inst_usage.return_value = iusage
+                mock_res_inst_count.return_value = ri_count
+                cls._find_usage_instances()
         assert mock_t2_micro.mock_calls == [call._add_current_usage(
             36,
             aws_type='AWS::EC2::Instance'
@@ -436,98 +394,25 @@ class Test_Ec2Service(object):
                 cls._instance_usage()
         assert mock_logger.mock_calls == [
             call.debug('Getting usage for on-demand instances'),
-            call.error("ERROR - unknown instance type 'foobar'; not counting"),
+            call.error("ERROR - unknown instance type '%s'; not counting",
+                       'foobar'),
         ]
-
-    def test_find_usage_ebs(self):
-        # 500G magnetic
-        mock_vol1 = Mock(spec_set=Volume)
-        type(mock_vol1).id = 'vol-1'
-        type(mock_vol1).type = 'standard'  # magnetic
-        type(mock_vol1).size = 500
-        type(mock_vol1).iops = None
-
-        # 8G magnetic
-        mock_vol2 = Mock(spec_set=Volume)
-        type(mock_vol2).id = 'vol-2'
-        type(mock_vol2).type = 'standard'  # magnetic
-        type(mock_vol2).size = 8
-        type(mock_vol2).iops = None
-
-        # 15G general purpose SSD, 45 IOPS
-        mock_vol3 = Mock(spec_set=Volume)
-        type(mock_vol3).id = 'vol-3'
-        type(mock_vol3).type = 'gp2'
-        type(mock_vol3).size = 15
-        type(mock_vol3).iops = 45
-
-        # 30G general purpose SSD, 90 IOPS
-        mock_vol4 = Mock(spec_set=Volume)
-        type(mock_vol4).id = 'vol-4'
-        type(mock_vol4).type = 'gp2'
-        type(mock_vol4).size = 30
-        type(mock_vol4).iops = 90
-
-        # 400G PIOPS, 700 IOPS
-        mock_vol5 = Mock(spec_set=Volume)
-        type(mock_vol5).id = 'vol-5'
-        type(mock_vol5).type = 'io1'
-        type(mock_vol5).size = 400
-        type(mock_vol5).iops = 700
-
-        # 100G PIOPS, 300 IOPS
-        mock_vol6 = Mock(spec_set=Volume)
-        type(mock_vol6).id = 'vol-6'
-        type(mock_vol6).type = 'io1'
-        type(mock_vol6).size = 100
-        type(mock_vol6).iops = 300
-
-        mock_vol7 = Mock(spec_set=Volume)
-        type(mock_vol7).id = 'vol-7'
-        type(mock_vol7).type = 'othertype'
-
-        mock_conn = Mock(spec_set=EC2Connection)
-        mock_conn.get_all_volumes.return_value = [
-            mock_vol1,
-            mock_vol2,
-            mock_vol3,
-            mock_vol4,
-            mock_vol5,
-            mock_vol6,
-            mock_vol7
-        ]
-        cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
-        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-            cls._find_usage_ebs()
-        assert mock_logger.mock_calls == [
-            call.debug("Getting usage for EBS volumes"),
-            call.error("ERROR - unknown volume type 'othertype' for volume "
-                       "vol-7; not counting")
-        ]
-        assert len(cls.limits['Provisioned IOPS'].get_current_usage()) == 1
-        assert cls.limits['Provisioned IOPS'
-                          ''].get_current_usage()[0].get_value() == 1000
-        assert len(cls.limits['Provisioned IOPS (SSD) volume storage '
-                              '(TiB)'].get_current_usage()) == 1
-        assert cls.limits['Provisioned IOPS (SSD) volume storage '
-                          '(TiB)'].get_current_usage()[0].get_value() == 0.5
-        assert len(cls.limits['General Purpose (SSD) volume storage '
-                              '(TiB)'].get_current_usage()) == 1
-        assert cls.limits['General Purpose (SSD) volume storage '
-                          '(TiB)'].get_current_usage()[0].get_value() == 0.045
-        assert len(cls.limits['Magnetic volume storage '
-                              '(TiB)'].get_current_usage()) == 1
-        assert cls.limits['Magnetic volume storage '
-                          '(TiB)'].get_current_usage()[0].get_value() == 0.508
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service(21, 43)
         assert cls.required_iam_permissions() == [
+            "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
+            "ec2:DescribeInternetGateways"
+            "ec2:DescribeNetworkAcls",
+            "ec2:DescribeNetworkInterfaces",
             "ec2:DescribeReservedInstances",
-            "ec2:DescribeVolumes",
+            "ec2:DescribeRouteTables",
             "ec2:DescribeSecurityGroups",
+            "ec2:DescribeSnapshots",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeVpcs",
         ]
 
     def test_find_usage_networking_sgs(self):
@@ -568,24 +453,24 @@ class Test_Ec2Service(object):
         assert len(sorted_usage) == 2
         assert sorted_usage[0].limit == limit
         assert sorted_usage[0].get_value() == 1
-        assert sorted_usage[0].id == 'vpc-bbb'
+        assert sorted_usage[0].resource_id == 'vpc-bbb'
         assert sorted_usage[0].aws_type == 'AWS::EC2::VPC'
         assert sorted_usage[1].limit == limit
         assert sorted_usage[1].get_value() == 2
-        assert sorted_usage[1].id == 'vpc-aaa'
+        assert sorted_usage[1].resource_id == 'vpc-aaa'
         assert sorted_usage[1].aws_type == 'AWS::EC2::VPC'
 
         limit = cls.limits['Rules per VPC security group']
         sorted_usage = sorted(limit.get_current_usage())
         assert len(sorted_usage) == 3
         assert sorted_usage[0].limit == limit
-        assert sorted_usage[0].id == 'sg-1'
+        assert sorted_usage[0].resource_id == 'sg-1'
         assert sorted_usage[0].get_value() == 0
         assert sorted_usage[1].limit == limit
-        assert sorted_usage[1].id == 'sg-4'
+        assert sorted_usage[1].resource_id == 'sg-4'
         assert sorted_usage[1].get_value() == 3
         assert sorted_usage[2].limit == limit
-        assert sorted_usage[2].id == 'sg-3'
+        assert sorted_usage[2].resource_id == 'sg-3'
         assert sorted_usage[2].get_value() == 9
 
     def test_find_usage_networking_eips(self):
@@ -614,15 +499,15 @@ class Test_Ec2Service(object):
         assert len(usage) == 1
         assert usage[0].limit == limit
         assert usage[0].get_value() == 2
-        assert usage[0].id is None
+        assert usage[0].resource_id is None
         assert usage[0].aws_type == 'AWS::EC2::EIP'
 
-        limit = cls.limits['EC2-Classic Elastic IPs']
+        limit = cls.limits['Elastic IP addresses (EIPs)']
         usage = limit.get_current_usage()
         assert len(usage) == 1
         assert usage[0].limit == limit
         assert usage[0].get_value() == 1
-        assert usage[0].id is None
+        assert usage[0].resource_id is None
         assert usage[0].aws_type == 'AWS::EC2::EIP'
 
     def test_find_usage_networking_eni_sg(self):
@@ -653,13 +538,13 @@ class Test_Ec2Service(object):
         sorted_usage = sorted(limit.get_current_usage())
         assert len(sorted_usage) == 3
         assert sorted_usage[0].limit == limit
-        assert sorted_usage[0].id == 'if-1'
+        assert sorted_usage[0].resource_id == 'if-1'
         assert sorted_usage[0].get_value() == 0
         assert sorted_usage[1].limit == limit
-        assert sorted_usage[1].id == 'if-2'
+        assert sorted_usage[1].resource_id == 'if-2'
         assert sorted_usage[1].get_value() == 3
         assert sorted_usage[2].limit == limit
-        assert sorted_usage[2].id == 'if-3'
+        assert sorted_usage[2].resource_id == 'if-3'
         assert sorted_usage[2].get_value() == 8
 
     def test_get_limits_networking(self):
@@ -669,7 +554,7 @@ class Test_Ec2Service(object):
             'Security groups per VPC',
             'Rules per VPC security group',
             'EC2-VPC Elastic IPs',
-            'EC2-Classic Elastic IPs',
+            'Elastic IP addresses (EIPs)',
             'VPC security groups per elastic network interface',
         ]
         assert sorted(limits.keys()) == sorted(expected)

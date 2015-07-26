@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ##################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ##################################################################################
@@ -37,7 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##################################################################################
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from sys import version_info
 from awslimitchecker.version import _VERSION, _PROJECT_URL
 
@@ -45,7 +45,9 @@ with open('README.rst') as file:
     long_description = file.read()
 
 requires = [
-    'boto>=2.30.0',
+    'boto>=2.32.0',
+    'termcolor>=1.1.0',
+    'python-dateutil>=2.4.2',
 ]
 
 classifiers = [
@@ -62,7 +64,6 @@ classifiers = [
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.2',
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Topic :: Internet',
@@ -74,7 +75,7 @@ setup(
     version=_VERSION,
     author='Jason Antman',
     author_email='jason@jasonantman.com',
-    packages=['awslimitchecker', 'awslimitchecker.tests'],
+    packages=find_packages(),
     entry_points="""
     [console_scripts]
     awslimitchecker = awslimitchecker.runner:console_entry_point

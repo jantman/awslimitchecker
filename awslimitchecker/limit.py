@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -37,10 +37,19 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+#: indicates a limit value that came from hard-coded defaults in awslimitchecker
+SOURCE_DEFAULT = 0
+
+#: indicates a limit value that came from user-defined limit overrides
+SOURCE_OVERRIDE = 1
+
+#: indicates a limit value that came from Trusted Advisor
+SOURCE_TA = 2
+
 
 class AwsLimit(object):
 
-    def __init__(self, name, service_name, default_limit,
+    def __init__(self, name, service, default_limit,
                  def_warning_threshold, def_critical_threshold,
                  limit_type=None, limit_subtype=None):
         """
@@ -51,10 +60,9 @@ class AwsLimit(object):
         :param name: the name of this limit (may contain spaces);
           if possible, this should be the name used by AWS, i.e. TrustedAdvisor
         :type name: string
-        :param service_name: the name of the service this limit is for;
-          this should be the ``service_name`` attribute of an
-          :py:class:`~._AwsService` class.
-        :type service_name: string
+        :param service: the :py:class:`~._AwsService` class that
+          this limit is for
+        :type service_name: :py:class:`~._AwsService`
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int
         :param def_warning_threshold: the default warning threshold, as an
@@ -75,15 +83,20 @@ class AwsLimit(object):
             raise ValueError("critical threshold must be greater than warning "
                              "threshold")
         self.name = name
-        self.service_name = service_name
+        self.service = service
         self.default_limit = default_limit
         self.limit_type = limit_type
         self.limit_subtype = limit_subtype
         self.limit_override = None
         self.override_ta = True
+        self.ta_limit = None
         self._current_usage = []
         self.def_warning_threshold = def_warning_threshold
         self.def_critical_threshold = def_critical_threshold
+        self.warn_percent = None
+        self.warn_count = None
+        self.crit_percent = None
+        self.crit_count = None
         self._warnings = []
         self._criticals = []
 
@@ -97,11 +110,45 @@ class AwsLimit(object):
         :param limit_value: the new limit value
         :type limit_value: int
         :param override_ta: whether or not to also override Trusted
-        Advisor information
+          Advisor information
         :type override_ta: bool
         """
         self.limit_override = limit_value
         self.override_ta = override_ta
+
+    def _set_ta_limit(self, limit_value):
+        """
+        Set the value for the limit as reported by Trusted Advisor.
+
+        This method should only be called by :py:class:`~.TrustedAdvisor`.
+
+        :param limit_value: the Trusted Advisor limit value
+        :type limit_value: int
+        """
+        self.ta_limit = limit_value
+
+    def get_limit_source(self):
+        """
+        Return :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT` if
+        :py:meth:`~.get_limit` returns the default limit,
+        :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE` if it returns a
+        manually-overridden limit, or
+        :py:const:`~awslimitchecker.limit.SOURCE_TA` if it returns a limit from
+        Trusted Advisor.
+
+        :returns: one of :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT`,
+          :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE`, or
+          :py:const:`~awslimitchecker.limit.SOURCE_TA`
+        :rtype: int
+        """
+        if self.limit_override is not None and (
+                self.override_ta is True or
+                self.ta_limit is None
+        ):
+            return SOURCE_OVERRIDE
+        if self.ta_limit is not None:
+            return SOURCE_TA
+        return SOURCE_DEFAULT
 
     def get_limit(self):
         """
@@ -112,9 +159,11 @@ class AwsLimit(object):
         :returns: effective limit value
         :rtype: int
         """
-        # @TODO override_ta
-        if self.limit_override is not None:
+        limit_type = self.get_limit_source()
+        if limit_type == SOURCE_OVERRIDE:
             return self.limit_override
+        elif limit_type == SOURCE_TA:
+            return self.ta_limit
         return self.default_limit
 
     def get_current_usage(self):
@@ -135,13 +184,13 @@ class AwsLimit(object):
         "<unknown>".
 
         If the limit has only one current usage instance, this will be
-        that instance's :py:meth:`~.AwsLimitUsage.__repr__` value.
+        that instance's :py:meth:`~.AwsLimitUsage.__str__` value.
 
         If the limit has more than one current usage instance, this
         will be the a string of the form ``max: X (Y)`` where ``X`` is
-        the :py:meth:`~.AwsLimitUsage.__repr__` value of the instance
+        the :py:meth:`~.AwsLimitUsage.__str__` value of the instance
         with the maximum value, and ``Y`` is a comma-separated list
-        of the :py:meth:`~.AwsLimitUsage.__repr__` values of all usage
+        of the :py:meth:`~.AwsLimitUsage.__str__` values of all usage
         instances in ascending order.
 
         :returns: representation of current usage
@@ -158,7 +207,7 @@ class AwsLimit(object):
         )
         return s
 
-    def _add_current_usage(self, value, id=None, aws_type=None):
+    def _add_current_usage(self, value, resource_id=None, aws_type=None):
         """
         Add a new current usage value for this limit.
 
@@ -172,9 +221,9 @@ class AwsLimit(object):
 
         :param value: the numeric usage value
         :type value: :py:obj:`int` or :py:obj:`float`
-        :param id: If there can be multiple usage values for one limit,
+        :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type id: string
+        :type resource_id: string
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
@@ -182,7 +231,12 @@ class AwsLimit(object):
         :type aws_type: string
         """
         self._current_usage.append(
-            AwsLimitUsage(self, value, id=id, aws_type=aws_type)
+            AwsLimitUsage(
+                self,
+                value,
+                resource_id=resource_id,
+                aws_type=aws_type
+            )
         )
 
     def _reset_usage(self):
@@ -202,14 +256,34 @@ class AwsLimit(object):
 
         :rtype: tuple
         """
-        # @TODO threshold overrides
         t = (
-            None,
-            self.def_warning_threshold,
-            None,
-            self.def_critical_threshold,
+            self.warn_count,
+            self.warn_percent or self.def_warning_threshold,
+            self.crit_count,
+            self.crit_percent or self.def_critical_threshold,
         )
         return t
+
+    def set_threshold_override(self, warn_percent=None, warn_count=None,
+                               crit_percent=None, crit_count=None):
+        """
+        Override the default warning and critical thresholds used to evaluate
+        this limit's usage. Theresholds can be specified as a percentage
+        of the limit, or as a usage count, or both.
+
+        :param warn_percent: new warning threshold, percentage used
+        :type warn_percent: int
+        :param warn_count: new warning threshold, actual count/number
+        :type warn_count: int
+        :param crit_percent: new critical threshold, percentage used
+        :type crit_percent: int
+        :param crit_count: new critical threshold, actual count/number
+        :type crit_count: int
+        """
+        self.warn_percent = warn_percent
+        self.warn_count = warn_count
+        self.crit_percent = crit_percent
+        self.crit_count = crit_count
 
     def check_thresholds(self):
         """
@@ -276,7 +350,7 @@ class AwsLimit(object):
 
 class AwsLimitUsage(object):
 
-    def __init__(self, limit, value, id=None, aws_type=None):
+    def __init__(self, limit, value, resource_id=None, aws_type=None):
         """
         This object describes the usage of an AWS resource, with the capability
         of containing information about the resource beyond an integer usage.
@@ -297,9 +371,9 @@ class AwsLimitUsage(object):
         :type limit: :py:class:`~.AwsLimit`
         :param value: the numeric usage value
         :type value: :py:obj:`int` or :py:obj:`float`
-        :param id: If there can be multiple usage values for one limit,
+        :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type id: string
+        :type resource_id: string
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
@@ -308,7 +382,7 @@ class AwsLimitUsage(object):
         """
         self.limit = limit
         self.value = value
-        self.id = id
+        self.resource_id = resource_id
         self.aws_type = aws_type
 
     def get_value(self):
@@ -330,8 +404,8 @@ class AwsLimitUsage(object):
         :rtype: string
         """
         s = '{v}'.format(v=self.value)
-        if self.id is not None:
-            s = self.id + '=' + s
+        if self.resource_id is not None:
+            s = self.resource_id + '=' + s
         return s
 
     def __eq__(self, other):

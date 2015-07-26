@@ -53,10 +53,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/build/
-docs/source/awslimitchecker*.rst
-docs/source/modules.rst
-docs/source/limits.rst
-docs/source/iam_policy.rst
 
 # PyBuilder
 target/
@@ -64,3 +60,5 @@ target/
 # virtualenv
 bin/
 include/
+
+.idea/

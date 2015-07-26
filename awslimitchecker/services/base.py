@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -81,11 +81,9 @@ class _AwsService(object):
         """
         """
         if self.conn is None:
-            logger.debug("Connecting to {n}".format(
-                n=self.service_name))
+            logger.debug("Connecting to %s", self.service_name)
             # self.conn = boto.<connect to something>
-            logger.info("Connected to {n}".format(
-                n=self.service_name))
+            logger.info("Connected to %s", self.service_name)
         """
         raise NotImplementedError('abstract base class')
 
@@ -153,7 +151,7 @@ class _AwsService(object):
         :param value: the new value to set for the limit
         :type value: int
         :param override_ta: whether or not to also override Trusted
-        Advisor information
+          Advisor information
         :type override_ta: bool
         :raises: ValueError if limit_name is not known to this service
         """
@@ -162,13 +160,68 @@ class _AwsService(object):
                 value,
                 override_ta=override_ta
             )
-            logger.debug("Overriding {s} limit {l}; default={d} override={o}"
-                         "".format(
-                             s=self.service_name,
-                             l=limit_name,
-                             o=value,
-                             d=self.limits[limit_name].default_limit,
-                         ))
+            logger.debug(
+                "Overriding %s limit %s; default=%d override=%d",
+                self.service_name,
+                limit_name,
+                value,
+                self.limits[limit_name].default_limit,
+            )
+        except KeyError:
+            raise ValueError("{s} service has no '{l}' limit".format(
+                s=self.service_name,
+                l=limit_name))
+
+    def _set_ta_limit(self, limit_name, value):
+        """
+        Set the value for the limit as reported by Trusted Advisor,
+        for the specified limit.
+
+        This method should only be called by :py:class:`~.TrustedAdvisor`.
+
+        :param limit_name: the name of the limit to override the value for
+        :type limit_name: string
+        :param value: the Trusted Advisor limit value
+        :type value: int
+        :raises: ValueError if limit_name is not known to this service
+        """
+        try:
+            self.limits[limit_name]._set_ta_limit(value)
+            logger.debug(
+                "Setting %s limit %s TA limit to %d",
+                self.service_name,
+                limit_name,
+                value,
+            )
+        except KeyError:
+            raise ValueError("{s} service has no '{l}' limit".format(
+                s=self.service_name,
+                l=limit_name))
+
+    def set_threshold_override(self, limit_name, warn_percent=None,
+                               warn_count=None, crit_percent=None,
+                               crit_count=None):
+        """
+        Override the default warning and critical thresholds used to evaluate
+        the specified limit's usage. Theresholds can be specified as a
+        percentage of the limit, or as a usage count, or both.
+
+        :param warn_percent: new warning threshold, percentage used
+        :type warn_percent: int
+        :param warn_count: new warning threshold, actual count/number
+        :type warn_count: int
+        :param crit_percent: new critical threshold, percentage used
+        :type crit_percent: int
+        :param crit_count: new critical threshold, actual count/number
+        :type crit_count: int
+        """
+        try:
+            self.limits[limit_name].set_threshold_override(
+                warn_percent=warn_percent,
+                warn_count=warn_count,
+                crit_percent=crit_percent,
+                crit_count=crit_count
+            )
         except KeyError:
             raise ValueError("{s} service has no '{l}' limit".format(
                 s=self.service_name,
@@ -186,7 +239,7 @@ class _AwsService(object):
         if not self._have_usage:
             self.find_usage()
         ret = {}
-        for name, limit in self.limits.iteritems():
+        for name, limit in self.limits.items():
             if limit.check_thresholds() is False:
                 ret[name] = limit
         return ret

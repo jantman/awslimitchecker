@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ##############################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ##############################################################################
@@ -38,22 +38,67 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import awslimitchecker.version as version
+from awslimitchecker.version import AWSLimitCheckerVersion
+from awslimitchecker.versioncheck import AGPLVersionChecker
 
 import re
+import sys
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call
+else:
+    from unittest.mock import patch, call
 
 
 class TestVersion(object):
 
     def test_project_url(self):
-        expected = 'https://pypi.python.org/pypi/awslimitchecker/{v}'.format(
-            v=version._VERSION)
+        expected = 'https://github.com/jantman/awslimitchecker'
         assert version._PROJECT_URL == expected
 
-    def test__get_project_url(self):
-        assert version._get_project_url() == version._PROJECT_URL
+    def test__get_version_info(self):
+        with patch('awslimitchecker.version.AGPLVersionChecker',
+                   spec_set=AGPLVersionChecker) as mock_checker:
+            mock_checker.return_value.find_package_version.return_value = {
+                'version': version._VERSION,
+                'url': version._PROJECT_URL,
+                'tag': 'foobar',
+                'commit': None,
+            }
+            v = version._get_version_info()
+        assert v.release == version._VERSION
+        assert v.url == version._PROJECT_URL
+        assert v.tag == 'foobar'
+        assert mock_checker.mock_calls == [
+            call(),
+            call().find_package_version(),
+        ]
 
-    def test__get_version(self):
-        assert version._get_version() == version._VERSION
+    def test__get_version_info_fallback(self):
+        def se(foo):
+            raise Exception("foo")
+
+        with patch('awslimitchecker.version.AGPLVersionChecker',
+                   spec_set=AGPLVersionChecker) as mock_checker:
+            with patch('awslimitchecker.version.logger') as mock_logger:
+                mock_checker.return_value.find_package_version.side_effect = se
+                v = version._get_version_info()
+        assert v.release == version._VERSION
+        assert v.url == version._PROJECT_URL
+        assert v.tag is None
+        assert v.commit is None
+        assert mock_checker.mock_calls == [
+            call(),
+            call().find_package_version(),
+        ]
+        assert mock_logger.mock_calls == [
+            call.exception('Error checking installed version; this installation'
+                           ' may not be in compliance with the AGPLv3 license:')
+        ]
 
     def test_is_semver(self):
         # see:
@@ -80,3 +125,50 @@ class TestVersion(object):
             r'$'
         )
         assert semver_ptn.match(version._VERSION) is not None
+
+
+class Test_AWSLimitCheckerVersionInfo(object):
+
+    def test_simple(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit is None
+        assert x.tag is None
+        assert str(x) == '1.0 <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag=None, " \
+                          "commit=None)"
+        assert x.version_str == '1.0'
+
+    def test_tag(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo', tag='mytag')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit is None
+        assert x.tag == 'mytag'
+        assert str(x) == '1.0@mytag <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag='mytag'" \
+                          ", commit=None)"
+        assert x.version_str == '1.0@mytag'
+
+    def test_commit(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo', commit='abcd')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit == 'abcd'
+        assert x.tag is None
+        assert str(x) == '1.0@abcd <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag=None, " \
+                          "commit='abcd')"
+        assert x.version_str == '1.0@abcd'
+
+    def test_tag_commit(self):
+        x = AWSLimitCheckerVersion('1.0', 'foo', tag='mytag', commit='abcd')
+        assert x.release == '1.0'
+        assert x.url == 'foo'
+        assert x.commit == 'abcd'
+        assert x.tag == 'mytag'
+        assert str(x) == '1.0@mytag <foo>'
+        assert repr(x) == "AWSLimitCheckerVersion('1.0', 'foo', tag='mytag'," \
+                          " commit='abcd')"
+        assert x.version_str == '1.0@mytag'

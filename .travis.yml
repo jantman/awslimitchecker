@@ -6,14 +6,21 @@ cache:
     - $HOME/.pip-cache/
 
 env:
-  - TOXENV=py26 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py27 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py32 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py33 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=py34 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py26-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py27-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py32-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py33-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py26-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py27-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py32-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py33-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py34-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy3-integration PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=pypy PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-  - TOXENV=pypy3 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=cov PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 
 install:
@@ -33,7 +40,11 @@ notifications:
   email:
     on_success: always
     on_failure: always
-
+  pushover:
+    users:
+      - secure: lJew7OKfWteJixOuxH+vfKIrIWzManoqQbDqG7xpB++LpsezWMoEIh+S4GqxWuRoxo8F5wJZuNTAvyyu5p2C3DIMbYvoy5PFYvAhMB7wkPesT03zUMMFGFDNdIOTfArt0yWyTtEBm5dcwhxe3kg9sq9nMY/3XcEGXkCO1vgR3/yUZByAZ6CJ27THEZ3B6QzLvDGAMT1lEC8iCUX+EwyCQRH+67a5WaI2F1is14JbGGLDzq2rTR3Tv0jH1wEXp2aLdPkqpZmw2T6URPYnv5QfOdzagMnAL3M33Nbmi3yTIaJal05oI6McaTFOX28QkwkLfPTUAj/eH66fzxV5JZlxvWk3ugoTSNGCBWMTzuIaTOAyauaisXM76Gth849M1XtoVu4gAAwdwd12UEUvtELNtWi1onwmhMTUdZ7HGNFggfMNZzs8Brd5S9+yZA7Fn1prU3DPb8GAEw8nOlgsdQZ8kDjpTlmvxdbeH7zb5+Yw8huxj2qvYsYFCfneFlO2TEnR+VwkcgiW8zjwQCYaT2ku0lWOjzVMQvaVyS4DXLl9P1PcDVgifUZr0caDFxDrFtEinML6WbO4kSSOyGRAbaHKWqI9Cu1g89HlcaLVNAzlnznChxHcpdLfxHstlnMuGUe0ejCi0ljj0ucMBRIEa63E3oteiFE+Mo5iNcDcnt/cBos=
+    api_key:
+      secure: mm7zd1jAIZO/FAVdxoH3Pref7OwReRbRUQq1l7/V16JBySAkCq6MRxQ0nN0/eOqDH0fu/BBMfRrvkYn/vFnR3Y+qGvp4QpCb1A8WY2WgfnF65wFpDxAbhJ3c37fwc+4o1VocaXke60zwbIXFA3pWThZAnMvxFsColos7IEbu8h/JAvz/L4mOIrKpmgBSdXeimhheYdJS/q7RvOUxkOqS/qbXhNNjxZImuMSu7vUS55ANy+BXQ4/2UdGeGeXS2j/Kzz+xC7XJ5ztp7v/U9CRPMahB8eFidgDQpoGLEBWYyIV2XMDdi2sW8C8xX0HfLDbqAnpS5clCEfDdRK6sI6bxtvWimjk+z2gexc1hTjexWDgyAacc7U4rsBwRWT9J2bSzmmY4yd9nZZIZIlHYqaf0uRayFR1gcRDUzvmJOf1CNLUQq26f08DUbpBgeKk4dT8wW+nLhLrulkzqe2UivlyCc85JQVTNEuJsMWg/6QbQBy97ja15GcyWttzf9/QjmZEp0GxKfAZQmZCEskFnV+uoNCvG9D5g8kbmq2FLwFsm4EEw0gXmFmr+9FEXFkaLd1MzkGcFfwcOX+YtalARidWrd+SkU2TtDRci6b4qQylvOuFi67SpMQMO5FM6zwZkHqK2hYobq+mpy2ffInYaGJSaWxp+/8BjQ6IJwaiOTtk6R8Q=
 branches:
   except:
     - /^noci-.*$/

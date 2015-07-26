@@ -14,10 +14,11 @@
 
 import sys
 import os
-import shlex
 # to let sphinx find the actual source...
 sys.path.insert(0, os.path.abspath("../.."))
-from awslimitchecker.version import _get_version
+from awslimitchecker.version import _get_version_info
+import sphinx.environment
+from docutils.utils import get_source_line
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -64,7 +65,7 @@ author = u'Jason Antman'
 # built documents.
 #
 # The short X.Y version.
-version = _get_version()
+version = _get_version_info().version_str
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -286,10 +287,19 @@ intersphinx_mapping = {
 autoclass_content = 'init'
 autodoc_default_flags = ['members', 'undoc-members', 'private-members', 'special-members', 'show-inheritance']
 
+nitpick_ignore = [('py:class', 'ABCMeta')]
+
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734
 def remove_module_docstring(app, what, name, obj, options, lines):
     if what == "module":
         del lines[:]
+
+# ignore non-local image warnings
+def _warn_node(self, msg, node):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node))
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
 
 def setup(app):
     app.connect("autodoc-process-docstring", remove_module_docstring)
