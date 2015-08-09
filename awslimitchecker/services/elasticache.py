@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 from boto.elasticache.layer1 import ElastiCacheConnection
+from boto.exception import BotoServerError
 import logging
 
 from .base import _AwsService
@@ -121,10 +122,21 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_security_groups(self):
         """find usage for elasticache security groups"""
-        groups = self.conn.describe_cache_security_groups()[
-            'DescribeCacheSecurityGroupsResponse'][
-            'DescribeCacheSecurityGroupsResult'][
-            'CacheSecurityGroups']
+        
+        try:
+            # If EC2-Classic isn't available (e.g., a new account)
+            # this method will fail with:
+            #   Code:    "InvalidParameterValue"
+            #   Message: "Use of cache security groups is not permitted in
+            #             this API version for your account."
+            #   Type:    "Sender"
+            groups = self.conn.describe_cache_security_groups()[
+                'DescribeCacheSecurityGroupsResponse'][
+                'DescribeCacheSecurityGroupsResult'][
+                'CacheSecurityGroups']
+        except BotoServerError, e:
+            groups = []
+        
         self.limits['Security Groups']._add_current_usage(
             len(groups),
             aws_type='WS::ElastiCache::SecurityGroup'
