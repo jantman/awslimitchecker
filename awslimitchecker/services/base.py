@@ -41,13 +41,14 @@ import abc
 import logging
 logger = logging.getLogger(__name__)
 
+import boto.sts
 
 class _AwsService(object):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'
 
-    def __init__(self, warning_threshold, critical_threshold):
+    def __init__(self, warning_threshold, critical_threshold, account_id=None, account_role=None, region=None):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -65,9 +66,17 @@ class _AwsService(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
+        :param account_id: connect via STS to this AWS account
+        :type account_id: str
+        :param account_role: connect via STS as this IAM role
+        :type account_role: str
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
+        self.account_id = account_id
+        self.account_role = account_role
+        self.region = region
+
         self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
@@ -136,7 +145,35 @@ class _AwsService(object):
         :rtype: list
         """
         raise NotImplementedError('abstract base class')
-
+    
+    def connect_via(self, driver):
+        """
+        Connect to API if not already connected; set self.conn.
+        Use STS to assume a role as another user if self.account_id has been set.
+        """
+        if(self.account_id):
+            logger.debug("Connecting to %s for account %s", self.service_name, self.account_id)
+            self.credentials = self._get_sts_token()
+            conn = driver.connect_to_region(self.region,
+                aws_access_key_id = self.credentials.access_key,
+                aws_secret_access_key = self.credentials.secret_key,
+                security_token = self.credentials.session_token
+            )
+        else:
+            logger.debug("Connecting to %s", self.service_name)
+            conn = driver.connect_to_region(self.region)
+        logger.info("Connected to %s", self.service_name)
+        return conn
+    
+    def _get_sts_token(self):
+        """
+        Attempt to get STS token, exit if fail.
+        """
+        sts = boto.sts.connect_to_region(self.region)
+        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        role = sts.assume_role(arn, "awslimitchecker")
+        return role.credentials
+    
     def set_limit_override(self, limit_name, value, override_ta=True):
         """
         Set a new limit ``value`` for the specified limit, overriding

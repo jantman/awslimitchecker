@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import boto
+import boto.vpc
 import logging
 from collections import defaultdict
 
@@ -53,11 +54,15 @@ class _VpcService(_AwsService):
     service_name = 'VPC'
 
     def connect(self):
-        """connect to API if not already connected; set self.conn"""
-        if self.conn is None:
-            logger.debug("Connecting to %s", self.service_name)
+        """
+        Connect to API if not already connected; set self.conn.
+        """
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.vpc)
+        else:
             self.conn = boto.connect_vpc()
-            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
