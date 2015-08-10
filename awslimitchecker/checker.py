@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 class AwsLimitChecker(object):
 
-    def __init__(self, warning_threshold=80, critical_threshold=99):
+    def __init__(self, warning_threshold=80, critical_threshold=99, account_id=None, account_role=None, region=None):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -65,6 +65,10 @@ class AwsLimitChecker(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
+        :param account_id: connect via STS to this AWS account
+        :type account_id: str
+        :param account_role: connect via STS as this IAM role
+        :type account_role: str
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -91,10 +95,13 @@ class AwsLimitChecker(object):
         )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
+        self.account_id = account_id
+        self.account_role = account_role
+        self.region = region
         self.services = {}
         self.ta = TrustedAdvisor()
         for sname, cls in _services.items():
-            self.services[sname] = cls(warning_threshold, critical_threshold)
+            self.services[sname] = cls(warning_threshold, critical_threshold, account_id, account_role, region)
 
     def get_version(self):
         """

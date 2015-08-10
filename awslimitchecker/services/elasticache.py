@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
+import boto.elasticache
 from boto.elasticache.layer1 import ElastiCacheConnection
 from boto.exception import BotoServerError
 import logging
@@ -53,10 +54,15 @@ class _ElastiCacheService(_AwsService):
     service_name = 'ElastiCache'
 
     def connect(self):
-        if self.conn is None:
-            logger.debug("Connecting to %s", self.service_name)
+        """
+        Connect to API if not already connected; set self.conn.
+        """
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.elasticache)
+        else:
             self.conn = ElastiCacheConnection()
-            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
