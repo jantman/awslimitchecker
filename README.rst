@@ -131,6 +131,13 @@ Pull requests are always welcome.
 Please see the [Development](http://awslimitchecker.readthedocs.org/en/latest/development.html)
 and [Getting Help](http://awslimitchecker.readthedocs.org/en/latest/getting_help.html) documentation for more information.
 
+Contributions
+-------------
+
+Pull requests are most definitely welcome. Please cut them against the **develop** branch. For more information, see
+the [development documentation](http://awslimitchecker.readthedocs.org/en/latest/development.html#pull-requests). I'm
+also happy to accept contributions in the form of bug reports, feature requests, testing, etc.
+
 License
 -------
 

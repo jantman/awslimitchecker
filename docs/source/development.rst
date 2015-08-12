@@ -3,6 +3,16 @@
 Development
 ===========
 
+.. _development.pull_requests:
+
+Pull Requests
+-------------
+
+Please cut all pull requests against the "develop" branch. I'll do my best to merge them as
+quickly as possible. If they pass all unit tests and have 100% coverage, it'll certainly be
+easier. I work on this project only in my personal time, so I can't always get things merged
+as quickly as I'd like. That being said, I'm committed to doing my best, and please call me
+out on it if you feel like I'm not.
 
 .. _development.installing:
 
