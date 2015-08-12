@@ -38,8 +38,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-# TODO confirm this is the correct import
 from boto.elasticache.layer1 import ElastiCacheConnection
+from boto.exception import BotoServerError
 from awslimitchecker.services.elasticache import _ElastiCacheService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -468,6 +468,25 @@ class TestElastiCacheService(object):
         usage = cls.limits['Security Groups'].get_current_usage()
         assert len(usage) == 1
         assert usage[0].get_value() == 2
+
+    def test_find_usage_security_groups_exception(self):
+        """test find usage for security groups"""
+        def se_exc():
+            raise BotoServerError(None, None, None)
+
+        mock_conn = Mock(spec_set=ElastiCacheConnection)
+        mock_conn.describe_cache_security_groups.side_effect = se_exc
+        cls = _ElastiCacheService(21, 43)
+        cls.conn = mock_conn
+        cls._find_usage_security_groups()
+
+        assert mock_conn.mock_calls == [
+            call.describe_cache_security_groups(),
+        ]
+
+        usage = cls.limits['Security Groups'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 0
 
     def test_required_iam_permissions(self):
         cls = _ElastiCacheService(21, 43)
