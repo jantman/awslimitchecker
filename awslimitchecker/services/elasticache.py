@@ -122,7 +122,6 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_security_groups(self):
         """find usage for elasticache security groups"""
-        
         try:
             # If EC2-Classic isn't available (e.g., a new account)
             # this method will fail with:
@@ -134,9 +133,11 @@ class _ElastiCacheService(_AwsService):
                 'DescribeCacheSecurityGroupsResponse'][
                 'DescribeCacheSecurityGroupsResult'][
                 'CacheSecurityGroups']
-        except BotoServerError, e:
+        except BotoServerError:
+            logger.debug("caught BotoServerError checking ElastiCache security "
+                         "groups (account without EC2-Classic?)")
             groups = []
-        
+
         self.limits['Security Groups']._add_current_usage(
             len(groups),
             aws_type='WS::ElastiCache::SecurityGroup'
