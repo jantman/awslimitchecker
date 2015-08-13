@@ -43,6 +43,7 @@ import os
 import subprocess
 import shutil
 from textwrap import dedent
+from pip._vendor.packaging.version import Version
 
 import awslimitchecker.versioncheck
 from awslimitchecker.versioncheck import (
@@ -255,8 +256,10 @@ class Test_AGPLVersionChecker(object):
         }
 
     def test_get_dist_version_url(self):
+        """pip 6.0+ - see issue #55"""
         dist = Mock(
-            parsed_version='1.2.3',
+            parsed_version=Version('1.2.3'),
+            version='2.4.2',
             PKG_INFO='PKG-INFO',
         )
         metadata = [
@@ -287,12 +290,50 @@ class Test_AGPLVersionChecker(object):
         dist.get_metadata_lines.side_effect = se_metadata
         cls = AGPLVersionChecker()
         res = cls._dist_version_url(dist)
-        assert res == ('1.2.3',
+        assert res == ('2.4.2',
+                       'https://github.com/jantman/awslimitchecker')
+
+    def test_get_dist_version_url_pip1(self):
+        """pip 1.x - see issue #54"""
+        dist = Mock(
+            parsed_version=('00000002', '00000004', '00000002', '*final'),
+            version='2.4.2',
+            PKG_INFO='PKG-INFO',
+        )
+        metadata = [
+            'Metadata-Version: 1.1',
+            'Name: awslimitchecker',
+            'Version: 0.1.0',
+            'Summary: A script and python module to check your AWS service ',
+            'Home-page: https://github.com/jantman/awslimitchecker',
+            'Author: Jason Antman',
+            'Author-email: jason@jasonantman.com',
+            'License: UNKNOWN',
+            'Description: awslimitchecker',
+            '========================',
+            '.. image:: https://pypip.in/v/awslimitchecker/badge.png',
+            ':target: https://crate.io/packages/awslimitchecker',
+            ':alt: PyPi package version',
+            'Status',
+            '------',
+            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Platform: UNKNOWN',
+            'Classifier: Environment :: Console',
+        ]
+
+        def se_metadata(foo):
+            for line in metadata:
+                yield line
+
+        dist.get_metadata_lines.side_effect = se_metadata
+        cls = AGPLVersionChecker()
+        res = cls._dist_version_url(dist)
+        assert res == ('2.4.2',
                        'https://github.com/jantman/awslimitchecker')
 
     def test_get_dist_version_url_no_homepage(self):
         dist = Mock(
-            parsed_version='1.2.3',
+            version='1.2.3',
             PKG_INFO='PKG-INFO',
         )
         metadata = [
@@ -1083,6 +1124,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
     git_tag = None
 
     def setup_method(self, method):
+        os.environ['VERSIONCHECK_DEBUG'] = 'true'
         print("\n")
         self._set_git_config()
         self.current_venv_path = sys.prefix
@@ -1231,6 +1273,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
         :param args: ``pip install`` arguments
         """
         pip = os.path.join(path, 'bin', 'pip')
+        # get pip version
+        res = subprocess.call([pip, '--version'])
+        assert res == 0
         # install ALC in it
         final_args = [pip, 'install']
         final_args.extend(args)
@@ -1436,6 +1481,24 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._make_venv(path)
         # build the sdist
         pkg_path = self._make_package('sdist', path)
+        # install ALC in it
+        self._pip_install(path, [pkg_path])
+        version_output = self._get_alc_version(path)
+        expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
+            v='0.1.0',
+            u='https://github.com/jantman/awslimitchecker'
+        )
+        assert expected in version_output
+
+    def test_install_sdist_pip154(self, tmpdir):
+        """regression test for issue #55"""
+        path = str(tmpdir)
+        # make the venv
+        self._make_venv(path)
+        # build the sdist
+        pkg_path = self._make_package('sdist', path)
+        # ensure pip at 1.5.4
+        self._pip_install(path, ['--force-reinstall', 'pip==1.5.4'])
         # install ALC in it
         self._pip_install(path, [pkg_path])
         version_output = self._get_alc_version(path)
