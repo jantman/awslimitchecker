@@ -121,14 +121,22 @@ For basic usage, see:
 See the `project documentation <http://awslimitchecker.readthedocs.org>`_
 for further information.
 
-Bugs and Feature Requests
--------------------------
+Bugs, Feature Requests
+----------------------
 
 Questions, comments, Bug reports and feature requests are happily accepted via
 the `GitHub Issue Tracker <https://github.com/jantman/awslimitchecker/issues>`_.
 Pull requests are always welcome.
 
-Please see the [Development]() and [Getting Help]() documentation for more information.
+Please see the [Development](http://awslimitchecker.readthedocs.org/en/latest/development.html)
+and [Getting Help](http://awslimitchecker.readthedocs.org/en/latest/getting_help.html) documentation for more information.
+
+Contributions
+-------------
+
+Pull requests are most definitely welcome. Please cut them against the **develop** branch. For more information, see
+the [development documentation](http://awslimitchecker.readthedocs.org/en/latest/development.html#pull-requests). I'm
+also happy to accept contributions in the form of bug reports, feature requests, testing, etc.
 
 License
 -------

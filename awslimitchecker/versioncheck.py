@@ -179,7 +179,7 @@ class AGPLVersionChecker(object):
         :returns: 2-tuple of (version, homepage URL)
         :rtype: tuple
         """
-        ver = str(dist.parsed_version)
+        ver = str(dist.version)
         url = None
         for line in dist.get_metadata_lines(dist.PKG_INFO):
             line = line.strip()
