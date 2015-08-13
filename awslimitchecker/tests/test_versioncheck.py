@@ -1462,7 +1462,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
 
     # this doesn't work on PRs, because we can't check out the hash
     @pytest.mark.skipif(os.environ.get('TRAVIS_PULL_REQUEST', 'false') !=
-                        'false', 'git tests dont work on PRs')
+                        'false', reason='git tests dont work on PRs')
     def test_install_git(self, tmpdir):
         # https://pip.pypa.io/en/latest/reference/pip_install.html#git
         status = self._check_git_pushed()
@@ -1485,7 +1485,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
 
     # this doesn't work on PRs, because we can't check out the hash
     @pytest.mark.skipif(os.environ.get('TRAVIS_PULL_REQUEST', 'false') !=
-                        'false', 'git tests dont work on PRs')
+                        'false', reason='git tests dont work on PRs')
     def test_install_git_e(self, tmpdir):
         # https://pip.pypa.io/en/latest/reference/pip_install.html#git
         status = self._check_git_pushed()
@@ -1510,7 +1510,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
 
     # this doesn't work on PRs, because we can't check out the hash
     @pytest.mark.skipif(os.environ.get('TRAVIS_PULL_REQUEST', 'false') !=
-                        'false', 'git tests dont work on PRs')
+                        'false', reason='git tests dont work on PRs')
     def test_install_git_e_dirty(self, tmpdir):
         # https://pip.pypa.io/en/latest/reference/pip_install.html#git
         status = self._check_git_pushed()
