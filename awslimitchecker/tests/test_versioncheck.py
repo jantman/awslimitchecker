@@ -1448,7 +1448,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         if self._check_git_pushed() != 0:
             expected_tag += '*'
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='%s@%s' % (_VERSION, expected_commit),
+            v='%s@%s' % (_VERSION, expected_tag),
             u=self.git_url
         )
         assert expected in version_output
