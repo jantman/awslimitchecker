@@ -13,6 +13,13 @@ env:
   - TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py26-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py27-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py32-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py33-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=py34-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+  - TOXENV=pypy3-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
   - TOXENV=cov PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 
