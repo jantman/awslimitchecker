@@ -131,6 +131,11 @@ Pull requests are always welcome.
 Please see the [Development](http://awslimitchecker.readthedocs.org/en/latest/development.html)
 and [Getting Help](http://awslimitchecker.readthedocs.org/en/latest/getting_help.html) documentation for more information.
 
+Changelog
+---------
+
+See `https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst <https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst>`_.
+
 Contributions
 -------------
 
