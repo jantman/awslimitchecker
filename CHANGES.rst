@@ -4,6 +4,11 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.1.2 (2015-08-13)
+------------------
+
+* `#62 <https://github.com/jantman/awslimitchecker/issues/62>`_ - For 'RDS/DB snapshots per user' limit, only count manual snapshots. (fix bug in fix for `#54 <https://github.com/jantman/awslimitchecker/issues/54>`_)
+
 0.1.1 (2015-08-13)
 ------------------
 

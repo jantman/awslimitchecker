@@ -392,27 +392,6 @@ class Test_RDSService(object):
                 "DescribeDBSnapshotsResult": {
                     "DBSnapshots": [
                         {
-                            "AllocatedStorage": 50,
-                            "AvailabilityZone": "us-east-1a",
-                            "DBInstanceIdentifier": "bd1c1ub84tcj0cv",
-                            "DBSnapshotIdentifier":
-                                "dbsnap-1",
-                            "Engine": "mysql",
-                            "EngineVersion": "5.6.22",
-                            "InstanceCreateTime": 1429902229.795,
-                            "Iops": None,
-                            "LicenseModel": "general-public-license",
-                            "MasterUsername": "myuser",
-                            "OptionGroupName": "default:mysql-5-6",
-                            "PercentProgress": 100,
-                            "Port": 3306,
-                            "SnapshotCreateTime": 1429903945.169,
-                            "SnapshotType": "manual",
-                            "SourceRegion": None,
-                            "Status": "available",
-                            "VpcId": "vpc-1ee8937b"
-                        },
-                        {
                             "AllocatedStorage": 100,
                             "AvailabilityZone": "us-east-1a",
                             "DBInstanceIdentifier": "foo-db",
@@ -499,7 +478,7 @@ class Test_RDSService(object):
 
         usage = sorted(cls.limits['DB snapshots per user'].get_current_usage())
         assert len(usage) == 1
-        assert usage[0].get_value() == 2
+        assert usage[0].get_value() == 1
         assert usage[0].aws_type == 'AWS::RDS::DBSnapshot'
 
     def test_find_usage_param_groups(self):
