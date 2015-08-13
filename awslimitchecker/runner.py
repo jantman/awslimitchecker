@@ -50,6 +50,11 @@ from .limit import SOURCE_TA
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
 
+# suppress boto internal logging below WARNING level
+boto_log = logging.getLogger("boto")
+boto_log.setLevel(logging.WARNING)
+boto_log.propagate = True
+
 
 class Runner(object):
 

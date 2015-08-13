@@ -42,12 +42,8 @@ from .version import _get_version_info
 from .trustedadvisor import TrustedAdvisor
 import sys
 import logging
-logger = logging.getLogger(__name__)
 
-# suppress boto internal logging
-boto_log = logging.getLogger("boto")
-boto_log.setLevel(logging.WARNING)
-boto_log.propagate = True
+logger = logging.getLogger(__name__)
 
 
 class AwsLimitChecker(object):
