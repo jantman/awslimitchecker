@@ -106,6 +106,22 @@ class TestAwsLimitChecker(object):
         assert self.cls.ta == self.mock_ta
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
+        assert self.mock_logger.mock_calls == []
+
+    def test_init_AGPL_message(self, capsys):
+        # get rid of the class
+        self.cls = None
+        # clear out/err
+        out, err = capsys.readouterr()
+        # run setup again
+        self.setup()
+        # check out/err
+        out, err = capsys.readouterr()
+        assert out == ''
+        assert (err) == (
+            "awslimitchecker 1.2.3@mytag is AGPL-licensed free software; "
+            "all users have a right to the full source code of "
+            "this version. See <http://myurl>\n")
 
     def test_init_thresholds(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -141,15 +157,6 @@ class TestAwsLimitChecker(object):
         assert mock_svc2.mock_calls == []
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
-
-    def test_init_logger(self):
-        """ensure we log a license message"""
-        assert self.mock_logger.mock_calls == [
-            call.warning("awslimitchecker %s is AGPL-licensed free software; "
-                         "all users have a right to the full source code of "
-                         "this version. See <%s>", '1.2.3@mytag',
-                         'http://myurl')
-        ]
 
     def test_get_version(self):
         with patch('awslimitchecker.checker._get_version_info',
