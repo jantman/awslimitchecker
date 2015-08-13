@@ -1527,7 +1527,3 @@ class Test_AGPLVersionChecker_Acceptance(object):
             u='https://github.com/jantman/awslimitchecker.git'
         )
         assert expected in version_output
-
-    def test_install_pypi(self, tmpdir):
-        # @TODO - can't do this until the first release is out
-        pass
