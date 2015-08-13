@@ -45,6 +45,7 @@ import shutil
 from textwrap import dedent
 from pip._vendor.packaging.version import Version
 
+from awslimitchecker.version import _VERSION
 import awslimitchecker.versioncheck
 from awslimitchecker.versioncheck import (
     _get_git_commit, _get_git_url, _get_git_tag, _check_output, DEVNULL,
@@ -1397,7 +1398,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._pip_install(path, [self.source_dir])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0',
+            v=_VERSION,
             u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
@@ -1412,7 +1413,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         if self._check_git_pushed() != 0:
             expected_commit += '*'
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s' % expected_commit,
+            v='%s@%s' % (_VERSION, expected_commit),
             u=self.git_url
         )
         assert expected in version_output
@@ -1431,7 +1432,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         os.unlink(fpath)
         expected_commit = self.git_commit + '*'
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s' % expected_commit,
+            v='%s@%s' % (_VERSION, expected_commit),
             u=self.git_url
         )
         assert expected in version_output
@@ -1447,7 +1448,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         if self._check_git_pushed() != 0:
             expected_tag += '*'
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s' % expected_tag,
+            v='%s@%s' % (_VERSION, expected_commit),
             u=self.git_url
         )
         assert expected in version_output
@@ -1470,7 +1471,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         if self._check_git_pushed() != 0:
             expected_commit += '*'
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s' % expected_commit,
+            v='%s@%s' % (_VERSION, expected_commit),
             u=url
         )
         assert expected in version_output
@@ -1485,7 +1486,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._pip_install(path, [pkg_path])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0',
+            v=_VERSION,
             u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
@@ -1503,7 +1504,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._pip_install(path, [pkg_path])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0',
+            v=_VERSION,
             u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
@@ -1518,7 +1519,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         self._pip_install(path, [pkg_path])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0',
+            v=_VERSION,
             u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
@@ -1541,7 +1542,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         ])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0',
+            v=_VERSION,
             u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
@@ -1566,7 +1567,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         ])
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s' % commit,
+            v='%s@%s' % (_VERSION, commit),
             u='https://github.com/jantman/awslimitchecker.git'
         )
         assert expected in version_output
@@ -1595,7 +1596,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             fh.write("testing")
         version_output = self._get_alc_version(path)
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
-            v='0.1.0@%s*' % commit,
+            v='%s@%s*' % (_VERSION, commit),
             u='https://github.com/jantman/awslimitchecker.git'
         )
         assert expected in version_output
