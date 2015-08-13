@@ -99,6 +99,11 @@ Getting Help and Asking Questions
 
 See :ref:`getting_help`.
 
+Changelog
+---------
+
+See `https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst <https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst>`_
+
 Contents
 =========
 

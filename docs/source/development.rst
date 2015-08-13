@@ -3,6 +3,16 @@
 Development
 ===========
 
+.. _development.pull_requests:
+
+Pull Requests
+-------------
+
+Please cut all pull requests against the "develop" branch. I'll do my best to merge them as
+quickly as possible. If they pass all unit tests and have 100% coverage, it'll certainly be
+easier. I work on this project only in my personal time, so I can't always get things merged
+as quickly as I'd like. That being said, I'm committed to doing my best, and please call me
+out on it if you feel like I'm not.
 
 .. _development.installing:
 
@@ -190,7 +200,8 @@ Release Checklist
 
 1. Open an issue for the release; cut a branch off ``develop`` for that issue.
 2. Build docs (``tox -e docs``) and ensure they're current; commit any changes.
-3. Ensure that Travis tests passing in all environments.
+3. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker.versioncheck``,
+   manually run the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
 4. Ensure that test coverage is no less than the last release (ideally, 100%).
 5. Create or update an actual IAM user with the policy from ``awslimitchecker --iam-policy``;
    run the command line wrapper and ensure that the policy works and contains all needed permissions.

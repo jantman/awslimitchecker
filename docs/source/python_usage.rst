@@ -136,6 +136,44 @@ or :py:meth:`~.AwsLimitChecker.check_thresholds` with ``use_ta=False``:
 
    >>> result = c.check_thresholds(use_ta=False)
 
+Logging
+-------
+
+awslimitchecker uses the python :py:mod:`logging` library for logging, with module-level loggers
+defined in each file. If you already have a root-level logger defined in your program and are using
+a simple configuration (i.e. ``logging.basicConfig()``), awslimitchecker logs will be emitted at
+the same level as that which the root logger is configured.
+
+Assuming you have a root-level logger defined and configured, and you only want to see awslimitchecker
+log messages of WARNING level and above, you can set the level of awslimitchecker's logger before
+instantiating the class:
+
+.. code-block:: python
+
+   alc_log = logging.getLogger('awslimitchecker')
+   alc_log.setLevel(logging.WARNING)
+   checker = AwsLimitChecker()
+
+It's _highly_ recommended that you do not suppress log messages of WARNING or above, as these
+indicate situations where the checker may not present accurate or complete results.
+
+If your application does not define a root-level logger, this becomes a bit more complicated.
+Assuming your application has a more complex configuration that uses a top-level logger 'myapp'
+with its own handlers defined, you can do something like the following. Note that this is highly
+specific to your logging setup:
+
+.. code-block:: python
+
+   # setup logging for awslimitchecker
+   alc_log = logging.getLogger('awslimitchecker')
+   # WARNING or higher should pass through
+   alc_log.setLevel(logging.WARNING)
+   # use myapp's handler(s)
+   for h in logging.getLogger('cm').handlers:
+       alc_log.addHandler(h)
+   # instantiate the class
+   checker = AwsLimitChecker()
+
 Advanced Examples
 ------------------
 

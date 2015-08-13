@@ -187,7 +187,6 @@ class TestAwsLimitCheckerRunner(object):
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == expected
-        assert err == ''
         assert excinfo.value.code == 0
         assert mock_alc.mock_calls == [
             call(
@@ -221,7 +220,6 @@ class TestAwsLimitCheckerRunner(object):
         self.cls.list_services()
         out, err = capsys.readouterr()
         assert out == expected
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.get_service_names()
         ]
@@ -248,7 +246,6 @@ class TestAwsLimitCheckerRunner(object):
         self.cls.iam_policy()
         out, err = capsys.readouterr()
         assert json.loads(out) == expected
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.get_required_iam_policy()
         ]
@@ -275,7 +272,6 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.list_defaults()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.get_limits(service=None)
         ]
@@ -300,7 +296,6 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.list_defaults()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.get_limits(service='SvcFoo')
         ]
@@ -331,7 +326,6 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.list_limits()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.get_limits(use_ta=True, service=None)
         ]
@@ -355,7 +349,6 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.list_limits()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.get_limits(use_ta=True, service='SvcFoo')
         ]
@@ -451,7 +444,6 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.show_usage()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.find_usage(service=None),
             call.get_limits(service=None)
@@ -478,7 +470,6 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.show_usage()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.find_usage(service='SvcFoo'),
             call.get_limits(service='SvcFoo')
@@ -498,7 +489,6 @@ class TestAwsLimitCheckerRunner(object):
                     mock_ct.return_value = 6
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
-        assert err == ''
         assert out == ''
         assert excinfo.value.code == 6
         assert self.cls.skip_ta is True
@@ -512,7 +502,6 @@ class TestAwsLimitCheckerRunner(object):
                     mock_ct.return_value = 6
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
-        assert err == ''
         assert out == ''
         assert excinfo.value.code == 6
         assert self.cls.service_name == 'foo'
@@ -526,7 +515,6 @@ class TestAwsLimitCheckerRunner(object):
                     mock_ct.return_value = 6
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
-        assert err == ''
         assert out == ''
         assert excinfo.value.code == 6
         assert self.cls.service_name is None
@@ -542,7 +530,6 @@ class TestAwsLimitCheckerRunner(object):
                         mock_ct.return_value = 6
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
-        assert err == ''
         assert out == ''
         assert excinfo.value.code == 6
         assert mock_set_level.mock_calls == [call(logging.INFO)]
@@ -558,7 +545,6 @@ class TestAwsLimitCheckerRunner(object):
                         mock_ct.return_value = 7
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
-        assert err == ''
         assert out == ''
         assert excinfo.value.args[0] == 7
         assert mock_set_level.mock_calls == [call(logging.DEBUG)]
@@ -614,7 +600,6 @@ class TestAwsLimitCheckerRunner(object):
             res = self.cls.check_thresholds()
         out, err = capsys.readouterr()
         assert out == '\n'
-        assert err == ''
         assert mock_checker.mock_calls == [
             call.check_thresholds(use_ta=True, service=None)
         ]

@@ -118,12 +118,16 @@ class _RDSService(_AwsService):
         )
 
     def _find_usage_snapshots(self):
-        """find usage for DB snapshots"""
+        """find usage for (manual) DB snapshots"""
         snaps = self.conn.describe_db_snapshots()[
             "DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"][
                 "DBSnapshots"]
+        num_manual_snaps = 0
+        for snap in snaps:
+            if snap['SnapshotType'] == 'automated':
+                num_manual_snaps += 1
         self.limits['DB snapshots per user']._add_current_usage(
-            len(snaps),
+            num_manual_snaps,
             aws_type='AWS::RDS::DBSnapshot'
         )
 
