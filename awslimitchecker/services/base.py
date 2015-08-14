@@ -49,7 +49,8 @@ class _AwsService(object):
 
     service_name = 'baseclass'
 
-    def __init__(self, warning_threshold, critical_threshold, account_id=None, account_role=None, region=None):
+    def __init__(self, warning_threshold, critical_threshold, account_id=None,
+                 account_role=None, region=None):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -149,20 +150,21 @@ class _AwsService(object):
 
     def connect_via(self, driver):
         """
-        Connect to API if not already connected; set self.conn.
-        Use STS to assume a role as another user if self.account_id has been set.
+        Connect to API if not already connected; set self.conn
+        Use STS to assume a role as another user if self.account_id has been set
 
         :param driver: the Boto sub-module to use to call connect_to_region()
         :type driver: module
         """
         if(self.account_id):
-            logger.debug("Connecting to %s for account %s", self.service_name, self.account_id)
+            logger.debug("Connecting to %s for account %s", self.service_name,
+                         self.account_id)
             self.credentials = self._get_sts_token()
-            conn = driver.connect_to_region(self.region,
-                aws_access_key_id = self.credentials.access_key,
-                aws_secret_access_key = self.credentials.secret_key,
-                security_token = self.credentials.session_token
-            )
+            conn = driver.connect_to_region(
+                self.region,
+                aws_access_key_id=self.credentials.access_key,
+                aws_secret_access_key=self.credentials.secret_key,
+                security_token=self.credentials.session_token)
         else:
             logger.debug("Connecting to %s", self.service_name)
             conn = driver.connect_to_region(self.region)
