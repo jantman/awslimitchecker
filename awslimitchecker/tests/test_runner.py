@@ -157,6 +157,15 @@ class TestAwsLimitCheckerRunner(object):
                                 type=int, default=99,
                                 help='default critical threshold (percentage '
                                 'of limit); default: 99'),
+            call().add_argument('-A', '--sts-account-id', action='store',
+                                type=str, default=None,
+                                help='the AWS account to control'),
+            call().add_argument('-R', '--sts-account-role', action='store',
+                                type=str, default=None,
+                                help='the IAM role to assume'),
+            call().add_argument('-r', '--region', action='store',
+                                type=str, default=None,
+                                help='connect to this AWS region; required for STS'),
             call().add_argument('--skip-ta', action='store_true', default=False,
                                 help='do not attempt to pull *any* information '
                                 'on limits from Trusted Advisor'),
@@ -192,6 +201,9 @@ class TestAwsLimitCheckerRunner(object):
             call(
                 warning_threshold=80,
                 critical_threshold=99,
+                account_id=None,
+                account_role=None,
+                region=None
             ),
             call().get_project_url(),
             call().get_version()
@@ -560,7 +572,7 @@ class TestAwsLimitCheckerRunner(object):
                         self.cls.console_entry_point()
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
-            call(warning_threshold=50, critical_threshold=99)
+            call(warning_threshold=50, critical_threshold=99, account_id=None, account_role=None, region=None)
         ]
 
     def test_entry_critical(self):
@@ -574,7 +586,7 @@ class TestAwsLimitCheckerRunner(object):
                         self.cls.console_entry_point()
         assert excinfo.value.code == 9
         assert mock_alc.mock_calls == [
-            call(warning_threshold=80, critical_threshold=95)
+            call(warning_threshold=80, critical_threshold=95, account_id=None, account_role=None, region=None)
         ]
 
     def test_entry_check_thresholds(self):
