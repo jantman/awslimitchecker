@@ -48,7 +48,8 @@ logger = logging.getLogger(__name__)
 
 class AwsLimitChecker(object):
 
-    def __init__(self, warning_threshold=80, critical_threshold=99, account_id=None, account_role=None, region=None):
+    def __init__(self, warning_threshold=80, critical_threshold=99,
+                 account_id=None, account_role=None, region=None):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -101,7 +102,8 @@ class AwsLimitChecker(object):
         self.services = {}
         self.ta = TrustedAdvisor()
         for sname, cls in _services.items():
-            self.services[sname] = cls(warning_threshold, critical_threshold, account_id, account_role, region)
+            self.services[sname] = cls(warning_threshold, critical_threshold,
+                                       account_id, account_role, region)
 
     def get_version(self):
         """

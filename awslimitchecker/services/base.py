@@ -39,9 +39,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc
 import logging
+import boto.sts
+
 logger = logging.getLogger(__name__)
 
-import boto.sts
 
 class _AwsService(object):
     __metaclass__ = abc.ABCMeta
@@ -145,13 +146,13 @@ class _AwsService(object):
         :rtype: list
         """
         raise NotImplementedError('abstract base class')
-    
+
     def connect_via(self, driver):
         """
         Connect to API if not already connected; set self.conn.
         Use STS to assume a role as another user if self.account_id has been set.
 
-        :param driver: the Boto sub-module to use to call connect_to_region() 
+        :param driver: the Boto sub-module to use to call connect_to_region()
         :type driver: module
         """
         if(self.account_id):
@@ -167,7 +168,7 @@ class _AwsService(object):
             conn = driver.connect_to_region(self.region)
         logger.info("Connected to %s", self.service_name)
         return conn
-    
+
     def _get_sts_token(self):
         """
         Attempt to get STS token, exit if fail.
@@ -176,7 +177,7 @@ class _AwsService(object):
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
         role = sts.assume_role(arn, "awslimitchecker")
         return role.credentials
-    
+
     def set_limit_override(self, limit_name, value, override_ta=True):
         """
         Set a new limit ``value`` for the specified limit, overriding

@@ -128,12 +128,15 @@ class Runner(object):
                        type=int, default=99,
                        help='default critical threshold (percentage of '
                        'limit); default: 99')
-        p.add_argument('-A', '--sts-account-id', action='store', type=str,
-                       default=None)
-        p.add_argument('-R', '--sts-account-role', action='store', type=str,
-                       default=None)
-        p.add_argument('-r', '--region', action='store', type=str,
-                       default=None)
+        p.add_argument('-A', '--sts-account-id', action='store',
+                       type=str, default=None,
+                       help='the AWS account to control')
+        p.add_argument('-R', '--sts-account-role', action='store',
+                       type=str, default=None,
+                       help='the IAM role to assume')
+        p.add_argument('-r', '--region', action='store',
+                       type=str, default=None,
+                       help='connect to this AWS region; required for STS')
         p.add_argument('--skip-ta', action='store_true', default=False,
                        help='do not attempt to pull *any* information on limits'
                        ' from Trusted Advisor')
