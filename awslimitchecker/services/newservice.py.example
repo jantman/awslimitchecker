@@ -52,9 +52,7 @@ class _XXNewServiceXXService(_AwsService):
     service_name = 'XXNewServiceXX'
 
     def connect(self):
-        """
-        Connect to API if not already connected; set self.conn.
-        """
+        """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
         # TODO: set this to the correct connection methods:

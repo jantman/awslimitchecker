@@ -51,9 +51,7 @@ class _EbsService(_AwsService):
     service_name = 'EBS'
 
     def connect(self):
-        """
-        Connect to API if not already connected; set self.conn.
-        """
+        """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
         elif self.region:

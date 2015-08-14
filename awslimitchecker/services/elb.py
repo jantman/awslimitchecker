@@ -53,9 +53,7 @@ class _ElbService(_AwsService):
     service_name = 'ELB'
 
     def connect(self):
-        """
-        Connect to API if not already connected; set self.conn.
-        """
+        """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
         elif self.region:

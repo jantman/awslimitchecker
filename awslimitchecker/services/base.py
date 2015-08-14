@@ -172,9 +172,7 @@ class _AwsService(object):
         return conn
 
     def _get_sts_token(self):
-        """
-        Attempt to get STS token, exit if fail.
-        """
+        """Attempt to get STS token, exit if fail."""
         sts = boto.sts.connect_to_region(self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
         role = sts.assume_role(arn, "awslimitchecker")
