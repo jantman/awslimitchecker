@@ -150,6 +150,9 @@ class _AwsService(object):
         """
         Connect to API if not already connected; set self.conn.
         Use STS to assume a role as another user if self.account_id has been set.
+
+        :param driver: the Boto sub-module to use to call connect_to_region() 
+        :type driver: module
         """
         if(self.account_id):
             logger.debug("Connecting to %s for account %s", self.service_name, self.account_id)
