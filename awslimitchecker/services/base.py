@@ -155,7 +155,7 @@ class _AwsService(object):
 
         :param driver: the connect_to_region() function of the boto
           submodule to use to create this connection
-        :type driver: function
+        :type driver: :py:func:
         """
         if(self.account_id):
             logger.debug("Connecting to %s for account %s", self.service_name,
