@@ -58,7 +58,7 @@ class _ElastiCacheService(_AwsService):
         if self.conn is not None:
             return
         elif self.region:
-            self.conn = self.connect_via(boto.elasticache)
+            self.conn = self.connect_via(boto.elasticache.connect_to_region)
         else:
             self.conn = ElastiCacheConnection()
 

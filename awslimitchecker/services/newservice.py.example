@@ -58,7 +58,7 @@ class _XXNewServiceXXService(_AwsService):
         # TODO: set this to the correct connection methods:
         elif self.region:
             import boto.XXnewserviceXX
-            self.conn = self.connect_via(boto.XXnewserviceXX)
+            self.conn = self.connect_via(boto.XXnewserviceXX.connect_to_region)
         else:
             self.conn = boto.connect_XXnewserviceXX()
 

@@ -58,7 +58,7 @@ class _VpcService(_AwsService):
         if self.conn is not None:
             return
         elif self.region:
-            self.conn = self.connect_via(boto.vpc)
+            self.conn = self.connect_via(boto.vpc.connect_to_region)
         else:
             self.conn = boto.connect_vpc()
 

@@ -57,7 +57,7 @@ class _AutoscalingService(_AwsService):
         if self.conn is not None:
             return
         elif self.region:
-            self.conn = self.connect_via(boto.ec2.autoscale)
+            self.conn = self.connect_via(boto.ec2.autoscale.connect_to_region)
         else:
             self.conn = boto.connect_autoscale()
 

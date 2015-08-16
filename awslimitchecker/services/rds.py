@@ -57,7 +57,7 @@ class _RDSService(_AwsService):
         if self.conn is not None:
             return
         elif self.region:
-            self.conn = self.connect_via(boto.rds2)
+            self.conn = self.connect_via(boto.rds2.connect_to_region)
         else:
             self.conn = boto.connect_rds2()
 
