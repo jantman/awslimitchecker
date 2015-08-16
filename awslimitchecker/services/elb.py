@@ -57,7 +57,7 @@ class _ElbService(_AwsService):
         if self.conn is not None:
             return
         elif self.region:
-            self.conn = self.connect_via(boto.ec2.elb)
+            self.conn = self.connect_via(boto.ec2.elb.connect_to_region)
         else:
             self.conn = boto.connect_elb()
 

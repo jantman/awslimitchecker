@@ -57,7 +57,7 @@ class _Ec2Service(_AwsService):
         if self.conn is not None:
             return
         elif self.region:
-            self.conn = self.connect_via(boto.ec2)
+            self.conn = self.connect_via(boto.ec2.connect_to_region)
         else:
             self.conn = boto.connect_ec2()
 
