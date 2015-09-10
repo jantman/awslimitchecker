@@ -100,7 +100,7 @@ class AwsLimitChecker(object):
         self.account_role = account_role
         self.region = region
         self.services = {}
-        self.ta = TrustedAdvisor()
+        self.ta = TrustedAdvisor(account_id=self.account_id, account_role=self.account_role, region=self.region)
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
                                        account_id, account_role, region)
