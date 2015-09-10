@@ -38,25 +38,37 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import boto
+import boto.support
 from dateutil import parser
 import logging
 logger = logging.getLogger(__name__)
 
+from .services.base import _AwsService
 
-class TrustedAdvisor(object):
+class TrustedAdvisor(_AwsService):
 
-    def __init__(self):
+    def __init__(self, account_id=None, account_role=None, region=None):
         """
         Class to contain all TrustedAdvisor-related logic.
         """
         self.conn = None
         self.have_ta = True
+        self.account_id = account_id
+        self.account_role = account_role
+        self.region = 'us-east-1'
+        self.ta_region = region
 
     def connect(self):
-        if self.conn is None:
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        if self.ta_region:
+            logger.debug("Connecting to Support API (TrustedAdvisor) in %s" % self.region)
+            self.conn = self.connect_via(boto.support.connect_to_region)
+        else:
             logger.debug("Connecting to Support API (TrustedAdvisor)")
             self.conn = boto.connect_support()
-            logger.debug("Connected to Support API")
+        logger.debug("Connected to Support API")
 
     def update_limits(self, services):
         """
@@ -99,7 +111,7 @@ class TrustedAdvisor(object):
                             "check; not using Trusted Advisor data.")
             return
         check_id, metadata = tmp
-        region = self.conn.region.name
+        region = self.ta_region or self.conn.region.name
         checks = self.conn.describe_trusted_advisor_check_result(check_id)
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
@@ -182,3 +194,13 @@ class TrustedAdvisor(object):
                                 lim_name,
                                 svc_name)
         logger.info("Done updating TA limits on all services")
+    
+    def find_usage(self):
+        raise NotImplementedError('Not applicable')
+
+    def get_limits(self):
+        raise NotImplementedError('Not applicable')
+
+    def required_iam_permissions(self):
+        raise NotImplementedError('Not applicable')
+
