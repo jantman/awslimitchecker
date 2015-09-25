@@ -9,6 +9,14 @@ This page attempts to document some examples of usage, but the best resources ar
 :py:mod:`~.runner`, the command line wrapper, and the
 :ref:`API documentation <modindex>`.
 
+Full Jenkins Example
+---------------------
+
+A full example of a wrapper script with limit and threshold overrides, and a Jenkins job to run it,
+is available in the ``docs/examples`` directory of awslimitchecker.
+
+See `docs/examples/README.rst on GitHub <https://github.com/jantman/awslimitchecker/blob/master/docs/examples/README.rst>`_.
+
 Simple Examples
 ----------------
 
