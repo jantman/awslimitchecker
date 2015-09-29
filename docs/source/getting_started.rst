@@ -96,6 +96,8 @@ multiple regions, simply run awslimitchecker multiple times, once for each
 region, using a different ``AWS_PROFILE`` environment variable setting, and
 entries in ``~/.aws/credentials`` like:
 
+.. code-block:: ini
+
     [myuser-us-east-1]
     region = us-east-1
     aws_access_key_id = <your access key>
