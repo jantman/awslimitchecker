@@ -26,8 +26,9 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S SERVICE] [-s] [-l] [--list-defaults]
                           [-L LIMIT] [-u] [--iam-policy] [-W WARNING_THRESHOLD]
-                          [-C CRITICAL_THRESHOLD] [--skip-ta] [--no-color] [-v]
-                          [-V]
+                          [-C CRITICAL_THRESHOLD] [-A STS_ACCOUNT_ID]
+                          [-R STS_ACCOUNT_ROLE] [-r REGION] [--skip-ta]
+                          [--no-color] [-v] [-V]
    Report on AWS service limits and usage via boto, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -57,6 +58,13 @@ use as a Nagios-compatible plugin).
      -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
                            default critical threshold (percentage of limit);
                            default: 99
+     -A STS_ACCOUNT_ID, --sts-account-id STS_ACCOUNT_ID
+                           for use with STS, the Account ID of the destination
+                           account (account to assume a role in)
+     -R STS_ACCOUNT_ROLE, --sts-account-role STS_ACCOUNT_ROLE
+                           for use with STS, the name of the IAM role to assume
+     -r REGION, --region REGION
+                           AWS region name to connect to; required for STS
      --skip-ta             do not attempt to pull *any* information on limits
                            from Trusted Advisor
      --no-color            do not colorize output
@@ -127,11 +135,11 @@ option. Limits followed by ``(TA)`` have been obtained from Trusted Advisor.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling groups                        100 (TA)
-   AutoScaling/Launch configurations                      200 (TA)
+   AutoScaling/Auto Scaling groups                        500 (TA)
+   AutoScaling/Launch configurations                      500 (TA)
    EBS/Active snapshots                                   10000 (TA)
    EBS/Active volumes                                     5000 (TA)
-   EBS/General Purpose (SSD) volume storage (GiB)         30720 (TA)
+   EBS/General Purpose (SSD) volume storage (GiB)         163840 (TA)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -176,13 +184,13 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        50
    AutoScaling/Launch configurations                      50
-   EBS/Active snapshots                                   1065
-   EBS/Active volumes                                     922
-   EBS/General Purpose (SSD) volume storage (GiB)         5582
+   EBS/Active snapshots                                   10738
+   EBS/Active volumes                                     2974
+   EBS/General Purpose (SSD) volume storage (GiB)         47186
    (...)
-   VPC/Rules per network ACL                              max: acl-0c279569=4 (acl-0c279569=4, acl-c6d7 (...)
-   VPC/Subnets per VPC                                    max: vpc-73ec9716=11 (vpc-a926c2cc=4, vpc-c30 (...)
-   VPC/VPCs                                               4
+   VPC/Rules per network ACL                              max: acl-4bd96a2e=4 (acl-4bd96a2e=4, acl-cd9f (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=15 (vpc-ae7bc5cb=1, vpc-1e5 (...)
+   VPC/VPCs                                               5
 
 
 
@@ -207,7 +215,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    AutoScaling/Launch configurations                      456
    EBS/Active snapshots                                   10000 (TA)
    EBS/Active volumes                                     5000 (TA)
-   EBS/General Purpose (SSD) volume storage (GiB)         30720 (TA)
+   EBS/General Purpose (SSD) volume storage (GiB)         163840 (TA)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -243,15 +251,15 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 111
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 75
-   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=138
-   ElastiCache/Clusters                       (limit 50) CRITICAL: 61
-   ElastiCache/Nodes                          (limit 50) CRITICAL: 61
+   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10738
+   EC2/EC2-VPC Elastic IPs                                (limit 5) CRITICAL: 51
+   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 163
+   EC2/Running On-Demand m1.small instances               (limit 20) CRITICAL: 26
+   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 25
    (...)
-   RDS/VPC Security Groups                    (limit 5) CRITICAL: 39
-   VPC/Internet gateways                      (limit 5) WARNING: 4
-   VPC/VPCs                                   (limit 5) WARNING: 4
+   RDS/Subnet Groups                                      (limit 20) CRITICAL: 77
+   VPC/Internet gateways                                  (limit 5) CRITICAL: 5
+   VPC/VPCs                                               (limit 5) CRITICAL: 5
 
 
 
@@ -263,15 +271,15 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Running On-Demand EC2 instances        (limit 20) CRITICAL: 111
-   EC2/Running On-Demand m3.medium instances  (limit 20) CRITICAL: 75
-   EC2/Security groups per VPC                (limit 100) CRITICAL: vpc-c300b9a6=138
-   ElastiCache/Clusters                       (limit 50) CRITICAL: 61
-   ElastiCache/Nodes                          (limit 50) CRITICAL: 61
-   ElastiCache/Subnet Groups                  (limit 50) CRITICAL: 62
-   RDS/DB snapshots per user                  (limit 50) CRITICAL: 69
-   RDS/Subnet Groups                          (limit 20) CRITICAL: 39
-   RDS/VPC Security Groups                    (limit 5) CRITICAL: 39
+   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10738
+   EC2/EC2-VPC Elastic IPs                                (limit 5) CRITICAL: 51
+   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 162
+   EC2/Running On-Demand m1.small instances               (limit 20) CRITICAL: 26
+   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 24
+   (...)
+   RDS/Subnet Groups                                      (limit 20) CRITICAL: 77
+   VPC/Internet gateways                                  (limit 5) CRITICAL: 5
+   VPC/VPCs                                               (limit 5) CRITICAL: 5
 
 
 
