@@ -155,7 +155,7 @@ class _AwsService(object):
 
         :param driver: the connect_to_region() function of the boto
           submodule to use to create this connection
-        :type driver: :py:func:
+        :type driver: :py:obj:`function`
         """
         # @TODO do we really want to pass the modules in here, and assume
         # they all have the same ``.connect_to_region()``, or should we
