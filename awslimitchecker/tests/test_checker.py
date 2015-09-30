@@ -99,8 +99,8 @@ class TestAwsLimitChecker(object):
             'SvcBar': self.mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert self.mock_foo.mock_calls == [call(80, 99)]
-        assert self.mock_bar.mock_calls == [call(80, 99)]
+        assert self.mock_foo.mock_calls == [call(80, 99, None, None, None)]
+        assert self.mock_bar.mock_calls == [call(80, 99, None, None, None)]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
         assert self.cls.ta == self.mock_ta
@@ -151,8 +151,8 @@ class TestAwsLimitChecker(object):
             'SvcBar': mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert mock_foo.mock_calls == [call(5, 22)]
-        assert mock_bar.mock_calls == [call(5, 22)]
+        assert mock_foo.mock_calls == [call(5, 22, None, None, None)]
+        assert mock_bar.mock_calls == [call(5, 22, None, None, None)]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
         assert self.mock_version.mock_calls == [call()]
