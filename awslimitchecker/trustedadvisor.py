@@ -55,6 +55,7 @@ class TrustedAdvisor(_AwsService):
         self.have_ta = True
         self.account_id = account_id
         self.account_role = account_role
+        # @TODO do we always want to connect to us-east-1 for TA?
         self.region = 'us-east-1'
         self.ta_region = region
 
