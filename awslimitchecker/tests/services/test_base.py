@@ -276,18 +276,21 @@ class Test_AwsService(object):
         mock_driver = Mock()
         res = cls.connect_via(mock_driver)
         assert mock_driver.mock_calls == [
-            call.connect_to_region(None)
+            call(None)
         ]
-        assert res == mock_driver.connect_to_region.return_value
+        assert res == mock_driver.return_value
 
     def test_connect_via_with_region(self):
         cls = AwsServiceTester(1, 2, region='foo')
         mock_driver = Mock()
-        res = cls.connect_via(mock_driver)
+        with patch('awslimitchecker.services.base._AwsService.'
+                   '_get_sts_token') as mock_get_sts:
+            res = cls.connect_via(mock_driver)
+        assert mock_get_sts.mock_calls == []
         assert mock_driver.mock_calls == [
-            call.connect_to_region('foo')
+            call('foo')
         ]
-        assert res == mock_driver.connect_to_region.return_value
+        assert res == mock_driver.return_value
 
     def test_connect_via_sts(self):
         cls = AwsServiceTester(1, 2, account_id='123', account_role='myrole',

@@ -173,7 +173,7 @@ class _AwsService(object):
         else:
             logger.debug("Connecting to %s (%s)",
                          self.service_name, self.region)
-            conn = driver.connect_to_region(self.region)
+            conn = driver(self.region)
         logger.info("Connected to %s", self.service_name)
         return conn
 
