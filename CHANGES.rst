@@ -4,6 +4,9 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* Update trove classifier Development Status in setup.py to Beta
+* Fix markup formatting issue in ``docs/source/getting_started.rst``
+
 0.1.2 (2015-08-13)
 ------------------
 
