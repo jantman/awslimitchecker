@@ -157,9 +157,13 @@ class _AwsService(object):
           submodule to use to create this connection
         :type driver: :py:func:
         """
+        # @TODO do we really want to pass the modules in here, and assume
+        # they all have the same ``.connect_to_region()``, or should we
+        # pass in a reference to the function?
+        # https://github.com/jantman/awslimitchecker/pull/64#issuecomment-131546997
         if(self.account_id):
-            logger.debug("Connecting to %s for account %s", self.service_name,
-                         self.account_id)
+            logger.debug("Connecting to %s for account %s (STS; %s)",
+                         self.service_name, self.account_id, self.region)
             self.credentials = self._get_sts_token()
             conn = driver(
                 self.region,
@@ -167,16 +171,21 @@ class _AwsService(object):
                 aws_secret_access_key=self.credentials.secret_key,
                 security_token=self.credentials.session_token)
         else:
-            logger.debug("Connecting to %s", self.service_name)
+            logger.debug("Connecting to %s (%s)",
+                         self.service_name, self.region)
             conn = driver.connect_to_region(self.region)
         logger.info("Connected to %s", self.service_name)
         return conn
 
     def _get_sts_token(self):
         """Attempt to get STS token, exit if fail."""
+        logger.debug("Connecting to STS in region %s", self.region)
         sts = boto.sts.connect_to_region(self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        logger.debug("STS assume role for %s", arn)
         role = sts.assume_role(arn, "awslimitchecker")
+        logger.debug("Got STS credentials for role; access_key_id=%s",
+                     role.credentials.access_key)
         return role.credentials
 
     def set_limit_override(self, limit_name, value, override_ta=True):

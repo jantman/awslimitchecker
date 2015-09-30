@@ -109,6 +109,26 @@ class Test_AwsService(object):
         assert cls.limits == {'foo': 'bar'}
         assert cls.conn is None
         assert cls._have_usage is False
+        assert cls.account_id is None
+        assert cls.account_role is None
+        assert cls.region is None
+
+    def test_init_subclass_sts(self):
+        cls = AwsServiceTester(
+            1,
+            2,
+            account_id='012345678912',
+            account_role='myrole',
+            region='myregion'
+        )
+        assert cls.warning_threshold == 1
+        assert cls.critical_threshold == 2
+        assert cls.limits == {'foo': 'bar'}
+        assert cls.conn is None
+        assert cls._have_usage is False
+        assert cls.account_id == '012345678912'
+        assert cls.account_role == 'myrole'
+        assert cls.region == 'myregion'
 
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -251,6 +271,62 @@ class Test_AwsService(object):
         assert res == {'foo': mock_limit1, 'foo4': mock_limit4}
         assert mock_find_usage.mock_calls == [call()]
 
+    def test_connect_via_no_region(self):
+        cls = AwsServiceTester(1, 2)
+        mock_driver = Mock()
+        res = cls.connect_via(mock_driver)
+        assert mock_driver.mock_calls == [
+            call.connect_to_region(None)
+        ]
+        assert res == mock_driver.connect_to_region.return_value
+
+    def test_connect_via_with_region(self):
+        cls = AwsServiceTester(1, 2, region='foo')
+        mock_driver = Mock()
+        res = cls.connect_via(mock_driver)
+        assert mock_driver.mock_calls == [
+            call.connect_to_region('foo')
+        ]
+        assert res == mock_driver.connect_to_region.return_value
+
+    def test_connect_via_sts(self):
+        cls = AwsServiceTester(1, 2, account_id='123', account_role='myrole',
+                               region='myregion')
+        mock_driver = Mock()
+        mock_creds = Mock()
+        type(mock_creds).access_key = 'sts_ak'
+        type(mock_creds).secret_key = 'sts_sk'
+        type(mock_creds).session_token = 'sts_token'
+
+        with patch('awslimitchecker.services.base._AwsService.'
+                   '_get_sts_token') as mock_get_sts:
+            mock_get_sts.return_value = mock_creds
+            res = cls.connect_via(mock_driver)
+        assert mock_get_sts.mock_calls == [call()]
+        assert mock_driver.mock_calls == [
+            call(
+                'myregion',
+                aws_access_key_id='sts_ak',
+                aws_secret_access_key='sts_sk',
+                security_token='sts_token'
+            )
+        ]
+        assert res == mock_driver.return_value
+
+    def test_get_sts_token(self):
+        cls = AwsServiceTester(1, 2, account_id='789',
+                               account_role='myr', region='foobar')
+        with patch('awslimitchecker.services.base.boto.sts.connect_to_region'
+                   '') as mock_connect:
+            res = cls._get_sts_token()
+        arn = 'arn:aws:iam::789:role/myr'
+        assert mock_connect.mock_calls == [
+            call('foobar'),
+            call().assume_role(arn, 'awslimitchecker'),
+        ]
+        assume_role_ret = mock_connect.return_value.assume_role.return_value
+        assert res == assume_role_ret.credentials
+
 
 class Test_AwsServiceSubclasses(object):
 
@@ -270,6 +346,15 @@ class Test_AwsServiceSubclasses(object):
         # ensure warning and critical thresholds
         assert inst.warning_threshold == 3
         assert inst.critical_threshold == 7
+        assert inst.account_id is None
+        assert inst.account_role is None
+        assert inst.region is None
+
+        sts_inst = cls(3, 7, account_id='123', account_role='myrole',
+                       region='myregion')
+        assert sts_inst.account_id == '123'
+        assert sts_inst.account_role == 'myrole'
+        assert sts_inst.region == 'myregion'
 
     def test_subclass_init(self):
         for clsname, cls in _services.items():
