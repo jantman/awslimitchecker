@@ -66,9 +66,13 @@ class AwsLimitChecker(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
-        :param account_id: connect via STS to this AWS account
+        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html>`_
+          (12-digit string, currently numeric) for the account to connect to
+          (destination) via STS
         :type account_id: str
-        :param account_role: connect via STS as this IAM role
+        :param account_role: the name of an
+          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html>`_
+          (in the destination account) to assume
         :type account_role: str
         """
         # ###### IMPORTANT license notice ##########
@@ -100,7 +104,11 @@ class AwsLimitChecker(object):
         self.account_role = account_role
         self.region = region
         self.services = {}
-        self.ta = TrustedAdvisor(account_id=self.account_id, account_role=self.account_role, region=self.region)
+        self.ta = TrustedAdvisor(
+            account_id=self.account_id,
+            account_role=self.account_role,
+            region=self.region
+        )
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
                                        account_id, account_role, region)

@@ -130,13 +130,15 @@ class Runner(object):
                        'limit); default: 99')
         p.add_argument('-A', '--sts-account-id', action='store',
                        type=str, default=None,
-                       help='the AWS account to control')
+                       help='for use with STS, the Account ID of the '
+                       'destination account (account to assume a role in)')
         p.add_argument('-R', '--sts-account-role', action='store',
                        type=str, default=None,
-                       help='the IAM role to assume')
+                       help='for use with STS, the name of the IAM role to '
+                       'assume')
         p.add_argument('-r', '--region', action='store',
                        type=str, default=None,
-                       help='connect to this AWS region; required for STS')
+                       help='AWS region name to connect to; required for STS')
         p.add_argument('--skip-ta', action='store_true', default=False,
                        help='do not attempt to pull *any* information on limits'
                        ' from Trusted Advisor')
