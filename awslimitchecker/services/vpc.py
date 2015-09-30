@@ -39,7 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import boto
-import boto.vpc
 import logging
 from collections import defaultdict
 
