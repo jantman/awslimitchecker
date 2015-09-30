@@ -148,7 +148,7 @@ class TestAwsLimitChecker(object):
                 mock_version = mocks['_get_version_info']
                 mock_version.return_value = self.mock_ver_info
                 mock_ta_constr = mocks['TrustedAdvisor']
-                mocks['TrustedAdvisor'].return_value = self.mock_ta
+                mocks['TrustedAdvisor'].return_value = mock_ta
                 cls = AwsLimitChecker(
                     warning_threshold=5,
                     critical_threshold=22,
@@ -190,7 +190,7 @@ class TestAwsLimitChecker(object):
                 mock_version = mocks['_get_version_info']
                 mock_version.return_value = self.mock_ver_info
                 mock_ta_constr = mocks['TrustedAdvisor']
-                mocks['TrustedAdvisor'].return_value = self.mock_ta
+                mocks['TrustedAdvisor'].return_value = mock_ta
                 cls = AwsLimitChecker(region='myregion')
         # dict should be of _AwsService instances
         assert cls.services == {
@@ -229,7 +229,7 @@ class TestAwsLimitChecker(object):
                 mock_version = mocks['_get_version_info']
                 mock_version.return_value = self.mock_ver_info
                 mock_ta_constr = mocks['TrustedAdvisor']
-                mocks['TrustedAdvisor'].return_value = self.mock_ta
+                mocks['TrustedAdvisor'].return_value = mock_ta
                 cls = AwsLimitChecker(
                     account_id='123456789012',
                     account_role='myrole',

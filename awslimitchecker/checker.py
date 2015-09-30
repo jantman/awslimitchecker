@@ -66,12 +66,14 @@ class AwsLimitChecker(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
-        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/latest/gr/acct-identifiers.html>`_
+        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
+          latest/gr/acct-identifiers.html>`_
           (12-digit string, currently numeric) for the account to connect to
           (destination) via STS
         :type account_id: str
         :param account_role: the name of an
-          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html>`_
+          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
+          html>`_
           (in the destination account) to assume
         :type account_role: str
         """

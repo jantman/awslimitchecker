@@ -41,9 +41,10 @@ import boto
 import boto.support
 from dateutil import parser
 import logging
+from .services.base import _AwsService
+
 logger = logging.getLogger(__name__)
 
-from .services.base import _AwsService
 
 class TrustedAdvisor(_AwsService):
 
@@ -64,7 +65,8 @@ class TrustedAdvisor(_AwsService):
         if self.conn is not None:
             return
         if self.ta_region:
-            logger.debug("Connecting to Support API (TrustedAdvisor) in %s" % self.region)
+            logger.debug("Connecting to Support API (TrustedAdvisor) in %s",
+                         self.region)
             self.conn = self.connect_via(boto.support.connect_to_region)
         else:
             logger.debug("Connecting to Support API (TrustedAdvisor)")
@@ -195,7 +197,7 @@ class TrustedAdvisor(_AwsService):
                                 lim_name,
                                 svc_name)
         logger.info("Done updating TA limits on all services")
-    
+
     def find_usage(self):
         raise NotImplementedError('Not applicable')
 
@@ -204,4 +206,3 @@ class TrustedAdvisor(_AwsService):
 
     def required_iam_permissions(self):
         raise NotImplementedError('Not applicable')
-
