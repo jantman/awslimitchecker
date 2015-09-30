@@ -6,6 +6,7 @@ Pre-release (develop branch)
 
 * Update trove classifier Development Status in setup.py to Beta
 * Fix markup formatting issue in ``docs/source/getting_started.rst``
+* temporarily disable py26 testenv in Travis; failing due to upstream bug https://github.com/pytest-dev/pytest/issues/1035
 
 0.1.2 (2015-08-13)
 ------------------
