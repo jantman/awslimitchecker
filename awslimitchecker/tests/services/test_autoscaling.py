@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from boto.ec2.autoscale import AutoScaleConnection
+from boto.ec2.autoscale import AutoScaleConnection, connect_to_region
 from awslimitchecker.services.autoscaling import _AutoscalingService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -54,7 +54,9 @@ else:
 
 class Test_AutoscalingService(object):
 
+    # path base paths
     pb = 'awslimitchecker.services.autoscaling._AutoscalingService'
+    pbm = 'awslimitchecker.services.autoscaling'
 
     def test_init(self):
         """test __init__()"""
@@ -67,13 +69,34 @@ class Test_AutoscalingService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
+        mock_conn_via = Mock()
         cls = _AutoscalingService(21, 43)
-        with patch('awslimitchecker.services.autoscaling.boto.connect_'
-                   'autoscale') as mock_autoscaling:
-            mock_autoscaling.return_value = mock_conn
-            cls.connect()
+        with patch('%s.boto.connect_autoscale' % self.pbm) as mock_autoscaling:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_autoscaling.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
         assert mock_autoscaling.mock_calls == [call()]
+        assert mock_connect_via.mock_calls == []
         assert mock_conn.mock_calls == []
+        assert cls.conn == mock_conn
+
+    def test_connect_region(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _AutoscalingService(21, 43, region='myreg')
+        with patch('%s.boto.connect_autoscale' % self.pbm) as mock_autoscaling:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_autoscaling.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_autoscaling.mock_calls == []
+        assert mock_connect_via.mock_calls == [
+            call(connect_to_region)
+        ]
+        assert mock_conn.mock_calls == []
+        assert cls.conn == mock_conn_via
 
     def test_connect_again(self):
         """make sure we re-use the connection"""

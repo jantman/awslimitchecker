@@ -39,7 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import boto
-import boto.ec2
 import logging
 from collections import defaultdict
 from copy import deepcopy
