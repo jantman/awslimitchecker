@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import boto
+import boto.rds2
 import logging
 
 from .base import _AwsService
