@@ -12,6 +12,10 @@ Pre-release (develop branch)
   * Add support for passing in a region to connect to via ``-r`` / ``--region``
   * Add support for using STS to check resources in another account, including support for ``external_id``
   * Major refactor of how service classes connect to AWS API
+* `#74 <https://github.com/jantman/awslimitchecker/issues/74>`_ add support for EC2 t2.large instance type
+* `#65 <https://github.com/jantman/awslimitchecker/issues/65>`_ handle case where ElastiCache API returns CacheCluster response with CacheNodes None
+* `#63 <https://github.com/jantman/awslimitchecker/issues/63>`_ update Python usage documentation
+* `#49 <https://github.com/jantman/awslimitchecker/issues/49>`_ clean up badges in README.rst and sphinx index.rst; PyPi downloads and version badges broken (switch to shields.io)
 
 0.1.2 (2015-08-13)
 ------------------
