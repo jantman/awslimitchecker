@@ -4,6 +4,10 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+
+0.1.3 (2015-10-04)
+------------------
+
 * Update trove classifier Development Status in setup.py to Beta
 * Fix markup formatting issue in ``docs/source/getting_started.rst``
 * temporarily disable py26 testenv in Travis; failing due to upstream bug https://github.com/pytest-dev/pytest/issues/1035
