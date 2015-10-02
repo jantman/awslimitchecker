@@ -1139,6 +1139,11 @@ class Test_AGPLVersionChecker_Acceptance(object):
             'self.git_tag': self.git_tag,
             'self.git_url': self.git_url,
         })
+        print(_check_output([
+                'git',
+                'show-ref',
+                '--tags'
+        ]).strip())
 
     def teardown_method(self, method):
         tag = _get_git_tag(self.git_commit)
@@ -1557,6 +1562,11 @@ class Test_AGPLVersionChecker_Acceptance(object):
         assert status != 2, 'git clone is dirty'
         commit = _get_git_commit()
         path = str(tmpdir)
+        print(_check_output([
+            'git',
+            'show-ref',
+            '--tags'
+        ]).strip())
         print("# commit=%s path=%s" % (commit, path))
         # make the venv
         self._make_venv(path)
@@ -1582,6 +1592,11 @@ class Test_AGPLVersionChecker_Acceptance(object):
         assert status != 2, 'git clone is dirty'
         commit = _get_git_commit()
         path = str(tmpdir)
+        print(_check_output([
+            'git',
+            'show-ref',
+            '--tags'
+        ]).strip())
         print("# commit=%s path=%s" % (commit, path))
         # make the venv
         self._make_venv(path)
