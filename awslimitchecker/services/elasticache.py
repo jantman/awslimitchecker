@@ -86,9 +86,16 @@ class _ElastiCacheService(_AwsService):
             'DescribeCacheClustersResponse']['DescribeCacheClustersResult'][
                 'CacheClusters']
         for cluster in clusters:
-            nodes += len(cluster['CacheNodes'])
+            try:
+                num_nodes = len(cluster['CacheNodes'])
+            except (IndexError, TypeError):
+                # sometimes CacheNodes is None...
+                logger.debug("Cache Cluster '%s' returned dict with CacheNodes "
+                             "None", cluster['CacheClusterId'])
+                num_nodes = cluster['NumCacheNodes']
+            nodes += num_nodes
             self.limits['Nodes per Cluster']._add_current_usage(
-                len(cluster['CacheNodes']),
+                num_nodes,
                 aws_type='AWS::ElastiCache::CacheCluster',
                 resource_id=cluster['CacheClusterId'],
             )
