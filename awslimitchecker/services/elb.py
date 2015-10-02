@@ -51,8 +51,15 @@ logger = logging.getLogger(__name__)
 class _ElbService(_AwsService):
 
     service_name = 'ELB'
-    connect_function = boto.connect_elb
-    region_connect_function = boto.ec2.elb.connect_to_region
+
+    def connect(self):
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.ec2.elb.connect_to_region)
+        else:
+            self.conn = boto.connect_elb()
 
     def find_usage(self):
         """

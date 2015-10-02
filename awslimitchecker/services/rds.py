@@ -51,8 +51,15 @@ logger = logging.getLogger(__name__)
 class _RDSService(_AwsService):
 
     service_name = 'RDS'
-    connect_function = boto.connect_rds2
-    region_connect_function = boto.rds2.connect_to_region
+
+    def connect(self):
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.rds2.connect_to_region)
+        else:
+            self.conn = boto.connect_rds2()
 
     def find_usage(self):
         """

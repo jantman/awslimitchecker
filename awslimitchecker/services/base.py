@@ -98,6 +98,20 @@ class _AwsService(object):
         self._have_usage = False
 
     @abc.abstractmethod
+    def connect(self):
+        """
+        If not already done, establish a connection to the relevant AWS service
+        and save as ``self.conn``.
+        """
+        """
+        if self.conn is None:
+            logger.debug("Connecting to %s", self.service_name)
+            # self.conn = boto.<connect to something>
+            logger.info("Connected to %s", self.service_name)
+        """
+        raise NotImplementedError('abstract base class')
+
+    @abc.abstractmethod
     def find_usage(self):
         """
         Determine the current usage for each limit of this service,
@@ -147,49 +161,28 @@ class _AwsService(object):
         """
         raise NotImplementedError('abstract base class')
 
-    def connect(self):
+    def connect_via(self, driver):
         """
-        Connect to AWS API for this service, if not already connected; set
-        ``self.conn`` to the connection object.
+        Connect to API if not already connected; set self.conn
+        Use STS to assume a role as another user if self.account_id has been set
 
-        If ``self.region`` is None, connect by calling
-        ``self.connect_function()`` and setting ``self.conn`` to that value.
-
-        If ``self.region`` is not None, connect by calling
-        ``self.region_connect_function()``. Arguments passed are ``self.region``
-        and, if ``self.account_id`` is not None, ``self.region`` and the STS
-        credentials returned by :py:meth:`~._get_sts_token` (to assume a role
-        using STS).
+        :param driver: the connect_to_region() function of the boto
+          submodule to use to create this connection
+        :type driver: :py:obj:`function`
         """
-        if self.conn is not None:
-            # already connected
-            return self.conn
-
-        if self.region is None:
-            # use regionless self.connect_function
-            logger.debug("Connecting to %s", self.service_name)
-            self.conn = self.connect_function()
-            logger.info("Connected to %s", self.service_name)
-            return self.conn
-
-        if self.account_id is None:
-            # region but no account_id
-            logger.debug("Connecting to %s (region %s)",
+        if(self.account_id):
+            logger.debug("Connecting to %s for account %s (STS; %s)",
+                         self.service_name, self.account_id, self.region)
+            self.credentials = self._get_sts_token()
+            conn = driver(
+                self.region,
+                aws_access_key_id=self.credentials.access_key,
+                aws_secret_access_key=self.credentials.secret_key,
+                security_token=self.credentials.session_token)
+        else:
+            logger.debug("Connecting to %s (%s)",
                          self.service_name, self.region)
-            conn = self.region_connect_function(self.region)
-            logger.info("Connected to %s", self.service_name)
-            return conn
-
-        # else we have self.account_id set; use STS
-        logger.debug("Connecting to %s for account %s (STS; %s)",
-                     self.service_name, self.account_id, self.region)
-        self.credentials = self._get_sts_token()
-        conn = self.region_connect_function(
-            self.region,
-            aws_access_key_id=self.credentials.access_key,
-            aws_secret_access_key=self.credentials.secret_key,
-            security_token=self.credentials.session_token
-        )
+            conn = driver(self.region)
         logger.info("Connected to %s", self.service_name)
         return conn
 

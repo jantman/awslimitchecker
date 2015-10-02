@@ -51,11 +51,18 @@ class _XXNewServiceXXService(_AwsService):
 
     service_name = 'XXNewServiceXX'
 
-    # TODO: ensure these point to the correct functions
-    # boto function used to connect to service with no region or STS
-    connect_function = boto.connect_XXnewserviceXX()
-    # boto function used to connect to service with region or STS
-    region_connect_function = boto.XXnewserviceXX.connect_to_region
+    def connect(self):
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        # TODO: set this to the correct connection methods:
+        elif self.region:
+            self.conn = self.connect_via(boto.XXnewserviceXX.connect_to_region)
+        else:
+            logger.debug("Connecting to %s (no region specified)",
+                          self.service_name)
+            self.conn = boto.connect_XXnewserviceXX()
+            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """

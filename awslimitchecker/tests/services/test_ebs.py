@@ -69,6 +69,49 @@ class Test_EbsService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
+    def test_connect(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _EbsService(21, 43)
+        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_ec2.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_ec2.mock_calls == [call()]
+        assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
+        assert cls.conn == mock_conn
+
+    def test_connect_region(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _EbsService(21, 43, region='foo')
+        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_ec2.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_ec2.mock_calls == []
+        assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == [call(connect_to_region)]
+        assert cls.conn == mock_conn_via
+
+    def test_connect_again(self):
+        """make sure we re-use the connection"""
+        mock_conn = Mock()
+        cls = _EbsService(21, 43)
+        cls.conn = mock_conn
+        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_ec2.return_value = mock_conn
+                cls.connect()
+        assert mock_ec2.mock_calls == []
+        assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
+
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         cls = _EbsService(21, 43)

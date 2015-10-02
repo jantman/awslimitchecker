@@ -42,7 +42,6 @@ from awslimitchecker.services import _services
 from awslimitchecker.limit import AwsLimit
 import pytest
 import sys
-from types import FunctionType, MethodType, TypeType
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -59,6 +58,9 @@ class AwsServiceTester(_AwsService):
     """class to test non-abstract methods on base class"""
 
     service_name = 'AwsServiceTester'
+
+    def connect(self):
+        pass
 
     def find_usage(self):
         self._have_usage = True
@@ -270,55 +272,31 @@ class Test_AwsService(object):
         assert res == {'foo': mock_limit1, 'foo4': mock_limit4}
         assert mock_find_usage.mock_calls == [call()]
 
-    def test_already_connected(self):
+    def test_connect_via_no_region(self):
         cls = AwsServiceTester(1, 2)
         mock_driver = Mock()
-        mock_driver_region = Mock()
-        conn = Mock()
-        cls.connect_function = mock_driver
-        cls.region_connect_function = mock_driver_region
-        cls.conn = conn
-        res = cls.connect()
-        assert mock_driver.mock_calls == []
-        assert mock_driver_region.mock_calls == []
-        assert res == conn
-
-    def test_connect_no_region(self):
-        cls = AwsServiceTester(1, 2)
-        mock_driver = Mock()
-        mock_driver_region = Mock()
-        cls.connect_function = mock_driver
-        cls.region_connect_function = mock_driver_region
-        res = cls.connect()
+        res = cls.connect_via(mock_driver)
         assert mock_driver.mock_calls == [
-            call()
+            call(None)
         ]
-        assert mock_driver_region.mock_calls == []
         assert res == mock_driver.return_value
 
-    def test_connect_with_region(self):
+    def test_connect_via_with_region(self):
         cls = AwsServiceTester(1, 2, region='foo')
         mock_driver = Mock()
-        mock_driver_region = Mock()
-        cls.connect_function = mock_driver
-        cls.region_connect_function = mock_driver_region
         with patch('awslimitchecker.services.base._AwsService.'
                    '_get_sts_token') as mock_get_sts:
-            res = cls.connect()
+            res = cls.connect_via(mock_driver)
         assert mock_get_sts.mock_calls == []
-        assert mock_driver.mock_calls == []
-        assert mock_driver_region.mock_calls == [
+        assert mock_driver.mock_calls == [
             call('foo')
         ]
-        assert res == mock_driver_region.return_value
+        assert res == mock_driver.return_value
 
-    def test_connect_sts(self):
+    def test_connect_via_sts(self):
         cls = AwsServiceTester(1, 2, account_id='123', account_role='myrole',
                                region='myregion')
         mock_driver = Mock()
-        mock_driver_region = Mock()
-        cls.connect_function = mock_driver
-        cls.region_connect_function = mock_driver_region
         mock_creds = Mock()
         type(mock_creds).access_key = 'sts_ak'
         type(mock_creds).secret_key = 'sts_sk'
@@ -327,10 +305,9 @@ class Test_AwsService(object):
         with patch('awslimitchecker.services.base._AwsService.'
                    '_get_sts_token') as mock_get_sts:
             mock_get_sts.return_value = mock_creds
-            res = cls.connect()
+            res = cls.connect_via(mock_driver)
         assert mock_get_sts.mock_calls == [call()]
-        assert mock_driver.mock_calls == []
-        assert mock_driver_region.mock_calls == [
+        assert mock_driver.mock_calls == [
             call(
                 'myregion',
                 aws_access_key_id='sts_ak',
@@ -338,7 +315,7 @@ class Test_AwsService(object):
                 security_token='sts_token'
             )
         ]
-        assert res == mock_driver_region.return_value
+        assert res == mock_driver.return_value
 
     def test_get_sts_token(self):
         cls = AwsServiceTester(1, 2, account_id='789',
@@ -397,26 +374,6 @@ class Test_AwsServiceSubclasses(object):
         assert sts_inst.account_id == '123'
         assert sts_inst.account_role == 'myrole'
         assert sts_inst.region == 'myregion'
-
-        # connections
-        assert (
-            isinstance(inst.connect_function, FunctionType) or
-            isinstance(inst.connect_function, MethodType) or
-            isinstance(inst.connect_function, TypeType)
-        )
-        assert (
-            isinstance(inst.region_connect_function, FunctionType) or
-            isinstance(inst.region_connect_function, MethodType) or
-            isinstance(inst.region_connect_function, TypeType)
-        )
-        assert (
-            inst.connect_function.__module__ == 'boto' or
-            inst.connect_function.__module__.startswith('boto.')
-        )
-        assert (
-            inst.region_connect_function.__module__ == 'boto' or
-            inst.region_connect_function.__module__.startswith('boto.')
-        )
 
     def test_subclass_init(self):
         for clsname, cls in _services.items():

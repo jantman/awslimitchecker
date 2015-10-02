@@ -66,6 +66,50 @@ class Test_AutoscalingService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
+    def test_connect(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _AutoscalingService(21, 43)
+        with patch('%s.boto.connect_autoscale' % self.pbm) as mock_autoscaling:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_autoscaling.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_autoscaling.mock_calls == [call()]
+        assert mock_connect_via.mock_calls == []
+        assert mock_conn.mock_calls == []
+        assert cls.conn == mock_conn
+
+    def test_connect_region(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _AutoscalingService(21, 43, region='myreg')
+        with patch('%s.boto.connect_autoscale' % self.pbm) as mock_autoscaling:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_autoscaling.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_autoscaling.mock_calls == []
+        assert mock_connect_via.mock_calls == [
+            call(connect_to_region)
+        ]
+        assert mock_conn.mock_calls == []
+        assert cls.conn == mock_conn_via
+
+    def test_connect_again(self):
+        """make sure we re-use the connection"""
+        mock_conn = Mock()
+        cls = _AutoscalingService(21, 43)
+        cls.conn = mock_conn
+        with patch('awslimitchecker.services.autoscaling.boto.connect_'
+                   'autoscale') as mock_autoscaling:
+            mock_autoscaling.return_value = mock_conn
+            cls.connect()
+        assert mock_autoscaling.mock_calls == []
+        assert mock_conn.mock_calls == []
+
     def test_get_limits(self):
         cls = _AutoscalingService(21, 43)
         cls.limits = {}
