@@ -89,10 +89,10 @@ using the :py:mod:`abc` module.
 2. Find all "TODO" comments in the newly-created files; these have instructions on things to change for new services.
    Add yourself to the Authors section in the header if desired.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
-4. Ensure that the :py:meth:`~._AwsService.connect` method is properly defined; if ``self.conn`` is not None, then it
+4. Ensure that the :py:meth:`~awslimitchecker.services.base._AwsService.connect` method is properly defined; if ``self.conn`` is not None, then it
    should return None. If ``self.region`` is None, it should set ``self.conn`` to the return value of the appropriate
    ``boto.connect_*()`` method for the service, specifically the connected connection class for the service. Otherwise,
-   it should call ``self.connect_via()`` (:py:meth:`~._AwsService.connect_via`) passing in the service's ``connect_to_region()``
+   it should call ``self.connect_via()`` (:py:meth:`~.Connectable.connect_via`) passing in the service's ``connect_to_region()``
    function as the argument. This is done to centralize region and STS connection logic in :py:class:`~._AwsService`.
 5. Write at least high-level tests; TDD is greatly preferred.
 6. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;

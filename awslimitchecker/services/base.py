@@ -102,9 +102,9 @@ class _AwsService(Connectable):
         """
         If not already done, establish a connection to the relevant AWS service
         and save as ``self.conn``. If ``self.region`` is defined, call
-        ``self.connect_via()`` (:py:meth:`~._AwsService.connect_via`) passing
-        the appripriate boto ``connect_to_region()`` function as the argument,
-        else call the boto.connect_SERVICE_NAME() method directly.
+        ``self.connect_via()`` (:py:meth:`~.Connectable.connect_via`)
+        passing the appripriate boto ``connect_to_region()`` function as the
+        argument, else call the boto.connect_SERVICE_NAME() method directly.
         """
         """
         if self.conn is not None:

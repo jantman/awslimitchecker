@@ -27,8 +27,8 @@ use as a Nagios-compatible plugin).
    usage: awslimitchecker [-h] [-S SERVICE] [-s] [-l] [--list-defaults]
                           [-L LIMIT] [-u] [--iam-policy] [-W WARNING_THRESHOLD]
                           [-C CRITICAL_THRESHOLD] [-A STS_ACCOUNT_ID]
-                          [-R STS_ACCOUNT_ROLE] [-r REGION] [--skip-ta]
-                          [--no-color] [-v] [-V]
+                          [-R STS_ACCOUNT_ROLE] [-E EXTERNAL_ID] [-r REGION]
+                          [--skip-ta] [--no-color] [-v] [-V]
    Report on AWS service limits and usage via boto, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -63,6 +63,8 @@ use as a Nagios-compatible plugin).
                            account (account to assume a role in)
      -R STS_ACCOUNT_ROLE, --sts-account-role STS_ACCOUNT_ROLE
                            for use with STS, the name of the IAM role to assume
+     -E EXTERNAL_ID, --external-id EXTERNAL_ID
+                           External ID to use when assuming a role via STS
      -r REGION, --region REGION
                            AWS region name to connect to; required for STS
      --skip-ta             do not attempt to pull *any* information on limits
@@ -184,9 +186,9 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        50
    AutoScaling/Launch configurations                      50
-   EBS/Active snapshots                                   10738
-   EBS/Active volumes                                     2974
-   EBS/General Purpose (SSD) volume storage (GiB)         47186
+   EBS/Active snapshots                                   10768
+   EBS/Active volumes                                     3023
+   EBS/General Purpose (SSD) volume storage (GiB)         47216
    (...)
    VPC/Rules per network ACL                              max: acl-4bd96a2e=4 (acl-4bd96a2e=4, acl-cd9f (...)
    VPC/Subnets per VPC                                    max: vpc-c89074a9=15 (vpc-ae7bc5cb=1, vpc-1e5 (...)
@@ -251,11 +253,11 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10738
+   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10768
    EC2/EC2-VPC Elastic IPs                                (limit 5) CRITICAL: 51
-   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 163
-   EC2/Running On-Demand m1.small instances               (limit 20) CRITICAL: 26
-   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 25
+   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 160
+   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 22
+   EC2/Running On-Demand m3.xlarge instances              (limit 20) CRITICAL: 24
    (...)
    RDS/Subnet Groups                                      (limit 20) CRITICAL: 77
    VPC/Internet gateways                                  (limit 5) CRITICAL: 5
@@ -271,11 +273,11 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10738
+   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10768
    EC2/EC2-VPC Elastic IPs                                (limit 5) CRITICAL: 51
-   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 162
-   EC2/Running On-Demand m1.small instances               (limit 20) CRITICAL: 26
-   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 24
+   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 161
+   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 22
+   EC2/Running On-Demand m3.xlarge instances              (limit 20) CRITICAL: 24
    (...)
    RDS/Subnet Groups                                      (limit 20) CRITICAL: 77
    VPC/Internet gateways                                  (limit 5) CRITICAL: 5
@@ -308,3 +310,35 @@ permissions for it to perform all limit checks. This can be viewed with the
 
 For the current IAM Policy required by this version of awslimitchecker,
 see :ref:`IAM Policy <iam_policy>`.
+
+Connect to a Specific Region
+++++++++++++++++++++++++++++
+
+To connect to a specific region (i.e. ``us-west-2``), simply specify the region
+name with the ``-r`` or ``--region`` options:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -r us-west-2
+
+Assume a Role in Another Account with STS
++++++++++++++++++++++++++++++++++++++++++
+
+To assume the "foobar" role in account 123456789012 in region us-west-1,
+specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
+and ``-R`` / ``--sts-account-role`` options:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -r us-west-1 -A 123456789012 -R foobar
+
+If you also need to specify an ``external_id`` of "myid", you can do that with the
+``-E`` / ``--external-id`` options:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -r us-west-1 -A 123456789012 -R foobar -E myid
+
+Please note that this assumes that you already have STS configured and working
+between your account and the 123456789012 destination account; see the
+`documentation <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ for further information.

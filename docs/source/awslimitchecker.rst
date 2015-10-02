@@ -19,6 +19,7 @@ Submodules
 .. toctree::
 
    awslimitchecker.checker
+   awslimitchecker.connectable
    awslimitchecker.limit
    awslimitchecker.runner
    awslimitchecker.trustedadvisor
