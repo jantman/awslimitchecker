@@ -170,10 +170,6 @@ class _AwsService(object):
           submodule to use to create this connection
         :type driver: :py:obj:`function`
         """
-        # @TODO do we really want to pass the modules in here, and assume
-        # they all have the same ``.connect_to_region()``, or should we
-        # pass in a reference to the function?
-        # https://github.com/jantman/awslimitchecker/pull/64#issuecomment-131546997
         if(self.account_id):
             logger.debug("Connecting to %s for account %s (STS; %s)",
                          self.service_name, self.account_id, self.region)
