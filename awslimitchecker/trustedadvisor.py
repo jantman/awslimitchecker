@@ -51,8 +51,7 @@ class TrustedAdvisor(Connectable):
     service_name = 'TrustedAdvisor'
 
     def __init__(self, account_id=None, account_role=None, region=None,
-                 external_id=None
-    ):
+                 external_id=None):
         """
         Class to contain all TrustedAdvisor-related logic.
 

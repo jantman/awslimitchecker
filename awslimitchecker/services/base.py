@@ -39,7 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc
 import logging
-import boto.sts
 from awslimitchecker.connectable import Connectable
 
 logger = logging.getLogger(__name__)

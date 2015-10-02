@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.connectable import Connectable
-import pytest
 import sys
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -91,7 +90,7 @@ class Test_Connectable(object):
 
     def test_connect_via_sts(self):
         cls = ConnectableTester(account_id='123', account_role='myrole',
-                               region='myregion')
+                                region='myregion')
         mock_driver = Mock()
         mock_creds = Mock()
         type(mock_creds).access_key = 'sts_ak'
@@ -115,8 +114,8 @@ class Test_Connectable(object):
 
     def test_get_sts_token(self):
         cls = ConnectableTester(account_id='789',
-                               account_role='myr', region='foobar')
-        with patch('awslimitchecker.services.base.boto.sts.connect_to_region'
+                                account_role='myr', region='foobar')
+        with patch('awslimitchecker.connectable.boto.sts.connect_to_region'
                    '') as mock_connect:
             res = cls._get_sts_token()
         arn = 'arn:aws:iam::789:role/myr'
@@ -129,9 +128,9 @@ class Test_Connectable(object):
 
     def test_get_sts_token_external_id(self):
         cls = ConnectableTester(account_id='789',
-                               account_role='myr', region='foobar',
-                               external_id='myextid')
-        with patch('awslimitchecker.services.base.boto.sts.connect_to_region'
+                                account_role='myr', region='foobar',
+                                external_id='myextid')
+        with patch('awslimitchecker.connectable.boto.sts.connect_to_region'
                    '') as mock_connect:
             res = cls._get_sts_token()
         arn = 'arn:aws:iam::789:role/myr'

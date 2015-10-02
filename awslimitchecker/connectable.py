@@ -42,6 +42,7 @@ import boto.sts
 
 logger = logging.getLogger(__name__)
 
+
 class Connectable(object):
     """
     Mix-in helper class for connecting to AWS APIs. Centralizes logic of
@@ -84,4 +85,3 @@ class Connectable(object):
         logger.debug("Got STS credentials for role; access_key_id=%s",
                      role.credentials.access_key)
         return role.credentials
-
