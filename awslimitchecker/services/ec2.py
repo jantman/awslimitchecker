@@ -362,7 +362,7 @@ class _Ec2Service(_AwsService):
         return [
             "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
-            "ec2:DescribeInternetGateways"
+            "ec2:DescribeInternetGateways",
             "ec2:DescribeNetworkAcls",
             "ec2:DescribeNetworkInterfaces",
             "ec2:DescribeReservedInstances",

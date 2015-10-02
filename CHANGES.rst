@@ -16,6 +16,7 @@ Pre-release (develop branch)
 * `#65 <https://github.com/jantman/awslimitchecker/issues/65>`_ handle case where ElastiCache API returns CacheCluster response with CacheNodes None
 * `#63 <https://github.com/jantman/awslimitchecker/issues/63>`_ update Python usage documentation
 * `#49 <https://github.com/jantman/awslimitchecker/issues/49>`_ clean up badges in README.rst and sphinx index.rst; PyPi downloads and version badges broken (switch to shields.io)
+* `#67 <https://github.com/jantman/awslimitchecker/issues/67>`_ fix typo in required IAM policy; comma missing in list returned from `_Ec2Service.required_iam_permissions()`
 
 0.1.2 (2015-08-13)
 ------------------
