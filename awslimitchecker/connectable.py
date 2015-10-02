@@ -44,6 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 class Connectable(object):
+
     """
     Mix-in helper class for connecting to AWS APIs. Centralizes logic of
     connecting via regions and/or STS.
@@ -51,8 +52,8 @@ class Connectable(object):
 
     def connect_via(self, driver):
         """
-        Connect to API if not already connected; set self.conn
-        Use STS to assume a role as another user if self.account_id has been set
+        Connect to API if not already connected; set self.conn. Use STS to
+        assume a role as another user if self.account_id has been set.
 
         :param driver: the connect_to_region() function of the boto
           submodule to use to create this connection

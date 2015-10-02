@@ -48,6 +48,11 @@ logger = logging.getLogger(__name__)
 
 class TrustedAdvisor(Connectable):
 
+    """
+    Class to handle interaction with TrustedAdvisor API, polling TA and updating
+    limits from TA information.
+    """
+
     service_name = 'TrustedAdvisor'
 
     def __init__(self, account_id=None, account_role=None, region=None,
