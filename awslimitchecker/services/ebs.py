@@ -49,15 +49,8 @@ logger = logging.getLogger(__name__)
 class _EbsService(_AwsService):
 
     service_name = 'EBS'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        elif self.region:
-            self.conn = self.connect_via(boto.ec2.connect_to_region)
-        else:
-            self.conn = boto.connect_ec2()
+    connect_function = boto.connect_ec2
+    region_connect_function = boto.ec2.connect_to_region
 
     def find_usage(self):
         """

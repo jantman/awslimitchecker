@@ -103,45 +103,6 @@ class Test_TrustedAdvisor(object):
         assert cls.ta_region == 'r'
         assert cls.external_id == 'myeid'
 
-    def test_connect(self):
-        cls = TrustedAdvisor()
-        mock_conn = Mock(spec_set=SupportConnection, name='mock_conn')
-        with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                   '', autospec=True) as mock_connect:
-            mock_connect.return_value = mock_conn
-            cls.connect()
-        assert cls.conn == mock_conn
-        assert mock_connect.mock_calls == [call()]
-
-    def test_connect_region(self):
-        cls = TrustedAdvisor(account_id='foo', account_role='bar', region='re')
-        mock_conn = Mock(spec_set=SupportConnection, name='mock_conn')
-        mock_conn_via = Mock(spec_set=SupportConnection, name='mock_conn')
-        with patch('awslimitchecker.trustedadvisor.TrustedAdvisor.connect_via'
-                   '') as mock_connect_via:
-            mock_connect_via.return_value = mock_conn_via
-            with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                       '', autospec=True) as mock_connect:
-                mock_connect.return_value = mock_conn
-                cls.connect()
-        assert cls.conn == mock_conn_via
-        assert mock_connect.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-
-    def test_connect_again(self):
-        cls = TrustedAdvisor()
-        mock_original_conn = Mock(spec_set=SupportConnection)
-        cls.conn = mock_original_conn
-        mock_conn = Mock(spec_set=SupportConnection)
-        with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                   '') as mock_connect:
-            mock_connect.return_value = mock_conn
-            cls.connect()
-        assert cls.conn == mock_original_conn
-        assert mock_connect.mock_calls == []
-
     def test_update_limits(self):
         mock_results = Mock()
         with patch('%s.connect' % pb, autospec=True) as mock_connect:

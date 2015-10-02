@@ -48,6 +48,10 @@ logger = logging.getLogger(__name__)
 
 class TrustedAdvisor(_AwsService):
 
+    service_name = 'TrustedAdvisor'
+    connect_function = boto.connect_support
+    region_connect_function = boto.support.connect_to_region
+
     def __init__(self, account_id=None, account_role=None, region=None,
                  external_id=None
     ):
@@ -78,19 +82,6 @@ class TrustedAdvisor(_AwsService):
         self.region = 'us-east-1'
         self.ta_region = region
         self.external_id = external_id
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        if self.ta_region:
-            logger.debug("Connecting to Support API (TrustedAdvisor) in %s",
-                         self.region)
-            self.conn = self.connect_via(boto.support.connect_to_region)
-        else:
-            logger.debug("Connecting to Support API (TrustedAdvisor)")
-            self.conn = boto.connect_support()
-        logger.debug("Connected to Support API")
 
     def update_limits(self, services):
         """

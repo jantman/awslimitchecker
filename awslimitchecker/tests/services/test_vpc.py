@@ -73,54 +73,6 @@ class Test_VpcService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _VpcService(21, 43)
-        with patch('%s.boto.connect_vpc' % self.pbm) as mock_vpc:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_vpc.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_vpc.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _VpcService(21, 43, region='foo')
-        with patch('%s.boto.connect_vpc' % self.pbm) as mock_vpc:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_vpc.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_vpc.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-        assert cls.conn == mock_conn_via
-
-    def test_connect_again(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _VpcService(21, 43)
-        cls.conn = mock_conn
-        with patch('%s.boto.connect_vpc' % self.pbm) as mock_vpc:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_vpc.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_vpc.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-        assert cls.conn == mock_conn
-
     def test_get_limits(self):
         cls = _VpcService(21, 43)
         cls.limits = {}

@@ -67,64 +67,6 @@ class Test_ElbService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _ElbService(21, 43)
-        with patch('%s.boto.connect_elb' % self.pbm) as mock_elb:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_elb.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_elb.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _ElbService(21, 43, region='myregion')
-        with patch('%s.boto.connect_elb' % self.pbm) as mock_elb:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_elb.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_elb.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-        assert cls.conn == mock_conn_via
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        cls = _ElbService(21, 43)
-        cls.conn = mock_conn
-        with patch('awslimitchecker.services.elb.boto.connect_elb') as mock_elb:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_elb.return_value = mock_conn
-                cls.connect()
-        assert mock_elb.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-
-    def test_get_limits(self):
-        cls = _ElbService(21, 43)
-        cls.limits = {}
-        res = cls.get_limits()
-        assert sorted(res.keys()) == sorted([
-            'Active load balancers',
-            'Listeners per load balancer',
-        ])
-        for name, limit in res.items():
-            assert limit.service == cls
-            assert limit.def_warning_threshold == 21
-            assert limit.def_critical_threshold == 43
-
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
