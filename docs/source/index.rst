@@ -66,9 +66,8 @@ Advisor where available), notifying you when you are approaching or at your limi
 Status
 -------
 
-This project is currently in very early development. At this time please consider it alpha code and not reliable;
-furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
-use, but contributions are certainly welcome.
+This project is currently in very early development. At this time please consider it beta code and not fully tested in all situations;
+furthermore its API may be changing rapidly. I hope to have this stabilized soon.
 
 What It Does
 ------------
@@ -80,6 +79,8 @@ What It Does
   exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
 - Define custom thresholds per-limit
 - where possible, pull current limits from Trusted Advisor API
+- Supports explicitly setting the AWS region
+- Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
 
 Requirements
 ------------

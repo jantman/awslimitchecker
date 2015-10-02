@@ -31,13 +31,48 @@ We also import :py:mod:`pprint` to make the output nicer.
 
 .. code-block:: pycon
 
-   >>> import pprint
    >>> import logging
    >>> logging.basicConfig()
    >>> logger = logging.getLogger()
    >>> 
    >>> from awslimitchecker.checker import AwsLimitChecker
    >>> c = AwsLimitChecker()
+
+Specifying a Region
++++++++++++++++++++
+
+To specify a region ("us-west-2" in this example), specify it as the ``region`` string
+parameter to the class constructor:
+
+.. code-block:: pycon
+
+   >>> import logging
+   >>> logging.basicConfig()
+   >>> logger = logging.getLogger()
+   >>> 
+   >>> from awslimitchecker.checker import AwsLimitChecker
+   >>> c = AwsLimitChecker(region='us-west-2')
+
+Assuming a Role with STS
+++++++++++++++++++++++++
+
+To check limits for another account using a Role assumed via `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_,
+specify the ``region``, ``account_id`` and ``account_role`` parameters to the class constructor. If an external ID is needed,
+this can be specified by the ``external_id`` parameter. All are strings:
+
+.. code-block:: pycon
+
+   >>> import logging
+   >>> logging.basicConfig()
+   >>> logger = logging.getLogger()
+   >>>
+   >>> from awslimitchecker.checker import AwsLimitChecker
+   >>> c = AwsLimitChecker(
+   >>>     region='us-west-2',
+   >>>     account_id='012345678901',
+   >>>     account_role='myRoleName',
+   >>>     external_id='myid'
+   >>> )
 
 Setting a Limit Override
 +++++++++++++++++++++++++

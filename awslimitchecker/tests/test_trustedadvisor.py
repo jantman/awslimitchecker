@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from boto.support.layer1 import SupportConnection
+from boto.support import connect_to_region
 from boto.regioninfo import RegionInfo
 from boto.exception import JSONResponseError, BotoServerError
 from awslimitchecker.trustedadvisor import TrustedAdvisor
@@ -77,6 +78,30 @@ class Test_TrustedAdvisor(object):
     def test_init(self):
         cls = TrustedAdvisor()
         assert cls.conn is None
+        assert cls.account_id is None
+        assert cls.account_role is None
+        assert cls.region == 'us-east-1'
+        assert cls.ta_region is None
+        assert cls.external_id is None
+
+    def test_init_sts(self):
+        cls = TrustedAdvisor(account_id='aid', account_role='role', region='r')
+        assert cls.conn is None
+        assert cls.account_id == 'aid'
+        assert cls.account_role == 'role'
+        assert cls.region == 'us-east-1'
+        assert cls.ta_region == 'r'
+        assert cls.external_id is None
+
+    def test_init_sts_external_id(self):
+        cls = TrustedAdvisor(account_id='aid', account_role='role', region='r',
+                             external_id='myeid')
+        assert cls.conn is None
+        assert cls.account_id == 'aid'
+        assert cls.account_role == 'role'
+        assert cls.region == 'us-east-1'
+        assert cls.ta_region == 'r'
+        assert cls.external_id == 'myeid'
 
     def test_connect(self):
         cls = TrustedAdvisor()
@@ -87,6 +112,23 @@ class Test_TrustedAdvisor(object):
             cls.connect()
         assert cls.conn == mock_conn
         assert mock_connect.mock_calls == [call()]
+
+    def test_connect_region(self):
+        cls = TrustedAdvisor(account_id='foo', account_role='bar', region='re')
+        mock_conn = Mock(spec_set=SupportConnection, name='mock_conn')
+        mock_conn_via = Mock(spec_set=SupportConnection, name='mock_conn')
+        with patch('awslimitchecker.trustedadvisor.TrustedAdvisor.connect_via'
+                   '') as mock_connect_via:
+            mock_connect_via.return_value = mock_conn_via
+            with patch('awslimitchecker.trustedadvisor.boto.connect_support'
+                       '', autospec=True) as mock_connect:
+                mock_connect.return_value = mock_conn
+                cls.connect()
+        assert cls.conn == mock_conn_via
+        assert mock_connect.mock_calls == []
+        assert mock_connect_via.mock_calls == [
+            call(connect_to_region)
+        ]
 
     def test_connect_again(self):
         cls = TrustedAdvisor()
@@ -303,6 +345,79 @@ class Test_TrustedAdvisor(object):
             'AutoScaling': {
                 'Launch configurations': 20,
                 'Auto Scaling groups': 40,
+            }
+        }
+
+    def test_poll_region(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        self.cls.ta_region = 'us-west-2'
+        tmp.return_value = {
+            'result': {
+                'timestamp': '2015-06-15T20:27:42Z',
+                'flaggedResources': [
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-west-2',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '20',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid2',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'AutoScaling',
+                            'Launch configurations',
+                            '20',
+                            '18',
+                            'Yellow'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid3',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '40',
+                            '10',
+                            'Green'
+                        ]
+                    },
+                ]
+            }
+        }
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            mock_id.return_value = (
+                'foo',
+                [
+                    'Region',
+                    'Service',
+                    'Limit Name',
+                    'Limit Amount',
+                    'Current Usage',
+                    'Status'
+                ]
+            )
+            res = self.cls._poll()
+        assert tmp.mock_calls == [call('foo')]
+        assert mock_id.mock_calls == [call(self.cls)]
+        assert res == {
+            'AutoScaling': {
+                'Auto Scaling groups': 20,
             }
         }
 

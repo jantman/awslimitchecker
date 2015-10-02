@@ -40,6 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 from boto.ec2.elb import ELBConnection
 from boto.ec2.elb.loadbalancer import LoadBalancer
+from boto.ec2.elb import connect_to_region
 from awslimitchecker.services.elb import _ElbService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -56,6 +57,7 @@ else:
 class Test_ElbService(object):
 
     pb = 'awslimitchecker.services.elb._ElbService'  # patch base path
+    pbm = 'awslimitchecker.services.elb'  # patch base path - module
 
     def test_init(self):
         """test __init__()"""
@@ -68,12 +70,34 @@ class Test_ElbService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
+        mock_conn_via = Mock()
         cls = _ElbService(21, 43)
-        with patch('awslimitchecker.services.elb.boto.connect_elb') as mock_elb:
-            mock_elb.return_value = mock_conn
-            cls.connect()
+        with patch('%s.boto.connect_elb' % self.pbm) as mock_elb:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_elb.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
         assert mock_elb.mock_calls == [call()]
         assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
+        assert cls.conn == mock_conn
+
+    def test_connect_region(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _ElbService(21, 43, region='myregion')
+        with patch('%s.boto.connect_elb' % self.pbm) as mock_elb:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_elb.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_elb.mock_calls == []
+        assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == [
+            call(connect_to_region)
+        ]
+        assert cls.conn == mock_conn_via
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
@@ -81,10 +105,12 @@ class Test_ElbService(object):
         cls = _ElbService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.elb.boto.connect_elb') as mock_elb:
-            mock_elb.return_value = mock_conn
-            cls.connect()
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_elb.return_value = mock_conn
+                cls.connect()
         assert mock_elb.mock_calls == []
         assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
 
     def test_get_limits(self):
         cls = _ElbService(21, 43)

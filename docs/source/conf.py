@@ -287,7 +287,10 @@ intersphinx_mapping = {
 autoclass_content = 'init'
 autodoc_default_flags = ['members', 'undoc-members', 'private-members', 'special-members', 'show-inheritance']
 
-nitpick_ignore = [('py:class', 'ABCMeta')]
+nitpick_ignore = [
+    ('py:class', 'ABCMeta'),
+    ('py:obj', 'function')
+]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734
 def remove_module_docstring(app, what, name, obj, options, lines):
