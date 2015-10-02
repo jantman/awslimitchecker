@@ -118,7 +118,7 @@ or Trusted Advisor data, run with ``--list-defaults``:
    AutoScaling/Launch configurations                      100
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
-   EBS/General Purpose (SSD) volume storage (GiB)         20
+   EBS/General Purpose (SSD) volume storage (GiB)         20480
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -162,7 +162,7 @@ from Trusted Advisor for all commands.
    AutoScaling/Launch configurations                      100
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
-   EBS/General Purpose (SSD) volume storage (GiB)         20
+   EBS/General Purpose (SSD) volume storage (GiB)         20480
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -186,9 +186,9 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        50
    AutoScaling/Launch configurations                      50
-   EBS/Active snapshots                                   10768
-   EBS/Active volumes                                     3025
-   EBS/General Purpose (SSD) volume storage (GiB)         47216
+   EBS/Active snapshots                                   10771
+   EBS/Active volumes                                     3050
+   EBS/General Purpose (SSD) volume storage (GiB)         47696
    (...)
    VPC/Rules per network ACL                              max: acl-4bd96a2e=4 (acl-4bd96a2e=4, acl-cd9f (...)
    VPC/Subnets per VPC                                    max: vpc-c89074a9=15 (vpc-ae7bc5cb=1, vpc-1e5 (...)
@@ -253,11 +253,11 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10768
+   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10771
    EC2/EC2-VPC Elastic IPs                                (limit 5) CRITICAL: 51
-   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 166
-   EC2/Running On-Demand m1.small instances               (limit 20) WARNING: 17
-   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 22
+   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 201
+   EC2/Running On-Demand m1.small instances               (limit 20) CRITICAL: 23
+   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 23
    (...)
    RDS/Subnet Groups                                      (limit 20) CRITICAL: 77
    VPC/Internet gateways                                  (limit 5) CRITICAL: 5
@@ -273,11 +273,11 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10768
+   EBS/Active snapshots                                   (limit 10000) CRITICAL: 10771
    EC2/EC2-VPC Elastic IPs                                (limit 5) CRITICAL: 51
-   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 166
-   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 22
-   EC2/Running On-Demand m3.xlarge instances              (limit 20) CRITICAL: 24
+   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 201
+   EC2/Running On-Demand m1.small instances               (limit 20) CRITICAL: 23
+   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 23
    (...)
    RDS/Subnet Groups                                      (limit 20) CRITICAL: 77
    VPC/Internet gateways                                  (limit 5) CRITICAL: 5

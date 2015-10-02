@@ -97,9 +97,9 @@ Limit                                                  Default
 ====================================================== =====
 Active snapshots :sup:`(TA)`                           10000
 Active volumes :sup:`(TA)`                             5000 
-General Purpose (SSD) volume storage (GiB) :sup:`(TA)` 20   
-Magnetic volume storage (GiB) :sup:`(TA)`              20   
-Provisioned IOPS (SSD) storage (GiB) :sup:`(TA)`       20   
+General Purpose (SSD) volume storage (GiB) :sup:`(TA)` 20480
+Magnetic volume storage (GiB) :sup:`(TA)`              20480
+Provisioned IOPS (SSD) storage (GiB) :sup:`(TA)`       20480
 Provisioned IOPS :sup:`(TA)`                           40000
 ====================================================== =====
 
@@ -162,6 +162,7 @@ Running On-Demand r3.8xlarge instances            5
 Running On-Demand r3.large instances              20 
 Running On-Demand r3.xlarge instances             20 
 Running On-Demand t1.micro instances              20 
+Running On-Demand t2.large instances              20 
 Running On-Demand t2.medium instances             20 
 Running On-Demand t2.micro instances              20 
 Running On-Demand t2.small instances              20 
