@@ -78,6 +78,11 @@ class Test_TrustedAdvisor(object):
     def test_init(self):
         cls = TrustedAdvisor()
         assert cls.conn is None
+        assert cls.account_id is None
+        assert cls.account_role is None
+        assert cls.region == 'us-east-1'
+        assert cls.ta_region is None
+        assert cls.external_id is None
 
     def test_init_sts(self):
         cls = TrustedAdvisor(account_id='aid', account_role='role', region='r')
@@ -86,6 +91,17 @@ class Test_TrustedAdvisor(object):
         assert cls.account_role == 'role'
         assert cls.region == 'us-east-1'
         assert cls.ta_region == 'r'
+        assert cls.external_id is None
+
+    def test_init_sts_external_id(self):
+        cls = TrustedAdvisor(account_id='aid', account_role='role', region='r',
+                             external_id='myeid')
+        assert cls.conn is None
+        assert cls.account_id == 'aid'
+        assert cls.account_role == 'role'
+        assert cls.region == 'us-east-1'
+        assert cls.ta_region == 'r'
+        assert cls.external_id == 'myeid'
 
     def test_connect(self):
         cls = TrustedAdvisor()

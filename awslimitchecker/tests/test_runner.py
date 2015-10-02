@@ -166,6 +166,9 @@ class TestAwsLimitCheckerRunner(object):
                                 type=str, default=None,
                                 help='for use with STS, the name of the IAM '
                                 'role to assume'),
+            call().add_argument('-E', '--external-id', action='store', type=str,
+                                default=None, help='External ID to use when '
+                                'assuming a role via STS'),
             call().add_argument('-r', '--region', action='store',
                                 type=str, default=None,
                                 help='AWS region name to connect to; required '
@@ -207,7 +210,8 @@ class TestAwsLimitCheckerRunner(object):
                 critical_threshold=99,
                 account_id=None,
                 account_role=None,
-                region=None
+                region=None,
+                external_id=None
             ),
             call().get_project_url(),
             call().get_version()
@@ -554,7 +558,8 @@ class TestAwsLimitCheckerRunner(object):
                 critical_threshold=99,
                 account_id=None,
                 account_role=None,
-                region='myregion'
+                region='myregion',
+                external_id=None
             )
         ]
         assert self.cls.service_name is None
@@ -586,7 +591,43 @@ class TestAwsLimitCheckerRunner(object):
                 critical_threshold=99,
                 account_id='098765432109',
                 account_role='myrole',
-                region='myregion'
+                region='myregion',
+                external_id=None
+            )
+        ]
+        assert self.cls.service_name is None
+
+    def test_entry_no_service_name_sts_external_id(self, capsys):
+        argv = [
+            'awslimitchecker',
+            '-r',
+            'myregion',
+            '-A',
+            '098765432109',
+            '-R',
+            'myrole',
+            '-E',
+            'myextid'
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
+                with patch('%s.AwsLimitChecker' % pb,
+                           spec_set=AwsLimitChecker) as mock_alc:
+                    with pytest.raises(SystemExit) as excinfo:
+                        mock_ct.return_value = 6
+                        self.cls.console_entry_point()
+        out, err = capsys.readouterr()
+        assert out == ''
+        assert excinfo.value.code == 6
+        assert mock_alc.mock_calls == [
+            call(
+                warning_threshold=80,
+                critical_threshold=99,
+                account_id='098765432109',
+                account_role='myrole',
+                region='myregion',
+                external_id='myextid'
             )
         ]
         assert self.cls.service_name is None
@@ -633,7 +674,7 @@ class TestAwsLimitCheckerRunner(object):
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
             call(warning_threshold=50, critical_threshold=99, account_id=None,
-                 account_role=None, region=None)
+                 account_role=None, region=None, external_id=None)
         ]
 
     def test_entry_critical(self):
@@ -648,7 +689,7 @@ class TestAwsLimitCheckerRunner(object):
         assert excinfo.value.code == 9
         assert mock_alc.mock_calls == [
             call(warning_threshold=80, critical_threshold=95, account_id=None,
-                 account_role=None, region=None)
+                 account_role=None, region=None, external_id=None)
         ]
 
     def test_entry_check_thresholds(self):

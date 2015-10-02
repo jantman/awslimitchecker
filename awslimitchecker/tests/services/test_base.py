@@ -112,6 +112,7 @@ class Test_AwsService(object):
         assert cls.account_id is None
         assert cls.account_role is None
         assert cls.region is None
+        assert cls.external_id is None
 
     def test_init_subclass_sts(self):
         cls = AwsServiceTester(
@@ -325,7 +326,22 @@ class Test_AwsService(object):
         arn = 'arn:aws:iam::789:role/myr'
         assert mock_connect.mock_calls == [
             call('foobar'),
-            call().assume_role(arn, 'awslimitchecker'),
+            call().assume_role(arn, 'awslimitchecker', external_id=None),
+        ]
+        assume_role_ret = mock_connect.return_value.assume_role.return_value
+        assert res == assume_role_ret.credentials
+
+    def test_get_sts_token_external_id(self):
+        cls = AwsServiceTester(1, 2, account_id='789',
+                               account_role='myr', region='foobar',
+                               external_id='myextid')
+        with patch('awslimitchecker.services.base.boto.sts.connect_to_region'
+                   '') as mock_connect:
+            res = cls._get_sts_token()
+        arn = 'arn:aws:iam::789:role/myr'
+        assert mock_connect.mock_calls == [
+            call('foobar'),
+            call().assume_role(arn, 'awslimitchecker', external_id='myextid'),
         ]
         assume_role_ret = mock_connect.return_value.assume_role.return_value
         assert res == assume_role_ret.credentials

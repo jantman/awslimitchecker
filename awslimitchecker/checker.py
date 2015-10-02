@@ -49,7 +49,8 @@ logger = logging.getLogger(__name__)
 class AwsLimitChecker(object):
 
     def __init__(self, warning_threshold=80, critical_threshold=99,
-                 account_id=None, account_role=None, region=None):
+                 account_id=None, account_role=None, region=None,
+                 external_id=None):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -75,7 +76,13 @@ class AwsLimitChecker(object):
           `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
           html>`_
           (in the destination account) to assume
+        :param region: AWS region name to connect to
+        :type region: str
         :type account_role: str
+        :param external_id: (optional) the `External ID <http://docs.aws.amazon.
+          com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
+          string to use when assuming a role via STS.
+        :type external_id: str
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -104,16 +111,19 @@ class AwsLimitChecker(object):
         self.critical_threshold = critical_threshold
         self.account_id = account_id
         self.account_role = account_role
+        self.external_id = external_id
         self.region = region
         self.services = {}
         self.ta = TrustedAdvisor(
-            account_id=self.account_id,
-            account_role=self.account_role,
-            region=self.region
+            account_id=account_id,
+            account_role=account_role,
+            region=region,
+            external_id=external_id
         )
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
-                                       account_id, account_role, region)
+                                       account_id, account_role, region,
+                                       external_id)
 
     def get_version(self):
         """

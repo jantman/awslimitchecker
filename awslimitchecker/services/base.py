@@ -50,7 +50,7 @@ class _AwsService(object):
     service_name = 'baseclass'
 
     def __init__(self, warning_threshold, critical_threshold, account_id=None,
-                 account_role=None, region=None):
+                 account_role=None, region=None, external_id=None):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -68,16 +68,29 @@ class _AwsService(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
-        :param account_id: connect via STS to this AWS account
+        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
+          latest/gr/acct-identifiers.html>`_
+          (12-digit string, currently numeric) for the account to connect to
+          (destination) via STS
         :type account_id: str
-        :param account_role: connect via STS as this IAM role
+        :param account_role: the name of an
+          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
+          html>`_
+          (in the destination account) to assume
+        :param region: AWS region name to connect to
+        :type region: str
         :type account_role: str
+        :param external_id: (optional) the `External ID <http://docs.aws.amazon.
+          com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
+          string to use when assuming a role via STS.
+        :type external_id: str
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.account_id = account_id
         self.account_role = account_role
         self.region = region
+        self.external_id = external_id
 
         self.limits = {}
         self.limits = self.get_limits()
@@ -183,7 +196,8 @@ class _AwsService(object):
         sts = boto.sts.connect_to_region(self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
         logger.debug("STS assume role for %s", arn)
-        role = sts.assume_role(arn, "awslimitchecker")
+        role = sts.assume_role(arn, "awslimitchecker",
+                               external_id=self.external_id)
         logger.debug("Got STS credentials for role; access_key_id=%s",
                      role.credentials.access_key)
         return role.credentials

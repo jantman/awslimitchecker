@@ -48,17 +48,36 @@ logger = logging.getLogger(__name__)
 
 class TrustedAdvisor(_AwsService):
 
-    def __init__(self, account_id=None, account_role=None, region=None):
+    def __init__(self, account_id=None, account_role=None, region=None,
+                 external_id=None
+    ):
         """
         Class to contain all TrustedAdvisor-related logic.
+
+        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
+          latest/gr/acct-identifiers.html>`_
+          (12-digit string, currently numeric) for the account to connect to
+          (destination) via STS
+        :type account_id: str
+        :param account_role: the name of an
+          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
+          html>`_
+          (in the destination account) to assume
+        :param region: AWS region name to connect to
+        :type region: str
+        :type account_role: str
+        :param external_id: (optional) the `External ID <http://docs.aws.amazon.
+          com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
+          string to use when assuming a role via STS.
+        :type external_id: str
         """
         self.conn = None
         self.have_ta = True
         self.account_id = account_id
         self.account_role = account_role
-        # @TODO do we always want to connect to us-east-1 for TA?
         self.region = 'us-east-1'
         self.ta_region = region
+        self.external_id = external_id
 
     def connect(self):
         """Connect to API if not already connected; set self.conn."""

@@ -100,10 +100,15 @@ class TestAwsLimitChecker(object):
             'SvcBar': self.mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert self.mock_foo.mock_calls == [call(80, 99, None, None, None)]
-        assert self.mock_bar.mock_calls == [call(80, 99, None, None, None)]
+        assert self.mock_foo.mock_calls == [
+            call(80, 99, None, None, None, None)
+        ]
+        assert self.mock_bar.mock_calls == [
+            call(80, 99, None, None, None, None)
+        ]
         assert self.mock_ta_constr.mock_calls == [
-            call(account_id=None, account_role=None, region=None)
+            call(account_id=None, account_role=None, region=None,
+                 external_id=None)
         ]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
@@ -159,10 +164,11 @@ class TestAwsLimitChecker(object):
             'SvcBar': mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert mock_foo.mock_calls == [call(5, 22, None, None, None)]
-        assert mock_bar.mock_calls == [call(5, 22, None, None, None)]
+        assert mock_foo.mock_calls == [call(5, 22, None, None, None, None)]
+        assert mock_bar.mock_calls == [call(5, 22, None, None, None, None)]
         assert mock_ta_constr.mock_calls == [
-            call(account_id=None, account_role=None, region=None)
+            call(account_id=None, account_role=None, region=None,
+                 external_id=None)
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
@@ -198,10 +204,15 @@ class TestAwsLimitChecker(object):
             'SvcBar': mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert mock_foo.mock_calls == [call(80, 99, None, None, 'myregion')]
-        assert mock_bar.mock_calls == [call(80, 99, None, None, 'myregion')]
+        assert mock_foo.mock_calls == [
+            call(80, 99, None, None, 'myregion', None)
+        ]
+        assert mock_bar.mock_calls == [
+            call(80, 99, None, None, 'myregion', None)
+        ]
         assert mock_ta_constr.mock_calls == [
-            call(account_id=None, account_role=None, region='myregion')
+            call(account_id=None, account_role=None, region='myregion',
+                 external_id=None)
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
@@ -242,16 +253,71 @@ class TestAwsLimitChecker(object):
         }
         # _AwsService instances should exist, but have no other calls
         assert mock_foo.mock_calls == [
-            call(80, 99, '123456789012', 'myrole', 'myregion')
+            call(80, 99, '123456789012', 'myrole', 'myregion', None)
         ]
         assert mock_bar.mock_calls == [
-            call(80, 99, '123456789012', 'myrole', 'myregion')
+            call(80, 99, '123456789012', 'myrole', 'myregion', None)
         ]
         assert mock_ta_constr.mock_calls == [
             call(
                 account_id='123456789012',
                 account_role='myrole',
-                region='myregion')
+                region='myregion',
+                external_id=None
+            )
+        ]
+        assert mock_svc1.mock_calls == []
+        assert mock_svc2.mock_calls == []
+        assert self.mock_version.mock_calls == [call()]
+        assert self.cls.vinfo == self.mock_ver_info
+
+    def test_init_sts_external_id(self):
+        mock_svc1 = Mock(spec_set=_AwsService)
+        mock_svc2 = Mock(spec_set=_AwsService)
+        mock_foo = Mock(spec_set=_AwsService)
+        mock_bar = Mock(spec_set=_AwsService)
+        mock_ta = Mock(spec_set=TrustedAdvisor)
+        mock_foo.return_value = mock_svc1
+        mock_bar.return_value = mock_svc2
+        svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
+        with patch.dict('awslimitchecker.checker._services',
+                        values=svcs, clear=True):
+            with patch.multiple(
+                    'awslimitchecker.checker',
+                    logger=DEFAULT,
+                    _get_version_info=DEFAULT,
+                    TrustedAdvisor=DEFAULT,
+                    autospec=True,
+            ) as mocks:
+                mock_version = mocks['_get_version_info']
+                mock_version.return_value = self.mock_ver_info
+                mock_ta_constr = mocks['TrustedAdvisor']
+                mocks['TrustedAdvisor'].return_value = mock_ta
+                cls = AwsLimitChecker(
+                    account_id='123456789012',
+                    account_role='myrole',
+                    region='myregion',
+                    external_id='myextid'
+                )
+        # dict should be of _AwsService instances
+        assert cls.services == {
+            'SvcFoo': mock_svc1,
+            'SvcBar': mock_svc2
+        }
+        # _AwsService instances should exist, but have no other calls
+        assert mock_foo.mock_calls == [
+            call(80, 99, '123456789012', 'myrole', 'myregion', 'myextid')
+        ]
+        assert mock_bar.mock_calls == [
+            call(80, 99, '123456789012', 'myrole', 'myregion', 'myextid')
+        ]
+        assert mock_ta_constr.mock_calls == [
+            call(
+                account_id='123456789012',
+                account_role='myrole',
+                region='myregion',
+                external_id='myextid'
+            )
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
