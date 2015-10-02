@@ -6,21 +6,35 @@
 awslimitchecker
 ================
 
-.. image:: https://pypip.in/v/awslimitchecker/badge.png
-   :target: https://crate.io/packages/awslimitchecker
+.. image:: https://img.shields.io/pypi/v/awslimitchecker.svg
+   :target: https://pypi.python.org/pypi/awslimitchecker
    :alt: PyPi package version
 
-.. image:: https://pypip.in/d/awslimitchecker/badge.png
-   :target: https://crate.io/packages/awslimitchecker
+.. image:: https://img.shields.io/pypi/dm/awslimitchecker.svg
+   :target: https://pypi.python.org/pypi/awslimitchecker
    :alt: PyPi downloads
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
-   :target: https://landscape.io/github/jantman/awslimitchecker/master
-   :alt: Code Health
+.. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
+   :alt: GitHub Forks
+   :target: https://github.com/jantman/awslimitchecker/network
+
+.. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
+   :alt: GitHub Open Issues
+   :target: https://github.com/jantman/awslimitchecker/issues
+
+.. image:: http://www.repostatus.org/badges/0.1.0/active.svg
+   :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
+   :target: http://www.repostatus.org/#active
+
+Master:
 
 .. image:: https://secure.travis-ci.org/jantman/awslimitchecker.png?branch=master
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for master branch
+
+.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
+   :target: https://landscape.io/github/jantman/awslimitchecker/master
+   :alt: Code Health
 
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=master
@@ -30,29 +44,23 @@ awslimitchecker
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=latest
    :alt: sphinx documentation for latest release
 
+Develop:
+
+.. image:: https://secure.travis-ci.org/jantman/awslimitchecker.png?branch=develop
+   :target: http://travis-ci.org/jantman/awslimitchecker
+   :alt: travis-ci for develop branch
+
+.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg
+   :target: https://landscape.io/github/jantman/awslimitchecker/develop
+   :alt: Code Health
+
+.. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=develop
+   :target: https://codecov.io/github/jantman/awslimitchecker?branch=develop
+   :alt: coverage report for develop branch
+
 .. image:: https://readthedocs.org/projects/awslimitchecker/badge/?version=develop
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
    :alt: sphinx documentation for develop branch
-
-.. image:: https://img.shields.io/github/release/jantman/awslimitchecker.svg
-   :alt: GitHub latest release version
-   :target: https://github.com/jantman/awslimitchecker/releases
-
-.. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
-   :alt: GitHub Forks
-   :target: https://github.com/jantman/awslimitchecker/network
-
-.. image:: https://img.shields.io/github/stars/jantman/awslimitchecker.svg
-   :alt: GitHub Stars
-   :target: https://github.com/jantman/awslimitchecker
-
-.. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
-   :alt: GitHub Open Issues
-   :target: https://github.com/jantman/awslimitchecker/issues
-
-.. image:: http://www.repostatus.org/badges/0.1.0/active.svg
-   :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
-   :target: http://www.repostatus.org/#active
 
 A script and python module to check your AWS service limits and usage using `boto <http://docs.pythonboto.org/en/latest/>`_.
 
