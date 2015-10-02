@@ -133,15 +133,19 @@ class Test_EbsService(object):
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
+        assert piops.default_limit == 40000
         piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
+        assert piops_tb.default_limit == 20480
         gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
+        assert gp_tb.default_limit == 20480
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
+        assert mag_tb.default_limit == 20480
         act_snaps = limits['Active snapshots']
         assert act_snaps.limit_type == 'AWS::EC2::VolumeSnapshot'
         act_vols = limits['Active volumes']

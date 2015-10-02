@@ -166,7 +166,7 @@ class _EbsService(_AwsService):
         limits['Provisioned IOPS (SSD) storage (GiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) storage (GiB)',
             self,
-            20,
+            20480,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -175,7 +175,7 @@ class _EbsService(_AwsService):
         limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (GiB)',
             self,
-            20,
+            20480,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -184,7 +184,7 @@ class _EbsService(_AwsService):
         limits['Magnetic volume storage (GiB)'] = AwsLimit(
             'Magnetic volume storage (GiB)',
             self,
-            20,
+            20480,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',

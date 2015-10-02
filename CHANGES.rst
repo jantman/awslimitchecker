@@ -17,6 +17,7 @@ Pre-release (develop branch)
 * `#63 <https://github.com/jantman/awslimitchecker/issues/63>`_ update Python usage documentation
 * `#49 <https://github.com/jantman/awslimitchecker/issues/49>`_ clean up badges in README.rst and sphinx index.rst; PyPi downloads and version badges broken (switch to shields.io)
 * `#67 <https://github.com/jantman/awslimitchecker/issues/67>`_ fix typo in required IAM policy; comma missing in list returned from `_Ec2Service.required_iam_permissions()`
+* `#76 <https://github.com/jantman/awslimitchecker/issues/76>`_ default limits for EBS volume usage were in TiB not GiB, causing invalid default limits on accounts without Trusted Advisor
 
 0.1.2 (2015-08-13)
 ------------------
