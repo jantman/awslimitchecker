@@ -52,14 +52,18 @@ class Connectable(object):
 
     def connect_via(self, driver):
         """
-        Connect to API if not already connected; set self.conn. Use STS to
-        assume a role as another user if self.account_id has been set.
+        Connect to an AWS API and return the connection object. If
+        ``self.account_id`` is None, call ``driver(self.region)``. Otherwise,
+        call :py:meth:`~._get_sts_token` to get STS token credentials using
+        :py:meth:`boto.sts.STSConnection.assume_role` and call ``driver()`` with
+        those credentials to use an assumed role.
 
         :param driver: the connect_to_region() function of the boto
           submodule to use to create this connection
         :type driver: :py:obj:`function`
+        :returns: connected boto service class instance
         """
-        if(self.account_id):
+        if self.account_id is not None:
             logger.debug("Connecting to %s for account %s (STS; %s)",
                          self.service_name, self.account_id, self.region)
             self.credentials = self._get_sts_token()
@@ -76,7 +80,18 @@ class Connectable(object):
         return conn
 
     def _get_sts_token(self):
-        """Attempt to get STS token, exit if fail."""
+        """
+        Assume a role via STS and return the credentials.
+
+        First connect to STS via :py:func:`boto.sts.connect_to_region`, then
+        assume a role using :py:meth:`boto.sts.STSConnection.assume_role`
+        using ``self.account_id`` and ``self.account_role`` (and optionally
+        ``self.external_id``). Return the resulting
+        :py:class:`boto.sts.credentials.Credentials` object.
+
+        :returns: STS assumed role credentials
+        :rtype: :py:class:`boto.sts.credentials.Credentials`
+        """
         logger.debug("Connecting to STS in region %s", self.region)
         sts = boto.sts.connect_to_region(self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
