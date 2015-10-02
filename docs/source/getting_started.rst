@@ -15,6 +15,8 @@ What It Does
   exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
 - Define custom thresholds per-limit
 - Where possible, pull current limits from Trusted Advisor API
+- Supports explicitly setting the AWS region
+- Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
 
 .. _getting_started.nomenclature:
 
@@ -73,42 +75,26 @@ can be whatever you want):
 Credentials
 -----------
 
-awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
+Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
 files, or set as environment variables. See
-`the boto configuration documentation <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+and
+`this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
 
-The recommended way of handling multiple accounts is to use one of the
-`credential configuration files <http://boto.readthedocs.org/en/latest/boto_config_tut.html#details>`_
-(``~/.aws/credentials`` is recommended, as it should be supported by all AWS SDKs and tools),
-define a `section per account <http://boto.readthedocs.org/en/latest/boto_config_tut.html#credentials>`_,
-and then export ``AWS_PROFILE=section_name`` to tell boto which section to use.
+When using STS, you will need to specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
+and ``-R`` / ``--sts-account-role`` options to specify the Account ID that you want to assume a role in, and the
+name of the role you want to assume. If an external ID is required, you can specify it with ``-E`` / ``--external-id``.
 
 .. _getting_started.regions:
 
 Regions
 -------
 
-At this time, AWS Limit Checker has no knowledge of AWS regions. As most (all?)
-limits are calculated on a per-region basis, this isn't a major issue. To check
-multiple regions, simply run awslimitchecker multiple times, once for each
-region, using a different ``AWS_PROFILE`` environment variable setting, and
-entries in ``~/.aws/credentials`` like:
-
-    [myuser-us-east-1]
-    region = us-east-1
-    aws_access_key_id = <your access key>
-    aws_secret_access_key = <your secret key>
-
-    [myuser-us-west-2]
-    region = us-west-2
-    aws_access_key_id = <your access key>
-    aws_secret_access_key = <your secret key>
-
-Support for setting the region, or multiple regions, directly through
-awslimitchecker will be implemented in the future depending on demand;
-it shouldn't be too complicated to retrofit into the existing code.
+To specify the region that ``awslimitchecker`` connects to, use the ``-r`` / ``--region``
+command line option. At this time awslimitchecker can only connect to one region at a time;
+to check limits in multiple regions, simply run the script multiple times, once per region.
 
 .. _getting_started.permissions:
 

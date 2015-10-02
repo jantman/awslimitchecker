@@ -63,9 +63,8 @@ Full project documentation is available at `http://awslimitchecker.readthedocs.o
 Status
 ------
 
-This project is currently in very early development. At this time please consider it alpha code and not reliable;
-furthermore its API may be changing rapidly. I hope to have this stabilized soon. I wouldn't call it ready for
-use, but contributions are certainly welcome.
+This project is currently in very early development. At this time please consider it beta code and not fully tested in all situations;
+furthermore its API may be changing rapidly. I hope to have this stabilized soon.
 
 What It Does
 ------------
@@ -77,6 +76,8 @@ What It Does
   exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
 - Define custom thresholds per-limit
 - where possible, pull current limits from Trusted Advisor API
+- Supports explicitly setting the AWS region
+- Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
 
 Requirements
 ------------
@@ -101,13 +102,17 @@ system-wide, you can (using sudo).
 Credentials
 -----------
 
-awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
+Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
 files, or set as environment variables. See
 `boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
+
+When using STS, you will need to specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
+and ``-R`` / ``--sts-account-role`` options to specify the Account ID that you want to assume a role in, and the
+name of the role you want to assume. If an external ID is required, you can specify it with ``-E`` / ``--external-id``.
 
 Usage
 -----

@@ -38,25 +38,65 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import boto
+import boto.support
 from dateutil import parser
 import logging
+from .connectable import Connectable
+
 logger = logging.getLogger(__name__)
 
 
-class TrustedAdvisor(object):
+class TrustedAdvisor(Connectable):
 
-    def __init__(self):
+    """
+    Class to handle interaction with TrustedAdvisor API, polling TA and updating
+    limits from TA information.
+    """
+
+    service_name = 'TrustedAdvisor'
+
+    def __init__(self, account_id=None, account_role=None, region=None,
+                 external_id=None):
         """
         Class to contain all TrustedAdvisor-related logic.
+
+        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
+          latest/gr/acct-identifiers.html>`_
+          (12-digit string, currently numeric) for the account to connect to
+          (destination) via STS
+        :type account_id: str
+        :param account_role: the name of an
+          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
+          html>`_
+          (in the destination account) to assume
+        :param region: AWS region name to connect to
+        :type region: str
+        :type account_role: str
+        :param external_id: (optional) the `External ID <http://docs.aws.amazon.
+          com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
+          string to use when assuming a role via STS.
+        :type external_id: str
         """
         self.conn = None
         self.have_ta = True
+        self.account_id = account_id
+        self.account_role = account_role
+        self.region = 'us-east-1'
+        self.ta_region = region
+        self.external_id = external_id
 
     def connect(self):
-        if self.conn is None:
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        if self.ta_region:
+            logger.debug("Connecting to Support API (TrustedAdvisor) in %s",
+                         self.region)
+            self.conn = self.connect_via(boto.support.connect_to_region)
+        else:
             logger.debug("Connecting to Support API (TrustedAdvisor)")
             self.conn = boto.connect_support()
-            logger.debug("Connected to Support API")
+        logger.debug("Connected to Support API")
 
     def update_limits(self, services):
         """
@@ -99,7 +139,7 @@ class TrustedAdvisor(object):
                             "check; not using Trusted Advisor data.")
             return
         check_id, metadata = tmp
-        region = self.conn.region.name
+        region = self.ta_region or self.conn.region.name
         checks = self.conn.describe_trusted_advisor_check_result(check_id)
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",

@@ -109,6 +109,27 @@ class Test_AwsService(object):
         assert cls.limits == {'foo': 'bar'}
         assert cls.conn is None
         assert cls._have_usage is False
+        assert cls.account_id is None
+        assert cls.account_role is None
+        assert cls.region is None
+        assert cls.external_id is None
+
+    def test_init_subclass_sts(self):
+        cls = AwsServiceTester(
+            1,
+            2,
+            account_id='012345678912',
+            account_role='myrole',
+            region='myregion'
+        )
+        assert cls.warning_threshold == 1
+        assert cls.critical_threshold == 2
+        assert cls.limits == {'foo': 'bar'}
+        assert cls.conn is None
+        assert cls._have_usage is False
+        assert cls.account_id == '012345678912'
+        assert cls.account_role == 'myrole'
+        assert cls.region == 'myregion'
 
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -270,6 +291,15 @@ class Test_AwsServiceSubclasses(object):
         # ensure warning and critical thresholds
         assert inst.warning_threshold == 3
         assert inst.critical_threshold == 7
+        assert inst.account_id is None
+        assert inst.account_role is None
+        assert inst.region is None
+
+        sts_inst = cls(3, 7, account_id='123', account_role='myrole',
+                       region='myregion')
+        assert sts_inst.account_id == '123'
+        assert sts_inst.account_role == 'myrole'
+        assert sts_inst.region == 'myregion'
 
     def test_subclass_init(self):
         for clsname, cls in _services.items():

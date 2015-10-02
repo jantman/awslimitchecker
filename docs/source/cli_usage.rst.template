@@ -139,3 +139,35 @@ permissions for it to perform all limit checks. This can be viewed with the
 
 For the current IAM Policy required by this version of awslimitchecker,
 see :ref:`IAM Policy <iam_policy>`.
+
+Connect to a Specific Region
+++++++++++++++++++++++++++++
+
+To connect to a specific region (i.e. ``us-west-2``), simply specify the region
+name with the ``-r`` or ``--region`` options:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -r us-west-2
+
+Assume a Role in Another Account with STS
++++++++++++++++++++++++++++++++++++++++++
+
+To assume the "foobar" role in account 123456789012 in region us-west-1,
+specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
+and ``-R`` / ``--sts-account-role`` options:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -r us-west-1 -A 123456789012 -R foobar
+
+If you also need to specify an ``external_id`` of "myid", you can do that with the
+``-E`` / ``--external-id`` options:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -r us-west-1 -A 123456789012 -R foobar -E myid
+
+Please note that this assumes that you already have STS configured and working
+between your account and the 123456789012 destination account; see the
+`documentation <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ for further information.
