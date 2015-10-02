@@ -7,6 +7,11 @@ Pre-release (develop branch)
 * Update trove classifier Development Status in setup.py to Beta
 * Fix markup formatting issue in ``docs/source/getting_started.rst``
 * temporarily disable py26 testenv in Travis; failing due to upstream bug https://github.com/pytest-dev/pytest/issues/1035
+* `PR #64 <https://github.com/jantman/awslimitchecker/pull/64>`_ and `#68 <https://github.com/jantman/awslimitchecker/issues/68>`_ -
+  support [STS](http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html) and regions
+  * Add support for passing in a region to connect to via ``-r`` / ``--region``
+  * Add support for using STS to check resources in another account, including support for ``external_id``
+  * Major refactor of how service classes connect to AWS API
 
 0.1.2 (2015-08-13)
 ------------------
