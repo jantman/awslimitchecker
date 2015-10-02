@@ -217,12 +217,3 @@ class TrustedAdvisor(Connectable):
                                 lim_name,
                                 svc_name)
         logger.info("Done updating TA limits on all services")
-
-    def find_usage(self):
-        raise NotImplementedError('Not applicable')
-
-    def get_limits(self):
-        raise NotImplementedError('Not applicable')
-
-    def required_iam_permissions(self):
-        raise NotImplementedError('Not applicable')
