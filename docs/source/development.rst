@@ -89,24 +89,29 @@ using the :py:mod:`abc` module.
 2. Find all "TODO" comments in the newly-created files; these have instructions on things to change for new services.
    Add yourself to the Authors section in the header if desired.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
-4. Write at least high-level tests; TDD is greatly preferred.
-5. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
+4. Ensure that the :py:meth:`~._AwsService.connect` method is properly defined; if ``self.conn`` is not None, then it
+   should return None. If ``self.region`` is None, it should set ``self.conn`` to the return value of the appropriate
+   ``boto.connect_*()`` method for the service, specifically the connected connection class for the service. Otherwise,
+   it should call ``self.connect_via()`` (:py:meth:`~._AwsService.connect_via`) passing in the service's ``connect_to_region()``
+   function as the argument. This is done to centralize region and STS connection logic in :py:class:`~._AwsService`.
+5. Write at least high-level tests; TDD is greatly preferred.
+6. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
    small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
    to search for "TODO" in the new service class you created (#1). See :ref:`Adding New Limits <development.adding_checks>` for further information.
-6. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
-7. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
+7. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
+8. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
-8. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
-9. Run all tox jobs, or at least one python version, docs and coverage.
-10. Commit the updated documentation to the repository.
-11. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+9. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
+10. Run all tox jobs, or at least one python version, docs and coverage.
+11. Commit the updated documentation to the repository.
+12. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
     `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
     `Policy Simulator <https://policysim.aws.amazon.com/>`_.
-12. Submit your pull request.
+13. Submit your pull request.
 
 .. _development.adding_ta:
 

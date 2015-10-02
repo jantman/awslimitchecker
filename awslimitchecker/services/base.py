@@ -101,13 +101,18 @@ class _AwsService(object):
     def connect(self):
         """
         If not already done, establish a connection to the relevant AWS service
-        and save as ``self.conn``.
+        and save as ``self.conn``. If ``self.region`` is defined, call
+        ``self.connect_via()`` (:py:meth:`~._AwsService.connect_via`) passing
+        the appripriate boto ``connect_to_region()`` function as the argument,
+        else call the boto.connect_SERVICE_NAME() method directly.
         """
         """
-        if self.conn is None:
-            logger.debug("Connecting to %s", self.service_name)
-            # self.conn = boto.<connect to something>
-            logger.info("Connected to %s", self.service_name)
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.ec2.connect_to_region)
+        else:
+            self.conn = boto.connect_ec2()
         """
         raise NotImplementedError('abstract base class')
 
