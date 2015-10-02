@@ -385,6 +385,7 @@ class _Ec2Service(_AwsService):
             't2.micro',
             't2.small',
             't2.medium',
+            't2.large',
             'm3.medium',
             'm3.large',
             'm3.xlarge',
