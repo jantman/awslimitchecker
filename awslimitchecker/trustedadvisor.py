@@ -41,12 +41,14 @@ import boto
 import boto.support
 from dateutil import parser
 import logging
-from .services.base import _AwsService
+from .connectable import Connectable
 
 logger = logging.getLogger(__name__)
 
 
-class TrustedAdvisor(_AwsService):
+class TrustedAdvisor(Connectable):
+
+    service_name = 'TrustedAdvisor'
 
     def __init__(self, account_id=None, account_role=None, region=None,
                  external_id=None

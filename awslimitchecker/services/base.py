@@ -40,11 +40,12 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import abc
 import logging
 import boto.sts
+from awslimitchecker.connectable import Connectable
 
 logger = logging.getLogger(__name__)
 
 
-class _AwsService(object):
+class _AwsService(Connectable):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'
@@ -165,43 +166,6 @@ class _AwsService(object):
         :rtype: list
         """
         raise NotImplementedError('abstract base class')
-
-    def connect_via(self, driver):
-        """
-        Connect to API if not already connected; set self.conn
-        Use STS to assume a role as another user if self.account_id has been set
-
-        :param driver: the connect_to_region() function of the boto
-          submodule to use to create this connection
-        :type driver: :py:obj:`function`
-        """
-        if(self.account_id):
-            logger.debug("Connecting to %s for account %s (STS; %s)",
-                         self.service_name, self.account_id, self.region)
-            self.credentials = self._get_sts_token()
-            conn = driver(
-                self.region,
-                aws_access_key_id=self.credentials.access_key,
-                aws_secret_access_key=self.credentials.secret_key,
-                security_token=self.credentials.session_token)
-        else:
-            logger.debug("Connecting to %s (%s)",
-                         self.service_name, self.region)
-            conn = driver(self.region)
-        logger.info("Connected to %s", self.service_name)
-        return conn
-
-    def _get_sts_token(self):
-        """Attempt to get STS token, exit if fail."""
-        logger.debug("Connecting to STS in region %s", self.region)
-        sts = boto.sts.connect_to_region(self.region)
-        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
-        logger.debug("STS assume role for %s", arn)
-        role = sts.assume_role(arn, "awslimitchecker",
-                               external_id=self.external_id)
-        logger.debug("Got STS credentials for role; access_key_id=%s",
-                     role.credentials.access_key)
-        return role.credentials
 
     def set_limit_override(self, limit_name, value, override_ta=True):
         """
