@@ -52,11 +52,13 @@ class _Ec2Service(_AwsService):
     service_name = 'EC2'
 
     def connect(self):
-        """connect to API if not already connected; set self.conn"""
-        if self.conn is None:
-            logger.debug("Connecting to %s", self.service_name)
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.ec2.connect_to_region)
+        else:
             self.conn = boto.connect_ec2()
-            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
@@ -360,7 +362,7 @@ class _Ec2Service(_AwsService):
         return [
             "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
-            "ec2:DescribeInternetGateways"
+            "ec2:DescribeInternetGateways",
             "ec2:DescribeNetworkAcls",
             "ec2:DescribeNetworkInterfaces",
             "ec2:DescribeReservedInstances",
@@ -383,6 +385,7 @@ class _Ec2Service(_AwsService):
             't2.micro',
             't2.small',
             't2.medium',
+            't2.large',
             'm3.medium',
             'm3.large',
             'm3.xlarge',

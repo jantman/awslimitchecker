@@ -39,15 +39,18 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc
 import logging
+from awslimitchecker.connectable import Connectable
+
 logger = logging.getLogger(__name__)
 
 
-class _AwsService(object):
+class _AwsService(Connectable):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'
 
-    def __init__(self, warning_threshold, critical_threshold):
+    def __init__(self, warning_threshold, critical_threshold, account_id=None,
+                 account_role=None, region=None, external_id=None):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -65,9 +68,30 @@ class _AwsService(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
+        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
+          latest/gr/acct-identifiers.html>`_
+          (12-digit string, currently numeric) for the account to connect to
+          (destination) via STS
+        :type account_id: str
+        :param account_role: the name of an
+          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
+          html>`_
+          (in the destination account) to assume
+        :param region: AWS region name to connect to
+        :type region: str
+        :type account_role: str
+        :param external_id: (optional) the `External ID <http://docs.aws.amazon.
+          com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
+          string to use when assuming a role via STS.
+        :type external_id: str
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
+        self.account_id = account_id
+        self.account_role = account_role
+        self.region = region
+        self.external_id = external_id
+
         self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
@@ -77,13 +101,18 @@ class _AwsService(object):
     def connect(self):
         """
         If not already done, establish a connection to the relevant AWS service
-        and save as ``self.conn``.
+        and save as ``self.conn``. If ``self.region`` is defined, call
+        ``self.connect_via()`` (:py:meth:`~.Connectable.connect_via`)
+        passing the appripriate boto ``connect_to_region()`` function as the
+        argument, else call the boto.connect_SERVICE_NAME() method directly.
         """
         """
-        if self.conn is None:
-            logger.debug("Connecting to %s", self.service_name)
-            # self.conn = boto.<connect to something>
-            logger.info("Connected to %s", self.service_name)
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.ec2.connect_to_region)
+        else:
+            self.conn = boto.connect_ec2()
         """
         raise NotImplementedError('abstract base class')
 

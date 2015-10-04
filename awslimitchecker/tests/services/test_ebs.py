@@ -41,6 +41,7 @@ import sys
 from boto.ec2.connection import EC2Connection
 from boto.ec2.volume import Volume
 from boto.ec2.snapshot import Snapshot
+from boto.ec2 import connect_to_region
 from awslimitchecker.services.ebs import _EbsService
 from awslimitchecker.limit import AwsLimit
 
@@ -58,6 +59,7 @@ else:
 class Test_EbsService(object):
 
     pb = 'awslimitchecker.services.ebs._EbsService'  # patch base path
+    pbm = 'awslimitchecker.services.ebs'  # patch base path for module
 
     def test_init(self):
         """test __init__()"""
@@ -70,23 +72,45 @@ class Test_EbsService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
+        mock_conn_via = Mock()
         cls = _EbsService(21, 43)
-        with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
-            mock_ec2.return_value = mock_conn
-            cls.connect()
+        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_ec2.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
         assert mock_ec2.mock_calls == [call()]
         assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
+        assert cls.conn == mock_conn
+
+    def test_connect_region(self):
+        """test connect()"""
+        mock_conn = Mock()
+        mock_conn_via = Mock()
+        cls = _EbsService(21, 43, region='foo')
+        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_ec2.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_ec2.mock_calls == []
+        assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == [call(connect_to_region)]
+        assert cls.conn == mock_conn_via
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
-        with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
-            mock_ec2.return_value = mock_conn
-            cls.connect()
+        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_ec2.return_value = mock_conn
+                cls.connect()
         assert mock_ec2.mock_calls == []
         assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
@@ -109,15 +133,19 @@ class Test_EbsService(object):
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
+        assert piops.default_limit == 40000
         piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
+        assert piops_tb.default_limit == 20480
         gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
+        assert gp_tb.default_limit == 20480
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
+        assert mag_tb.default_limit == 20480
         act_snaps = limits['Active snapshots']
         assert act_snaps.limit_type == 'AWS::EC2::VolumeSnapshot'
         act_vols = limits['Active volumes']

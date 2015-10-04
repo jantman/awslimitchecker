@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import boto
+import boto.ec2
 import logging
 from .base import _AwsService
 from ..limit import AwsLimit
@@ -50,11 +51,13 @@ class _EbsService(_AwsService):
     service_name = 'EBS'
 
     def connect(self):
-        """connect to API if not already connected; set self.conn"""
-        if self.conn is None:
-            logger.debug("Connecting to %s", self.service_name)
+        """Connect to API if not already connected; set self.conn."""
+        if self.conn is not None:
+            return
+        elif self.region:
+            self.conn = self.connect_via(boto.ec2.connect_to_region)
+        else:
             self.conn = boto.connect_ec2()
-            logger.info("Connected to %s", self.service_name)
 
     def find_usage(self):
         """
@@ -163,7 +166,7 @@ class _EbsService(_AwsService):
         limits['Provisioned IOPS (SSD) storage (GiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) storage (GiB)',
             self,
-            20,
+            20480,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -172,7 +175,7 @@ class _EbsService(_AwsService):
         limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (GiB)',
             self,
-            20,
+            20480,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -181,7 +184,7 @@ class _EbsService(_AwsService):
         limits['Magnetic volume storage (GiB)'] = AwsLimit(
             'Magnetic volume storage (GiB)',
             self,
-            20,
+            20480,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',

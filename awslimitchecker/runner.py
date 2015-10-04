@@ -128,6 +128,20 @@ class Runner(object):
                        type=int, default=99,
                        help='default critical threshold (percentage of '
                        'limit); default: 99')
+        p.add_argument('-A', '--sts-account-id', action='store',
+                       type=str, default=None,
+                       help='for use with STS, the Account ID of the '
+                       'destination account (account to assume a role in)')
+        p.add_argument('-R', '--sts-account-role', action='store',
+                       type=str, default=None,
+                       help='for use with STS, the name of the IAM role to '
+                       'assume')
+        p.add_argument('-E', '--external-id', action='store', type=str,
+                       default=None, help='External ID to use when assuming '
+                       'a role via STS')
+        p.add_argument('-r', '--region', action='store',
+                       type=str, default=None,
+                       help='AWS region name to connect to; required for STS')
         p.add_argument('--skip-ta', action='store_true', default=False,
                        help='do not attempt to pull *any* information on limits'
                        ' from Trusted Advisor')
@@ -281,7 +295,11 @@ class Runner(object):
         # the rest of these actually use the checker
         self.checker = AwsLimitChecker(
             warning_threshold=args.warning_threshold,
-            critical_threshold=args.critical_threshold
+            critical_threshold=args.critical_threshold,
+            account_id=args.sts_account_id,
+            account_role=args.sts_account_role,
+            region=args.region,
+            external_id=args.external_id
         )
 
         if args.version:

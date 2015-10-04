@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from boto.elasticache.layer1 import ElastiCacheConnection
+from boto.elasticache import connect_to_region
 from boto.exception import BotoServerError
 from awslimitchecker.services.elasticache import _ElastiCacheService
 
@@ -56,6 +57,7 @@ else:
 class TestElastiCacheService(object):
 
     pb = 'awslimitchecker.services.elasticache._ElastiCacheService'  # patch
+    pbm = 'awslimitchecker.services.elasticache'  # module patch
 
     def test_init(self):
         """test __init__()"""
@@ -68,13 +70,34 @@ class TestElastiCacheService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock(spec_set=ElastiCacheConnection)
+        mock_conn_via = Mock(spec_set=ElastiCacheConnection)
         cls = _ElastiCacheService(21, 43)
-        with patch('awslimitchecker.services.elasticache.ElastiCacheConnection'
-                   '') as mock_elasticache:
-            mock_elasticache.return_value = mock_conn
-            cls.connect()
+        with patch('%s.ElastiCacheConnection' % self.pbm) as mock_elasticache:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_elasticache.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
         assert mock_elasticache.mock_calls == [call()]
         assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
+        assert cls.conn == mock_conn
+
+    def test_connect_region(self):
+        """test connect()"""
+        mock_conn = Mock(spec_set=ElastiCacheConnection)
+        mock_conn_via = Mock(spec_set=ElastiCacheConnection)
+        cls = _ElastiCacheService(21, 43, region='foo')
+        with patch('%s.ElastiCacheConnection' % self.pbm) as mock_elasticache:
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_elasticache.return_value = mock_conn
+                mock_connect_via.return_value = mock_conn_via
+                cls.connect()
+        assert mock_elasticache.mock_calls == []
+        assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == [
+            call(connect_to_region)
+        ]
+        assert cls.conn == mock_conn_via
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
@@ -83,10 +106,12 @@ class TestElastiCacheService(object):
         cls.conn = mock_conn
         with patch('awslimitchecker.services.elasticache.ElastiCacheConnection'
                    '') as mock_elasticache:
-            mock_elasticache.return_value = mock_conn
-            cls.connect()
+            with patch('%s.connect_via' % self.pb) as mock_connect_via:
+                mock_elasticache.return_value = mock_conn
+                cls.connect()
         assert mock_elasticache.mock_calls == []
         assert mock_conn.mock_calls == []
+        assert mock_connect_via.mock_calls == []
 
     def test_get_limits(self):
         cls = _ElastiCacheService(21, 43)
@@ -253,6 +278,40 @@ class TestElastiCacheService(object):
                     }
                 ]
             },
+            {
+                'Engine': 'redis',
+                'CacheParameterGroup': {
+                    'CacheNodeIdsToReboot': [],
+                    'CacheParameterGroupName': 'default.redis2.8',
+                    'ParameterApplyStatus': 'in-sync'
+                },
+                'CacheClusterId': 'redis2',
+                'CacheSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'CacheSecurityGroupName': 'csg-redis2'
+                    }
+                ],
+                'ConfigurationEndpoint': None,
+                'CacheClusterCreateTime': 1412253787.123,
+                'ReplicationGroupId': None,
+                'AutoMinorVersionUpgrade': True,
+                'CacheClusterStatus': 'available',
+                'NumCacheNodes': 4,
+                'PreferredAvailabilityZone': 'us-east-1a',
+                'SecurityGroups': None,
+                'CacheSubnetGroupName': None,
+                'EngineVersion': '2.8.6',
+                'PendingModifiedValues': {
+                    'NumCacheNodes': None,
+                    'EngineVersion': None,
+                    'CacheNodeIdsToRemove': None
+                },
+                'CacheNodeType': 'cache.m3.medium',
+                'NotificationConfiguration': None,
+                'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
+                'CacheNodes': None,
+            },
         ]
         resp = {
             'DescribeCacheClustersResponse': {
@@ -270,18 +329,20 @@ class TestElastiCacheService(object):
 
         usage = cls.limits['Nodes'].get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 3
+        assert usage[0].get_value() == 7
 
         usage = cls.limits['Clusters'].get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 2
+        assert usage[0].get_value() == 3
 
         usage = sorted(cls.limits['Nodes per Cluster'].get_current_usage())
-        assert len(usage) == 2
+        assert len(usage) == 3
         assert usage[0].get_value() == 1
         assert usage[0].resource_id == 'memcached1'
         assert usage[1].get_value() == 2
         assert usage[1].resource_id == 'redis1'
+        assert usage[2].get_value() == 4
+        assert usage[2].resource_id == 'redis2'
 
         assert mock_conn.mock_calls == [
             call.describe_cache_clusters(show_cache_node_info=True),
