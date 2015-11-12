@@ -41,7 +41,21 @@ import argparse
 import pytest
 import sys
 
-from awslimitchecker.utils import StoreKeyValuePair, dict2cols
+from boto.exception import BotoServerError
+
+from awslimitchecker.utils import (
+    StoreKeyValuePair, dict2cols, invoke_with_throttling_retries
+)
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import patch, call, Mock
+else:
+    from unittest.mock import patch, call, Mock
 
 
 class TestStoreKeyValuePair(object):
@@ -131,3 +145,55 @@ class Test_dict2cols(object):
         d = {}
         res = dict2cols(d)
         assert res == ''
+
+
+class TestInvokeWithThrottlingRetries(object):
+
+    def setup(self):
+        self.retry_count = 0
+        self.num_errors = 0
+
+    def retry_func(self):
+        self.retry_count += 1
+        if self.num_errors != 0 and self.retry_count <= self.num_errors:
+            body = "<ErrorResponse xmlns=\"http://cloudformation.amazonaws.co" \
+                   "m/doc/2010-05-15/\">\n  <Error>\n    <Type>Sender</Type>" \
+                   "\n    <Code>Throttling</Code>\n    <Message>Rate exceeded" \
+                   "</Message>\n  </Error>\n  <RequestId>2ab5db0d-5bca-11e4-9" \
+                   "592-272cff50ba2d</RequestId>\n</ErrorResponse>"
+            raise BotoServerError(400, 'Bad Request', body)
+        return True
+
+    def test_invoke_ok(self):
+        cls = Mock()
+        cls.func.side_effect = self.retry_func
+        with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
+            res = invoke_with_throttling_retries(cls.func)
+        assert res is True
+        assert cls.func.mock_calls == [call()]
+        assert mock_sleep.mock_calls == []
+
+    def test_invoke_one_fail(self):
+        self.num_errors = 1
+        cls = Mock()
+        cls.func.side_effect = self.retry_func
+        with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
+            res = invoke_with_throttling_retries(cls.func)
+        assert res is True
+        assert cls.func.mock_calls == [call(), call()]
+        assert mock_sleep.mock_calls == [call(2)]
+
+    def test_invoke_max_fail(self):
+        self.num_errors = 6
+        cls = Mock()
+        cls.func.side_effect = self.retry_func
+        with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
+            with pytest.raises(BotoServerError) as ex:
+                invoke_with_throttling_retries(cls.func)
+        assert ex.value.code == 'Throttling'
+        assert cls.func.mock_calls == [
+            call(), call(), call(), call(), call(), call()
+        ]
+        assert mock_sleep.mock_calls == [
+            call(2), call(4), call(8), call(16), call(32)
+        ]

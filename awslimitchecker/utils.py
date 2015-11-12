@@ -38,6 +38,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import argparse
+import time
+import logging
+from boto.exception import BotoServerError
+
+logger = logging.getLogger(__name__)
 
 
 class StoreKeyValuePair(argparse.Action):
@@ -90,3 +95,50 @@ def dict2cols(d, spaces=2, separator=' '):
             v=d[k],
         )
     return s
+
+
+def invoke_with_throttling_retries(function_ref, *argv):
+    """
+    Invoke a Boto operation using an exponential backoff in the case of
+    API request throttling.
+
+    This is taken from:
+    https://github.com/47lining/ansible-modules-core/blob/2d189f0d192717f83e3c6d37d3fe0988fc329b5a/cloud/amazon/cloudformation.py#L192
+    see:
+    https://github.com/ansible/ansible-modules-core/pull/224
+    and
+    https://github.com/ansible/ansible-modules-core/pull/569
+
+    To use, transform:
+
+        conn.action(args)
+
+    into:
+
+        invoke_with_throttling_retries(conn.action, args)
+
+    :param function_ref: the function to call
+    :type function_ref: function
+    :param argv: the parameters to pass to the function
+    :type argv: tuple
+    """
+    IGNORE_CODE = 'Throttling'
+    MAX_RETRIES = 5
+    SLEEP_BASE_SECONDS = 2
+
+    retries = 0
+    while True:
+        try:
+            retval = function_ref(*argv)
+            return retval
+        except BotoServerError, e:
+            if e.code != IGNORE_CODE:
+                raise e
+            if retries == MAX_RETRIES:
+                logger.error("Reached maximum number of retries; raising error")
+                raise e
+        stime = SLEEP_BASE_SECONDS * (2**retries)
+        logger.info("Call of %s got throttled; sleeping %s seconds before "
+                    "retrying", function_ref, stime)
+        time.sleep(stime)
+        retries += 1
