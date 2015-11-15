@@ -1552,6 +1552,15 @@ class Test_AGPLVersionChecker_Acceptance(object):
         )
         assert expected in version_output
 
+    def get_commit_or_tag(self):
+        """return tag if there is one, else commit"""
+        commit = _get_git_commit()
+        tag = _get_git_tag(commit)
+        print("Found commit=%s, tag=%s" % (commit, tag))
+        if tag is not None:
+            return tag
+        return commit
+
     # this doesn't work on PRs, because we can't check out the hash
     @pytest.mark.skipif(os.environ.get('TRAVIS_PULL_REQUEST', 'false') !=
                         'false', reason='git tests dont work on PRs')
@@ -1560,7 +1569,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
-        commit = _get_git_commit()
+        commit = self.get_commit_or_tag()
         path = str(tmpdir)
         print(_check_output([
             'git',
@@ -1590,7 +1599,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
-        commit = _get_git_commit()
+        commit = self.get_commit_or_tag()
         path = str(tmpdir)
         print(_check_output([
             'git',
