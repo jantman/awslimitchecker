@@ -151,20 +151,27 @@ class Test_ElbService(object):
         type(mock_elb4).listeners = [1, 2, 3, 4, 5, 6]
 
         mock_conn = Mock(spec_set=ELBConnection)
-        mock_conn.get_all_load_balancers.return_value = [
+        return_value = [
             mock_elb1,
             mock_elb2,
             mock_elb3,
             mock_elb4
         ]
+
         with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _ElbService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
+            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+                mock_wrapper.return_value = return_value
+                cls = _ElbService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        assert mock_conn.get_all_load_balancers.mock_calls == [call()]
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_load_balancers)
+        ]
         assert len(cls.limits['Active load balancers'].get_current_usage()) == 1
         assert cls.limits['Active load balancers'
                           ''].get_current_usage()[0].get_value() == 4

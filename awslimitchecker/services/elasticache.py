@@ -45,6 +45,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,8 @@ class _ElastiCacheService(_AwsService):
     def _find_usage_nodes(self):
         """find usage for cache nodes"""
         nodes = 0
-        clusters = self.conn.describe_cache_clusters(show_cache_node_info=True)[
+        clusters = boto_query_wrapper(self.conn.describe_cache_clusters,
+                                      show_cache_node_info=True)[
             'DescribeCacheClustersResponse']['DescribeCacheClustersResult'][
                 'CacheClusters']
         for cluster in clusters:
@@ -111,7 +113,7 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_subnet_groups(self):
         """find usage for elasticache subnet groups"""
-        groups = self.conn.describe_cache_subnet_groups()[
+        groups = boto_query_wrapper(self.conn.describe_cache_subnet_groups)[
             'DescribeCacheSubnetGroupsResponse'][
             'DescribeCacheSubnetGroupsResult'][
             'CacheSubnetGroups']
@@ -122,7 +124,7 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_parameter_groups(self):
         """find usage for elasticache parameter groups"""
-        groups = self.conn.describe_cache_parameter_groups()[
+        groups = boto_query_wrapper(self.conn.describe_cache_parameter_groups)[
             'DescribeCacheParameterGroupsResponse'][
             'DescribeCacheParameterGroupsResult'][
             'CacheParameterGroups']
@@ -140,7 +142,8 @@ class _ElastiCacheService(_AwsService):
             #   Message: "Use of cache security groups is not permitted in
             #             this API version for your account."
             #   Type:    "Sender"
-            groups = self.conn.describe_cache_security_groups()[
+            groups = boto_query_wrapper(
+                self.conn.describe_cache_security_groups)[
                 'DescribeCacheSecurityGroupsResponse'][
                 'DescribeCacheSecurityGroupsResult'][
                 'CacheSecurityGroups']

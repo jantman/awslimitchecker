@@ -44,6 +44,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,7 @@ class _RDSService(_AwsService):
     def _find_usage_instances(self):
         """find usage for DB Instances and related limits"""
         # instance count
-        instances = self.conn.describe_db_instances()[
+        instances = boto_query_wrapper(self.conn.describe_db_instances)[
             'DescribeDBInstancesResponse'][
                 'DescribeDBInstancesResult']['DBInstances']
         self.limits['DB instances']._add_current_usage(
@@ -111,7 +112,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_reserved_instances(self):
         """find usage for reserved instances"""
-        reserved = self.conn.describe_reserved_db_instances()[
+        reserved = boto_query_wrapper(self.conn.describe_reserved_db_instances)[
             'DescribeReservedDBInstancesResponse'][
             'DescribeReservedDBInstancesResult'][
             'ReservedDBInstances']
@@ -122,7 +123,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_snapshots(self):
         """find usage for (manual) DB snapshots"""
-        snaps = self.conn.describe_db_snapshots()[
+        snaps = boto_query_wrapper(self.conn.describe_db_snapshots)[
             "DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"][
                 "DBSnapshots"]
         num_manual_snaps = 0
@@ -136,7 +137,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_param_groups(self):
         """find usage for parameter groups"""
-        params = self.conn.describe_db_parameter_groups()[
+        params = boto_query_wrapper(self.conn.describe_db_parameter_groups)[
             "DescribeDBParameterGroupsResponse"][
                 "DescribeDBParameterGroupsResult"][
                     "DBParameterGroups"]
@@ -147,7 +148,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
-        groups = self.conn.describe_db_subnet_groups()[
+        groups = boto_query_wrapper(self.conn.describe_db_subnet_groups)[
             "DescribeDBSubnetGroupsResponse"][
                 "DescribeDBSubnetGroupsResult"][
                     "DBSubnetGroups"]
@@ -166,7 +167,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_option_groups(self):
         """find usage for option groups"""
-        groups = self.conn.describe_option_groups()[
+        groups = boto_query_wrapper(self.conn.describe_option_groups)[
             "DescribeOptionGroupsResponse"][
                 "DescribeOptionGroupsResult"]["OptionGroupsList"]
         self.limits['Option Groups']._add_current_usage(
@@ -176,7 +177,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_event_subscriptions(self):
         """find usage for event subscriptions"""
-        subs = self.conn.describe_event_subscriptions()[
+        subs = boto_query_wrapper(self.conn.describe_event_subscriptions)[
             "DescribeEventSubscriptionsResponse"][
             "DescribeEventSubscriptionsResult"][
             "EventSubscriptionsList"]
@@ -187,7 +188,7 @@ class _RDSService(_AwsService):
 
     def _find_usage_security_groups(self):
         """find usage for security groups"""
-        groups = self.conn.describe_db_security_groups()[
+        groups = boto_query_wrapper(self.conn.describe_db_security_groups)[
             "DescribeDBSecurityGroupsResponse"][
             "DescribeDBSecurityGroupsResult"][
             "DBSecurityGroups"]

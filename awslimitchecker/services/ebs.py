@@ -41,8 +41,11 @@ import abc  # noqa
 import boto
 import boto.ec2
 import logging
+
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
+
 logger = logging.getLogger(__name__)
 
 
@@ -82,7 +85,7 @@ class _EbsService(_AwsService):
         gp_gb = 0
         mag_gb = 0
         logger.debug("Getting usage for EBS volumes")
-        for vol in self.conn.get_all_volumes():
+        for vol in boto_query_wrapper(self.conn.get_all_volumes):
             vols += 1
             if vol.type == 'io1':
                 piops_gb += vol.size
@@ -124,7 +127,7 @@ class _EbsService(_AwsService):
     def _find_usage_snapshots(self):
         """find snapshot usage"""
         logger.debug("Getting usage for EBS snapshots")
-        snaps = self.conn.get_all_snapshots(owner='self')
+        snaps = boto_query_wrapper(self.conn.get_all_snapshots, owner='self')
         self.limits['Active snapshots']._add_current_usage(
             len(snaps),
             aws_type='AWS::EC2::VolumeSnapshot'

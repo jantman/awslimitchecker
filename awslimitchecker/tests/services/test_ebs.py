@@ -215,7 +215,7 @@ class Test_EbsService(object):
         type(mock_vol7).type = 'othertype'
 
         mock_conn = Mock(spec_set=EC2Connection)
-        mock_conn.get_all_volumes.return_value = [
+        return_value = [
             mock_vol1,
             mock_vol2,
             mock_vol3,
@@ -227,7 +227,9 @@ class Test_EbsService(object):
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
-            cls._find_usage_ebs()
+            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+                mock_wrapper.return_value = return_value
+                cls._find_usage_ebs()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS volumes"),
             call.error(
@@ -252,6 +254,10 @@ class Test_EbsService(object):
         assert len(cls.limits['Active volumes'].get_current_usage()) == 1
         assert cls.limits['Active volumes'
                           ''].get_current_usage()[0].get_value() == 7
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_volumes)
+        ]
 
     def test_find_usage_snapshots(self):
         mock_snap1 = Mock(spec_set=Snapshot)
@@ -264,7 +270,7 @@ class Test_EbsService(object):
         type(mock_snap3).id = 'snap-3'
 
         mock_conn = Mock(spec_set=EC2Connection)
-        mock_conn.get_all_snapshots.return_value = [
+        return_value = [
             mock_snap1,
             mock_snap2,
             mock_snap3,
@@ -272,15 +278,18 @@ class Test_EbsService(object):
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
-            cls._find_usage_snapshots()
+            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+                mock_wrapper.return_value = return_value
+                cls._find_usage_snapshots()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS snapshots"),
         ]
         assert len(cls.limits['Active snapshots'].get_current_usage()) == 1
         assert cls.limits['Active snapshots'
                           ''].get_current_usage()[0].get_value() == 3
-        assert mock_conn.mock_calls == [
-            call.get_all_snapshots(owner='self')
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_snapshots, owner='self')
         ]
 
     def test_required_iam_permissions(self):

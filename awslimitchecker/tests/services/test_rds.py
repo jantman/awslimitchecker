@@ -378,7 +378,7 @@ class Test_RDSService(object):
                 'DBInstanceIdentifier': 'baz'
             }
         ]
-        mock_conn.describe_db_instances.return_value = {
+        return_value = {
             'DescribeDBInstancesResponse': {
                 'DescribeDBInstancesResult': {
                     'DBInstances': instances
@@ -386,10 +386,13 @@ class Test_RDSService(object):
             }
         }
 
-        cls._find_usage_instances()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = return_value
+            cls._find_usage_instances()
 
-        assert mock_conn.mock_calls == [
-            call.describe_db_instances()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_db_instances)
         ]
 
         usage = sorted(cls.limits['DB instances'].get_current_usage())
@@ -491,14 +494,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_db_snapshots.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_snapshots()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_snapshots()
 
-        assert mock_conn.mock_calls == [
-            call.describe_db_snapshots()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_db_snapshots)
         ]
 
         usage = sorted(cls.limits['DB snapshots per user'].get_current_usage())
@@ -533,14 +538,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_db_parameter_groups.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_param_groups()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_param_groups()
 
-        assert mock_conn.mock_calls == [
-            call.describe_db_parameter_groups()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_db_parameter_groups)
         ]
 
         usage = sorted(cls.limits['Parameter Groups'].get_current_usage())
@@ -640,14 +647,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_db_subnet_groups.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_subnet_groups()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_subnet_groups()
 
-        assert mock_conn.mock_calls == [
-            call.describe_db_subnet_groups()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_db_subnet_groups)
         ]
 
         usage = sorted(cls.limits['Subnet Groups'].get_current_usage())
@@ -703,14 +712,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_option_groups.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_option_groups()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_option_groups()
 
-        assert mock_conn.mock_calls == [
-            call.describe_option_groups()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_option_groups)
         ]
 
         usage = sorted(cls.limits['Option Groups'].get_current_usage())
@@ -733,14 +744,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_event_subscriptions.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_event_subscriptions()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_event_subscriptions()
 
-        assert mock_conn.mock_calls == [
-            call.describe_event_subscriptions()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_event_subscriptions)
         ]
 
         usage = sorted(cls.limits['Event Subscriptions'].get_current_usage())
@@ -834,14 +847,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_db_security_groups.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_security_groups()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_security_groups()
 
-        assert mock_conn.mock_calls == [
-            call.describe_db_security_groups()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_db_security_groups)
         ]
 
         usage = sorted(cls.limits['DB security groups'].get_current_usage())
@@ -885,14 +900,16 @@ class Test_RDSService(object):
         }
 
         mock_conn = Mock(spec_set=RDSConnection)
-        mock_conn.describe_reserved_db_instances.return_value = data
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_reserved_instances()
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = data
+            cls._find_usage_reserved_instances()
 
-        assert mock_conn.mock_calls == [
-            call.describe_reserved_db_instances()
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_reserved_db_instances)
         ]
 
         usage = sorted(cls.limits['Reserved Instances'].get_current_usage())

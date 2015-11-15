@@ -42,8 +42,11 @@ import boto
 import logging
 from collections import defaultdict
 from copy import deepcopy
+
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
+
 logger = logging.getLogger(__name__)
 
 
@@ -127,7 +130,7 @@ class _Ec2Service(_AwsService):
         reservations = defaultdict(int)
         az_to_res = {}
         logger.debug("Getting reserved instance information")
-        res = self.conn.get_all_reserved_instances()
+        res = boto_query_wrapper(self.conn.get_all_reserved_instances)
         for x in res:
             if x.state != 'active':
                 logger.debug("Skipping ReservedInstance %s with state %s",
@@ -156,7 +159,7 @@ class _Ec2Service(_AwsService):
             ondemand[t] = 0
         az_to_inst = {}
         logger.debug("Getting usage for on-demand instances")
-        for res in self.conn.get_all_reservations():
+        for res in boto_query_wrapper(self.conn.get_all_reservations):
             for inst in res.instances:
                 if inst.spot_instance_request_id:
                     logger.warning("Spot instance found (%s); awslimitchecker "
@@ -250,7 +253,7 @@ class _Ec2Service(_AwsService):
         logger.debug("Getting usage for EC2 VPC resources")
         sgs_per_vpc = defaultdict(int)
         rules_per_sg = defaultdict(int)
-        for sg in self.conn.get_all_security_groups():
+        for sg in boto_query_wrapper(self.conn.get_all_security_groups):
             if sg.vpc_id is not None:
                 sgs_per_vpc[sg.vpc_id] += 1
                 rules_per_sg[sg.id] = len(sg.rules)
@@ -270,7 +273,7 @@ class _Ec2Service(_AwsService):
 
     def _find_usage_networking_eips(self):
         logger.debug("Getting usage for EC2 EIPs")
-        addrs = self.conn.get_all_addresses()
+        addrs = boto_query_wrapper(self.conn.get_all_addresses)
         self.limits['EC2-VPC Elastic IPs']._add_current_usage(
             sum(1 for a in addrs if a.domain == 'vpc'),
             aws_type='AWS::EC2::EIP',
@@ -284,7 +287,7 @@ class _Ec2Service(_AwsService):
 
     def _find_usage_networking_eni_sg(self):
         logger.debug("Getting usage for EC2 Network Interfaces")
-        ints = self.conn.get_all_network_interfaces()
+        ints = boto_query_wrapper(self.conn.get_all_network_interfaces)
         for iface in ints:
             self.limits['VPC security groups per elastic network '
                         'interface']._add_current_usage(
