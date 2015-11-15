@@ -150,7 +150,8 @@ def boto_query_wrapper(function_ref, *argv, **kwargs):
 
     Calls :py:func:`~.invoke_with_throttling_retries` and returns the result.
 
-    Also provides an extension point for future logic to wrap all boto calls.
+    Also provides an extension point for future logic to wrap all boto calls,
+    such as handling pagination in responses.
 
     :param function_ref: the function to call
     :type function_ref: function
