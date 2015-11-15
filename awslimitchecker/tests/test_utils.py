@@ -156,7 +156,7 @@ class TestInvokeWithThrottlingRetries(object):
         self.retry_count = 0
         self.num_errors = 0
 
-    def retry_func(self):
+    def retry_func(self, *args, **kwargs):
         self.retry_count += 1
         if self.num_errors != 0 and self.retry_count <= self.num_errors:
             body = "<ErrorResponse xmlns=\"http://cloudformation.amazonaws.co" \
@@ -167,7 +167,7 @@ class TestInvokeWithThrottlingRetries(object):
             raise BotoServerError(400, 'Bad Request', body)
         return True
 
-    def other_error(self):
+    def other_error(self, *args, **kwargs):
         body = "<ErrorResponse xmlns=\"http://cloudformation.amazonaws.co" \
                "m/doc/2010-05-15/\">\n  <Error>\n    <Type>Sender</Type>" \
                "\n    <Code>UnauthorizedOperation</Code>\n    " \
@@ -183,6 +183,17 @@ class TestInvokeWithThrottlingRetries(object):
             res = invoke_with_throttling_retries(cls.func)
         assert res is True
         assert cls.func.mock_calls == [call()]
+        assert mock_sleep.mock_calls == []
+
+    def test_invoke_ok_args(self):
+        cls = Mock()
+        cls.func.side_effect = self.retry_func
+        with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
+            res = invoke_with_throttling_retries(
+                cls.func, 'zzz', 'aaa', foo='bar'
+            )
+        assert res is True
+        assert cls.func.mock_calls == [call('zzz', 'aaa', foo='bar')]
         assert mock_sleep.mock_calls == []
 
     def test_invoke_other_error(self):

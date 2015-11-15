@@ -97,7 +97,7 @@ def dict2cols(d, spaces=2, separator=' '):
     return s
 
 
-def invoke_with_throttling_retries(function_ref, *argv):
+def invoke_with_throttling_retries(function_ref, *argv, **kwargs):
     """
     Invoke a Boto operation using an exponential backoff in the case of
     API request throttling.
@@ -121,6 +121,9 @@ def invoke_with_throttling_retries(function_ref, *argv):
     :type function_ref: function
     :param argv: the parameters to pass to the function
     :type argv: tuple
+    :param kwargs: keyword arguments to pass to the function. Any arguments
+    with names starting with "alc_" will be removed for internal use.
+    :type kwargs: dict
     """
     IGNORE_CODE = 'Throttling'
     MAX_RETRIES = 5
@@ -129,7 +132,7 @@ def invoke_with_throttling_retries(function_ref, *argv):
     retries = 0
     while True:
         try:
-            retval = function_ref(*argv)
+            retval = function_ref(*argv, **kwargs)
             return retval
         except BotoServerError, e:
             if e.code != IGNORE_CODE:
