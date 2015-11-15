@@ -134,7 +134,7 @@ def invoke_with_throttling_retries(function_ref, *argv, **kwargs):
         try:
             retval = function_ref(*argv, **kwargs)
             return retval
-        except BotoServerError, e:
+        except BotoServerError as e:
             if e.code != IGNORE_CODE:
                 raise e
             if retries == MAX_RETRIES:
