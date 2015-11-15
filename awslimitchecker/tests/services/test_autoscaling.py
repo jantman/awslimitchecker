@@ -133,15 +133,27 @@ class Test_AutoscalingService(object):
 
     def test_find_usage(self):
         mock_conn = Mock(spec_set=AutoScaleConnection)
-        mock_conn.get_all_groups.return_value = [1, 2, 3]
-        mock_conn.get_all_launch_configurations.return_value = [1, 2]
+
+        def se_wrapper(func, *args, **kwargs):
+            if func == mock_conn.get_all_groups:
+                return [1, 2, 3]
+            elif func == mock_conn.get_all_launch_configurations:
+                return [1, 2]
+            return None
 
         with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _AutoscalingService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
+            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+                cls = _AutoscalingService(21, 43)
+                cls.conn = mock_conn
+                mock_wrapper.side_effect = se_wrapper
+                assert cls._have_usage is False
+                cls.find_usage()
         assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_groups),
+            call(mock_conn.get_all_launch_configurations)
+        ]
         assert cls._have_usage is True
         asgs = sorted(cls.limits['Auto Scaling groups'].get_current_usage())
         assert len(asgs) == 1
