@@ -4,6 +4,7 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* `#86 <https://github.com/jantman/awslimitchecker/issues/86>`_ wrap all AWS API queries in ``awslimitchecker.utils.boto_query_wrapper`` to retry queries with an exponential backoff when API request throttling/rate limiting is encountered
 
 0.1.3 (2015-10-04)
 ------------------
