@@ -22,6 +22,12 @@ connections; connections are created lazily as needed and stored as a class attr
 services, limits and default limit values without ever connecting to AWS (this is also used to generate the
 :ref:`Supported Limits <limits>` documentation automatically).
 
+All calls to the AWS APIs should be made through :py:func:`~awslimitchecker.utils.boto_query_wrapper`. This function
+encapsulates both retrying queries with an exponential backoff when queries are throttled due to your account hitting
+the `request rate limit <http://docs.aws.amazon.com/AWSEC2/latest/APIReference/query-api-troubleshooting.html#api-request-rate>`_
+(via :py:func:`~awslimitchecker.utils.invoke_with_throttling_retries`) and automatically paginating query responses
+that aren't automatically handled by boto.
+
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is instantiated, it imports :py:mod:`~awslimitchecker.services`
 which in turn creates instances of all ``awslimitchecker.services.*`` classes and adds them to a dict mapping the
 string Service Name to the Service Class instance. These instances are used for all interaction with the services.

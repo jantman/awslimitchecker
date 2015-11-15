@@ -60,6 +60,11 @@ Guidelines
 Adding New Limits and Checks to Existing Services
 -------------------------------------------------
 
+First, note that all calls to AWS APIs should be handled through
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`, which handles
+retries (with exponential backoff) when API request rate limits are hit,
+and also handles paginated responses if they're not handled by boto.
+
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method.
 2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method
@@ -77,6 +82,11 @@ Adding New Services
 
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
+
+First, note that all calls to AWS APIs should be handled through
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`, which handles
+retries (with exponential backoff) when API request rate limits are hit,
+and also handles paginated responses if they're not handled by boto.
 
 1. The new service name should be in CamelCase, preferably one word (if not one word, it should be underscore-separated).
    In ``awslimitchecker/services``, use the ``addservice`` script; this will create a templated service class in the
