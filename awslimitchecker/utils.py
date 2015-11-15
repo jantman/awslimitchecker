@@ -142,3 +142,28 @@ def invoke_with_throttling_retries(function_ref, *argv):
                     "retrying", function_ref, stime)
         time.sleep(stime)
         retries += 1
+
+
+def boto_query_wrapper(function_ref, *argv, **kwargs):
+    """
+    Function to wrap all boto query method calls, for throttling and pagination.
+
+    Calls :py:func:`~.invoke_with_throttling_retries` and returns the result.
+
+    Also provides an extension point for future logic to wrap all boto calls.
+
+    :param function_ref: the function to call
+    :type function_ref: function
+    :param argv: the parameters to pass to the function
+    :type argv: tuple
+    :param kwargs: keyword arguments to pass to the function. Any arguments
+    with names starting with "alc_" will be removed for internal use.
+    :type kwargs: dict
+    :returns: return value of ``function_ref``
+    """
+    pass_kwargs = {}
+    for k, v in kwargs.items():
+        if not k.startswith('alc_'):
+            pass_kwargs[k] = v
+    result = invoke_with_throttling_retries(function_ref, *argv, **pass_kwargs)
+    return result

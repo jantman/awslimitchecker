@@ -44,7 +44,8 @@ import sys
 from boto.exception import BotoServerError
 
 from awslimitchecker.utils import (
-    StoreKeyValuePair, dict2cols, invoke_with_throttling_retries
+    StoreKeyValuePair, dict2cols, invoke_with_throttling_retries,
+    boto_query_wrapper
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -56,6 +57,8 @@ if (
     from mock import patch, call, Mock
 else:
     from unittest.mock import patch, call, Mock
+
+pbm = 'awslimitchecker.utils'
 
 
 class TestStoreKeyValuePair(object):
@@ -164,6 +167,15 @@ class TestInvokeWithThrottlingRetries(object):
             raise BotoServerError(400, 'Bad Request', body)
         return True
 
+    def other_error(self):
+        body = "<ErrorResponse xmlns=\"http://cloudformation.amazonaws.co" \
+               "m/doc/2010-05-15/\">\n  <Error>\n    <Type>Sender</Type>" \
+               "\n    <Code>UnauthorizedOperation</Code>\n    " \
+               "<Message>foobar</Message>\n  " \
+               "</Error>\n  <RequestId>2ab5db0d-5bca-11e4-9" \
+               "592-272cff50ba2d</RequestId>\n</ErrorResponse>"
+        raise BotoServerError(400, 'Bad Request', body)
+
     def test_invoke_ok(self):
         cls = Mock()
         cls.func.side_effect = self.retry_func
@@ -172,6 +184,16 @@ class TestInvokeWithThrottlingRetries(object):
         assert res is True
         assert cls.func.mock_calls == [call()]
         assert mock_sleep.mock_calls == []
+
+    def test_invoke_other_error(self):
+        cls = Mock()
+        cls.func.side_effect = self.other_error
+        with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
+            with pytest.raises(BotoServerError) as ex:
+                invoke_with_throttling_retries(cls.func)
+        assert cls.func.mock_calls == [call()]
+        assert mock_sleep.mock_calls == []
+        assert ex.value.code == 'UnauthorizedOperation'
 
     def test_invoke_one_fail(self):
         self.num_errors = 1
@@ -196,4 +218,52 @@ class TestInvokeWithThrottlingRetries(object):
         ]
         assert mock_sleep.mock_calls == [
             call(2), call(4), call(8), call(16), call(32)
+        ]
+
+
+class TestBotoQueryWrapper(object):
+
+    def test_invoke_noargs(self):
+        func = Mock()
+        retval = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.return_value = retval
+            res = boto_query_wrapper(func)
+        assert res == retval
+        assert mock_invoke.mock_calls == [call(func)]
+
+    def test_invoke_args(self):
+        func = Mock()
+        retval = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.return_value = retval
+            res = boto_query_wrapper(func, 'foo', 'bar')
+        assert res == retval
+        assert mock_invoke.mock_calls == [call(func, 'foo', 'bar')]
+
+    def test_invoke_kwargs(self):
+        func = Mock()
+        retval = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.return_value = retval
+            res = boto_query_wrapper(func, 'foo', bar='barval', baz='bazval')
+        assert res == retval
+        assert mock_invoke.mock_calls == [
+            call(func, 'foo', bar='barval', baz='bazval')
+        ]
+
+    def test_invoke_kwargs_alc(self):
+        func = Mock()
+        retval = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.return_value = retval
+            res = boto_query_wrapper(func, 'foo', bar='barval', baz='bazval',
+                                     alc_foo='alcfoo', alc_bar='alcbar')
+        assert res == retval
+        assert mock_invoke.mock_calls == [
+            call(func, 'foo', bar='barval', baz='bazval')
         ]
