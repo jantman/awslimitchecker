@@ -1290,6 +1290,24 @@ class Test_AGPLVersionChecker_Acceptance(object):
         print("\n" + "#" * 20 + " DONE: " + ' '.join(final_args) + "#" * 20)
         assert res == 0
 
+    def _make_git_repo(self, path):
+        """create a git repo under path; return the commit"""
+        print("creating git repository in %s" % path)
+        old_cwd = os.getcwd()
+        os.chdir(path)
+        res = subprocess.call(['git', 'init', '.'])
+        assert res == 0
+        with open('foo', 'w') as fh:
+            fh.write('foo')
+        res = subprocess.call(['git', 'add', 'foo'])
+        assert res == 0
+        res = subprocess.call(['git', 'commit', '-m', 'foo'])
+        assert res == 0
+        commit = _get_git_commit()
+        print("git repository in %s commit: %s" % (path, commit))
+        os.chdir(old_cwd)
+        return commit
+
     def _get_alc_version(self, path):
         """
         In the virtualenv at ``path``, run ``awslimitchecker --version`` and
@@ -1622,5 +1640,23 @@ class Test_AGPLVersionChecker_Acceptance(object):
         expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
             v='%s@%s*' % (_VERSION, commit),
             u='https://github.com/jantman/awslimitchecker.git'
+        )
+        assert expected in version_output
+
+    def test_install_sdist_in_git_repo(self, tmpdir):
+        """regression test for issue #73"""
+        path = str(tmpdir)
+        # setup a git repo in tmpdir
+        repo_commit = self._make_git_repo(path)
+        # make the venv
+        self._make_venv(path)
+        # build the sdist
+        pkg_path = self._make_package('sdist', path)
+        # install ALC in it
+        self._pip_install(path, [pkg_path])
+        version_output = self._get_alc_version(path)
+        expected = 'awslimitchecker {v} (see <{u}> for source code)'.format(
+            v=_VERSION,
+            u='https://github.com/jantman/awslimitchecker'
         )
         assert expected in version_output
