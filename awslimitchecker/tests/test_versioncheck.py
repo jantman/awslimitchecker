@@ -1301,6 +1301,7 @@ class Test_AGPLVersionChecker_Acceptance(object):
             fh.write('foo')
         res = subprocess.call(['git', 'add', 'foo'])
         assert res == 0
+        self._set_git_config(set_in_travis=True)
         res = subprocess.call(['git', 'commit', '-m', 'foo'])
         assert res == 0
         commit = _get_git_commit()
@@ -1647,7 +1648,6 @@ class Test_AGPLVersionChecker_Acceptance(object):
         """regression test for issue #73"""
         path = str(tmpdir)
         # setup a git repo in tmpdir
-        self._set_git_config(set_in_travis=True)
         self._make_git_repo(path)
         # make the venv
         self._make_venv(path)
