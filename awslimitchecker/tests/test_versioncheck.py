@@ -1171,8 +1171,8 @@ class Test_AGPLVersionChecker_Acceptance(object):
         except subprocess.CalledProcessError:
             pass
 
-    def _set_git_config(self):
-        if os.environ.get('TRAVIS', '') != 'true':
+    def _set_git_config(self, set_in_travis=False):
+        if not set_in_travis and os.environ.get('TRAVIS', '') != 'true':
             print("not running in Travis; not setting git config")
             return
         try:
@@ -1647,7 +1647,8 @@ class Test_AGPLVersionChecker_Acceptance(object):
         """regression test for issue #73"""
         path = str(tmpdir)
         # setup a git repo in tmpdir
-        repo_commit = self._make_git_repo(path)
+        self._set_git_config(set_in_travis=True)
+        self._make_git_repo(path)
         # make the venv
         self._make_venv(path)
         # build the sdist
