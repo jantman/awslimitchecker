@@ -104,15 +104,18 @@ class AGPLVersionChecker(object):
             'tag': None,
             'commit': None
         }
-        git_info = self._find_git_info()
-        logger.debug("Git info: %s", git_info)
-        for k, v in git_info.items():
-            if v is not None:
-                res[k] = v
-        if git_info['dirty'] and res['tag'] is not None:
-            res['tag'] += '*'
-        if git_info['dirty'] and res['commit'] is not None:
-            res['commit'] += '*'
+        if self._is_git_clone:
+            git_info = self._find_git_info()
+            logger.debug("Git info: %s", git_info)
+            for k, v in git_info.items():
+                if v is not None:
+                    res[k] = v
+            if git_info['dirty'] and res['tag'] is not None:
+                res['tag'] += '*'
+            if git_info['dirty'] and res['commit'] is not None:
+                res['commit'] += '*'
+        else:
+            logger.debug("Install does not appear to be a git clone")
         try:
             pip_info = self._find_pip_info()
         except Exception:
@@ -134,6 +137,16 @@ class AGPLVersionChecker(object):
             res['url'] = pkg_info['url']
         logger.debug("Final package info: %s", res)
         return res
+
+    @property
+    def is_git_clone(self):
+        """
+        Attempt to determine whether this package is installed via git or not.
+
+        :rtype: bool
+        :returns: True if installed via git, False otherwise
+        """
+        return True
 
     def _find_pkg_info(self):
         """

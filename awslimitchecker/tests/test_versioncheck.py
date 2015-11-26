@@ -502,7 +502,10 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = True
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'git+https://foo',
@@ -513,6 +516,7 @@ class Test_AGPLVersionChecker(object):
         assert mocks['_find_git_info'].mock_calls == [call(cls)]
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_git_notag_dirty(self):
         cls = AGPLVersionChecker()
@@ -537,7 +541,10 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = True
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'git+https://foo',
@@ -548,6 +555,7 @@ class Test_AGPLVersionChecker(object):
         assert mocks['_find_git_info'].mock_calls == [call(cls)]
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_git_tag(self):
         cls = AGPLVersionChecker()
@@ -572,7 +580,10 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = True
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'git+https://foo',
@@ -583,6 +594,7 @@ class Test_AGPLVersionChecker(object):
         assert mocks['_find_git_info'].mock_calls == [call(cls)]
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_git_tag_dirty(self):
         cls = AGPLVersionChecker()
@@ -607,7 +619,10 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = True
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'git+https://foo',
@@ -618,6 +633,7 @@ class Test_AGPLVersionChecker(object):
         assert mocks['_find_git_info'].mock_calls == [call(cls)]
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_pkg_res_exception(self):
         cls = AGPLVersionChecker()
@@ -643,7 +659,10 @@ class Test_AGPLVersionChecker(object):
                 'url': 'http://my.package.url/pip'
             }
             mocks['_find_pkg_info'].side_effect = se_exception
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = False
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'git+https://foo',
@@ -651,9 +670,10 @@ class Test_AGPLVersionChecker(object):
             'commit': '12345678',
             'dirty': False,
         }
-        assert mocks['_find_git_info'].mock_calls == [call(cls)]
+        assert mocks['_find_git_info'].mock_calls == []
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_pip_exception(self):
         cls = AGPLVersionChecker()
@@ -679,7 +699,10 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = False
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'git+https://foo',
@@ -690,6 +713,7 @@ class Test_AGPLVersionChecker(object):
         assert mocks['_find_git_info'].mock_calls == [call(cls)]
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_no_git(self):
         cls = AGPLVersionChecker()
@@ -715,16 +739,20 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = False
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'http://my.package.url/pip',
             'tag': None,
             'commit': None,
         }
-        assert mocks['_find_git_info'].mock_calls == [call(cls)]
+        assert mocks['_find_git_info'].mock_calls == []
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_no_git_no_pip(self):
         cls = AGPLVersionChecker()
@@ -750,16 +778,20 @@ class Test_AGPLVersionChecker(object):
                 'version': '1.2.3',
                 'url': 'http://my.package.url/pkg_resources'
             }
-            res = cls.find_package_version()
+            with patch('%s._is_git_clone' % self.pb,
+                       new_callable=PropertyMock) as mock_is_git:
+                mock_is_git.return_value = False
+                res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
             'url': 'http://my.package.url/pkg_resources',
             'tag': None,
             'commit': None,
         }
-        assert mocks['_find_git_info'].mock_calls == [call(cls)]
+        assert mocks['_find_git_info'].mock_calls == []
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_debug(self):
         mock_pip_logger = Mock(spec_set=logging.Logger)
@@ -792,13 +824,13 @@ class Test_AGPLVersionChecker(object):
                     with patch('%s.logger' % self.mpb,
                                spec_set=logging.Logger) as mock_mod_logger:
                         mock_logging.getLogger.return_value = mock_pip_logger
-                        cls.find_package_version()
+                        with patch('%s._is_git_clone' % self.pb,
+                                   new_callable=PropertyMock) as mock_is_git:
+                            mock_is_git.return_value = False
+                            cls.find_package_version()
         assert mock_logging.mock_calls == []
         assert mock_pip_logger.mock_calls == []
         assert mock_mod_logger.mock_calls == [
-            call.debug('Git info: %s',
-                       {'url': None, 'commit': None, 'tag': None,
-                        'dirty': None}),
             call.debug('pip info: %s', {'url': 'http://my.package.url/pip',
                                         'version': '1.2.3'}),
             call.debug('pkg_resources info: %s',
@@ -808,6 +840,7 @@ class Test_AGPLVersionChecker(object):
                        {'url': 'http://my.package.url/pip', 'commit': None,
                         'version': '1.2.3', 'tag': None})
         ]
+        assert mock_is_git.mock_calls == [call()]
 
     def test_find_package_version_no_debug(self):
         mock_pip_logger = Mock()
@@ -841,7 +874,10 @@ class Test_AGPLVersionChecker(object):
                     }
                     with patch('%s.logger' % self.mpb,
                                spec_set=logging.Logger) as mock_mod_logger:
-                        cls.find_package_version()
+                        with patch('%s._is_git_clone' % self.pb,
+                                   new_callable=PropertyMock) as mock_is_git:
+                            mock_is_git.return_value = False
+                            cls.find_package_version()
         assert mock_logging.mock_calls == [
             call.getLogger("pip"),
             call.getLogger().setLevel(mock_logging.WARNING)
@@ -851,9 +887,6 @@ class Test_AGPLVersionChecker(object):
         ]
         assert mock_mod_logger.mock_calls == [
             call.setLevel(mock_logging.WARNING),
-            call.debug('Git info: %s',
-                       {'url': None, 'commit': None, 'tag': None,
-                        'dirty': None}),
             call.debug('pip info: %s', {'url': 'http://my.package.url/pip',
                                         'version': '1.2.3'}),
             call.debug('pkg_resources info: %s',
@@ -863,6 +896,7 @@ class Test_AGPLVersionChecker(object):
                        {'url': 'http://my.package.url/pip', 'commit': None,
                         'version': '1.2.3', 'tag': None})
         ]
+        assert mock_is_git.mock_calls == [call()]
 
 
 class Test_VersionCheck_Funcs(object):
