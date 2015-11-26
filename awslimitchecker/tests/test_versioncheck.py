@@ -900,6 +900,42 @@ class Test_AGPLVersionChecker(object):
         ]
         assert mock_is_git.mock_calls == [call()]
 
+    def test_is_git_clone_true(self):
+        foo_path = '/foo/bar/awslimitchecker/awslimitchecker/versioncheck.pyc'
+
+        with patch.multiple(
+                '%s.os.path' % self.mpb,
+                abspath=DEFAULT,
+                exists=DEFAULT,
+        ) as mocks:
+            mocks['abspath'].return_value = foo_path
+            mocks['exists'].return_value = True
+            cls = AGPLVersionChecker()
+            res = cls._is_git_clone
+        assert res is True
+        assert mocks['abspath'].call_count == 1
+        assert mocks['exists'].mock_calls == [
+            call('/foo/bar/awslimitchecker/.git')
+        ]
+
+    def test_is_git_clone_false(self):
+        foo_path = '/foo/bar/awslimitchecker/awslimitchecker/versioncheck.pyc'
+
+        with patch.multiple(
+                '%s.os.path' % self.mpb,
+                abspath=DEFAULT,
+                exists=DEFAULT,
+        ) as mocks:
+            mocks['abspath'].return_value = foo_path
+            mocks['exists'].return_value = False
+            cls = AGPLVersionChecker()
+            res = cls._is_git_clone
+        assert res is False
+        assert mocks['abspath'].call_count == 1
+        assert mocks['exists'].mock_calls == [
+            call('/foo/bar/awslimitchecker/.git')
+        ]
+
 
 class Test_VersionCheck_Funcs(object):
     """

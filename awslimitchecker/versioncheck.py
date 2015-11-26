@@ -146,7 +146,14 @@ class AGPLVersionChecker(object):
         :rtype: bool
         :returns: True if installed via git, False otherwise
         """
-        return True
+        distpath = os.path.normpath(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                '../'
+            )
+        )
+        gitpath = os.path.join(distpath, '.git')
+        return os.path.exists(gitpath)
 
     def _find_pkg_info(self):
         """
