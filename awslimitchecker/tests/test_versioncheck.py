@@ -61,9 +61,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, DEFAULT, Mock
+    from mock import patch, call, DEFAULT, Mock, PropertyMock
 else:
-    from unittest.mock import patch, call, DEFAULT, Mock
+    from unittest.mock import patch, call, DEFAULT, Mock, PropertyMock
 
 
 class Test_AGPLVersionChecker(object):
@@ -661,7 +661,7 @@ class Test_AGPLVersionChecker(object):
             mocks['_find_pkg_info'].side_effect = se_exception
             with patch('%s._is_git_clone' % self.pb,
                        new_callable=PropertyMock) as mock_is_git:
-                mock_is_git.return_value = False
+                mock_is_git.return_value = True
                 res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
@@ -670,7 +670,7 @@ class Test_AGPLVersionChecker(object):
             'commit': '12345678',
             'dirty': False,
         }
-        assert mocks['_find_git_info'].mock_calls == []
+        assert mocks['_find_git_info'].mock_calls == [call(cls)]
         assert mocks['_find_pip_info'].mock_calls == [call(cls)]
         assert mocks['_find_pkg_info'].mock_calls == [call(cls)]
         assert mock_is_git.mock_calls == [call()]
@@ -701,7 +701,7 @@ class Test_AGPLVersionChecker(object):
             }
             with patch('%s._is_git_clone' % self.pb,
                        new_callable=PropertyMock) as mock_is_git:
-                mock_is_git.return_value = False
+                mock_is_git.return_value = True
                 res = cls.find_package_version()
         assert res == {
             'version': '1.2.3',
@@ -831,6 +831,7 @@ class Test_AGPLVersionChecker(object):
         assert mock_logging.mock_calls == []
         assert mock_pip_logger.mock_calls == []
         assert mock_mod_logger.mock_calls == [
+            call.debug('Install does not appear to be a git clone'),
             call.debug('pip info: %s', {'url': 'http://my.package.url/pip',
                                         'version': '1.2.3'}),
             call.debug('pkg_resources info: %s',
@@ -887,6 +888,7 @@ class Test_AGPLVersionChecker(object):
         ]
         assert mock_mod_logger.mock_calls == [
             call.setLevel(mock_logging.WARNING),
+            call.debug('Install does not appear to be a git clone'),
             call.debug('pip info: %s', {'url': 'http://my.package.url/pip',
                                         'version': '1.2.3'}),
             call.debug('pkg_resources info: %s',

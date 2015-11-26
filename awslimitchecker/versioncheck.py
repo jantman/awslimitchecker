@@ -139,7 +139,7 @@ class AGPLVersionChecker(object):
         return res
 
     @property
-    def is_git_clone(self):
+    def _is_git_clone(self):
         """
         Attempt to determine whether this package is installed via git or not.
 
