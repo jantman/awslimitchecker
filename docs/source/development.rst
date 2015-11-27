@@ -65,6 +65,11 @@ First, note that all calls to AWS APIs should be handled through
 retries (with exponential backoff) when API request rate limits are hit,
 and also handles paginated responses if they're not handled by boto.
 
+Second, note that queries which may be paginated __and return a dict__ instead
+of a ResultSet object must have the proper parameters for
+:py:func:`~awslimitchecker.utils._paginate_dict` passed in to
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`.
+
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method.
 2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method

@@ -46,7 +46,8 @@ from boto.resultset import ResultSet
 
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, invoke_with_throttling_retries,
-    boto_query_wrapper, paginate_query
+    boto_query_wrapper, paginate_query, _paginate_resultset, _paginate_dict,
+    _get_dict_value_by_path, _set_dict_value_by_path
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -55,9 +56,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock
+    from mock import patch, call, Mock, DEFAULT
 else:
-    from unittest.mock import patch, call, Mock
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 pbm = 'awslimitchecker.utils'
 
@@ -251,71 +252,61 @@ class TestBotoQueryWrapper(object):
         func = Mock()
         retval = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            with patch('%s.paginate_query' % pbm) as mock_paginate:
-                mock_invoke.return_value = retval
-                res = boto_query_wrapper(func)
+        with patch('%s.paginate_query' % pbm) as mock_paginate:
+            mock_paginate.return_value = retval
+            res = boto_query_wrapper(func)
         assert res == retval
-        assert mock_invoke.mock_calls == [call(func)]
-        assert mock_paginate.mock_calls == []
+        assert mock_paginate.mock_calls == [call(func)]
 
     def test_invoke_args(self):
         func = Mock()
         retval = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            with patch('%s.paginate_query' % pbm) as mock_paginate:
-                mock_invoke.return_value = retval
-                res = boto_query_wrapper(func, 'foo', 'bar')
+        with patch('%s.paginate_query' % pbm) as mock_paginate:
+            mock_paginate.return_value = retval
+            res = boto_query_wrapper(func, 'foo', 'bar')
         assert res == retval
-        assert mock_invoke.mock_calls == [call(func, 'foo', 'bar')]
-        assert mock_paginate.mock_calls == []
+        assert mock_paginate.mock_calls == [call(func, 'foo', 'bar')]
 
     def test_invoke_kwargs(self):
         func = Mock()
         retval = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            with patch('%s.paginate_query' % pbm) as mock_paginate:
-                mock_invoke.return_value = retval
-                res = boto_query_wrapper(
-                    func, 'foo', bar='barval', baz='bazval'
-                )
+        with patch('%s.paginate_query' % pbm) as mock_paginate:
+            mock_paginate.return_value = retval
+            res = boto_query_wrapper(
+                func, 'foo', bar='barval', baz='bazval'
+            )
         assert res == retval
-        assert mock_invoke.mock_calls == [
+        assert mock_paginate.mock_calls == [
             call(func, 'foo', bar='barval', baz='bazval')
         ]
-        assert mock_paginate.mock_calls == []
 
     def test_invoke_kwargs_alc(self):
         func = Mock()
         retval = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            with patch('%s.paginate_query' % pbm) as mock_paginate:
-                mock_invoke.return_value = retval
-                res = boto_query_wrapper(func, 'foo', bar='barval',
-                                         baz='bazval', alc_foo='alcfoo',
-                                         alc_bar='alcbar')
+        with patch('%s.paginate_query' % pbm) as mock_paginate:
+            mock_paginate.return_value = retval
+            res = boto_query_wrapper(func, 'foo', bar='barval',
+                                     baz='bazval', alc_foo='alcfoo',
+                                     alc_bar='alcbar')
         assert res == retval
-        assert mock_invoke.mock_calls == [
+        assert mock_paginate.mock_calls == [
             call(func, 'foo', bar='barval', baz='bazval', alc_foo='alcfoo',
                  alc_bar='alcbar')
         ]
-        assert mock_paginate.mock_calls == []
 
     def test_invoke_paginate(self):
         func = Mock()
         retval = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            with patch('%s.paginate_query' % pbm) as mock_paginate:
-                mock_paginate.return_value = retval
-                res = boto_query_wrapper(
-                    func, 'foo', bar='barval', baz='bazval', alc_paginate=True
-                )
+        with patch('%s.paginate_query' % pbm) as mock_paginate:
+            mock_paginate.return_value = retval
+            res = boto_query_wrapper(
+                func, 'foo', bar='barval', baz='bazval', alc_paginate=True
+            )
         assert res == retval
-        assert mock_invoke.mock_calls == []
         assert mock_paginate.mock_calls == [
             call(func, 'foo', bar='barval', baz='bazval', alc_paginate=True)
         ]
@@ -323,34 +314,138 @@ class TestBotoQueryWrapper(object):
 
 class TestPaginateQuery(object):
 
-    def test_not_resultset(self):
-        result = {'foo': 'bar'}
+    def test_resultset_next_token(self):
+        result = ResultSet()
+        result.next_token = 'foo'
         func = Mock()
+        final_result = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            mock_invoke.return_value = result
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = result
+            mocks['_paginate_resultset'].return_value = final_result
             res = paginate_query(func, 'foo', bar='barval')
-        assert res == result
-        assert mock_invoke.mock_calls == [
+        assert res == final_result
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
             call(func, 'foo', bar='barval')
         ]
+        assert mocks['_paginate_resultset'].mock_calls == [
+            call(result, func, 'foo', bar='barval')
+        ]
+        assert mocks['_paginate_dict'].mock_calls == []
 
     def test_resultset_no_next(self):
-        e1 = Mock()
-        e2 = Mock()
-        rs = ResultSet()
-        rs.append(e1)
-        rs.append(e2)
-
+        result = ResultSet()
         func = Mock()
 
-        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            mock_invoke.return_value = rs
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = result
             res = paginate_query(func, 'foo', bar='barval')
-        assert res == rs
-        assert mock_invoke.mock_calls == [
+        assert res == result
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
             call(func, 'foo', bar='barval')
         ]
+        assert mocks['_paginate_resultset'].mock_calls == []
+        assert mocks['_paginate_dict'].mock_calls == []
+
+    def test_dict(self):
+        result = {'foo': 'bar'}
+        func = Mock()
+        final_result = Mock()
+
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+                logger=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = result
+            mocks['_paginate_dict'].return_value = final_result
+            res = paginate_query(
+                func,
+                'foo',
+                bar='barval',
+                alc_marker_path=[],
+                alc_data_path=[],
+                alc_marker_param='p'
+            )
+        assert res == final_result
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
+            call(func, 'foo', bar='barval', alc_marker_path=[],
+                 alc_data_path=[], alc_marker_param='p')
+        ]
+        assert mocks['_paginate_resultset'].mock_calls == []
+        assert mocks['_paginate_dict'].mock_calls == [
+            call(result, func, 'foo', bar='barval', alc_marker_path=[],
+                 alc_data_path=[], alc_marker_param='p')
+        ]
+        assert mocks['logger'].mock_calls == []
+
+    def test_dict_missing_params(self):
+        result = {'foo': 'bar'}
+        func = Mock()
+        final_result = Mock()
+
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+                logger=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = result
+            mocks['_paginate_dict'].return_value = final_result
+            res = paginate_query(
+                func,
+                'foo',
+                bar='barval'
+            )
+        assert res == result
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
+            call(func, 'foo', bar='barval')
+        ]
+        assert mocks['_paginate_resultset'].mock_calls == []
+        assert mocks['_paginate_dict'].mock_calls == []
+        assert mocks['logger'].mock_calls == [
+            call.warning("Query returned a dict, but does not have _paginate_"
+                         "dict params set; cannot paginate")
+        ]
+
+    def test_other_type(self):
+        func = Mock()
+
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+                logger=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = 'foobar'
+            res = paginate_query(func, 'foo', bar='barval')
+        assert res == 'foobar'
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
+            call(func, 'foo', bar='barval')
+        ]
+        assert mocks['_paginate_resultset'].mock_calls == []
+        assert mocks['_paginate_dict'].mock_calls == []
+        assert mocks['logger'].mock_calls == [
+            call.warning("Query result of type %s cannot be paginated",
+                         type('foo'))
+        ]
+
+
+class TestPaginateResultSet(object):
 
     def test_resultset_two_next(self):
         e1 = Mock()
@@ -375,14 +470,14 @@ class TestPaginateQuery(object):
 
         func = Mock()
 
-        results = [rs1, rs2, rs3]
+        results = [rs2, rs3]
 
         def se_invoke(f, *args, **argv):
             return results.pop(0)
 
         with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
             mock_invoke.side_effect = se_invoke
-            res = paginate_query(func, 'foo', bar='barval')
+            res = _paginate_resultset(rs1, func, 'foo', bar='barval')
         assert isinstance(res, ResultSet)
         assert len(res) == 6
         assert res[0] == e1
@@ -392,7 +487,280 @@ class TestPaginateQuery(object):
         assert res[4] == e5
         assert res[5] == e6
         assert mock_invoke.mock_calls == [
-            call(func, 'foo', bar='barval'),
             call(func, 'foo', bar='barval', next_token='t1'),
             call(func, 'foo', bar='barval', next_token='t2')
         ]
+
+
+class TestPaginateDict(object):
+
+    def test_no_marker_path(self):
+        result = {}
+        func = Mock()
+
+        with pytest.raises(Exception) as excinfo:
+            _paginate_dict(result, func)
+        ex_str = "alc_marker_path must be specified for queries " \
+                 "that return a dict."
+        assert ex_str in str(excinfo)
+
+    def test_no_data_path(self):
+        result = {}
+        func = Mock()
+
+        with pytest.raises(Exception) as excinfo:
+            _paginate_dict(result, func, alc_marker_path=[])
+        ex_str = "alc_data_path must be specified for queries " \
+                 "that return a dict."
+        assert ex_str in str(excinfo)
+
+    def test_no_marker_param(self):
+        result = {}
+        func = Mock()
+
+        with pytest.raises(Exception) as excinfo:
+            _paginate_dict(result, func, alc_marker_path=[],
+                           alc_data_path=[])
+        ex_str = "alc_marker_param must be specified for queries " \
+                 "that return a dict."
+        assert ex_str in str(excinfo)
+
+    def test_bad_path(self):
+        result = {
+            'k1': {
+                'badpath': {}
+            }
+        }
+        func = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            res = _paginate_dict(
+                result,
+                func,
+                alc_marker_path=['k1', 'k2', 'Marker'],
+                alc_data_path=['k1', 'k2', 'Data'],
+                alc_marker_param='Marker'
+            )
+        assert res == result
+        assert mock_invoke.mock_calls == []
+
+    def test_no_marker(self):
+        result = {
+            'k1': {
+                'k2': {
+                    'Data': []
+                }
+            }
+        }
+        func = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            res = _paginate_dict(
+                result,
+                func,
+                alc_marker_path=['k1', 'k2', 'Marker'],
+                alc_data_path=['k1', 'k2', 'Data'],
+                alc_marker_param='Marker'
+            )
+        assert res == result
+        assert mock_invoke.mock_calls == []
+
+    def test_two_iterations(self):
+        e1 = Mock()
+        e2 = Mock()
+        e3 = Mock()
+        e4 = Mock()
+        e5 = Mock()
+        e6 = Mock()
+        func = Mock()
+
+        res1 = {
+            'k1': {
+                'k2': {
+                    'Data': [e1, e2],
+                    'Foo1': 'bar1',
+                    'Marker': 'marker1'
+                }
+            }
+        }
+        res2 = {
+            'k1': {
+                'k2': {
+                    'Data': [e3, e4],
+                    'Foo2': 'bar2',
+                    'Marker': 'marker2'
+                }
+            }
+        }
+        res3 = {
+            'k1': {
+                'k2': {
+                    'Data': [e5, e6],
+                    'Foo3': 'bar3'
+                }
+            }
+        }
+
+        expected = {
+            'k1': {
+                'k2': {
+                    'Data': [e1, e2, e3, e4, e5, e6],
+                    'Foo3': 'bar3'
+                }
+            }
+        }
+
+        def se_invoke(self, func, *args, **kwargs):
+            if 'MarkerParam' not in kwargs:
+                return -1
+            if kwargs['MarkerParam'] == 'marker1':
+                return res2
+            if kwargs['MarkerParam'] == 'marker2':
+                return res3
+            return kwargs['MarkerParam']
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.side_effect = se_invoke
+            res = _paginate_dict(
+                res1,
+                func,
+                'foo',
+                alc_marker_path=['k1', 'k2', 'Marker'],
+                alc_data_path=['k1', 'k2', 'Data'],
+                alc_marker_param='MarkerParam'
+            )
+        assert res == expected
+        assert mock_invoke.mock_calls == [
+            call(
+                func,
+                'foo',
+                alc_marker_path=['k1', 'k2', 'Marker'],
+                alc_data_path=['k1', 'k2', 'Data'],
+                alc_marker_param='MarkerParam',
+                MarkerParam='marker1'
+            ),
+            call(
+                func,
+                'foo',
+                alc_marker_path=['k1', 'k2', 'Marker'],
+                alc_data_path=['k1', 'k2', 'Data'],
+                alc_marker_param='MarkerParam',
+                MarkerParam='marker2'
+            )
+        ]
+
+
+class TestDictFuncs(object):
+
+    def test_get_dict_value_by_path(self):
+        d = {
+            'foo': {
+                'bar': {
+                    'baz': 'bazval'
+                }
+            }
+        }
+
+        path = ['foo', 'bar', 'baz']
+        res = _get_dict_value_by_path(d, path)
+        assert res == 'bazval'
+        # make sure we don't modify inputs
+        assert path == ['foo', 'bar', 'baz']
+        assert d == {
+            'foo': {
+                'bar': {
+                    'baz': 'bazval'
+                }
+            }
+        }
+
+    def test_get_dict_value_by_path_obj(self):
+        e1 = Mock()
+        e2 = Mock()
+        d = {
+            'k1': {
+                'k2': {
+                    'Marker': 'marker2',
+                    'Data': [e1, e2],
+                    'Foo2': 'bar2'
+                }
+            }
+        }
+        res = _get_dict_value_by_path(d, ['k1', 'k2', 'Data'])
+        assert res == [e1, e2]
+
+    def test_get_dict_value_by_path_none(self):
+        d = {
+            'foo': {
+                'bar': {
+                    'blam': 'blarg'
+                }
+            }
+        }
+
+        res = _get_dict_value_by_path(d, ['foo', 'bar', 'baz'])
+        assert res is None
+
+    def test_get_dict_value_by_path_deep_none(self):
+        d = {'baz': 'blam'}
+
+        res = _get_dict_value_by_path(d, ['foo', 'bar', 'baz'])
+        assert res is None
+
+    def test_set_dict_value_by_path(self):
+        d = {
+            'foo': {
+                'bar': {
+                    'baz': 'bazval'
+                }
+            }
+        }
+        path = ['foo', 'bar', 'baz']
+
+        res = _set_dict_value_by_path(d, 'blam', path)
+        assert res == {
+            'foo': {
+                'bar': {
+                    'baz': 'blam'
+                }
+            }
+        }
+        # make sure we don't modify inputs
+        assert path == ['foo', 'bar', 'baz']
+        assert d == {
+            'foo': {
+                'bar': {
+                    'baz': 'bazval'
+                }
+            }
+        }
+
+    def test_set_dict_value_by_path_none(self):
+        d = {
+            'foo': {
+                'bar': {
+                    'blam': 'blarg'
+                }
+            }
+        }
+
+        res = _set_dict_value_by_path(d, 'blam', ['foo', 'bar', 'baz'])
+        assert res == {
+            'foo': {
+                'bar': {
+                    'baz': 'blam',
+                    'blam': 'blarg'
+                }
+            }
+        }
+
+    def test_set_dict_value_by_path_deep_none(self):
+        d = {'foo': 'bar'}
+
+        with pytest.raises(TypeError):
+            _set_dict_value_by_path(d, 'blam', ['foo', 'bar', 'baz'])
+
+    def test_set_dict_value_by_path_empty(self):
+        d = {'foo': 'bar'}
+        res = _set_dict_value_by_path(d, 'baz', [])
+        assert res == d
