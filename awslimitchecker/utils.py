@@ -180,7 +180,9 @@ def paginate_query(function_ref, *argv, **kwargs):
         'alc_marker_path', 'alc_data_path', 'alc_marker_param'
     ]
     result = invoke_with_throttling_retries(function_ref, *argv, **kwargs)
-    if isinstance(result, ResultSet) and result.next_token is not None:
+    if isinstance(result, ResultSet) and result.next_token is None:
+        return result
+    elif isinstance(result, ResultSet) and result.next_token is not None:
         return _paginate_resultset(result, function_ref, *argv, **kwargs)
     elif isinstance(result, dict):
         if set(paginate_dict_params).issubset(kwargs):
