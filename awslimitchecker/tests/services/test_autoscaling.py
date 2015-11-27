@@ -151,8 +151,8 @@ class Test_AutoscalingService(object):
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_groups),
-            call(mock_conn.get_all_launch_configurations)
+            call(mock_conn.get_all_groups, alc_paginate=True),
+            call(mock_conn.get_all_launch_configurations, alc_paginate=True)
         ]
         assert cls._have_usage is True
         asgs = sorted(cls.limits['Auto Scaling groups'].get_current_usage())

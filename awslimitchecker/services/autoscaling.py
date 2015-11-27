@@ -74,12 +74,19 @@ class _AutoscalingService(_AwsService):
             lim._reset_usage()
 
         self.limits['Auto Scaling groups']._add_current_usage(
-            len(boto_query_wrapper(self.conn.get_all_groups)),
+            len(
+                boto_query_wrapper(self.conn.get_all_groups, alc_paginate=True)
+            ),
             aws_type='AWS::AutoScaling::AutoScalingGroup',
         )
 
         self.limits['Launch configurations']._add_current_usage(
-            len(boto_query_wrapper(self.conn.get_all_launch_configurations)),
+            len(
+                boto_query_wrapper(
+                    self.conn.get_all_launch_configurations,
+                    alc_paginate=True
+                )
+            ),
             aws_type='AWS::AutoScaling::LaunchConfiguration',
         )
         self._have_usage = True
