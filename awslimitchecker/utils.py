@@ -41,6 +41,8 @@ import argparse
 import time
 import logging
 from boto.exception import BotoServerError
+from boto.resultset import ResultSet
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
@@ -147,13 +149,57 @@ def invoke_with_throttling_retries(function_ref, *argv, **kwargs):
         retries += 1
 
 
+def paginate_query(function_ref, *argv, **kwargs):
+    """
+    Invoke a Boto operation, automatically paginating through all responses.
+
+    If ``function_ref`` returns an object that does not have a ``next_token``
+    attribute, or has its ``next_token`` attribute set to none, simply return
+    the result of that call.
+
+    If ``function_ref`` returns an object with a ``next_token`` attribute that
+    is not None (i.e. a :py:class:`boto.resultset.ResultSet`), repeat the call
+    to ``function_ref``, setting the ``next_token`` kwarg to the value of the
+    token, until a response comes back with a None ``next_token``. Return a
+    :py:class:`~boto.resultset.ResultSet` object that contains all of the
+    combined results, in order.
+
+    All function calls are passed through
+    :py:func:`~.invoke_with_throttling_retries`.
+
+    :param function_ref: the function to call
+    :type function_ref: function
+    :param argv: the parameters to pass to the function
+    :type argv: tuple
+    :param kwargs: keyword arguments to pass to the function. Any arguments
+      with names starting with ``alc_`` will be removed for internal use.
+    :type kwargs: dict
+    """
+    result = invoke_with_throttling_retries(function_ref, *argv, **kwargs)
+    if not hasattr(result, 'next_token') or result.next_token is None:
+        return result
+    logger.debug("Iterating all response pages for query of %s", function_ref)
+    # we don't want any markers in the final result
+    final_result = ResultSet()
+    final_result.extend(result)
+    while hasattr(result, 'next_token') and result.next_token is not None:
+        logger.debug("Getting next response set; next_token=%s",
+                     result.next_token)
+        next_kwargs = deepcopy(kwargs)
+        next_kwargs['next_token'] = result.next_token
+        result = invoke_with_throttling_retries(
+            function_ref, *argv, **next_kwargs)
+        final_result.extend(result)
+    return final_result
+
+
 def boto_query_wrapper(function_ref, *argv, **kwargs):
     """
     Function to wrap all boto query method calls, for throttling and pagination.
 
     Calls :py:func:`~.invoke_with_throttling_retries` and returns the result.
-    Also provides an extension point for future logic to wrap all boto calls,
-    such as handling pagination in responses.
+    If ``kwargs['alc_paginate']`` is ``True``, call :py:func:`~.paginate_query`
+    instead, and return that result.
 
     :param function_ref: the function to call
     :type function_ref: function
@@ -168,5 +214,9 @@ def boto_query_wrapper(function_ref, *argv, **kwargs):
     for k, v in kwargs.items():
         if not k.startswith('alc_'):
             pass_kwargs[k] = v
+    if 'alc_paginate' in kwargs and kwargs['alc_paginate'] is True:
+        # wrap throttling in pagination
+        result = paginate_query(function_ref, *argv, **pass_kwargs)
+        return result
     result = invoke_with_throttling_retries(function_ref, *argv, **pass_kwargs)
     return result

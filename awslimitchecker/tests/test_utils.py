@@ -42,10 +42,11 @@ import pytest
 import sys
 
 from boto.exception import BotoServerError
+from boto.resultset import ResultSet
 
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, invoke_with_throttling_retries,
-    boto_query_wrapper
+    boto_query_wrapper, paginate_query
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -239,42 +240,146 @@ class TestBotoQueryWrapper(object):
         retval = Mock()
 
         with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            mock_invoke.return_value = retval
-            res = boto_query_wrapper(func)
+            with patch('%s.paginate_query' % pbm) as mock_paginate:
+                mock_invoke.return_value = retval
+                res = boto_query_wrapper(func)
         assert res == retval
         assert mock_invoke.mock_calls == [call(func)]
+        assert mock_paginate.mock_calls == []
 
     def test_invoke_args(self):
         func = Mock()
         retval = Mock()
 
         with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            mock_invoke.return_value = retval
-            res = boto_query_wrapper(func, 'foo', 'bar')
+            with patch('%s.paginate_query' % pbm) as mock_paginate:
+                mock_invoke.return_value = retval
+                res = boto_query_wrapper(func, 'foo', 'bar')
         assert res == retval
         assert mock_invoke.mock_calls == [call(func, 'foo', 'bar')]
+        assert mock_paginate.mock_calls == []
 
     def test_invoke_kwargs(self):
         func = Mock()
         retval = Mock()
 
         with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            mock_invoke.return_value = retval
-            res = boto_query_wrapper(func, 'foo', bar='barval', baz='bazval')
+            with patch('%s.paginate_query' % pbm) as mock_paginate:
+                mock_invoke.return_value = retval
+                res = boto_query_wrapper(
+                    func, 'foo', bar='barval', baz='bazval'
+                )
         assert res == retval
         assert mock_invoke.mock_calls == [
             call(func, 'foo', bar='barval', baz='bazval')
         ]
+        assert mock_paginate.mock_calls == []
 
     def test_invoke_kwargs_alc(self):
         func = Mock()
         retval = Mock()
 
         with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
-            mock_invoke.return_value = retval
-            res = boto_query_wrapper(func, 'foo', bar='barval', baz='bazval',
-                                     alc_foo='alcfoo', alc_bar='alcbar')
+            with patch('%s.paginate_query' % pbm) as mock_paginate:
+                mock_invoke.return_value = retval
+                res = boto_query_wrapper(func, 'foo', bar='barval',
+                                         baz='bazval', alc_foo='alcfoo',
+                                         alc_bar='alcbar')
         assert res == retval
         assert mock_invoke.mock_calls == [
             call(func, 'foo', bar='barval', baz='bazval')
+        ]
+        assert mock_paginate.mock_calls == []
+
+    def test_invoke_paginate(self):
+        func = Mock()
+        retval = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            with patch('%s.paginate_query' % pbm) as mock_paginate:
+                mock_paginate.return_value = retval
+                res = boto_query_wrapper(
+                    func, 'foo', bar='barval', baz='bazval', alc_paginate=True
+                )
+        assert res == retval
+        assert mock_invoke.mock_calls == []
+        assert mock_paginate.mock_calls == [
+            call(func, 'foo', bar='barval', baz='bazval')
+        ]
+
+
+class TestPaginateQuery(object):
+
+    def test_not_resultset(self):
+        result = {'foo': 'bar'}
+        func = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.return_value = result
+            res = paginate_query(func, 'foo', bar='barval')
+        assert res == result
+        assert mock_invoke.mock_calls == [
+            call(func, 'foo', bar='barval')
+        ]
+
+    def test_resultset_no_next(self):
+        e1 = Mock()
+        e2 = Mock()
+        rs = ResultSet()
+        rs.append(e1)
+        rs.append(e2)
+
+        func = Mock()
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.return_value = rs
+            res = paginate_query(func, 'foo', bar='barval')
+        assert res == rs
+        assert mock_invoke.mock_calls == [
+            call(func, 'foo', bar='barval')
+        ]
+
+    def test_resultset_two_next(self):
+        e1 = Mock()
+        e2 = Mock()
+        rs1 = ResultSet()
+        rs1.append(e1)
+        rs1.append(e2)
+        rs1.next_token = 't1'
+
+        e3 = Mock()
+        e4 = Mock()
+        rs2 = ResultSet()
+        rs2.append(e3)
+        rs2.append(e4)
+        rs2.next_token = 't2'
+
+        e5 = Mock()
+        e6 = Mock()
+        rs3 = ResultSet()
+        rs3.append(e5)
+        rs3.append(e6)
+
+        func = Mock()
+
+        results = [rs1, rs2, rs3]
+
+        def se_invoke(f, *args, **argv):
+            return results.pop(0)
+
+        with patch('%s.invoke_with_throttling_retries' % pbm) as mock_invoke:
+            mock_invoke.side_effect = se_invoke
+            res = paginate_query(func, 'foo', bar='barval')
+        assert isinstance(res, ResultSet)
+        assert len(res) == 6
+        assert res[0] == e1
+        assert res[1] == e2
+        assert res[2] == e3
+        assert res[3] == e4
+        assert res[4] == e5
+        assert res[5] == e6
+        assert mock_invoke.mock_calls == [
+            call(func, 'foo', bar='barval'),
+            call(func, 'foo', bar='barval', next_token='t1'),
+            call(func, 'foo', bar='barval', next_token='t2')
         ]
