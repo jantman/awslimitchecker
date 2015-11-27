@@ -54,6 +54,15 @@ Guidelines
   They *must not* connect in the class constructor.
 * All modules should have (and use) module-level loggers.
 * See the section on the AGPL license below.
+* **Commit messages** should be meaningful, and reference the Issue number
+  if you're working on a GitHub issue (i.e. "issue #x - <message>"). Please
+  refrain from using the "fixes #x" notation unless you are *sure* that the
+  the issue is fixed in that commit.
+* Unlike many F/OSS projects on GitHub, there is **no reason to squash your commits**;
+  this just loses valuable history and insight into the development process,
+  which could prove valuable if a bug is introduced by your work. Until GitHub
+  `fixes this <https://github.com/isaacs/github/issues/406>`_, we'll live with
+  a potentially messy git log in order to keep the history.
 
 .. _development.adding_checks:
 
@@ -212,6 +221,26 @@ work needed. See the guidelines below for information.
   editable requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
 * If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
   ensure that the source code URL and version is correct and visible in the output given to users.
+
+.. _development.issues_and_prs:
+
+Handling Issues and PRs
+-----------------------
+
+All PRs and new work should be based off of the ``develop`` branch.
+
+PRs can be merged if they look good, and ``CHANGES.rst`` updated after the merge.
+
+For issues:
+
+1. Cut a ``issues/number`` branch off of ``develop``.
+2. Work the issue, come up with a fix. Commit early and often, and mention "issue #x - <message>" in your commit messages.
+3. When you believe you have a working fix, build docs (``tox -e docs``) and push to origin. Ensure all Travis tests pass.
+4. Ensure that coverage has increased or stayed the same.
+5. Update ``CHANGES.rst`` for the fix; commit this with a message like "fixes #x - <message>" and push to origin.
+6. Open a new pull request **against the develop branch** for this change; once all tests pass, merge it to develop.
+7. Assign the "unreleased fix" label to the issue. It should be closed automatically when develop is merged to master for
+   a release, but this lets us track which issues have unreleased fixes.
 
 .. _development.release_checklist:
 
