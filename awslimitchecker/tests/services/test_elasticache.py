@@ -347,7 +347,21 @@ class TestElastiCacheService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_cache_clusters, show_cache_node_info=True)
+            call(
+                mock_conn.describe_cache_clusters,
+                show_cache_node_info=True,
+                alc_marker_path=[
+                    'DescribeCacheClustersResponse',
+                    'DescribeCacheClustersResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeCacheClustersResponse',
+                    'DescribeCacheClustersResult',
+                    'CacheClusters'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
     def test_find_usage_subnet_groups(self):
@@ -437,7 +451,20 @@ class TestElastiCacheService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_cache_subnet_groups)
+            call(
+                mock_conn.describe_cache_subnet_groups,
+                alc_marker_path=[
+                    'DescribeCacheSubnetGroupsResponse',
+                    'DescribeCacheSubnetGroupsResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeCacheSubnetGroupsResponse',
+                    'DescribeCacheSubnetGroupsResult',
+                    'CacheSubnetGroups'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = cls.limits['Subnet Groups'].get_current_usage()
@@ -483,7 +510,20 @@ class TestElastiCacheService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_cache_parameter_groups)
+            call(
+                mock_conn.describe_cache_parameter_groups,
+                alc_marker_path=[
+                    'DescribeCacheParameterGroupsResponse',
+                    'DescribeCacheParameterGroupsResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeCacheParameterGroupsResponse',
+                    'DescribeCacheParameterGroupsResult',
+                    'CacheParameterGroups'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = cls.limits['Parameter Groups'].get_current_usage()
@@ -533,7 +573,20 @@ class TestElastiCacheService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_cache_security_groups)
+            call(
+                mock_conn.describe_cache_security_groups,
+                alc_marker_path=[
+                    'DescribeCacheSecurityGroupsResponse',
+                    'DescribeCacheSecurityGroupsResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeCacheSecurityGroupsResponse',
+                    'DescribeCacheSecurityGroupsResult',
+                    'CacheSecurityGroups'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = cls.limits['Security Groups'].get_current_usage()
@@ -542,7 +595,7 @@ class TestElastiCacheService(object):
 
     def test_find_usage_security_groups_exception(self):
         """test find usage for security groups"""
-        def se_exc(*args):
+        def se_exc(*args, **kwargs):
             raise BotoServerError(None, None, None)
 
         mock_conn = Mock(spec_set=ElastiCacheConnection)
@@ -556,7 +609,20 @@ class TestElastiCacheService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_cache_security_groups)
+            call(
+                mock_conn.describe_cache_security_groups,
+                alc_marker_path=[
+                    'DescribeCacheSecurityGroupsResponse',
+                    'DescribeCacheSecurityGroupsResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeCacheSecurityGroupsResponse',
+                    'DescribeCacheSecurityGroupsResult',
+                    'CacheSecurityGroups'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = cls.limits['Security Groups'].get_current_usage()

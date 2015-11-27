@@ -86,7 +86,21 @@ class _RDSService(_AwsService):
     def _find_usage_instances(self):
         """find usage for DB Instances and related limits"""
         # instance count
-        instances = boto_query_wrapper(self.conn.describe_db_instances)[
+        instances = boto_query_wrapper(
+            self.conn.describe_db_instances,
+            alc_marker_path=[
+                'DescribeDBInstancesResponse',
+                'DescribeDBInstancesResult',
+                'Marker'
+            ],
+            alc_data_path=[
+                'DescribeDBInstancesResponse',
+                'DescribeDBInstancesResult',
+                'DBInstances'
+            ],
+            alc_marker_param='marker'
+        )
+        instances = instances[
             'DescribeDBInstancesResponse'][
                 'DescribeDBInstancesResult']['DBInstances']
         self.limits['DB instances']._add_current_usage(
@@ -112,7 +126,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_reserved_instances(self):
         """find usage for reserved instances"""
-        reserved = boto_query_wrapper(self.conn.describe_reserved_db_instances)[
+        reserved = boto_query_wrapper(
+            self.conn.describe_reserved_db_instances,
+            alc_marker_path=[
+                'DescribeReservedDBInstancesResponse',
+                'DescribeReservedDBInstancesResult',
+                "Marker"
+            ],
+            alc_data_path=[
+                'DescribeReservedDBInstancesResponse',
+                'DescribeReservedDBInstancesResult',
+                'ReservedDBInstances'
+            ],
+            alc_marker_param='marker'
+        )[
             'DescribeReservedDBInstancesResponse'][
             'DescribeReservedDBInstancesResult'][
             'ReservedDBInstances']
@@ -123,7 +150,21 @@ class _RDSService(_AwsService):
 
     def _find_usage_snapshots(self):
         """find usage for (manual) DB snapshots"""
-        snaps = boto_query_wrapper(self.conn.describe_db_snapshots)[
+        snaps = boto_query_wrapper(
+            self.conn.describe_db_snapshots,
+            alc_marker_path=[
+                "DescribeDBSnapshotsResponse",
+                "DescribeDBSnapshotsResult",
+                'Marker'
+            ],
+            alc_data_path=[
+                "DescribeDBSnapshotsResponse",
+                "DescribeDBSnapshotsResult",
+                "DBSnapshots"
+            ],
+            alc_marker_param='marker'
+        )
+        snaps = snaps[
             "DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"][
                 "DBSnapshots"]
         num_manual_snaps = 0
@@ -137,7 +178,21 @@ class _RDSService(_AwsService):
 
     def _find_usage_param_groups(self):
         """find usage for parameter groups"""
-        params = boto_query_wrapper(self.conn.describe_db_parameter_groups)[
+        params = boto_query_wrapper(
+            self.conn.describe_db_parameter_groups,
+            alc_marker_path=[
+                "DescribeDBParameterGroupsResponse",
+                "DescribeDBParameterGroupsResult",
+                'Marker'
+            ],
+            alc_data_path=[
+                "DescribeDBParameterGroupsResponse",
+                "DescribeDBParameterGroupsResult",
+                "DBParameterGroups"
+            ],
+            alc_marker_param='marker'
+        )
+        params = params[
             "DescribeDBParameterGroupsResponse"][
                 "DescribeDBParameterGroupsResult"][
                     "DBParameterGroups"]
@@ -148,7 +203,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
-        groups = boto_query_wrapper(self.conn.describe_db_subnet_groups)[
+        groups = boto_query_wrapper(
+            self.conn.describe_db_subnet_groups,
+            alc_marker_path=[
+                "DescribeDBSubnetGroupsResponse",
+                "DescribeDBSubnetGroupsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeDBSubnetGroupsResponse",
+                "DescribeDBSubnetGroupsResult",
+                "DBSubnetGroups"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeDBSubnetGroupsResponse"][
                 "DescribeDBSubnetGroupsResult"][
                     "DBSubnetGroups"]
@@ -167,7 +235,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_option_groups(self):
         """find usage for option groups"""
-        groups = boto_query_wrapper(self.conn.describe_option_groups)[
+        groups = boto_query_wrapper(
+            self.conn.describe_option_groups,
+            alc_marker_path=[
+                "DescribeOptionGroupsResponse",
+                "DescribeOptionGroupsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeOptionGroupsResponse",
+                "DescribeOptionGroupsResult",
+                "OptionGroupsList"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeOptionGroupsResponse"][
                 "DescribeOptionGroupsResult"]["OptionGroupsList"]
         self.limits['Option Groups']._add_current_usage(
@@ -177,7 +258,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_event_subscriptions(self):
         """find usage for event subscriptions"""
-        subs = boto_query_wrapper(self.conn.describe_event_subscriptions)[
+        subs = boto_query_wrapper(
+            self.conn.describe_event_subscriptions,
+            alc_marker_path=[
+                "DescribeEventSubscriptionsResponse",
+                "DescribeEventSubscriptionsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeEventSubscriptionsResponse",
+                "DescribeEventSubscriptionsResult",
+                "EventSubscriptionsList"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeEventSubscriptionsResponse"][
             "DescribeEventSubscriptionsResult"][
             "EventSubscriptionsList"]
@@ -188,7 +282,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_security_groups(self):
         """find usage for security groups"""
-        groups = boto_query_wrapper(self.conn.describe_db_security_groups)[
+        groups = boto_query_wrapper(
+            self.conn.describe_db_security_groups,
+            alc_marker_path=[
+                "DescribeDBSecurityGroupsResponse",
+                "DescribeDBSecurityGroupsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeDBSecurityGroupsResponse",
+                "DescribeDBSecurityGroupsResult",
+                "DBSecurityGroups"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeDBSecurityGroupsResponse"][
             "DescribeDBSecurityGroupsResult"][
             "DBSecurityGroups"]

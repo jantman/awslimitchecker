@@ -83,8 +83,21 @@ class _ElastiCacheService(_AwsService):
     def _find_usage_nodes(self):
         """find usage for cache nodes"""
         nodes = 0
-        clusters = boto_query_wrapper(self.conn.describe_cache_clusters,
-                                      show_cache_node_info=True)[
+        clusters = boto_query_wrapper(
+            self.conn.describe_cache_clusters,
+            show_cache_node_info=True,
+            alc_marker_path=[
+                'DescribeCacheClustersResponse',
+                'DescribeCacheClustersResult',
+                'Marker'
+            ],
+            alc_data_path=[
+                'DescribeCacheClustersResponse',
+                'DescribeCacheClustersResult',
+                'CacheClusters'
+            ],
+            alc_marker_param='marker'
+        )[
             'DescribeCacheClustersResponse']['DescribeCacheClustersResult'][
                 'CacheClusters']
         for cluster in clusters:
@@ -113,7 +126,20 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_subnet_groups(self):
         """find usage for elasticache subnet groups"""
-        groups = boto_query_wrapper(self.conn.describe_cache_subnet_groups)[
+        groups = boto_query_wrapper(
+            self.conn.describe_cache_subnet_groups,
+            alc_marker_path=[
+                'DescribeCacheSubnetGroupsResponse',
+                'DescribeCacheSubnetGroupsResult',
+                'Marker'
+            ],
+            alc_data_path=[
+                'DescribeCacheSubnetGroupsResponse',
+                'DescribeCacheSubnetGroupsResult',
+                'CacheSubnetGroups'
+            ],
+            alc_marker_param='marker'
+        )[
             'DescribeCacheSubnetGroupsResponse'][
             'DescribeCacheSubnetGroupsResult'][
             'CacheSubnetGroups']
@@ -124,7 +150,20 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_parameter_groups(self):
         """find usage for elasticache parameter groups"""
-        groups = boto_query_wrapper(self.conn.describe_cache_parameter_groups)[
+        groups = boto_query_wrapper(
+            self.conn.describe_cache_parameter_groups,
+            alc_marker_path=[
+                'DescribeCacheParameterGroupsResponse',
+                'DescribeCacheParameterGroupsResult',
+                'Marker'
+            ],
+            alc_data_path=[
+                'DescribeCacheParameterGroupsResponse',
+                'DescribeCacheParameterGroupsResult',
+                'CacheParameterGroups'
+            ],
+            alc_marker_param='marker'
+        )[
             'DescribeCacheParameterGroupsResponse'][
             'DescribeCacheParameterGroupsResult'][
             'CacheParameterGroups']
@@ -143,7 +182,19 @@ class _ElastiCacheService(_AwsService):
             #             this API version for your account."
             #   Type:    "Sender"
             groups = boto_query_wrapper(
-                self.conn.describe_cache_security_groups)[
+                self.conn.describe_cache_security_groups,
+                alc_marker_path=[
+                    'DescribeCacheSecurityGroupsResponse',
+                    'DescribeCacheSecurityGroupsResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeCacheSecurityGroupsResponse',
+                    'DescribeCacheSecurityGroupsResult',
+                    'CacheSecurityGroups'
+                ],
+                alc_marker_param='marker'
+            )[
                 'DescribeCacheSecurityGroupsResponse'][
                 'DescribeCacheSecurityGroupsResult'][
                 'CacheSecurityGroups']

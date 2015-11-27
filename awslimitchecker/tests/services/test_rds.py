@@ -392,7 +392,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_db_instances)
+            call(
+                mock_conn.describe_db_instances,
+                alc_marker_path=[
+                    'DescribeDBInstancesResponse',
+                    'DescribeDBInstancesResult',
+                    'Marker'
+                ],
+                alc_data_path=[
+                    'DescribeDBInstancesResponse',
+                    'DescribeDBInstancesResult',
+                    'DBInstances'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['DB instances'].get_current_usage())
@@ -503,7 +516,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_db_snapshots)
+            call(
+                mock_conn.describe_db_snapshots,
+                alc_marker_path=[
+                    "DescribeDBSnapshotsResponse",
+                    "DescribeDBSnapshotsResult",
+                    'Marker'
+                ],
+                alc_data_path=[
+                    "DescribeDBSnapshotsResponse",
+                    "DescribeDBSnapshotsResult",
+                    "DBSnapshots"
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['DB snapshots per user'].get_current_usage())
@@ -547,7 +573,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_db_parameter_groups)
+            call(
+                mock_conn.describe_db_parameter_groups,
+                alc_marker_path=[
+                    "DescribeDBParameterGroupsResponse",
+                    "DescribeDBParameterGroupsResult",
+                    'Marker'
+                ],
+                alc_data_path=[
+                    "DescribeDBParameterGroupsResponse",
+                    "DescribeDBParameterGroupsResult",
+                    "DBParameterGroups"
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['Parameter Groups'].get_current_usage())
@@ -656,7 +695,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_db_subnet_groups)
+            call(
+                mock_conn.describe_db_subnet_groups,
+                alc_marker_path=[
+                    "DescribeDBSubnetGroupsResponse",
+                    "DescribeDBSubnetGroupsResult",
+                    "Marker"
+                ],
+                alc_data_path=[
+                    "DescribeDBSubnetGroupsResponse",
+                    "DescribeDBSubnetGroupsResult",
+                    "DBSubnetGroups"
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['Subnet Groups'].get_current_usage())
@@ -721,7 +773,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_option_groups)
+            call(
+                mock_conn.describe_option_groups,
+                alc_marker_path=[
+                    "DescribeOptionGroupsResponse",
+                    "DescribeOptionGroupsResult",
+                    "Marker"
+                ],
+                alc_data_path=[
+                    "DescribeOptionGroupsResponse",
+                    "DescribeOptionGroupsResult",
+                    "OptionGroupsList"
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['Option Groups'].get_current_usage())
@@ -753,7 +818,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_event_subscriptions)
+            call(
+                mock_conn.describe_event_subscriptions,
+                alc_marker_path=[
+                    "DescribeEventSubscriptionsResponse",
+                    "DescribeEventSubscriptionsResult",
+                    "Marker"
+                ],
+                alc_data_path=[
+                    "DescribeEventSubscriptionsResponse",
+                    "DescribeEventSubscriptionsResult",
+                    "EventSubscriptionsList"
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['Event Subscriptions'].get_current_usage())
@@ -856,7 +934,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_db_security_groups)
+            call(
+                mock_conn.describe_db_security_groups,
+                alc_marker_path=[
+                    "DescribeDBSecurityGroupsResponse",
+                    "DescribeDBSecurityGroupsResult",
+                    "Marker"
+                ],
+                alc_data_path=[
+                    "DescribeDBSecurityGroupsResponse",
+                    "DescribeDBSecurityGroupsResult",
+                    "DBSecurityGroups"
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['DB security groups'].get_current_usage())
@@ -909,7 +1000,20 @@ class Test_RDSService(object):
 
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_reserved_db_instances)
+            call(
+                mock_conn.describe_reserved_db_instances,
+                alc_marker_path=[
+                    'DescribeReservedDBInstancesResponse',
+                    'DescribeReservedDBInstancesResult',
+                    "Marker"
+                ],
+                alc_data_path=[
+                    'DescribeReservedDBInstancesResponse',
+                    'DescribeReservedDBInstancesResult',
+                    'ReservedDBInstances'
+                ],
+                alc_marker_param='marker'
+            )
         ]
 
         usage = sorted(cls.limits['Reserved Instances'].get_current_usage())
