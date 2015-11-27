@@ -131,10 +131,16 @@ def invoke_with_throttling_retries(function_ref, *argv, **kwargs):
     MAX_RETRIES = 5
     SLEEP_BASE_SECONDS = 2
 
+    # strip off "^alc_" args
+    pass_kwargs = {}
+    for k, v in kwargs.items():
+        if not k.startswith('alc_'):
+            pass_kwargs[k] = v
+
     retries = 0
     while True:
         try:
-            retval = function_ref(*argv, **kwargs)
+            retval = function_ref(*argv, **pass_kwargs)
             return retval
         except BotoServerError as e:
             if e.code != IGNORE_CODE:
@@ -171,8 +177,8 @@ def paginate_query(function_ref, *argv, **kwargs):
     :type function_ref: function
     :param argv: the parameters to pass to the function
     :type argv: tuple
-    :param kwargs: keyword arguments to pass to the function. Any arguments
-      with names starting with ``alc_`` will be removed for internal use.
+    :param kwargs: keyword arguments to pass to the function
+      (:py:func:`~.invoke_with_throttling_retries`)
     :type kwargs: dict
     """
     result = invoke_with_throttling_retries(function_ref, *argv, **kwargs)
@@ -205,18 +211,15 @@ def boto_query_wrapper(function_ref, *argv, **kwargs):
     :type function_ref: function
     :param argv: the parameters to pass to the function
     :type argv: tuple
-    :param kwargs: keyword arguments to pass to the function. Any arguments
-      with names starting with ``alc_`` will be removed for internal use.
+    :param kwargs: keyword arguments to pass to the function
+      (:py:func:`~.invoke_with_throttling_retries` or
+      :py:func:`~.paginate_query`)
     :type kwargs: dict
     :returns: return value of ``function_ref``
     """
-    pass_kwargs = {}
-    for k, v in kwargs.items():
-        if not k.startswith('alc_'):
-            pass_kwargs[k] = v
     if 'alc_paginate' in kwargs and kwargs['alc_paginate'] is True:
         # wrap throttling in pagination
-        result = paginate_query(function_ref, *argv, **pass_kwargs)
+        result = paginate_query(function_ref, *argv, **kwargs)
         return result
-    result = invoke_with_throttling_retries(function_ref, *argv, **pass_kwargs)
+    result = invoke_with_throttling_retries(function_ref, *argv, **kwargs)
     return result

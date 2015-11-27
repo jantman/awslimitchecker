@@ -197,6 +197,18 @@ class TestInvokeWithThrottlingRetries(object):
         assert cls.func.mock_calls == [call('zzz', 'aaa', foo='bar')]
         assert mock_sleep.mock_calls == []
 
+    def test_invoke_ok_alc_args(self):
+        cls = Mock()
+        cls.func.side_effect = self.retry_func
+        with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
+            res = invoke_with_throttling_retries(
+                cls.func, 'zzz', 'aaa', foo='bar', alc_paginate=True,
+                alc_foo='bar'
+            )
+        assert res is True
+        assert cls.func.mock_calls == [call('zzz', 'aaa', foo='bar')]
+        assert mock_sleep.mock_calls == []
+
     def test_invoke_other_error(self):
         cls = Mock()
         cls.func.side_effect = self.other_error
@@ -287,7 +299,8 @@ class TestBotoQueryWrapper(object):
                                          alc_bar='alcbar')
         assert res == retval
         assert mock_invoke.mock_calls == [
-            call(func, 'foo', bar='barval', baz='bazval')
+            call(func, 'foo', bar='barval', baz='bazval', alc_foo='alcfoo',
+                 alc_bar='alcbar')
         ]
         assert mock_paginate.mock_calls == []
 
@@ -304,7 +317,7 @@ class TestBotoQueryWrapper(object):
         assert res == retval
         assert mock_invoke.mock_calls == []
         assert mock_paginate.mock_calls == [
-            call(func, 'foo', bar='barval', baz='bazval')
+            call(func, 'foo', bar='barval', baz='bazval', alc_paginate=True)
         ]
 
 
