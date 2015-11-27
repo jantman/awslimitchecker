@@ -75,7 +75,7 @@ class _AutoscalingService(_AwsService):
 
         self.limits['Auto Scaling groups']._add_current_usage(
             len(
-                boto_query_wrapper(self.conn.get_all_groups, alc_paginate=True)
+                boto_query_wrapper(self.conn.get_all_groups)
             ),
             aws_type='AWS::AutoScaling::AutoScalingGroup',
         )
@@ -83,8 +83,7 @@ class _AutoscalingService(_AwsService):
         self.limits['Launch configurations']._add_current_usage(
             len(
                 boto_query_wrapper(
-                    self.conn.get_all_launch_configurations,
-                    alc_paginate=True
+                    self.conn.get_all_launch_configurations
                 )
             ),
             aws_type='AWS::AutoScaling::LaunchConfiguration',

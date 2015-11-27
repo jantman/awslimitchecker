@@ -203,9 +203,7 @@ class TestInvokeWithThrottlingRetries(object):
         cls.func.side_effect = self.retry_func
         with patch('awslimitchecker.utils.time.sleep') as mock_sleep:
             res = invoke_with_throttling_retries(
-                cls.func, 'zzz', 'aaa', foo='bar', alc_paginate=True,
-                alc_foo='bar'
-            )
+                cls.func, 'zzz', 'aaa', foo='bar', alc_foo='bar')
         assert res is True
         assert cls.func.mock_calls == [call('zzz', 'aaa', foo='bar')]
         assert mock_sleep.mock_calls == []
@@ -304,11 +302,11 @@ class TestBotoQueryWrapper(object):
         with patch('%s.paginate_query' % pbm) as mock_paginate:
             mock_paginate.return_value = retval
             res = boto_query_wrapper(
-                func, 'foo', bar='barval', baz='bazval', alc_paginate=True
+                func, 'foo', bar='barval', baz='bazval'
             )
         assert res == retval
         assert mock_paginate.mock_calls == [
-            call(func, 'foo', bar='barval', baz='bazval', alc_paginate=True)
+            call(func, 'foo', bar='barval', baz='bazval')
         ]
 
 
