@@ -222,7 +222,15 @@ class TrustedAdvisor(Connectable):
             service = services[svc_name]
             for lim_name in sorted(limits.keys()):
                 try:
-                    service._set_ta_limit(lim_name, limits[lim_name])
+                    # @TODO - if we have ANY MORE special cases, we need a
+                    # better way of handling this - maybe with a mapping
+                    if svc_name == 'VPC' and lim_name == 'VPC Elastic IP ' \
+                       'addresses (EIPs)':
+                        services['EC2']._set_ta_limit(
+                            lim_name, limits[lim_name]
+                        )
+                    else:
+                        service._set_ta_limit(lim_name, limits[lim_name])
                 except ValueError:
                     logger.info("TrustedAdvisor returned check results for "
                                 "unknown limit '%s' (service %s)",

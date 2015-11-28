@@ -542,7 +542,7 @@ class Test_Ec2Service(object):
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EC2 EIPs"),
         ]
-        limit = cls.limits['EC2-VPC Elastic IPs']
+        limit = cls.limits['VPC Elastic IP addresses (EIPs)']
         usage = limit.get_current_usage()
         assert len(usage) == 1
         assert usage[0].limit == limit
@@ -611,7 +611,7 @@ class Test_Ec2Service(object):
         expected = [
             'Security groups per VPC',
             'Rules per VPC security group',
-            'EC2-VPC Elastic IPs',
+            'VPC Elastic IP addresses (EIPs)',
             'Elastic IP addresses (EIPs)',
             'VPC security groups per elastic network interface',
         ]

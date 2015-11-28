@@ -112,7 +112,7 @@ class _RDSService(_AwsService):
         allocated_gb = 0
         for i in instances:
             allocated_gb += i['AllocatedStorage']
-            self.limits['Read Replicas per Master']._add_current_usage(
+            self.limits['Read replicas per master']._add_current_usage(
                 len(i['ReadReplicaDBInstanceIdentifiers']),
                 aws_type='AWS::RDS::DBInstance',
                 resource_id=i['DBInstanceIdentifier']
@@ -196,7 +196,7 @@ class _RDSService(_AwsService):
             "DescribeDBParameterGroupsResponse"][
                 "DescribeDBParameterGroupsResult"][
                     "DBParameterGroups"]
-        self.limits['Parameter Groups']._add_current_usage(
+        self.limits['DB parameter groups']._add_current_usage(
             len(params),
             aws_type='AWS::RDS::DBParameterGroup'
         )
@@ -365,8 +365,8 @@ class _RDSService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::RDS::DBSnapshot',
         )
-        limits['Parameter Groups'] = AwsLimit(
-            'Parameter Groups',
+        limits['DB parameter groups'] = AwsLimit(
+            'DB parameter groups',
             self,
             50,
             self.warning_threshold,
@@ -421,8 +421,8 @@ class _RDSService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::RDS::DBEventSubscription',
         )
-        limits['Read Replicas per Master'] = AwsLimit(
-            'Read Replicas per Master',
+        limits['Read replicas per master'] = AwsLimit(
+            'Read replicas per master',
             self,
             5,
             self.warning_threshold,

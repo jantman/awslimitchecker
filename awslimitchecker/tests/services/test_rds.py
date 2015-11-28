@@ -125,13 +125,13 @@ class Test_RDSService(object):
             'DB security groups',  # 'Security Groups'
             # non-TA
             'Reserved Instances',
-            'Parameter Groups',
+            'DB parameter groups',
             'VPC Security Groups',
             'Subnet Groups',
             'Subnets per Subnet Group',
             'Option Groups',
             'Event Subscriptions',
-            'Read Replicas per Master',
+            'Read replicas per master',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -419,7 +419,7 @@ class Test_RDSService(object):
         assert usage[0].aws_type == 'AWS::RDS::DBInstance'
 
         usage = sorted(
-            cls.limits['Read Replicas per Master'].get_current_usage()
+            cls.limits['Read replicas per master'].get_current_usage()
         )
         assert len(usage) == 2
         assert usage[0].get_value() == 0
@@ -589,7 +589,7 @@ class Test_RDSService(object):
             )
         ]
 
-        usage = sorted(cls.limits['Parameter Groups'].get_current_usage())
+        usage = sorted(cls.limits['DB parameter groups'].get_current_usage())
         assert len(usage) == 1
         assert usage[0].get_value() == 2
         assert usage[0].aws_type == 'AWS::RDS::DBParameterGroup'

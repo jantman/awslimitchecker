@@ -274,7 +274,7 @@ class _Ec2Service(_AwsService):
     def _find_usage_networking_eips(self):
         logger.debug("Getting usage for EC2 EIPs")
         addrs = boto_query_wrapper(self.conn.get_all_addresses)
-        self.limits['EC2-VPC Elastic IPs']._add_current_usage(
+        self.limits['VPC Elastic IP addresses (EIPs)']._add_current_usage(
             sum(1 for a in addrs if a.domain == 'vpc'),
             aws_type='AWS::EC2::EIP',
         )
@@ -323,8 +323,8 @@ class _Ec2Service(_AwsService):
             limit_type='AWS::EC2::SecurityGroup',
             limit_subtype='AWS::EC2::VPC',
         )
-        limits['EC2-VPC Elastic IPs'] = AwsLimit(
-            'EC2-VPC Elastic IPs',
+        limits['VPC Elastic IP addresses (EIPs)'] = AwsLimit(
+            'VPC Elastic IP addresses (EIPs)',
             self,
             5,
             self.warning_threshold,

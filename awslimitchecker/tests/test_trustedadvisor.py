@@ -471,9 +471,11 @@ class Test_TrustedAdvisor(object):
         mock_autoscale = Mock(spec_set=_AwsService)
         mock_ec2 = Mock(spec_set=_AwsService)
         mock_ec2._set_ta_limit.side_effect = se_set
+        mock_vpc = Mock(spec_set=_AwsService)
         services = {
             'AutoScaling': mock_autoscale,
             'EC2': mock_ec2,
+            'VPC': mock_vpc,
         }
         ta_results = {
             'AutoScaling': {
@@ -486,6 +488,9 @@ class Test_TrustedAdvisor(object):
             },
             'OtherService': {
                 'blarg': 1,
+            },
+            'VPC': {
+                'VPC Elastic IP addresses (EIPs)': 11,
             }
         }
         with patch('awslimitchecker.trustedadvisor'
@@ -506,4 +511,5 @@ class Test_TrustedAdvisor(object):
         assert mock_ec2.mock_calls == [
             call._set_ta_limit('baz', 5),
             call._set_ta_limit('blam', 10),
+            call._set_ta_limit('VPC Elastic IP addresses (EIPs)', 11)
         ]

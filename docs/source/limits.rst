@@ -46,6 +46,8 @@ updated from Trusted Advisor:
 
   * Elastic IP addresses (EIPs)
 
+  * VPC Elastic IP addresses (EIPs)
+
 * ELB
 
   * Active load balancers
@@ -53,6 +55,8 @@ updated from Trusted Advisor:
 * RDS
 
   * DB instances
+
+  * DB parameter groups
 
   * DB security groups
 
@@ -122,7 +126,6 @@ EC2
 ================================================= ===
 Limit                                             Default
 ================================================= ===
-EC2-VPC Elastic IPs                               5  
 Elastic IP addresses (EIPs) :sup:`(TA)`           5  
 Rules per VPC security group                      50 
 Running On-Demand EC2 instances                   20 
@@ -180,6 +183,7 @@ Running On-Demand t2.medium instances             20
 Running On-Demand t2.micro instances              20 
 Running On-Demand t2.small instances              20 
 Security groups per VPC                           100
+VPC Elastic IP addresses (EIPs) :sup:`(TA)`       5  
 VPC security groups per elastic network interface 5  
 ================================================= ===
 
@@ -214,13 +218,13 @@ RDS
 Limit                                    Default
 ======================================== ======
 DB instances :sup:`(TA)`                 40    
+DB parameter groups :sup:`(TA)`          50    
 DB security groups :sup:`(TA)`           25    
 DB snapshots per user :sup:`(TA)`        50    
 Event Subscriptions                      20    
 Max auths per security group :sup:`(TA)` 20    
 Option Groups                            20    
-Parameter Groups                         50    
-Read Replicas per Master                 5     
+Read replicas per master                 5     
 Reserved Instances                       40    
 Storage quota (GB) :sup:`(TA)`           100000
 Subnet Groups                            20    
