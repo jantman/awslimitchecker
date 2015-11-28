@@ -107,12 +107,19 @@ class _XXNewServiceXXService(_AwsService):
         )
 
         """
-        # TODO: if the service has an API that can retrieve current limit information
-        # i.e. ``DescribeAccountAttributes``, pass ``limits`` to a new function called
-        # here that retrieves the limits from the API, and updates each AwsLimit object
-        # via its ``._set_api_limit()`` method.
         self.limits = limits
         return limits
+
+    def _update_limits_from_api(self):
+        """
+        Call the service's API action to retrieve limit/quota information, and
+        update AwsLimit objects in ``self.limits`` with this information.
+        """
+        # TODO: if the service has an API that can retrieve current limit information
+        # i.e. ``DescribeAccountAttributes``, call that action here and update each
+        # relevant AwsLimit object (in ``self.limits``) via its ``._set_api_limit()`` method.
+        # ELSE if the service has no API call for this, remove this method.
+        raise NotImplementedException()
 
     def required_iam_permissions(self):
         """
