@@ -16,6 +16,7 @@ Pre-release (develop branch)
   * ``EC2/EC2-VPC Elastic IPs`` to ``EC2/VPC Elastic IP addresses (EIPs)``
   * ``RDS/Read Replicas per Master`` to ``RDS/Read replicas per master``
   * ``RDS/Parameter Groups`` to ``RDS/DB parameter groups``
+* Fix `#84 <https://github.com/jantman/awslimitchecker/issues/84>`_ pull some EC2 limits from the API's DescribeAccountAttributes action
 
 0.1.3 (2015-10-04)
 ------------------
