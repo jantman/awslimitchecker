@@ -189,7 +189,8 @@ def paginate_query(function_ref, *argv, **kwargs):
             return _paginate_dict(result, function_ref, *argv, **kwargs)
         else:
             logger.warning("Query returned a dict, but does not have "
-                           "_paginate_dict params set; cannot paginate")
+                           "_paginate_dict params set; cannot paginate (" +
+                           str(function_ref) + ")")
             return result
     logger.warning("Query result of type %s cannot be paginated", type(result))
     return result
