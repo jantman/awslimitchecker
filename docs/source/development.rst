@@ -87,7 +87,10 @@ of a ResultSet object must have the proper parameters for
    :py:meth:`~.AwsLimit._add_current_usage` method. For anything more than trivial
    services (those with only 2-3 limits), ``find_usage()`` should be broken into
    multiple methods, generally one per AWS API call.
-3. Ensure complete test coverage for the above.
+3. If the service has an API call that retrieves current limit values, and its results
+   include your new limit, ensure that this value is updated in the limit via its
+   :py:meth:`~.AwsLimit._set_api_limit` method.
+4. Ensure complete test coverage for the above.
 
 .. _development.adding_services:
 
