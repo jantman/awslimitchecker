@@ -45,7 +45,7 @@ import termcolor
 
 from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols
-from .limit import SOURCE_TA
+from .limit import SOURCE_TA, SOURCE_API
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
@@ -168,12 +168,14 @@ class Runner(object):
         data = {}
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
-                ta_str = ''
+                src_str = ''
+                if limits[svc][lim].get_limit_source() == SOURCE_API:
+                    src_str = ' (API)'
                 if limits[svc][lim].get_limit_source() == SOURCE_TA:
-                    ta_str = ' (TA)'
+                    src_str = ' (TA)'
                 data["{s}/{l}".format(s=svc, l=lim)] = '{v}{t}'.format(
                     v=limits[svc][lim].get_limit(),
-                    t=ta_str)
+                    t=src_str)
         print(dict2cols(data))
 
     def list_defaults(self):

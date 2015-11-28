@@ -70,6 +70,19 @@ updated from Trusted Advisor:
 
 
 
+.. _limits.api:
+
+Limits Retrieved from Service APIs
+----------------------------------
+
+
+The limits listed below can be retrieved directly from their Service's
+API; this information should be the most accurate, and is used with higher
+precedence than anything other than explicit limit overrides:
+
+
+
+
 .. _limits.checks:
 
 Current Checks

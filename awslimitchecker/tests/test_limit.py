@@ -39,7 +39,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import pytest
 import sys
-from awslimitchecker.limit import AwsLimit, AwsLimitUsage
+from awslimitchecker.limit import (
+    AwsLimit, AwsLimitUsage, SOURCE_DEFAULT, SOURCE_OVERRIDE,
+    SOURCE_TA, SOURCE_API
+)
 from awslimitchecker.services.base import _AwsService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -74,6 +77,7 @@ class TestAwsLimit(object):
         assert limit.limit_override is None
         assert limit.override_ta is True
         assert limit.ta_limit is None
+        assert limit.api_limit is None
         assert limit.def_warning_threshold == 7
         assert limit.def_critical_threshold == 11
 
@@ -150,6 +154,18 @@ class TestAwsLimit(object):
         assert limit.ta_limit is None
         limit._set_ta_limit(10)
         assert limit.ta_limit == 10
+
+    def test_set_api_limit(self):
+        limit = AwsLimit(
+            'limitname',
+            self.mock_svc,
+            3,
+            1,
+            2
+        )
+        assert limit.api_limit is None
+        limit._set_api_limit(10)
+        assert limit.api_limit == 10
 
     def test_add_current_usage(self):
         limit = AwsLimit(
@@ -252,31 +268,79 @@ class TestAwsLimit(object):
         limit._set_ta_limit(40)
         assert limit.get_limit() == 40
 
+    def test_get_limit_api(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_api_limit(40)
+        assert limit.get_limit() == 40
+
+    def test_get_limit_api_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_ta_limit(40)
+        limit._set_api_limit(11)
+        assert limit.get_limit() == 11
+
+    def test_get_limit_api_override(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit.set_limit_override(55)
+        limit._set_api_limit(40)
+        assert limit.get_limit() == 55
+
+    def test_get_limit_api_override_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit.set_limit_override(55)
+        limit._set_ta_limit(40)
+        limit._set_api_limit(11)
+        assert limit.get_limit() == 55
+
     def test_get_limit_source_default(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
-        assert limit.get_limit_source() == 0
+        assert limit.get_limit_source() == SOURCE_DEFAULT
 
     def test_get_limit_source_override(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
-        assert limit.get_limit_source() == 1
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
 
     def test_get_limit_source_override_no_override_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55, override_ta=False)
         limit._set_ta_limit(40)
-        assert limit.get_limit_source() == 2
+        assert limit.get_limit_source() == SOURCE_TA
 
     def test_get_limit_source_override_with_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
         limit._set_ta_limit(40)
-        assert limit.get_limit_source() == 1
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
 
     def test_get_limit_source_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_ta_limit(40)
-        assert limit.get_limit_source() == 2
+        assert limit.get_limit_source() == SOURCE_TA
+
+    def test_get_limit_source_api(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_api_limit(40)
+        assert limit.get_limit_source() == SOURCE_API
+
+    def test_get_limit_source_api_override(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_api_limit(40)
+        limit.set_limit_override(55)
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
+
+    def test_get_limit_source_api_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_api_limit(40)
+        limit._set_ta_limit(41)
+        assert limit.get_limit_source() == SOURCE_API
+
+    def test_get_limit_source_api_override_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_api_limit(40)
+        limit._set_ta_limit(41)
+        limit.set_limit_override(55)
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
 
     def test_check_thresholds_pct(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)

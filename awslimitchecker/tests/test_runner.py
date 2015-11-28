@@ -48,7 +48,7 @@ from awslimitchecker.runner import Runner, console_entry_point
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 from awslimitchecker.utils import StoreKeyValuePair
-from .support import sample_limits
+from .support import sample_limits, sample_limits_api
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -339,7 +339,7 @@ class TestAwsLimitCheckerRunner(object):
 
     def test_list_limits(self, capsys):
         mock_checker = Mock(spec_set=AwsLimitChecker)
-        mock_checker.get_limits.return_value = sample_limits()
+        mock_checker.get_limits.return_value = sample_limits_api()
         self.cls.checker = mock_checker
         with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
             mock_d2c.return_value = 'd2cval'
@@ -354,13 +354,14 @@ class TestAwsLimitCheckerRunner(object):
                 'SvcBar/bar limit2': '99',
                 'SvcBar/barlimit1': '1',
                 'SvcFoo/foo limit3': '10 (TA)',
+                'SvcFoo/zzz limit4': '34 (API)',
             })
         ]
 
     def test_list_limits_one_service(self, capsys):
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_limits.return_value = {
-            'SvcFoo': sample_limits()['SvcFoo'],
+            'SvcFoo': sample_limits_api()['SvcFoo'],
         }
         self.cls.checker = mock_checker
         self.cls.service_name = 'SvcFoo'
@@ -375,6 +376,7 @@ class TestAwsLimitCheckerRunner(object):
         assert mock_d2c.mock_calls == [
             call({
                 'SvcFoo/foo limit3': '10 (TA)',
+                'SvcFoo/zzz limit4': '34 (API)',
             })
         ]
 

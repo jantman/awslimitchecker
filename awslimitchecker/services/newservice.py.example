@@ -107,6 +107,10 @@ class _XXNewServiceXXService(_AwsService):
         )
 
         """
+        # TODO: if the service has an API that can retrieve current limit information
+        # i.e. ``DescribeAccountAttributes``, pass ``limits`` to a new function called
+        # here that retrieves the limits from the API, and updates each AwsLimit object
+        # via its ``._set_api_limit()`` method.
         self.limits = limits
         return limits
 

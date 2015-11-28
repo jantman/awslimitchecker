@@ -68,7 +68,7 @@ Users building out scalable services in Amazon AWS often run into AWS' `service 
 often at the least convenient time (i.e. mid-deploy or when autoscaling fails). Amazon's `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
 can help this, but even the version that comes with Business and Enterprise support only monitors a small subset of AWS limits
 and only alerts *weekly*. awslimitchecker provides a command line script and reusable package that queries your current
-usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, or data from Trusted
+usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, API-based limits where available, or data from Trusted
 Advisor where available), notifying you when you are approaching or at your limits.
 
 Status
@@ -87,6 +87,7 @@ What It Does
   exceed thresholds, and (CLI wrapper) exit non-0 if thresholds are exceeded
 - Define custom thresholds per-limit
 - where possible, pull current limits from Trusted Advisor API
+- where possible, pull current limits from each service's API (for services that provide this information)
 - Supports explicitly setting the AWS region
 - Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
 
