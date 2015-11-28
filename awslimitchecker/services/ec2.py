@@ -189,7 +189,31 @@ class _Ec2Service(_AwsService):
         limits.update(self._get_limits_instances())
         limits.update(self._get_limits_networking())
         self.limits = limits
-        return limits
+        return self.limits
+
+    def _update_limits_from_api(self):
+        """
+        Query EC2's DescribeAccountAttributes API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
+        self.connect()
+        logger.info("Querying EC2 DescribeAccountAttributes for limits")
+        attribs = boto_query_wrapper(self.conn.describe_account_attributes)
+        for attrib in attribs:
+            aname = attrib.attribute_name
+            val = attrib.attribute_values[0]
+            lname = None
+            if aname == 'max-elastic-ips':
+                lname = 'Elastic IP addresses (EIPs)'
+            elif aname == 'max-instances':
+                lname = 'Running On-Demand EC2 instances'
+            elif aname == 'vpc-max-elastic-ips':
+                lname = 'VPC Elastic IP addresses (EIPs)'
+            elif aname == 'vpc-max-security-groups-per-interface':
+                lname = 'VPC security groups per elastic network interface'
+            if lname is not None:
+                self.limits[lname]._set_api_limit(int(val))
+        logger.debug("Done setting limits from API")
 
     def _get_limits_instances(self):
         """

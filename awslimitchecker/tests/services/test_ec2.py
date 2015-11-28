@@ -45,6 +45,8 @@ from boto.ec2.securitygroup import SecurityGroup
 from boto.ec2.address import Address
 from boto.ec2.networkinterface import NetworkInterface
 from boto.ec2 import connect_to_region
+from boto.ec2.attributes import AccountAttribute
+from boto.resultset import ResultSet
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
 
@@ -616,3 +618,52 @@ class Test_Ec2Service(object):
             'VPC security groups per elastic network interface',
         ]
         assert sorted(limits.keys()) == sorted(expected)
+
+    def test_update_limits_from_api(self):
+        mock_conn = Mock(spec_set=EC2Connection)
+
+        rs = ResultSet()
+        a1 = AccountAttribute(connection=mock_conn)
+        a1.attribute_name = 'supported-platforms'
+        a1.attribute_values = ['EC2', 'VPC']
+        rs.append(a1)
+        a2 = AccountAttribute(connection=mock_conn)
+        a2.attribute_name = 'vpc-max-security-groups-per-interface'
+        a2.attribute_values = ['5']
+        rs.append(a2)
+        a3 = AccountAttribute(connection=mock_conn)
+        a3.attribute_name = 'max-elastic-ips'
+        a3.attribute_values = ['40']
+        rs.append(a3)
+        a4 = AccountAttribute(connection=mock_conn)
+        a4.attribute_name = 'max-instances'
+        a4.attribute_values = ['400']
+        rs.append(a4)
+        a5 = AccountAttribute(connection=mock_conn)
+        a5.attribute_name = 'vpc-max-elastic-ips'
+        a5.attribute_values = ['200']
+        rs.append(a5)
+        a6 = AccountAttribute(connection=mock_conn)
+        a6.attribute_name = 'default-vpc'
+        a6.attribute_values = ['none']
+        rs.append(a6)
+
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_conn
+        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+                mock_wrapper.return_value = rs
+                cls._update_limits_from_api()
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.describe_account_attributes)
+        ]
+        assert mock_conn.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.info("Querying EC2 DescribeAccountAttributes for limits"),
+            call.debug('Done setting limits from API')
+        ]
+        assert cls.limits['Elastic IP addresses (EIPs)'].api_limit == 40
+        assert cls.limits['Running On-Demand EC2 instances'].api_limit == 400
+        assert cls.limits['VPC Elastic IP addresses (EIPs)'].api_limit == 200
+        assert cls.limits['VPC security groups per elastic '
+                          'network interface'].api_limit == 5
