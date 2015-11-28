@@ -266,7 +266,20 @@ def format_cmd_output(cmd, output, name):
             if len(line) > 100:
                 lines[idx] = line[:100] + ' (...)'
         if len(lines) > 12:
-            lines = lines[:5] + ['(...)'] + lines[-5:]
+            tmp_lines = lines[:5] + ['(...)'] + lines[-5:]
+            if ' -l' not in cmd:
+                lines = tmp_lines
+            else:
+                # find a line that uses a limit from the API
+                api_line = '(...)'
+                for line in lines:
+                    if '(API)' in line:
+                        api_line = line
+                        break
+                if api_line not in tmp_lines:
+                    tmp_lines = lines[:5] + ['(...)'] + [ api_line ]
+                    tmp_lines = tmp_lines + ['(...)'] + lines[-5:]
+            lines = tmp_lines
     for line in lines:
         if line.strip() == '':
             continue

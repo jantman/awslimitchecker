@@ -73,7 +73,7 @@ Some services provide API calls to retrieve at least some of the current limits,
 API calls for `RDS <http://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeAccountAttributes.html>`_
 and `EC2 <http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAccountAttributes.html>`_. Services that
 support such calls should make them in a ``_update_limits_from_api()`` method, which will be automatically called from
-:py:meth:`~.checker.get_limits`. The ``_update_limits_from_api()`` method should make the API call, and then
+:py:meth:`~.awslimitchecker.checker.AwsLimitChecker.get_limits`. The ``_update_limits_from_api()`` method should make the API call, and then
 update all relevant limits via the :py:class:`~.AwsLimit` class's :py:meth:`~.AwsLimit._set_api_limit` method.
 
 Limit Value Precedence
