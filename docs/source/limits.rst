@@ -85,6 +85,16 @@ API; this information should be the most accurate, and is used with higher
 precedence than anything other than explicit limit overrides:
 
 
+* EC2
+
+  * Elastic IP addresses (EIPs)
+
+  * Running On-Demand EC2 instances
+
+  * VPC Elastic IP addresses (EIPs)
+
+  * VPC security groups per elastic network interface
+
 
 
 .. _limits.checks:
@@ -123,69 +133,69 @@ Provisioned IOPS :sup:`(TA)`                           40000
 EC2
 ++++
 
-================================================= ===
-Limit                                             Default
-================================================= ===
-Elastic IP addresses (EIPs) :sup:`(TA)`           5  
-Rules per VPC security group                      50 
-Running On-Demand EC2 instances                   20 
-Running On-Demand c1.medium instances             20 
-Running On-Demand c1.xlarge instances             20 
-Running On-Demand c3.2xlarge instances            20 
-Running On-Demand c3.4xlarge instances            20 
-Running On-Demand c3.8xlarge instances            20 
-Running On-Demand c3.large instances              20 
-Running On-Demand c3.xlarge instances             20 
-Running On-Demand c4.2xlarge instances            20 
-Running On-Demand c4.4xlarge instances            10 
-Running On-Demand c4.8xlarge instances            5  
-Running On-Demand c4.large instances              20 
-Running On-Demand c4.xlarge instances             20 
-Running On-Demand cc2.8xlarge instances           20 
-Running On-Demand cg1.4xlarge instances           2  
-Running On-Demand cr1.8xlarge instances           2  
-Running On-Demand d2.2xlarge instances            20 
-Running On-Demand d2.4xlarge instances            10 
-Running On-Demand d2.8xlarge instances            5  
-Running On-Demand d2.xlarge instances             20 
-Running On-Demand g2.2xlarge instances            5  
-Running On-Demand g2.8xlarge instances            2  
-Running On-Demand hi1.4xlarge instances           2  
-Running On-Demand hs1.8xlarge instances           2  
-Running On-Demand i2.2xlarge instances            8  
-Running On-Demand i2.4xlarge instances            4  
-Running On-Demand i2.8xlarge instances            2  
-Running On-Demand i2.xlarge instances             8  
-Running On-Demand m1.large instances              20 
-Running On-Demand m1.medium instances             20 
-Running On-Demand m1.small instances              20 
-Running On-Demand m1.xlarge instances             20 
-Running On-Demand m2.2xlarge instances            20 
-Running On-Demand m2.4xlarge instances            20 
-Running On-Demand m2.xlarge instances             20 
-Running On-Demand m3.2xlarge instances            20 
-Running On-Demand m3.large instances              20 
-Running On-Demand m3.medium instances             20 
-Running On-Demand m3.xlarge instances             20 
-Running On-Demand m4.2xlarge instances            20 
-Running On-Demand m4.4xlarge instances            20 
-Running On-Demand m4.8xlarge instances            20 
-Running On-Demand m4.large instances              20 
-Running On-Demand m4.xlarge instances             20 
-Running On-Demand r3.2xlarge instances            20 
-Running On-Demand r3.4xlarge instances            10 
-Running On-Demand r3.8xlarge instances            5  
-Running On-Demand r3.large instances              20 
-Running On-Demand r3.xlarge instances             20 
-Running On-Demand t1.micro instances              20 
-Running On-Demand t2.large instances              20 
-Running On-Demand t2.medium instances             20 
-Running On-Demand t2.micro instances              20 
-Running On-Demand t2.small instances              20 
-Security groups per VPC                           100
-VPC Elastic IP addresses (EIPs) :sup:`(TA)`       5  
-VPC security groups per elastic network interface 5  
-================================================= ===
+============================================================== ===
+Limit                                                          Default
+============================================================== ===
+Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`           5  
+Rules per VPC security group                                   50 
+Running On-Demand EC2 instances :sup:`(API)`                   20 
+Running On-Demand c1.medium instances                          20 
+Running On-Demand c1.xlarge instances                          20 
+Running On-Demand c3.2xlarge instances                         20 
+Running On-Demand c3.4xlarge instances                         20 
+Running On-Demand c3.8xlarge instances                         20 
+Running On-Demand c3.large instances                           20 
+Running On-Demand c3.xlarge instances                          20 
+Running On-Demand c4.2xlarge instances                         20 
+Running On-Demand c4.4xlarge instances                         10 
+Running On-Demand c4.8xlarge instances                         5  
+Running On-Demand c4.large instances                           20 
+Running On-Demand c4.xlarge instances                          20 
+Running On-Demand cc2.8xlarge instances                        20 
+Running On-Demand cg1.4xlarge instances                        2  
+Running On-Demand cr1.8xlarge instances                        2  
+Running On-Demand d2.2xlarge instances                         20 
+Running On-Demand d2.4xlarge instances                         10 
+Running On-Demand d2.8xlarge instances                         5  
+Running On-Demand d2.xlarge instances                          20 
+Running On-Demand g2.2xlarge instances                         5  
+Running On-Demand g2.8xlarge instances                         2  
+Running On-Demand hi1.4xlarge instances                        2  
+Running On-Demand hs1.8xlarge instances                        2  
+Running On-Demand i2.2xlarge instances                         8  
+Running On-Demand i2.4xlarge instances                         4  
+Running On-Demand i2.8xlarge instances                         2  
+Running On-Demand i2.xlarge instances                          8  
+Running On-Demand m1.large instances                           20 
+Running On-Demand m1.medium instances                          20 
+Running On-Demand m1.small instances                           20 
+Running On-Demand m1.xlarge instances                          20 
+Running On-Demand m2.2xlarge instances                         20 
+Running On-Demand m2.4xlarge instances                         20 
+Running On-Demand m2.xlarge instances                          20 
+Running On-Demand m3.2xlarge instances                         20 
+Running On-Demand m3.large instances                           20 
+Running On-Demand m3.medium instances                          20 
+Running On-Demand m3.xlarge instances                          20 
+Running On-Demand m4.2xlarge instances                         20 
+Running On-Demand m4.4xlarge instances                         20 
+Running On-Demand m4.8xlarge instances                         20 
+Running On-Demand m4.large instances                           20 
+Running On-Demand m4.xlarge instances                          20 
+Running On-Demand r3.2xlarge instances                         20 
+Running On-Demand r3.4xlarge instances                         10 
+Running On-Demand r3.8xlarge instances                         5  
+Running On-Demand r3.large instances                           20 
+Running On-Demand r3.xlarge instances                          20 
+Running On-Demand t1.micro instances                           20 
+Running On-Demand t2.large instances                           20 
+Running On-Demand t2.medium instances                          20 
+Running On-Demand t2.micro instances                           20 
+Running On-Demand t2.small instances                           20 
+Security groups per VPC                                        100
+VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5  
+VPC security groups per elastic network interface :sup:`(API)` 5  
+============================================================== ===
 
 ELB
 ++++

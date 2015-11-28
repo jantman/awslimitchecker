@@ -89,7 +89,8 @@ of a ResultSet object must have the proper parameters for
    multiple methods, generally one per AWS API call.
 3. If the service has an API call that retrieves current limit values, and its results
    include your new limit, ensure that this value is updated in the limit via its
-   :py:meth:`~.AwsLimit._set_api_limit` method.
+   :py:meth:`~.AwsLimit._set_api_limit` method. This should be done in the Service
+   class's ``_update_limits_from_api()`` method.
 4. Ensure complete test coverage for the above.
 
 .. _development.adding_services:
@@ -125,20 +126,23 @@ and also handles paginated responses if they're not handled by boto.
 6. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
    small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
    to search for "TODO" in the new service class you created (#1). See :ref:`Adding New Limits <development.adding_checks>` for further information.
-7. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
-8. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
+7. If your service has an API action to retrieve limit/quota information (i.e. ``DescribeAccountAttributes`` for EC2 and RDS), ensure
+   that the service class has an ``_update_limits_from_api()`` method which makes this API call and updates each relevant AwsLimit
+   via its :py:meth:`~.AwsLimit._set_api_limit` method.
+8. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
+9. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
-9. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
-10. Run all tox jobs, or at least one python version, docs and coverage.
-11. Commit the updated documentation to the repository.
-12. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+10. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
+11. Run all tox jobs, or at least one python version, docs and coverage.
+12. Commit the updated documentation to the repository.
+13. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
     `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
     `Policy Simulator <https://policysim.aws.amazon.com/>`_.
-13. Submit your pull request.
+14. Submit your pull request.
 
 .. _development.adding_ta:
 

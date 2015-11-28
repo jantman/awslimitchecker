@@ -58,6 +58,16 @@ else:
     from unittest.mock import patch, call, Mock, DEFAULT
 
 
+class ApiServiceSpec(_AwsService):
+    """
+    Used for Mock's ``spec_set`` parameter to represent classes that have
+    an ``_update_limits_from_api`` method.
+    """
+
+    def _update_limits_from_api(self):
+        pass
+
+
 class TestAwsLimitChecker(object):
 
     def setup(self):
@@ -70,7 +80,7 @@ class TestAwsLimitChecker(object):
         )
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
-        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=ApiServiceSpec)
         self.mock_foo = Mock(spec_set=_AwsService)
         self.mock_bar = Mock(spec_set=_AwsService)
         self.mock_ta = Mock(spec_set=TrustedAdvisor)
@@ -356,6 +366,13 @@ class TestAwsLimitChecker(object):
                 'SvcBar': self.mock_svc2,
             })
         ]
+        assert self.mock_svc1.mock_calls == [
+            call.get_limits()
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.get_limits()
+        ]
 
     def test_get_limits_no_ta(self):
         limits = sample_limits()
@@ -364,6 +381,13 @@ class TestAwsLimitChecker(object):
         res = self.cls.get_limits(use_ta=False)
         assert res == limits
         assert self.mock_ta.mock_calls == []
+        assert self.mock_svc1.mock_calls == [
+            call.get_limits()
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.get_limits()
+        ]
 
     def test_get_limits_service(self):
         limits = sample_limits()
@@ -376,6 +400,27 @@ class TestAwsLimitChecker(object):
                 'SvcFoo': self.mock_svc1,
             })
         ]
+        assert self.mock_svc1.mock_calls == [
+            call.get_limits()
+        ]
+        assert self.mock_svc2.mock_calls == []
+
+    def test_get_limits_service_with_api(self):
+        limits = sample_limits()
+        self.mock_svc1.get_limits.return_value = limits['SvcFoo']
+        self.mock_svc2.get_limits.return_value = limits['SvcBar']
+        res = self.cls.get_limits(service='SvcBar')
+        assert res == {'SvcBar': limits['SvcBar']}
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({
+                'SvcBar': self.mock_svc2,
+            })
+        ]
+        assert self.mock_svc1.mock_calls == []
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.get_limits()
+        ]
 
     def test_find_usage(self):
         self.cls.find_usage()
@@ -383,6 +428,7 @@ class TestAwsLimitChecker(object):
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
             call.find_usage()
         ]
         assert self.mock_ta.mock_calls == [
@@ -398,6 +444,7 @@ class TestAwsLimitChecker(object):
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
             call.find_usage()
         ]
         assert self.mock_ta.mock_calls == []
@@ -410,6 +457,17 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc2.mock_calls == []
         assert self.mock_ta.mock_calls == [
             call.update_limits({'SvcFoo': self.mock_svc1})
+        ]
+
+    def test_find_usage_service_with_api(self):
+        self.cls.find_usage(service='SvcBar')
+        assert self.mock_svc1.mock_calls == []
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.find_usage()
+        ]
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({'SvcBar': self.mock_svc2})
         ]
 
     def test_set_threshold_overrides(self):
@@ -617,6 +675,13 @@ class TestAwsLimitChecker(object):
                 'SvcBar': self.mock_svc2
             }),
         ]
+        assert self.mock_svc1.mock_calls == [
+            call.check_thresholds()
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.check_thresholds()
+        ]
 
     def test_check_thresholds_service(self):
         self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
@@ -629,6 +694,28 @@ class TestAwsLimitChecker(object):
         }
         assert self.mock_ta.mock_calls == [
             call.update_limits({'SvcFoo': self.mock_svc1})
+        ]
+        assert self.mock_svc1.mock_calls == [
+            call.check_thresholds()
+        ]
+        assert self.mock_svc2.mock_calls == []
+
+    def test_check_thresholds_service_api(self):
+        self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
+        self.mock_svc2.check_thresholds.return_value = {'baz': 'blam'}
+        res = self.cls.check_thresholds(service='SvcBar')
+        assert res == {
+            'SvcBar': {
+                'baz': 'blam',
+            }
+        }
+        assert self.mock_ta.mock_calls == [
+            call.update_limits({'SvcBar': self.mock_svc2})
+        ]
+        assert self.mock_svc1.mock_calls == []
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.check_thresholds()
         ]
 
     def test_check_thresholds_no_ta(self):
@@ -646,3 +733,10 @@ class TestAwsLimitChecker(object):
             }
         }
         assert self.mock_ta.mock_calls == []
+        assert self.mock_svc1.mock_calls == [
+            call.check_thresholds()
+        ]
+        assert self.mock_svc2.mock_calls == [
+            call._update_limits_from_api(),
+            call.check_thresholds()
+        ]

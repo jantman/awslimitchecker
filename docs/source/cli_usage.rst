@@ -144,6 +144,8 @@ and limits followed by ``(API)`` have been obtained from the service's API.
    EBS/Active volumes                                     5000 (TA)
    EBS/General Purpose (SSD) volume storage (GiB)         163840 (TA)
    (...)
+   EC2/Elastic IP addresses (EIPs)                        40 (API)
+   (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               20 (TA)
@@ -164,6 +166,8 @@ from Trusted Advisor for all commands.
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
    EBS/General Purpose (SSD) volume storage (GiB)         20480
+   (...)
+   EC2/Elastic IP addresses (EIPs)                        40 (API)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -187,12 +191,12 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        349
    AutoScaling/Launch configurations                      388
-   EBS/Active snapshots                                   11522
+   EBS/Active snapshots                                   11523
    EBS/Active volumes                                     2614
    EBS/General Purpose (SSD) volume storage (GiB)         26726
    (...)
    VPC/Rules per network ACL                              max: acl-b1ad1ad5=4 (acl-b1ad1ad5=4, acl-4bd9 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=19 (vpc-1e5e3c7b=1, vpc-ae7 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=19 (vpc-ae7bc5cb=1, vpc-1e5 (...)
    VPC/VPCs                                               8
 
 
@@ -219,6 +223,8 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    EBS/Active snapshots                                   13000 (TA)
    EBS/Active volumes                                     5000 (TA)
    EBS/General Purpose (SSD) volume storage (GiB)         163840 (TA)
+   (...)
+   EC2/Elastic IP addresses (EIPs)                        40 (API)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -254,11 +260,11 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EBS/Active snapshots                                   (limit 13000) WARNING: 11522
-   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 268
+   EBS/Active snapshots                                   (limit 13000) WARNING: 11523
    EC2/Running On-Demand c3.large instances               (limit 20) WARNING: 17
    EC2/Running On-Demand m3.2xlarge instances             (limit 20) CRITICAL: 29
    EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 25
+   EC2/Running On-Demand m3.xlarge instances              (limit 20) WARNING: 16
    (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-2751546e=5 WARNING: e (...)
    RDS/DB parameter groups                                (limit 50) WARNING: 42
@@ -274,7 +280,6 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Running On-Demand EC2 instances                    (limit 20) CRITICAL: 268
    EC2/Running On-Demand m3.2xlarge instances             (limit 20) CRITICAL: 29
    EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 25
    EC2/Running On-Demand t2.micro instances               (limit 20) CRITICAL: 28

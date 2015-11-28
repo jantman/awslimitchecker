@@ -414,10 +414,12 @@ class TestPaginateQuery(object):
         ]
         assert mocks['_paginate_resultset'].mock_calls == []
         assert mocks['_paginate_dict'].mock_calls == []
-        assert mocks['logger'].mock_calls == [
-            call.warning("Query returned a dict, but does not have _paginate_"
-                         "dict params set; cannot paginate")
-        ]
+        assert len(mocks['logger'].mock_calls) == 1
+        args = mocks['logger'].warning.mock_calls[0][1]
+        assert len(args) == 1
+        assert args[0].startswith(
+            "Query returned a dict, but does not have _paginate_dict params "
+            "set; cannot paginate (<Mock id='") is True
 
     def test_other_type(self):
         func = Mock()
