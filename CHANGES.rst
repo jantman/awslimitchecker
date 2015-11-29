@@ -17,6 +17,9 @@ Pre-release (develop branch)
   * ``RDS/Read Replicas per Master`` to ``RDS/Read replicas per master``
   * ``RDS/Parameter Groups`` to ``RDS/DB parameter groups``
 * Fix `#84 <https://github.com/jantman/awslimitchecker/issues/84>`_ pull some EC2 limits from the API's DescribeAccountAttributes action
+* Fix `#94 <https://github.com/jantman/awslimitchecker/issues/94>`_ pull AutoScaling limits from the API's DescribeAccountLimits action
+* Add ``autoscaling:DescribeAccountLimits`` and ``ec2:DescribeAccountAttributes`` to required IAM permissions.
+* Ignore ``AccountLimits`` objects from result pagination
 
 0.1.3 (2015-10-04)
 ------------------
