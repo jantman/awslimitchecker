@@ -441,8 +441,9 @@ class Test_Ec2Service(object):
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service(21, 43)
-        assert len(cls.required_iam_permissions()) == 12
+        assert len(cls.required_iam_permissions()) == 13
         assert cls.required_iam_permissions() == [
+            "ec2:DescribeAccountAttributes",
             "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
             "ec2:DescribeInternetGateways",

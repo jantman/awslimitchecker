@@ -42,6 +42,7 @@ import time
 import logging
 from boto.exception import BotoServerError
 from boto.resultset import ResultSet
+from boto.ec2.autoscale.limits import AccountLimits
 from copy import deepcopy
 
 logger = logging.getLogger(__name__)
@@ -184,6 +185,9 @@ def paginate_query(function_ref, *argv, **kwargs):
         return result
     elif isinstance(result, ResultSet) and result.next_token is not None:
         return _paginate_resultset(result, function_ref, *argv, **kwargs)
+    elif isinstance(result, AccountLimits):
+        # cannot be paginated
+        return result
     elif isinstance(result, dict):
         if set(paginate_dict_params).issubset(kwargs):
             return _paginate_dict(result, function_ref, *argv, **kwargs)

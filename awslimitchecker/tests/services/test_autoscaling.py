@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from boto.ec2.autoscale import AutoScaleConnection, connect_to_region
+from boto.ec2.autoscale.limits import AccountLimits
 from awslimitchecker.services.autoscaling import _AutoscalingService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -165,6 +166,24 @@ class Test_AutoscalingService(object):
     def test_required_iam_permissions(self):
         cls = _AutoscalingService(21, 43)
         assert cls.required_iam_permissions() == [
+            'autoscaling:DescribeAccountLimits',
             'autoscaling:DescribeAutoScalingGroups',
             'autoscaling:DescribeLaunchConfigurations',
         ]
+
+    def test_update_limits_from_api(self):
+        mock_conn = Mock(spec_set=AutoScaleConnection)
+        aslimits = AccountLimits(connection=mock_conn)
+        aslimits.max_autoscaling_groups = 11
+        aslimits.max_launch_configurations = 22
+
+        with patch('%s.connect' % self.pb) as mock_connect:
+            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+                cls = _AutoscalingService(21, 43)
+                cls.conn = mock_conn
+                mock_wrapper.return_value = aslimits
+                cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_wrapper.mock_calls == [call(mock_conn.get_account_limits)]
+        assert cls.limits['Auto Scaling groups'].api_limit == 11
+        assert cls.limits['Launch configurations'].api_limit == 22

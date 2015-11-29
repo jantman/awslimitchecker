@@ -133,6 +133,21 @@ class _AutoscalingService(_AwsService):
         :rtype: list
         """
         return [
+            'autoscaling:DescribeAccountLimits',
             'autoscaling:DescribeAutoScalingGroups',
             'autoscaling:DescribeLaunchConfigurations',
         ]
+
+    def _update_limits_from_api(self):
+        """
+        Query EC2's DescribeAccountAttributes API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
+        self.connect()
+        logger.info("Querying EC2 DescribeAccountAttributes for limits")
+        lims = boto_query_wrapper(self.conn.get_account_limits)
+        self.limits['Auto Scaling groups']._set_api_limit(
+            lims.max_autoscaling_groups)
+        self.limits['Launch configurations']._set_api_limit(
+            lims.max_launch_configurations
+        )

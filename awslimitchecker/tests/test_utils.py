@@ -43,6 +43,7 @@ import sys
 
 from boto.exception import BotoServerError
 from boto.resultset import ResultSet
+from boto.ec2.autoscale.limits import AccountLimits
 
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, invoke_with_throttling_retries,
@@ -420,6 +421,27 @@ class TestPaginateQuery(object):
         assert args[0].startswith(
             "Query returned a dict, but does not have _paginate_dict params "
             "set; cannot paginate (<Mock id='") is True
+
+    def test_result_AccountLimits(self):
+        func = Mock()
+        result = AccountLimits()
+
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+                logger=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = result
+            res = paginate_query(func, 'foo', bar='barval')
+        assert res == result
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
+            call(func, 'foo', bar='barval')
+        ]
+        assert mocks['_paginate_resultset'].mock_calls == []
+        assert mocks['_paginate_dict'].mock_calls == []
+        assert mocks['logger'].mock_calls == []
 
     def test_other_type(self):
         func = Mock()

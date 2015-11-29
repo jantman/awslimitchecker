@@ -85,6 +85,12 @@ API; this information should be the most accurate, and is used with higher
 precedence than anything other than explicit limit overrides:
 
 
+* AutoScaling
+
+  * Auto Scaling groups
+
+  * Launch configurations
+
 * EC2
 
   * Elastic IP addresses (EIPs)
@@ -109,12 +115,12 @@ marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 AutoScaling
 ++++++++++++
 
-================================= ===
-Limit                             Default
-================================= ===
-Auto Scaling groups :sup:`(TA)`   20 
-Launch configurations :sup:`(TA)` 100
-================================= ===
+============================================== ===
+Limit                                          Default
+============================================== ===
+Auto Scaling groups :sup:`(TA)` :sup:`(API)`   20 
+Launch configurations :sup:`(TA)` :sup:`(API)` 100
+============================================== ===
 
 EBS
 ++++
