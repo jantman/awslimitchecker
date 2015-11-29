@@ -18,8 +18,10 @@ permissions required for it to function correctly:
       "Statement": [
         {
           "Action": [
+            "autoscaling:DescribeAccountLimits", 
             "autoscaling:DescribeAutoScalingGroups", 
             "autoscaling:DescribeLaunchConfigurations", 
+            "ec2:DescribeAccountAttributes", 
             "ec2:DescribeAddresses", 
             "ec2:DescribeInstances", 
             "ec2:DescribeInternetGateways", 

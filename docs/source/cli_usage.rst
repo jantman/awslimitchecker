@@ -138,13 +138,11 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling groups                        500 (TA)
-   AutoScaling/Launch configurations                      500 (TA)
+   AutoScaling/Auto Scaling groups                        500 (API)
+   AutoScaling/Launch configurations                      500 (API)
    EBS/Active snapshots                                   13000 (TA)
    EBS/Active volumes                                     5000 (TA)
    EBS/General Purpose (SSD) volume storage (GiB)         163840 (TA)
-   (...)
-   EC2/Elastic IP addresses (EIPs)                        40 (API)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -161,13 +159,11 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   AutoScaling/Auto Scaling groups                        20
-   AutoScaling/Launch configurations                      100
+   AutoScaling/Auto Scaling groups                        500 (API)
+   AutoScaling/Launch configurations                      500 (API)
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
    EBS/General Purpose (SSD) volume storage (GiB)         20480
-   (...)
-   EC2/Elastic IP addresses (EIPs)                        40 (API)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -191,12 +187,12 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        349
    AutoScaling/Launch configurations                      388
-   EBS/Active snapshots                                   11523
+   EBS/Active snapshots                                   11536
    EBS/Active volumes                                     2614
    EBS/General Purpose (SSD) volume storage (GiB)         26726
    (...)
    VPC/Rules per network ACL                              max: acl-b1ad1ad5=4 (acl-b1ad1ad5=4, acl-4bd9 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=19 (vpc-ae7bc5cb=1, vpc-1e5 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=19 (vpc-1e5e3c7b=1, vpc-ae7 (...)
    VPC/VPCs                                               8
 
 
@@ -260,7 +256,7 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EBS/Active snapshots                                   (limit 13000) WARNING: 11523
+   EBS/Active snapshots                                   (limit 13000) WARNING: 11536
    EC2/Running On-Demand c3.large instances               (limit 20) WARNING: 17
    EC2/Running On-Demand m3.2xlarge instances             (limit 20) CRITICAL: 29
    EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 25
@@ -304,7 +300,7 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "autoscaling:DescribeAutoScalingGroups", 
+           "autoscaling:DescribeAccountLimits", 
    (...)
        }
      ], 
