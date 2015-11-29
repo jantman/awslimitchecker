@@ -44,6 +44,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,21 @@ class _RDSService(_AwsService):
     def _find_usage_instances(self):
         """find usage for DB Instances and related limits"""
         # instance count
-        instances = self.conn.describe_db_instances()[
+        instances = boto_query_wrapper(
+            self.conn.describe_db_instances,
+            alc_marker_path=[
+                'DescribeDBInstancesResponse',
+                'DescribeDBInstancesResult',
+                'Marker'
+            ],
+            alc_data_path=[
+                'DescribeDBInstancesResponse',
+                'DescribeDBInstancesResult',
+                'DBInstances'
+            ],
+            alc_marker_param='marker'
+        )
+        instances = instances[
             'DescribeDBInstancesResponse'][
                 'DescribeDBInstancesResult']['DBInstances']
         self.limits['DB instances']._add_current_usage(
@@ -97,7 +112,7 @@ class _RDSService(_AwsService):
         allocated_gb = 0
         for i in instances:
             allocated_gb += i['AllocatedStorage']
-            self.limits['Read Replicas per Master']._add_current_usage(
+            self.limits['Read replicas per master']._add_current_usage(
                 len(i['ReadReplicaDBInstanceIdentifiers']),
                 aws_type='AWS::RDS::DBInstance',
                 resource_id=i['DBInstanceIdentifier']
@@ -111,7 +126,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_reserved_instances(self):
         """find usage for reserved instances"""
-        reserved = self.conn.describe_reserved_db_instances()[
+        reserved = boto_query_wrapper(
+            self.conn.describe_reserved_db_instances,
+            alc_marker_path=[
+                'DescribeReservedDBInstancesResponse',
+                'DescribeReservedDBInstancesResult',
+                "Marker"
+            ],
+            alc_data_path=[
+                'DescribeReservedDBInstancesResponse',
+                'DescribeReservedDBInstancesResult',
+                'ReservedDBInstances'
+            ],
+            alc_marker_param='marker'
+        )[
             'DescribeReservedDBInstancesResponse'][
             'DescribeReservedDBInstancesResult'][
             'ReservedDBInstances']
@@ -122,7 +150,21 @@ class _RDSService(_AwsService):
 
     def _find_usage_snapshots(self):
         """find usage for (manual) DB snapshots"""
-        snaps = self.conn.describe_db_snapshots()[
+        snaps = boto_query_wrapper(
+            self.conn.describe_db_snapshots,
+            alc_marker_path=[
+                "DescribeDBSnapshotsResponse",
+                "DescribeDBSnapshotsResult",
+                'Marker'
+            ],
+            alc_data_path=[
+                "DescribeDBSnapshotsResponse",
+                "DescribeDBSnapshotsResult",
+                "DBSnapshots"
+            ],
+            alc_marker_param='marker'
+        )
+        snaps = snaps[
             "DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"][
                 "DBSnapshots"]
         num_manual_snaps = 0
@@ -136,18 +178,45 @@ class _RDSService(_AwsService):
 
     def _find_usage_param_groups(self):
         """find usage for parameter groups"""
-        params = self.conn.describe_db_parameter_groups()[
+        params = boto_query_wrapper(
+            self.conn.describe_db_parameter_groups,
+            alc_marker_path=[
+                "DescribeDBParameterGroupsResponse",
+                "DescribeDBParameterGroupsResult",
+                'Marker'
+            ],
+            alc_data_path=[
+                "DescribeDBParameterGroupsResponse",
+                "DescribeDBParameterGroupsResult",
+                "DBParameterGroups"
+            ],
+            alc_marker_param='marker'
+        )
+        params = params[
             "DescribeDBParameterGroupsResponse"][
                 "DescribeDBParameterGroupsResult"][
                     "DBParameterGroups"]
-        self.limits['Parameter Groups']._add_current_usage(
+        self.limits['DB parameter groups']._add_current_usage(
             len(params),
             aws_type='AWS::RDS::DBParameterGroup'
         )
 
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
-        groups = self.conn.describe_db_subnet_groups()[
+        groups = boto_query_wrapper(
+            self.conn.describe_db_subnet_groups,
+            alc_marker_path=[
+                "DescribeDBSubnetGroupsResponse",
+                "DescribeDBSubnetGroupsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeDBSubnetGroupsResponse",
+                "DescribeDBSubnetGroupsResult",
+                "DBSubnetGroups"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeDBSubnetGroupsResponse"][
                 "DescribeDBSubnetGroupsResult"][
                     "DBSubnetGroups"]
@@ -166,7 +235,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_option_groups(self):
         """find usage for option groups"""
-        groups = self.conn.describe_option_groups()[
+        groups = boto_query_wrapper(
+            self.conn.describe_option_groups,
+            alc_marker_path=[
+                "DescribeOptionGroupsResponse",
+                "DescribeOptionGroupsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeOptionGroupsResponse",
+                "DescribeOptionGroupsResult",
+                "OptionGroupsList"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeOptionGroupsResponse"][
                 "DescribeOptionGroupsResult"]["OptionGroupsList"]
         self.limits['Option Groups']._add_current_usage(
@@ -176,7 +258,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_event_subscriptions(self):
         """find usage for event subscriptions"""
-        subs = self.conn.describe_event_subscriptions()[
+        subs = boto_query_wrapper(
+            self.conn.describe_event_subscriptions,
+            alc_marker_path=[
+                "DescribeEventSubscriptionsResponse",
+                "DescribeEventSubscriptionsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeEventSubscriptionsResponse",
+                "DescribeEventSubscriptionsResult",
+                "EventSubscriptionsList"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeEventSubscriptionsResponse"][
             "DescribeEventSubscriptionsResult"][
             "EventSubscriptionsList"]
@@ -187,7 +282,20 @@ class _RDSService(_AwsService):
 
     def _find_usage_security_groups(self):
         """find usage for security groups"""
-        groups = self.conn.describe_db_security_groups()[
+        groups = boto_query_wrapper(
+            self.conn.describe_db_security_groups,
+            alc_marker_path=[
+                "DescribeDBSecurityGroupsResponse",
+                "DescribeDBSecurityGroupsResult",
+                "Marker"
+            ],
+            alc_data_path=[
+                "DescribeDBSecurityGroupsResponse",
+                "DescribeDBSecurityGroupsResult",
+                "DBSecurityGroups"
+            ],
+            alc_marker_param='marker'
+        )[
             "DescribeDBSecurityGroupsResponse"][
             "DescribeDBSecurityGroupsResult"][
             "DBSecurityGroups"]
@@ -257,8 +365,8 @@ class _RDSService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::RDS::DBSnapshot',
         )
-        limits['Parameter Groups'] = AwsLimit(
-            'Parameter Groups',
+        limits['DB parameter groups'] = AwsLimit(
+            'DB parameter groups',
             self,
             50,
             self.warning_threshold,
@@ -313,8 +421,8 @@ class _RDSService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::RDS::DBEventSubscription',
         )
-        limits['Read Replicas per Master'] = AwsLimit(
-            'Read Replicas per Master',
+        limits['Read replicas per master'] = AwsLimit(
+            'Read replicas per master',
             self,
             5,
             self.warning_threshold,

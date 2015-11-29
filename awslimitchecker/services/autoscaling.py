@@ -44,6 +44,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -73,12 +74,18 @@ class _AutoscalingService(_AwsService):
             lim._reset_usage()
 
         self.limits['Auto Scaling groups']._add_current_usage(
-            len(self.conn.get_all_groups()),
+            len(
+                boto_query_wrapper(self.conn.get_all_groups)
+            ),
             aws_type='AWS::AutoScaling::AutoScalingGroup',
         )
 
         self.limits['Launch configurations']._add_current_usage(
-            len(self.conn.get_all_launch_configurations()),
+            len(
+                boto_query_wrapper(
+                    self.conn.get_all_launch_configurations
+                )
+            ),
             aws_type='AWS::AutoScaling::LaunchConfiguration',
         )
         self._have_usage = True
@@ -126,6 +133,21 @@ class _AutoscalingService(_AwsService):
         :rtype: list
         """
         return [
+            'autoscaling:DescribeAccountLimits',
             'autoscaling:DescribeAutoScalingGroups',
             'autoscaling:DescribeLaunchConfigurations',
         ]
+
+    def _update_limits_from_api(self):
+        """
+        Query EC2's DescribeAccountAttributes API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
+        self.connect()
+        logger.info("Querying EC2 DescribeAccountAttributes for limits")
+        lims = boto_query_wrapper(self.conn.get_account_limits)
+        self.limits['Auto Scaling groups']._set_api_limit(
+            lims.max_autoscaling_groups)
+        self.limits['Launch configurations']._set_api_limit(
+            lims.max_launch_configurations
+        )

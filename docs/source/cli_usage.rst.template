@@ -53,7 +53,8 @@ Viewing Limits
 View the limits that ``awslimitchecker`` currently knows how to check, and what
 the limit value is set as (if you specify limit overrides, they will be used
 instead of the default limit) by specifying the ``-l`` or ``--list-limits``
-option. Limits followed by ``(TA)`` have been obtained from Trusted Advisor.
+option. Limits followed by ``(TA)`` have been obtained from Trusted Advisor
+and limits followed by ``(API)`` have been obtained from the service's API.
 
 {list_limits}
 

@@ -42,6 +42,7 @@ import boto.support
 from dateutil import parser
 import logging
 from .connectable import Connectable
+from .utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,10 @@ class TrustedAdvisor(Connectable):
             return
         check_id, metadata = tmp
         region = self.ta_region or self.conn.region.name
-        checks = self.conn.describe_trusted_advisor_check_result(check_id)
+        checks = boto_query_wrapper(
+            self.conn.describe_trusted_advisor_check_result,
+            check_id
+        )
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
                      check_id, check_datetime)
@@ -166,7 +170,10 @@ class TrustedAdvisor(Connectable):
         """
         logger.debug("Querying Trusted Advisor checks")
         try:
-            checks = self.conn.describe_trusted_advisor_checks('en')['checks']
+            checks = boto_query_wrapper(
+                self.conn.describe_trusted_advisor_checks,
+                'en'
+            )['checks']
         except boto.exception.JSONResponseError as ex:
             if (
                     '__type' in ex.body and
@@ -215,7 +222,15 @@ class TrustedAdvisor(Connectable):
             service = services[svc_name]
             for lim_name in sorted(limits.keys()):
                 try:
-                    service._set_ta_limit(lim_name, limits[lim_name])
+                    # @TODO - if we have ANY MORE special cases, we need a
+                    # better way of handling this - maybe with a mapping
+                    if svc_name == 'VPC' and lim_name == 'VPC Elastic IP ' \
+                       'addresses (EIPs)':
+                        services['EC2']._set_ta_limit(
+                            lim_name, limits[lim_name]
+                        )
+                    else:
+                        service._set_ta_limit(lim_name, limits[lim_name])
                 except ValueError:
                     logger.info("TrustedAdvisor returned check results for "
                                 "unknown limit '%s' (service %s)",

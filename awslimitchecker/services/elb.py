@@ -44,6 +44,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ class _ElbService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        lbs = self.conn.get_all_load_balancers()
+        lbs = boto_query_wrapper(self.conn.get_all_load_balancers)
         self.limits['Active load balancers']._add_current_usage(
             len(lbs),
             aws_type='AWS::ElasticLoadBalancing::LoadBalancer',

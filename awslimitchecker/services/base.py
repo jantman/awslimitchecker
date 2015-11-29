@@ -123,13 +123,15 @@ class _AwsService(Connectable):
         and update the ``current_usage`` property of each corresponding
         :py:class:`~.AwsLimit` instance.
 
-        This method must set ``self._have_usage = True``
+        This method MUST set ``self._have_usage = True``.
+        This method MUST make all API calls through
+        :py:func:`~awslimitchecker.utils.boto_query_wrapper`.
         """
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
-        # find usage here
+        usage = boto_query_wrapper(self.conn.method_to_get_usage)
         logger.debug("Done checking usage.")
         self._have_usage = True
         """

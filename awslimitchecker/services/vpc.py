@@ -45,6 +45,7 @@ from collections import defaultdict
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class _VpcService(_AwsService):
     def _find_usage_vpcs(self):
         """find usage for VPCs"""
         # overall number of VPCs
-        vpcs = self.conn.get_all_vpcs()
+        vpcs = boto_query_wrapper(self.conn.get_all_vpcs)
         self.limits['VPCs']._add_current_usage(
             len(vpcs),
             aws_type='AWS::EC2::VPC'
@@ -93,7 +94,7 @@ class _VpcService(_AwsService):
         """find usage for Subnets"""
         # subnets per VPC
         subnets = defaultdict(int)
-        for subnet in self.conn.get_all_subnets():
+        for subnet in boto_query_wrapper(self.conn.get_all_subnets):
             # boto.vpc.subnet.Subnet
             subnets[subnet.vpc_id] += 1
         for vpc_id in subnets:
@@ -107,7 +108,7 @@ class _VpcService(_AwsService):
         """find usage for ACLs"""
         # Network ACLs per VPC
         acls = defaultdict(int)
-        for acl in self.conn.get_all_network_acls():
+        for acl in boto_query_wrapper(self.conn.get_all_network_acls):
             # boto.vpc.networkacl.NetworkAcl
             acls[acl.vpc_id] += 1
             # Rules per network ACL
@@ -127,7 +128,7 @@ class _VpcService(_AwsService):
         """find usage for route tables"""
         # Route tables per VPC
         tables = defaultdict(int)
-        for table in self.conn.get_all_route_tables():
+        for table in boto_query_wrapper(self.conn.get_all_route_tables):
             # boto.vpc.routetable.RouteTable
             tables[table.vpc_id] += 1
             # Entries per route table
@@ -146,7 +147,7 @@ class _VpcService(_AwsService):
     def _find_usage_gateways(self):
         """find usage for Internet Gateways"""
         # Internet gateways
-        gws = self.conn.get_all_internet_gateways()
+        gws = boto_query_wrapper(self.conn.get_all_internet_gateways)
         self.limits['Internet gateways']._add_current_usage(
             len(gws),
             aws_type='AWS::EC2::InternetGateway',

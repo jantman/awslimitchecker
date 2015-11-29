@@ -166,6 +166,8 @@ class AwsLimitChecker(object):
         if use_ta:
             self.ta.update_limits(to_get)
         for sname, cls in to_get.items():
+            if hasattr(cls, '_update_limits_from_api'):
+                cls._update_limits_from_api()
             res[sname] = cls.get_limits()
         return res
 
@@ -200,6 +202,8 @@ class AwsLimitChecker(object):
         if use_ta:
             self.ta.update_limits(to_get)
         for cls in to_get.values():
+            if hasattr(cls, '_update_limits_from_api'):
+                cls._update_limits_from_api()
             logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
@@ -394,6 +398,8 @@ class AwsLimitChecker(object):
         if use_ta:
             self.ta.update_limits(to_get)
         for sname, cls in to_get.items():
+            if hasattr(cls, '_update_limits_from_api'):
+                cls._update_limits_from_api()
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp

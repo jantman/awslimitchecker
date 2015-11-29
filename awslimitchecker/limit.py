@@ -46,6 +46,9 @@ SOURCE_OVERRIDE = 1
 #: indicates a limit value that came from Trusted Advisor
 SOURCE_TA = 2
 
+#: indicates a limit value that came from the service's API
+SOURCE_API = 3
+
 
 class AwsLimit(object):
 
@@ -90,6 +93,7 @@ class AwsLimit(object):
         self.limit_override = None
         self.override_ta = True
         self.ta_limit = None
+        self.api_limit = None
         self._current_usage = []
         self.def_warning_threshold = def_warning_threshold
         self.def_critical_threshold = def_critical_threshold
@@ -127,18 +131,31 @@ class AwsLimit(object):
         """
         self.ta_limit = limit_value
 
+    def _set_api_limit(self, limit_value):
+        """
+        Set the value for the limit as reported by the service's API.
+
+        This method should only be called from the Service class.
+
+        :param limit_value: the API limit value
+        :type limit_value: int
+        """
+        self.api_limit = limit_value
+
     def get_limit_source(self):
         """
         Return :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT` if
         :py:meth:`~.get_limit` returns the default limit,
         :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE` if it returns a
-        manually-overridden limit, or
+        manually-overridden limit,
         :py:const:`~awslimitchecker.limit.SOURCE_TA` if it returns a limit from
-        Trusted Advisor.
+        Trusted Advisor, or   :py:const:`~awslimitchecker.limit.SOURCE_API`
+        if it returns a limit retrieved from the service's API.
 
         :returns: one of :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT`,
           :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE`, or
-          :py:const:`~awslimitchecker.limit.SOURCE_TA`
+          :py:const:`~awslimitchecker.limit.SOURCE_TA`, or
+          :py:const:`~awslimitchecker.limit.SOURCE_API`
         :rtype: int
         """
         if self.limit_override is not None and (
@@ -146,6 +163,8 @@ class AwsLimit(object):
                 self.ta_limit is None
         ):
             return SOURCE_OVERRIDE
+        if self.api_limit is not None:
+            return SOURCE_API
         if self.ta_limit is not None:
             return SOURCE_TA
         return SOURCE_DEFAULT
@@ -162,6 +181,8 @@ class AwsLimit(object):
         limit_type = self.get_limit_source()
         if limit_type == SOURCE_OVERRIDE:
             return self.limit_override
+        elif limit_type == SOURCE_API:
+            return self.api_limit
         elif limit_type == SOURCE_TA:
             return self.ta_limit
         return self.default_limit

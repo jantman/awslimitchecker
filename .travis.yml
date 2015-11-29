@@ -4,12 +4,14 @@ cache:
   directories:
   - "$HOME/.pip-cache/"
 env:
+- TOXENV=py26-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py27-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py32-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py33-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+- TOXENV=py26-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py27-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py32-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=py33-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
@@ -17,7 +19,6 @@ env:
 - TOXENV=pypy-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=pypy3-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=cov PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 install:
 - git config --global user.email "travisci@jasonantman.com"
 - git config --global user.name "travisci"

@@ -5,6 +5,27 @@ Pre-release (develop branch)
 ----------------------------
 
 
+
+0.2.0 (2015-11-29)
+------------------
+
+* `#86 <https://github.com/jantman/awslimitchecker/issues/86>`_ wrap all AWS API queries in ``awslimitchecker.utils.boto_query_wrapper`` to retry queries with an exponential backoff when API request throttling/rate limiting is encountered
+* Attempt at fixing `#47 <https://github.com/jantman/awslimitchecker/issues/47>`_ where versioncheck acceptance tests fail under TravisCI, when testing master after a tagged release (when there's a tag for the current commit)
+* Fix `#73 <https://github.com/jantman/awslimitchecker/issues/73>`_ versioncheck.py reports incorrect information when package is installed in a virtualenv inside a git repository
+* Fix `#87 <https://github.com/jantman/awslimitchecker/issues/87>`_ run coverage in all unit test Tox environments, not a dedicated env
+* Fix `#75 <https://github.com/jantman/awslimitchecker/issues/75>`_ re-enable py26 Travis builds now that `pytest-dev/pytest#1035 <https://github.com/pytest-dev/pytest/issues/1035`_ is fixed (pytest >= 2.8.3)
+* Fix `#13 <https://github.com/jantman/awslimitchecker/issues/13>`_ re-enable Sphinx documentation linkcheck
+* Fix `#40 <https://github.com/jantman/awslimitchecker/issues/40>`_ add support for pagination of API responses (to get all results) and handle pagination for all current services
+* Fix `#88 <https://github.com/jantman/awslimitchecker/issues/88>`_ add support for API-derived limits. This is a change to the public API for ``awslimitchecker.limit.AwsLimit`` and the CLI output.
+* Fix `#72 <https://github.com/jantman/awslimitchecker/issues/72>`_ add support for some new limits returned by Trusted Advisor. This renames the following limits:
+  * ``EC2/EC2-VPC Elastic IPs`` to ``EC2/VPC Elastic IP addresses (EIPs)``
+  * ``RDS/Read Replicas per Master`` to ``RDS/Read replicas per master``
+  * ``RDS/Parameter Groups`` to ``RDS/DB parameter groups``
+* Fix `#84 <https://github.com/jantman/awslimitchecker/issues/84>`_ pull some EC2 limits from the API's DescribeAccountAttributes action
+* Fix `#94 <https://github.com/jantman/awslimitchecker/issues/94>`_ pull AutoScaling limits from the API's DescribeAccountLimits action
+* Add ``autoscaling:DescribeAccountLimits`` and ``ec2:DescribeAccountAttributes`` to required IAM permissions.
+* Ignore ``AccountLimits`` objects from result pagination
+
 0.1.3 (2015-10-04)
 ------------------
 

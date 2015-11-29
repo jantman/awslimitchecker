@@ -15,12 +15,19 @@ and should be the only portion directly used by external code.
 
 Each AWS Service is represented by a subclass of the :py:class:`~awslimitchecker.services.base._AwsService` abstract base
 class; these Service Classes are responsible for knowing which limits exist for the service they represent, what the
-default values for these limits are, and how to check the current usage via the AWS API (via :py:mod:`boto`). When the
+default values for these limits are, querying current limits from the service's API (if supported),
+and how to check the current usage via the AWS API (via :py:mod:`boto`). When the
 Service Classes are instantiated, they build a dict of all of their limits, correlating a string key (the "limit name")
 with an :py:class:`~awslimitchecker.limit.AwsLimit` object. The Service Class constructors *must not* make any network
 connections; connections are created lazily as needed and stored as a class attribute. This allows us to inspect the
 services, limits and default limit values without ever connecting to AWS (this is also used to generate the
 :ref:`Supported Limits <limits>` documentation automatically).
+
+All calls to the AWS APIs should be made through :py:func:`~awslimitchecker.utils.boto_query_wrapper`. This function
+encapsulates both retrying queries with an exponential backoff when queries are throttled due to your account hitting
+the `request rate limit <http://docs.aws.amazon.com/AWSEC2/latest/APIReference/query-api-troubleshooting.html#api-request-rate>`_
+(via :py:func:`~awslimitchecker.utils.invoke_with_throttling_retries`) and automatically paginating query responses
+that aren't automatically handled by boto.
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is instantiated, it imports :py:mod:`~awslimitchecker.services`
 which in turn creates instances of all ``awslimitchecker.services.*`` classes and adds them to a dict mapping the
@@ -58,3 +65,23 @@ Using this methodology, no additional code is needed to support new/additional T
 *so long as* the Service and Limit name strings match between the Trusted Advisor API response and their
 corresponding :py:class:`~._AwsService` and :py:class:`~.AwsLimit` instances, the TA limits will be automatically
 added to the corresponding ``AwsLimit``.
+
+Service API Limit Information
+-----------------------------
+
+Some services provide API calls to retrieve at least some of the current limits, such as the ``DescribeAccountAttributes``
+API calls for `RDS <http://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DescribeAccountAttributes.html>`_
+and `EC2 <http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAccountAttributes.html>`_. Services that
+support such calls should make them in a ``_update_limits_from_api()`` method, which will be automatically called from
+:py:meth:`~.awslimitchecker.checker.AwsLimitChecker.get_limits`. The ``_update_limits_from_api()`` method should make the API call, and then
+update all relevant limits via the :py:class:`~.AwsLimit` class's :py:meth:`~.AwsLimit._set_api_limit` method.
+
+Limit Value Precedence
+----------------------
+
+The value used for a limit is the first match in the following list:
+
+1. Limit Override (set at runtime)
+2. API Limit
+3. Trusted Advisor
+4. Hard-coded default

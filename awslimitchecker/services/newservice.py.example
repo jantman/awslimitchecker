@@ -43,6 +43,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class _XXNewServiceXXService(_AwsService):
             lim._reset_usage()
         # TODO: update your usage here, i.e.:
         """
-        u = (count of something, from boto)
+        u = boto_query_wrapper(self.conn.some_method)  # count of something, from boto
         u_id = (resource id from AWS)
         self.limits['Number of u']._add_current_usage(u, aws_type='U', id=u_id)
         """
@@ -108,6 +109,17 @@ class _XXNewServiceXXService(_AwsService):
         """
         self.limits = limits
         return limits
+
+    def _update_limits_from_api(self):
+        """
+        Call the service's API action to retrieve limit/quota information, and
+        update AwsLimit objects in ``self.limits`` with this information.
+        """
+        # TODO: if the service has an API that can retrieve current limit information
+        # i.e. ``DescribeAccountAttributes``, call that action here and update each
+        # relevant AwsLimit object (in ``self.limits``) via its ``._set_api_limit()`` method.
+        # ELSE if the service has no API call for this, remove this method.
+        raise NotImplementedException()
 
     def required_iam_permissions(self):
         """

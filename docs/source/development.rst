@@ -54,11 +54,30 @@ Guidelines
   They *must not* connect in the class constructor.
 * All modules should have (and use) module-level loggers.
 * See the section on the AGPL license below.
+* **Commit messages** should be meaningful, and reference the Issue number
+  if you're working on a GitHub issue (i.e. "issue #x - <message>"). Please
+  refrain from using the "fixes #x" notation unless you are *sure* that the
+  the issue is fixed in that commit.
+* Unlike many F/OSS projects on GitHub, there is **no reason to squash your commits**;
+  this just loses valuable history and insight into the development process,
+  which could prove valuable if a bug is introduced by your work. Until GitHub
+  `fixes this <https://github.com/isaacs/github/issues/406>`_, we'll live with
+  a potentially messy git log in order to keep the history.
 
 .. _development.adding_checks:
 
 Adding New Limits and Checks to Existing Services
 -------------------------------------------------
+
+First, note that all calls to AWS APIs should be handled through
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`, which handles
+retries (with exponential backoff) when API request rate limits are hit,
+and also handles paginated responses if they're not handled by boto.
+
+Second, note that queries which may be paginated **and return a dict** instead
+of a ResultSet object must have the proper parameters for
+:py:func:`~awslimitchecker.utils._paginate_dict` passed in to
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`.
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method.
@@ -68,7 +87,11 @@ Adding New Limits and Checks to Existing Services
    :py:meth:`~.AwsLimit._add_current_usage` method. For anything more than trivial
    services (those with only 2-3 limits), ``find_usage()`` should be broken into
    multiple methods, generally one per AWS API call.
-3. Ensure complete test coverage for the above.
+3. If the service has an API call that retrieves current limit values, and its results
+   include your new limit, ensure that this value is updated in the limit via its
+   :py:meth:`~.AwsLimit._set_api_limit` method. This should be done in the Service
+   class's ``_update_limits_from_api()`` method.
+4. Ensure complete test coverage for the above.
 
 .. _development.adding_services:
 
@@ -77,6 +100,11 @@ Adding New Services
 
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
+
+First, note that all calls to AWS APIs should be handled through
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`, which handles
+retries (with exponential backoff) when API request rate limits are hit,
+and also handles paginated responses if they're not handled by boto.
 
 1. The new service name should be in CamelCase, preferably one word (if not one word, it should be underscore-separated).
    In ``awslimitchecker/services``, use the ``addservice`` script; this will create a templated service class in the
@@ -98,20 +126,23 @@ using the :py:mod:`abc` module.
 6. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
    small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
    to search for "TODO" in the new service class you created (#1). See :ref:`Adding New Limits <development.adding_checks>` for further information.
-7. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
-8. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
+7. If your service has an API action to retrieve limit/quota information (i.e. ``DescribeAccountAttributes`` for EC2 and RDS), ensure
+   that the service class has an ``_update_limits_from_api()`` method which makes this API call and updates each relevant AwsLimit
+   via its :py:meth:`~.AwsLimit._set_api_limit` method.
+8. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
+9. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
-9. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
-10. Run all tox jobs, or at least one python version, docs and coverage.
-11. Commit the updated documentation to the repository.
-12. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+10. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
+11. Run all tox jobs, or at least one python version, docs and coverage.
+12. Commit the updated documentation to the repository.
+13. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
     `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
     `Policy Simulator <https://policysim.aws.amazon.com/>`_.
-13. Submit your pull request.
+14. Submit your pull request.
 
 .. _development.adding_ta:
 
@@ -197,6 +228,26 @@ work needed. See the guidelines below for information.
   editable requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
 * If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
   ensure that the source code URL and version is correct and visible in the output given to users.
+
+.. _development.issues_and_prs:
+
+Handling Issues and PRs
+-----------------------
+
+All PRs and new work should be based off of the ``develop`` branch.
+
+PRs can be merged if they look good, and ``CHANGES.rst`` updated after the merge.
+
+For issues:
+
+1. Cut a ``issues/number`` branch off of ``develop``.
+2. Work the issue, come up with a fix. Commit early and often, and mention "issue #x - <message>" in your commit messages.
+3. When you believe you have a working fix, build docs (``tox -e docs``) and push to origin. Ensure all Travis tests pass.
+4. Ensure that coverage has increased or stayed the same.
+5. Update ``CHANGES.rst`` for the fix; commit this with a message like "fixes #x - <message>" and push to origin.
+6. Open a new pull request **against the develop branch** for this change; once all tests pass, merge it to develop.
+7. Assign the "unreleased fix" label to the issue. It should be closed automatically when develop is merged to master for
+   a release, but this lets us track which issues have unreleased fixes.
 
 .. _development.release_checklist:
 

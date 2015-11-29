@@ -184,15 +184,19 @@ class Test_VpcService(object):
         vpcs = [mock1, mock2]
 
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_vpcs.return_value = vpcs
 
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
-        cls._find_usage_vpcs()
+
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = vpcs
+            cls._find_usage_vpcs()
+
         assert len(cls.limits['VPCs'].get_current_usage()) == 1
         assert cls.limits['VPCs'].get_current_usage()[0].get_value() == 2
-        assert mock_conn.mock_calls == [
-            call.get_all_vpcs(),
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_vpcs)
         ]
 
     def test_find_usage_subnets(self):
@@ -205,18 +209,22 @@ class Test_VpcService(object):
 
         subnets = [mock1, mock2, mock3]
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_subnets.return_value = subnets
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
-        cls._find_usage_subnets()
+
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = subnets
+            cls._find_usage_subnets()
+
         usage = sorted(cls.limits['Subnets per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
         assert usage[0].resource_id == 'vpc-2'
         assert usage[1].get_value() == 2
         assert usage[1].resource_id == 'vpc-1'
-        assert mock_conn.mock_calls == [
-            call.get_all_subnets(),
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_subnets)
         ]
 
     def test_find_usage_acls(self):
@@ -235,11 +243,14 @@ class Test_VpcService(object):
 
         acls = [mock1, mock2, mock3]
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_network_acls.return_value = acls
 
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
-        cls._find_usage_ACLs()
+
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = acls
+            cls._find_usage_ACLs()
+
         usage = sorted(cls.limits['Network ACLs per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
@@ -255,8 +266,9 @@ class Test_VpcService(object):
         assert entries[1].get_value() == 3
         assert entries[2].resource_id == 'acl-3'
         assert entries[2].get_value() == 5
-        assert mock_conn.mock_calls == [
-            call.get_all_network_acls(),
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_network_acls)
         ]
 
     def test_find_usage_route_tables(self):
@@ -276,11 +288,14 @@ class Test_VpcService(object):
         tables = [mock1, mock2, mock3]
 
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_route_tables.return_value = tables
 
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
-        cls._find_usage_route_tables()
+
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = tables
+            cls._find_usage_route_tables()
+
         usage = sorted(cls.limits['Route tables per VPC'].get_current_usage())
         assert len(usage) == 2
         assert usage[0].get_value() == 1
@@ -296,8 +311,9 @@ class Test_VpcService(object):
         assert entries[1].get_value() == 3
         assert entries[2].resource_id == 'rt-3'
         assert entries[2].get_value() == 5
-        assert mock_conn.mock_calls == [
-            call.get_all_route_tables(),
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_route_tables)
         ]
 
     def test_find_usage_internet_gateways(self):
@@ -309,16 +325,20 @@ class Test_VpcService(object):
         gateways = [mock1, mock2]
 
         mock_conn = Mock(spec_set=VPCConnection)
-        mock_conn.get_all_internet_gateways.return_value = gateways
 
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
-        cls._find_usage_gateways()
+
+        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            mock_wrapper.return_value = gateways
+            cls._find_usage_gateways()
+
         assert len(cls.limits['Internet gateways'].get_current_usage()) == 1
         assert cls.limits['Internet gateways'].get_current_usage()[
             0].get_value() == 2
-        assert mock_conn.mock_calls == [
-            call.get_all_internet_gateways(),
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [
+            call(mock_conn.get_all_internet_gateways)
         ]
 
     def test_required_iam_permissions(self):

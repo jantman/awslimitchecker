@@ -77,3 +77,53 @@ def sample_limits():
     limits['SvcBar']['bar limit2'].set_limit_override(99)
     limits['SvcFoo']['foo limit3']._set_ta_limit(10)
     return limits
+
+
+def sample_limits_api():
+    limits = {
+        'SvcBar': {
+            'barlimit1': AwsLimit(
+                'barlimit1',
+                'SvcBar',
+                1,
+                2,
+                3,
+                limit_type='ltbar1',
+                limit_subtype='sltbar1',
+            ),
+            'bar limit2': AwsLimit(
+                'bar limit2',
+                'SvcBar',
+                2,
+                2,
+                3,
+                limit_type='ltbar2',
+                limit_subtype='sltbar2',
+            ),
+        },
+        'SvcFoo': {
+            'foo limit3': AwsLimit(
+                'foo limit3',
+                'SvcFoo',
+                3,
+                2,
+                3,
+                limit_type='ltfoo3',
+                limit_subtype='sltfoo3',
+            ),
+            'zzz limit4': AwsLimit(
+                'zzz limit4',
+                'SvcFoo',
+                4,
+                1,
+                5,
+                limit_type='ltfoo4',
+                limit_subtype='sltfoo4',
+            ),
+        },
+    }
+    limits['SvcBar']['bar limit2']._set_api_limit(2)
+    limits['SvcBar']['bar limit2'].set_limit_override(99)
+    limits['SvcFoo']['foo limit3']._set_ta_limit(10)
+    limits['SvcFoo']['zzz limit4']._set_api_limit(34)
+    return limits

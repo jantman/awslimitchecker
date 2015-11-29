@@ -110,14 +110,17 @@ class Test_XXNewServiceXXService(object):
     def test_find_usage(self):
         mock_conn = Mock(spec_set=XXNewServiceXXConnection)
         with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _XXNewServiceXXService(21, 43)
-            cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
+            with patch('%s.boto_service_wrapper' % self.pbm) as mock_wrapper:
+                cls = _XXNewServiceXXService(21, 43)
+                cls.conn = mock_conn
+                mock_wrapper.return_value =  # some logical return value
+                assert cls._have_usage is False
+                cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
+        assert mock_conn.mock_calls == []
+        assert mock_wrapper.mock_calls == [call(mock_conn.some_method)]
         # TODO - assert about usage
-
 
     def test_required_iam_permissions(self):
         cls = _XXNewServiceXXService(21, 43)
