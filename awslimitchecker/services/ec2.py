@@ -387,6 +387,7 @@ class _Ec2Service(_AwsService):
         :rtype: list
         """
         return [
+            "ec2:DescribeAccountAttributes",
             "ec2:DescribeAddresses",
             "ec2:DescribeInstances",
             "ec2:DescribeInternetGateways",
