@@ -111,14 +111,14 @@ class TestAwsLimitChecker(object):
         }
         # _AwsService instances should exist, but have no other calls
         assert self.mock_foo.mock_calls == [
-            call(80, 99, None, None, None, None)
+            call(80, 99, None, None, None, None, None, None)
         ]
         assert self.mock_bar.mock_calls == [
-            call(80, 99, None, None, None, None)
+            call(80, 99, None, None, None, None, None, None)
         ]
         assert self.mock_ta_constr.mock_calls == [
             call(account_id=None, account_role=None, region=None,
-                 external_id=None)
+                 external_id=None, mfa_serial_number=None, mfa_token=None)
         ]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
@@ -174,11 +174,15 @@ class TestAwsLimitChecker(object):
             'SvcBar': mock_svc2
         }
         # _AwsService instances should exist, but have no other calls
-        assert mock_foo.mock_calls == [call(5, 22, None, None, None, None)]
-        assert mock_bar.mock_calls == [call(5, 22, None, None, None, None)]
+        assert mock_foo.mock_calls == [
+            call(5, 22, None, None, None, None, None, None)
+        ]
+        assert mock_bar.mock_calls == [
+            call(5, 22, None, None, None, None, None, None)
+        ]
         assert mock_ta_constr.mock_calls == [
             call(account_id=None, account_role=None, region=None,
-                 external_id=None)
+                 external_id=None, mfa_serial_number=None, mfa_token=None)
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
@@ -215,14 +219,14 @@ class TestAwsLimitChecker(object):
         }
         # _AwsService instances should exist, but have no other calls
         assert mock_foo.mock_calls == [
-            call(80, 99, None, None, 'myregion', None)
+            call(80, 99, None, None, 'myregion', None, None, None)
         ]
         assert mock_bar.mock_calls == [
-            call(80, 99, None, None, 'myregion', None)
+            call(80, 99, None, None, 'myregion', None, None, None)
         ]
         assert mock_ta_constr.mock_calls == [
             call(account_id=None, account_role=None, region='myregion',
-                 external_id=None)
+                 external_id=None, mfa_serial_number=None, mfa_token=None)
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
@@ -263,17 +267,21 @@ class TestAwsLimitChecker(object):
         }
         # _AwsService instances should exist, but have no other calls
         assert mock_foo.mock_calls == [
-            call(80, 99, '123456789012', 'myrole', 'myregion', None)
+            call(80, 99, '123456789012', 'myrole', 'myregion', None,
+                 None, None)
         ]
         assert mock_bar.mock_calls == [
-            call(80, 99, '123456789012', 'myrole', 'myregion', None)
+            call(80, 99, '123456789012', 'myrole', 'myregion', None,
+                 None, None)
         ]
         assert mock_ta_constr.mock_calls == [
             call(
                 account_id='123456789012',
                 account_role='myrole',
                 region='myregion',
-                external_id=None
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None
             )
         ]
         assert mock_svc1.mock_calls == []
@@ -307,7 +315,9 @@ class TestAwsLimitChecker(object):
                     account_id='123456789012',
                     account_role='myrole',
                     region='myregion',
-                    external_id='myextid'
+                    external_id='myextid',
+                    mfa_serial_number=None,
+                    mfa_token=None
                 )
         # dict should be of _AwsService instances
         assert cls.services == {
@@ -316,17 +326,21 @@ class TestAwsLimitChecker(object):
         }
         # _AwsService instances should exist, but have no other calls
         assert mock_foo.mock_calls == [
-            call(80, 99, '123456789012', 'myrole', 'myregion', 'myextid')
+            call(80, 99, '123456789012', 'myrole', 'myregion', 'myextid',
+                 None, None)
         ]
         assert mock_bar.mock_calls == [
-            call(80, 99, '123456789012', 'myrole', 'myregion', 'myextid')
+            call(80, 99, '123456789012', 'myrole', 'myregion', 'myextid',
+                 None, None)
         ]
         assert mock_ta_constr.mock_calls == [
             call(
                 account_id='123456789012',
                 account_role='myrole',
                 region='myregion',
-                external_id='myextid'
+                external_id='myextid',
+                mfa_serial_number=None,
+                mfa_token=None
             )
         ]
         assert mock_svc1.mock_calls == []

@@ -50,7 +50,7 @@ class AwsLimitChecker(object):
 
     def __init__(self, warning_threshold=80, critical_threshold=99,
                  account_id=None, account_role=None, region=None,
-                 external_id=None):
+                 external_id=None, mfa_serial_number=None, mfa_token=None):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -83,6 +83,12 @@ class AwsLimitChecker(object):
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
         :type external_id: str
+        :param mfa_serial_number: (optional) the `MFA Serial Number` string to_
+        use when assuming a role via STS.
+        :type mfa_serial_number: str
+        :param mfa_token: (optional) the `MFA Token` string to use when_
+        assuming a role via STS.
+        :type mfa_token: str
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -112,18 +118,23 @@ class AwsLimitChecker(object):
         self.account_id = account_id
         self.account_role = account_role
         self.external_id = external_id
+        self.mfa_serial_number = mfa_serial_number
+        self.mfa_token = mfa_token
         self.region = region
         self.services = {}
         self.ta = TrustedAdvisor(
             account_id=account_id,
             account_role=account_role,
             region=region,
-            external_id=external_id
+            external_id=external_id,
+            mfa_serial_number=mfa_serial_number,
+            mfa_token=mfa_token
         )
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
                                        account_id, account_role, region,
-                                       external_id)
+                                       external_id, mfa_serial_number,
+                                       mfa_token)
 
     def get_version(self):
         """

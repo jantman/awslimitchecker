@@ -27,7 +27,8 @@ use as a Nagios-compatible plugin).
    usage: awslimitchecker [-h] [-S SERVICE] [-s] [-l] [--list-defaults]
                           [-L LIMIT] [-u] [--iam-policy] [-W WARNING_THRESHOLD]
                           [-C CRITICAL_THRESHOLD] [-A STS_ACCOUNT_ID]
-                          [-R STS_ACCOUNT_ROLE] [-E EXTERNAL_ID] [-r REGION]
+                          [-R STS_ACCOUNT_ROLE] [-E EXTERNAL_ID]
+                          [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN] [-r REGION]
                           [--skip-ta] [--no-color] [-v] [-V]
    Report on AWS service limits and usage via boto, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
@@ -65,6 +66,10 @@ use as a Nagios-compatible plugin).
                            for use with STS, the name of the IAM role to assume
      -E EXTERNAL_ID, --external-id EXTERNAL_ID
                            External ID to use when assuming a role via STS
+     -M MFA_SERIAL_NUMBER, --mfa-serial-number MFA_SERIAL_NUMBER
+                           MFA Serial Number to use when assuming a role via STS
+     -T MFA_TOKEN, --mfa-token MFA_TOKEN
+                           MFA Token to use when assuming a role via STS
      -r REGION, --region REGION
                            AWS region name to connect to; required for STS
      --skip-ta             do not attempt to pull *any* information on limits

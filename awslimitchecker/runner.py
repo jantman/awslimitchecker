@@ -139,6 +139,12 @@ class Runner(object):
         p.add_argument('-E', '--external-id', action='store', type=str,
                        default=None, help='External ID to use when assuming '
                        'a role via STS')
+        p.add_argument('-M', '--mfa-serial-number', action='store', type=str,
+                       default=None, help='MFA Serial Number to use when '
+                       'assuming a role via STS')
+        p.add_argument('-T', '--mfa-token', action='store', type=str,
+                       default=None, help='MFA Token to use when assuming '
+                       'a role via STS')
         p.add_argument('-r', '--region', action='store',
                        type=str, default=None,
                        help='AWS region name to connect to; required for STS')
@@ -301,7 +307,9 @@ class Runner(object):
             account_id=args.sts_account_id,
             account_role=args.sts_account_role,
             region=args.region,
-            external_id=args.external_id
+            external_id=args.external_id,
+            mfa_serial_number=args.mfa_serial_number,
+            mfa_token=args.mfa_token
         )
 
         if args.version:

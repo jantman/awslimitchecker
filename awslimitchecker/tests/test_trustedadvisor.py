@@ -84,6 +84,8 @@ class Test_TrustedAdvisor(object):
         assert cls.region == 'us-east-1'
         assert cls.ta_region is None
         assert cls.external_id is None
+        assert cls.mfa_serial_number is None
+        assert cls.mfa_token is None
 
     def test_init_sts(self):
         cls = TrustedAdvisor(account_id='aid', account_role='role', region='r')
@@ -93,6 +95,8 @@ class Test_TrustedAdvisor(object):
         assert cls.region == 'us-east-1'
         assert cls.ta_region == 'r'
         assert cls.external_id is None
+        assert cls.mfa_serial_number is None
+        assert cls.mfa_token is None
 
     def test_init_sts_external_id(self):
         cls = TrustedAdvisor(account_id='aid', account_role='role', region='r',
@@ -103,6 +107,8 @@ class Test_TrustedAdvisor(object):
         assert cls.region == 'us-east-1'
         assert cls.ta_region == 'r'
         assert cls.external_id == 'myeid'
+        assert cls.mfa_serial_number is None
+        assert cls.mfa_token is None
 
     def test_connect(self):
         cls = TrustedAdvisor()

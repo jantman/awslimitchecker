@@ -57,12 +57,14 @@ class ConnectableTester(Connectable):
     service_name = 'connectable_tester'
 
     def __init__(self, account_id=None, account_role=None, region=None,
-                 external_id=None):
+                 external_id=None, mfa_serial_number=None, mfa_token=None):
         self.account_id = account_id
         self.account_role = account_role
         self.region = region
         self.conn = None
         self.external_id = external_id
+        self.mfa_serial_number = mfa_serial_number
+        self.mfa_token = mfa_token
 
 
 class Test_Connectable(object):
@@ -121,7 +123,8 @@ class Test_Connectable(object):
         arn = 'arn:aws:iam::789:role/myr'
         assert mock_connect.mock_calls == [
             call('foobar'),
-            call().assume_role(arn, 'awslimitchecker', external_id=None),
+            call().assume_role(arn, 'awslimitchecker', external_id=None,
+                               mfa_serial_number=None, mfa_token=None),
         ]
         assume_role_ret = mock_connect.return_value.assume_role.return_value
         assert res == assume_role_ret.credentials
@@ -136,7 +139,27 @@ class Test_Connectable(object):
         arn = 'arn:aws:iam::789:role/myr'
         assert mock_connect.mock_calls == [
             call('foobar'),
-            call().assume_role(arn, 'awslimitchecker', external_id='myextid'),
+            call().assume_role(arn, 'awslimitchecker', external_id='myextid',
+                               mfa_serial_number=None, mfa_token=None),
+        ]
+        assume_role_ret = mock_connect.return_value.assume_role.return_value
+        assert res == assume_role_ret.credentials
+
+    def test_get_sts_token_mfa(self):
+        cls = ConnectableTester(account_id='789',
+                                account_role='myr', region='foobar',
+                                external_id='myextid',
+                                mfa_serial_number='arn:aws:iam::456:mfa/me',
+                                mfa_token='123456')
+        with patch('awslimitchecker.connectable.boto.sts.connect_to_region'
+                   '') as mock_connect:
+            res = cls._get_sts_token()
+        arn = 'arn:aws:iam::789:role/myr'
+        assert mock_connect.mock_calls == [
+            call('foobar'),
+            call().assume_role(arn, 'awslimitchecker', external_id='myextid',
+                               mfa_serial_number='arn:aws:iam::456:mfa/me',
+                               mfa_token='123456'),
         ]
         assume_role_ret = mock_connect.return_value.assume_role.return_value
         assert res == assume_role_ret.credentials

@@ -50,6 +50,9 @@ class Connectable(object):
     connecting via regions and/or STS.
     """
 
+    # Class attribute to reuse credentials between calls
+    credentials = None
+
     def connect_via(self, driver):
         """
         Connect to an AWS API and return the connection object. If
@@ -64,14 +67,19 @@ class Connectable(object):
         :returns: connected boto service class instance
         """
         if self.account_id is not None:
-            logger.debug("Connecting to %s for account %s (STS; %s)",
-                         self.service_name, self.account_id, self.region)
-            self.credentials = self._get_sts_token()
+            if Connectable.credentials is None:
+                logger.debug("Connecting to %s for account %s (STS; %s)",
+                             self.service_name, self.account_id, self.region)
+                Connectable.credentials = self._get_sts_token()
+            else:
+                logger.debug("Reusing previous STS credentials for account %s",
+                             self.account_id)
+
             conn = driver(
                 self.region,
-                aws_access_key_id=self.credentials.access_key,
-                aws_secret_access_key=self.credentials.secret_key,
-                security_token=self.credentials.session_token)
+                aws_access_key_id=Connectable.credentials.access_key,
+                aws_secret_access_key=Connectable.credentials.secret_key,
+                security_token=Connectable.credentials.session_token)
         else:
             logger.debug("Connecting to %s (%s)",
                          self.service_name, self.region)
@@ -86,8 +94,9 @@ class Connectable(object):
         First connect to STS via :py:func:`boto.sts.connect_to_region`, then
         assume a role using :py:meth:`boto.sts.STSConnection.assume_role`
         using ``self.account_id`` and ``self.account_role`` (and optionally
-        ``self.external_id``). Return the resulting
-        :py:class:`boto.sts.credentials.Credentials` object.
+        ``self.external_id``, ``self.mfa_serial_number``, ``self.mfa_token``).
+        Return the resulting :py:class:`boto.sts.credentials.Credentials`
+        object.
 
         :returns: STS assumed role credentials
         :rtype: :py:class:`boto.sts.credentials.Credentials`
@@ -97,7 +106,9 @@ class Connectable(object):
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
         logger.debug("STS assume role for %s", arn)
         role = sts.assume_role(arn, "awslimitchecker",
-                               external_id=self.external_id)
+                               external_id=self.external_id,
+                               mfa_serial_number=self.mfa_serial_number,
+                               mfa_token=self.mfa_token)
         logger.debug("Got STS credentials for role; access_key_id=%s",
                      role.credentials.access_key)
         return role.credentials
