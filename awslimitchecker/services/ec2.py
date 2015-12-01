@@ -166,6 +166,10 @@ class _Ec2Service(_AwsService):
                                    "does not yet support spot "
                                    "instances.", inst.id)
                     continue
+                if inst.state in ['stopped', 'terminated']:
+                    logger.debug("Ignoring instance %s in state %s", inst.id,
+                                 inst.state)
+                    continue
                 if inst.placement not in az_to_inst:
                     az_to_inst[inst.placement] = deepcopy(ondemand)
                 try:
