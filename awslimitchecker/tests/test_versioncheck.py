@@ -1657,6 +1657,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
                         'false', reason='git tests dont work on PRs')
     def test_install_git_e(self, tmpdir):
         # https://pip.pypa.io/en/latest/reference/pip_install.html#git
+        print("### execute: git fetch --tags")
+        print(_check_output(['git', 'fetch', '--tags']))
+        print("### fetched DONE")
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
@@ -1687,6 +1690,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
                         'false', reason='git tests dont work on PRs')
     def test_install_git_e_dirty(self, tmpdir):
         # https://pip.pypa.io/en/latest/reference/pip_install.html#git
+        print("### execute: git fetch --tags")
+        print(_check_output(['git', 'fetch', '--tags']))
+        print("### fetched DONE")
         status = self._check_git_pushed()
         assert status != 1, "git clone not equal to origin"
         assert status != 2, 'git clone is dirty'
