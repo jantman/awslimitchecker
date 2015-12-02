@@ -8,6 +8,7 @@ Pre-release (develop branch)
 ------------------
 
 * `#101 <https://github.com/jantman/awslimitchecker/issues/101>`_ Ignore stopped and terminated instances from EC2 Running On-Demand Instances usage count.
+* `#47 <https://github.com/jantman/awslimitchecker/issues/47>`_ In VersionCheck git -e tests, explicitly fetch git tags at beginning of test.
 
 0.2.0 (2015-11-29)
 ------------------
