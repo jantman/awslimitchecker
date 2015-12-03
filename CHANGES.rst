@@ -4,6 +4,9 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.2.2 (2015-12-02)
+------------------
+
 * `#83 <https://github.com/jantman/awslimitchecker/issues/83>`_ remove the "v" prefix from version tags so ReadTheDocs will build them automatically.
 * `#21 <https://github.com/jantman/awslimitchecker/issues/21>`_ run simple integration tests of ``-l`` and ``-u`` for commits to main repo branches.
 
