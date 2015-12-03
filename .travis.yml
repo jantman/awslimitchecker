@@ -20,7 +20,6 @@ env:
 - TOXENV=pypy3-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=integration
-- TOXENV=integration3
 install:
 - git config --global user.email "travisci@jasonantman.com"
 - git config --global user.name "travisci"
