@@ -285,4 +285,5 @@ Release Checklist
 
 13. make sure any GH issues fixed in the release were closed.
 14. merge master back into develop
-15. Blog, tweet, etc. about the new version.
+15. Log in to ReadTheDocs and enable build of the tag.
+16. Blog, tweet, etc. about the new version.
