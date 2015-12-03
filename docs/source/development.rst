@@ -276,8 +276,8 @@ Release Checklist
 10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
 11. Tag the release in Git, push tag to GitHub:
 
-   * tag the release. for now the message is quite simple: ``git tag -a vX.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
-   * push the tag to GitHub: ``git push origin vX.Y.Z``
+   * tag the release. for now the message is quite simple: ``git tag -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
+   * push the tag to GitHub: ``git push origin X.Y.Z``
 
 12. Upload package to live pypi:
 
