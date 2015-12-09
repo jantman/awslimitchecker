@@ -203,7 +203,7 @@ class Test_TrustedAdvisor(object):
         assert self.mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [call(
             self.mock_conn.describe_trusted_advisor_checks,
-            'en'
+            'en', alc_no_paginate=True
             )]
 
     def test_get_limit_check_id_none(self):
@@ -228,12 +228,12 @@ class Test_TrustedAdvisor(object):
         assert self.mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [call(
             self.mock_conn.describe_trusted_advisor_checks,
-            'en'
+            'en', alc_no_paginate=True
         )]
 
     def test_get_limit_check_id_subscription_required(self):
 
-        def se_api(foo, language):
+        def se_api(foo, language, alc_no_paginate=False):
             status = 400
             reason = 'Bad Request'
             body = {
@@ -254,7 +254,7 @@ class Test_TrustedAdvisor(object):
         assert self.mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [call(
             self.mock_conn.describe_trusted_advisor_checks,
-            'en'
+            'en', alc_no_paginate=True
         )]
         assert mock_logger.mock_calls == [
             call.debug("Querying Trusted Advisor checks"),
@@ -265,7 +265,7 @@ class Test_TrustedAdvisor(object):
 
     def test_get_limit_check_id_other_exception(self):
 
-        def se_api(foo, language):
+        def se_api(foo, language, alc_no_paginate=False):
             status = 400
             reason = 'foobar'
             body = {
@@ -281,7 +281,7 @@ class Test_TrustedAdvisor(object):
         assert self.mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [call(
             self.mock_conn.describe_trusted_advisor_checks,
-            'en'
+            'en', alc_no_paginate=True
         )]
         assert excinfo.value.status == 400
         assert excinfo.value.reason == 'foobar'
@@ -364,7 +364,9 @@ class Test_TrustedAdvisor(object):
                 mock_wrapper.return_value = poll_return_val
                 res = self.cls._poll()
         assert tmp.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(tmp, 'foo')]
+        assert mock_wrapper.mock_calls == [
+            call(tmp, 'foo', alc_no_paginate=True)
+        ]
         assert mock_id.mock_calls == [call(self.cls)]
         assert res == {
             'AutoScaling': {
@@ -441,7 +443,9 @@ class Test_TrustedAdvisor(object):
                 mock_wrapper.return_value = poll_return_value
                 res = self.cls._poll()
         assert tmp.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(tmp, 'foo')]
+        assert mock_wrapper.mock_calls == [
+            call(tmp, 'foo', alc_no_paginate=True)
+        ]
         assert mock_id.mock_calls == [call(self.cls)]
         assert res == {
             'AutoScaling': {

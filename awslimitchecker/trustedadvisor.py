@@ -151,7 +151,7 @@ class TrustedAdvisor(Connectable):
         region = self.ta_region or self.conn.region.name
         checks = boto_query_wrapper(
             self.conn.describe_trusted_advisor_check_result,
-            check_id
+            check_id, alc_no_paginate=True
         )
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
@@ -180,7 +180,7 @@ class TrustedAdvisor(Connectable):
         try:
             checks = boto_query_wrapper(
                 self.conn.describe_trusted_advisor_checks,
-                'en'
+                'en', alc_no_paginate=True
             )['checks']
         except boto.exception.JSONResponseError as ex:
             if (
