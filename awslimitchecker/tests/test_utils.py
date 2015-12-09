@@ -337,6 +337,27 @@ class TestPaginateQuery(object):
         ]
         assert mocks['_paginate_dict'].mock_calls == []
 
+    def test_alc_no_paginate(self):
+        result = ResultSet()
+        result.next_token = 'foo'
+        func = Mock()
+
+        with patch.multiple(
+                pbm,
+                invoke_with_throttling_retries=DEFAULT,
+                _paginate_resultset=DEFAULT,
+                _paginate_dict=DEFAULT,
+        ) as mocks:
+            mocks['invoke_with_throttling_retries'].return_value = result
+            res = paginate_query(func, 'foo', bar='barval',
+                                 alc_no_paginate=True)
+        assert res == result
+        assert mocks['invoke_with_throttling_retries'].mock_calls == [
+            call(func, 'foo', bar='barval', alc_no_paginate=True)
+        ]
+        assert mocks['_paginate_resultset'].mock_calls == []
+        assert mocks['_paginate_dict'].mock_calls == []
+
     def test_resultset_no_next(self):
         result = ResultSet()
         func = Mock()
