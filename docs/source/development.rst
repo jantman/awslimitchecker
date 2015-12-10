@@ -276,8 +276,8 @@ Release Checklist
 10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
 11. Tag the release in Git, push tag to GitHub:
 
-   * tag the release. for now the message is quite simple: ``git tag -a vX.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
-   * push the tag to GitHub: ``git push origin vX.Y.Z``
+   * tag the release. for now the message is quite simple: ``git tag -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
+   * push the tag to GitHub: ``git push origin X.Y.Z``
 
 12. Upload package to live pypi:
 
@@ -285,4 +285,5 @@ Release Checklist
 
 13. make sure any GH issues fixed in the release were closed.
 14. merge master back into develop
-15. Blog, tweet, etc. about the new version.
+15. Log in to ReadTheDocs and enable build of the tag.
+16. Blog, tweet, etc. about the new version.

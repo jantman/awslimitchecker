@@ -223,12 +223,14 @@ class Test_Ec2Service(object):
         type(mock_inst1A).instance_type = 't2.micro'
         type(mock_inst1A).spot_instance_request_id = None
         type(mock_inst1A).placement = 'az1a'
+        type(mock_inst1A).state = 'running'
 
         mock_inst1B = Mock(spec_set=Instance)
         type(mock_inst1B).id = '1B'
         type(mock_inst1B).instance_type = 'r3.2xlarge'
         type(mock_inst1B).spot_instance_request_id = None
         type(mock_inst1B).placement = 'az1a'
+        type(mock_inst1B).state = 'pending'
 
         mock_res1 = Mock(spec_set=Reservation)
         type(mock_res1).instances = [mock_inst1A, mock_inst1B]
@@ -238,21 +240,41 @@ class Test_Ec2Service(object):
         type(mock_inst2A).instance_type = 'c4.4xlarge'
         type(mock_inst2A).spot_instance_request_id = None
         type(mock_inst2A).placement = 'az1a'
+        type(mock_inst2A).state = 'shutting-down'
 
         mock_inst2B = Mock(spec_set=Instance)
         type(mock_inst2B).id = '2B'
         type(mock_inst2B).instance_type = 't2.micro'
         type(mock_inst2B).spot_instance_request_id = '1234'
         type(mock_inst2B).placement = 'az1a'
+        type(mock_inst2B).state = 'stopping'
 
         mock_inst2C = Mock(spec_set=Instance)
         type(mock_inst2C).id = '2C'
         type(mock_inst2C).instance_type = 'm4.8xlarge'
         type(mock_inst2C).spot_instance_request_id = None
         type(mock_inst2C).placement = 'az1a'
+        type(mock_inst2C).state = 'running'
+
+        mock_instStopped = Mock(spec_set=Instance)
+        type(mock_instStopped).id = '2C'
+        type(mock_instStopped).instance_type = 'm4.8xlarge'
+        type(mock_instStopped).spot_instance_request_id = None
+        type(mock_instStopped).placement = 'az1a'
+        type(mock_instStopped).state = 'stopped'
+
+        mock_instTerm = Mock(spec_set=Instance)
+        type(mock_instTerm).id = '2C'
+        type(mock_instTerm).instance_type = 'm4.8xlarge'
+        type(mock_instTerm).spot_instance_request_id = None
+        type(mock_instTerm).placement = 'az1a'
+        type(mock_instTerm).state = 'terminated'
 
         mock_res2 = Mock(spec_set=Reservation)
-        type(mock_res2).instances = [mock_inst2A, mock_inst2B, mock_inst2C]
+        type(mock_res2).instances = [
+            mock_inst2A, mock_inst2B, mock_inst2C, mock_instStopped,
+            mock_instTerm
+        ]
 
         mock_conn = Mock(spec_set=EC2Connection)
         return_value = [
