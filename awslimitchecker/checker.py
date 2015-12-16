@@ -84,10 +84,10 @@ class AwsLimitChecker(object):
           string to use when assuming a role via STS.
         :type external_id: str
         :param mfa_serial_number: (optional) the `MFA Serial Number` string to_
-        use when assuming a role via STS.
+          use when assuming a role via STS.
         :type mfa_serial_number: str
         :param mfa_token: (optional) the `MFA Token` string to use when_
-        assuming a role via STS.
+          assuming a role via STS.
         :type mfa_token: str
         """
         # ###### IMPORTANT license notice ##########
