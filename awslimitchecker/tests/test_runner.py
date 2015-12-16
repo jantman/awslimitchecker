@@ -169,6 +169,12 @@ class TestAwsLimitCheckerRunner(object):
             call().add_argument('-E', '--external-id', action='store', type=str,
                                 default=None, help='External ID to use when '
                                 'assuming a role via STS'),
+            call().add_argument('-M', '--mfa-serial-number', action='store',
+                                type=str, default=None, help='MFA Serial '
+                                'Number to use when assuming a role via STS'),
+            call().add_argument('-T', '--mfa-token', action='store', type=str,
+                                default=None, help='MFA Token to use when '
+                                'assuming a role via STS'),
             call().add_argument('-r', '--region', action='store',
                                 type=str, default=None,
                                 help='AWS region name to connect to; required '
@@ -211,7 +217,9 @@ class TestAwsLimitCheckerRunner(object):
                 account_id=None,
                 account_role=None,
                 region=None,
-                external_id=None
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None
             ),
             call().get_project_url(),
             call().get_version()
@@ -561,7 +569,9 @@ class TestAwsLimitCheckerRunner(object):
                 account_id=None,
                 account_role=None,
                 region='myregion',
-                external_id=None
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None
             )
         ]
         assert self.cls.service_name is None
@@ -594,7 +604,9 @@ class TestAwsLimitCheckerRunner(object):
                 account_id='098765432109',
                 account_role='myrole',
                 region='myregion',
-                external_id=None
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None
             )
         ]
         assert self.cls.service_name is None
@@ -629,7 +641,9 @@ class TestAwsLimitCheckerRunner(object):
                 account_id='098765432109',
                 account_role='myrole',
                 region='myregion',
-                external_id='myextid'
+                external_id='myextid',
+                mfa_serial_number=None,
+                mfa_token=None
             )
         ]
         assert self.cls.service_name is None
@@ -676,7 +690,8 @@ class TestAwsLimitCheckerRunner(object):
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
             call(warning_threshold=50, critical_threshold=99, account_id=None,
-                 account_role=None, region=None, external_id=None)
+                 account_role=None, region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None)
         ]
 
     def test_entry_critical(self):
@@ -691,7 +706,8 @@ class TestAwsLimitCheckerRunner(object):
         assert excinfo.value.code == 9
         assert mock_alc.mock_calls == [
             call(warning_threshold=80, critical_threshold=95, account_id=None,
-                 account_role=None, region=None, external_id=None)
+                 account_role=None, region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None)
         ]
 
     def test_entry_check_thresholds(self):

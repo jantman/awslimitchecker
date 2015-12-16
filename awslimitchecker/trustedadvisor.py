@@ -57,7 +57,7 @@ class TrustedAdvisor(Connectable):
     service_name = 'TrustedAdvisor'
 
     def __init__(self, account_id=None, account_role=None, region=None,
-                 external_id=None):
+                 external_id=None, mfa_serial_number=None, mfa_token=None):
         """
         Class to contain all TrustedAdvisor-related logic.
 
@@ -77,6 +77,12 @@ class TrustedAdvisor(Connectable):
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
         :type external_id: str
+        :param mfa_serial_number: (optional) the `MFA Serial Number` string to
+          use when assuming a role via STS.
+        :type mfa_serial_number: str
+        :param mfa_token: (optional) the `MFA Token` string to use when
+          assuming a role via STS.
+        :type mfa_token: str
         """
         self.conn = None
         self.have_ta = True
@@ -85,6 +91,8 @@ class TrustedAdvisor(Connectable):
         self.region = 'us-east-1'
         self.ta_region = region
         self.external_id = external_id
+        self.mfa_serial_number = mfa_serial_number
+        self.mfa_token = mfa_token
 
     def connect(self):
         """Connect to API if not already connected; set self.conn."""
