@@ -4,6 +4,8 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* `PR #100 <https://github.com/jantman/awslimitchecker/pull/100>`_ support MFA tokens when using STS assume role
+
 0.2.2 (2015-12-02)
 ------------------
 
