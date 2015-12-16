@@ -77,11 +77,11 @@ class TrustedAdvisor(Connectable):
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
         :type external_id: str
-        :param mfa_serial_number: (optional) the `MFA Serial Number` string to_
-        use when assuming a role via STS.
+        :param mfa_serial_number: (optional) the `MFA Serial Number` string to
+          use when assuming a role via STS.
         :type mfa_serial_number: str
-        :param mfa_token: (optional) the `MFA Token` string to use when_
-        assuming a role via STS.
+        :param mfa_token: (optional) the `MFA Token` string to use when
+          assuming a role via STS.
         :type mfa_token: str
         """
         self.conn = None
