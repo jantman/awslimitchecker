@@ -269,8 +269,10 @@ Release Checklist
 9. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct
+   * ``rm -Rf dist``
    * ``python setup.py register -r https://testpypi.python.org/pypi``
-   * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
+   * ``python setup.py sdist bdist_wheel``
+   * ``twine upload -r https://testpypi.python.org/pypi dist/*``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
 10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
@@ -281,7 +283,7 @@ Release Checklist
 
 12. Upload package to live pypi:
 
-    * ``python setup.py sdist upload``
+    * ``twine upload dist/*``
 
 13. make sure any GH issues fixed in the release were closed.
 14. merge master back into develop
