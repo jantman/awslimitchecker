@@ -102,8 +102,33 @@ class Test_Connectable(object):
         with patch('awslimitchecker.connectable.Connectable._get_sts_token'
                    '') as mock_get_sts:
             mock_get_sts.return_value = mock_creds
+            Connectable.credentials = None
             res = cls.connect_via(mock_driver)
         assert mock_get_sts.mock_calls == [call()]
+        assert mock_driver.mock_calls == [
+            call(
+                'myregion',
+                aws_access_key_id='sts_ak',
+                aws_secret_access_key='sts_sk',
+                security_token='sts_token'
+            )
+        ]
+        assert res == mock_driver.return_value
+
+    def test_connect_via_sts_again(self):
+        cls = ConnectableTester(account_id='123', account_role='myrole',
+                                region='myregion')
+        mock_driver = Mock()
+        mock_creds = Mock()
+        type(mock_creds).access_key = 'sts_ak'
+        type(mock_creds).secret_key = 'sts_sk'
+        type(mock_creds).session_token = 'sts_token'
+
+        with patch('awslimitchecker.connectable.Connectable._get_sts_token'
+                   '') as mock_get_sts:
+            Connectable.credentials = mock_creds
+            res = cls.connect_via(mock_driver)
+        assert mock_get_sts.mock_calls == []
         assert mock_driver.mock_calls == [
             call(
                 'myregion',
