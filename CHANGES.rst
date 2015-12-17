@@ -4,6 +4,9 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* Add coverage for one code branch introduced in `PR #100 <https://github.com/jantman/awslimitchecker/pull/100>`_ that wasn't covered by tests.
+* `#112 <https://github.com/jantman/awslimitchecker/issues/112>`_ fix a bug in the versioncheck integration tests, and a bug uncovered in versioncheck itself, both dealing with checkouts that are on a un-cloned branch.
+
 0.2.3 (2015-12-16)
 ------------------
 
