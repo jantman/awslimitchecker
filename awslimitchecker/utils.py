@@ -159,6 +159,10 @@ def invoke_with_throttling_retries(function_ref, *argv, **kwargs):
 def paginate_query(function_ref, *argv, **kwargs):
     """
     Invoke a Boto operation, automatically paginating through all responses.
+    First, pass the function, args and kwargs to
+    :py:func:`~.invoke_with_throttling_retries`.
+
+    If kwargs['alc_no_paginate'] is True, return the result immediately.
 
     If ``function_ref`` returns a :py:class:`boto.resultset.ResultSet` object
     and its ``next_token`` attribute is not None, pass it through to
@@ -181,6 +185,9 @@ def paginate_query(function_ref, *argv, **kwargs):
         'alc_marker_path', 'alc_data_path', 'alc_marker_param'
     ]
     result = invoke_with_throttling_retries(function_ref, *argv, **kwargs)
+    if 'alc_no_paginate' in kwargs and kwargs['alc_no_paginate'] is True:
+        logger.debug("explicitly not paginating query")
+        return result
     if isinstance(result, ResultSet) and result.next_token is None:
         return result
     elif isinstance(result, ResultSet) and result.next_token is not None:

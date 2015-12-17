@@ -4,6 +4,12 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.2.3 (2015-12-16)
+------------------
+
+* `PR #100 <https://github.com/jantman/awslimitchecker/pull/100>`_ support MFA tokens when using STS assume role
+* `#107 <https://github.com/jantman/awslimitchecker/issues/107>`_ add support to explicitly disable pagination, and use for TrustedAdvisor to prevent pagination warnings
+
 0.2.2 (2015-12-02)
 ------------------
 

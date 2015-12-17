@@ -50,7 +50,8 @@ class _AwsService(Connectable):
     service_name = 'baseclass'
 
     def __init__(self, warning_threshold, critical_threshold, account_id=None,
-                 account_role=None, region=None, external_id=None):
+                 account_role=None, region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -84,6 +85,12 @@ class _AwsService(Connectable):
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
         :type external_id: str
+        :param mfa_serial_number: (optional) the `MFA Serial Number` string to
+          use when assuming a role via STS.
+        :type mfa_serial_number: str
+        :param mfa_token: (optional) the `MFA Token` string to use when
+          assuming a role via STS.
+        :type mfa_token: str
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
@@ -91,6 +98,8 @@ class _AwsService(Connectable):
         self.account_role = account_role
         self.region = region
         self.external_id = external_id
+        self.mfa_serial_number = mfa_serial_number
+        self.mfa_token = mfa_token
 
         self.limits = {}
         self.limits = self.get_limits()
