@@ -101,6 +101,19 @@ class Test_AGPLVersionChecker(object):
             call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
+    def test_is_git_dirty_false_no_branch(self):
+        cls = AGPLVersionChecker()
+        with patch('%s._check_output' % self.mpb) as mock_check_out:
+            mock_check_out.return_value = dedent("""
+            Not currently on any branch.
+            nothing to commit, working directory clean
+            """)
+            res = cls._is_git_dirty()
+        assert res is False
+        assert mock_check_out.mock_calls == [
+            call(['git', 'status', '-u'], stderr=DEVNULL)
+        ]
+
     def test_is_git_dirty_true_ahead(self):
         cls = AGPLVersionChecker()
         with patch('%s._check_output' % self.mpb) as mock_check_out:

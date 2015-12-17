@@ -249,7 +249,8 @@ class AGPLVersionChecker(object):
             '-u'
         ], stderr=DEVNULL).strip()
         if (('Your branch is up-to-date with' not in status and
-                'HEAD detached at' not in status) or
+                'HEAD detached at' not in status and
+                'Not currently on any branch' not in status) or
                 'nothing to commit' not in status):
             logger.debug("Git repository dirty based on status: %s", status)
             return True
