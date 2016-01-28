@@ -55,6 +55,10 @@ boto_log = logging.getLogger("boto")
 boto_log.setLevel(logging.WARNING)
 boto_log.propagate = True
 
+# suppress boto internal logging below WARNING level
+botocore_log = logging.getLogger("botocore")
+botocore_log.setLevel(logging.WARNING)
+botocore_log.propagate = True
 
 class Runner(object):
 
