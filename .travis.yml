@@ -21,7 +21,7 @@ env:
 - TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
 - TOXENV=integration
 install:
-- test $TOXENV = "py32-unit" -o $TOXENV = "py32-versioncheck" && virtualenv --version && pip install --upgrade virtualenv==13.1.2
+- virtualenv --version; test $TOXENV = "py32-unit" -o $TOXENV = "py32-versioncheck" && pip install --upgrade virtualenv==13.1.2 || /bin/true
 - git config --global user.email "travisci@jasonantman.com"
 - git config --global user.name "travisci"
 - pip install tox
