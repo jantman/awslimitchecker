@@ -38,8 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto
-import boto.ec2.elb
 import logging
 
 from .base import _AwsService
@@ -57,10 +55,8 @@ class _ElbService(_AwsService):
         """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
-        elif self.region:
-            self.conn = self.connect_via(boto.ec2.elb.connect_to_region)
         else:
-            self.conn = boto.connect_elb()
+            self.conn = self.connect_client('elb')
 
     def find_usage(self):
         """
@@ -72,16 +68,21 @@ class _ElbService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        lbs = boto_query_wrapper(self.conn.get_all_load_balancers)
+        lbs = boto_query_wrapper(
+            self.conn.describe_load_balancers,
+            alc_marker_path=['NextMarker'],
+            alc_data_path=['LoadBalancerDescriptions'],
+            alc_marker_param='Marker'
+        )
         self.limits['Active load balancers']._add_current_usage(
-            len(lbs),
+            len(lbs['LoadBalancerDescriptions']),
             aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
         )
-        for lb in lbs:
+        for lb in lbs['LoadBalancerDescriptions']:
             self.limits['Listeners per load balancer']._add_current_usage(
-                len(lb.listeners),
+                len(lb['ListenerDescriptions']),
                 aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
-                resource_id=lb.name,
+                resource_id=lb['LoadBalancerName'],
             )
         self._have_usage = True
         logger.debug("Done checking usage.")
