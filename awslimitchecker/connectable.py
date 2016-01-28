@@ -38,9 +38,28 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import logging
-import boto.sts
+import boto  # @TODO boto3 migration - remove this when done
+import boto.sts  # @TODO boto3 migration - remove this when done
+import boto3
 
 logger = logging.getLogger(__name__)
+
+
+class ConnectableCredentials(object):
+    """
+    boto's (2.x) :py:meth:`boto.sts.STSConnection.assume_role` returns a
+    :py:class:`boto.sts.credentials.Credentials` object, but boto3's
+    :py:meth:`boto3.STS.Client.assume_role` just returns a dict. This class
+    provides a compatible interface for boto3.
+    """
+
+    def __init__(self, creds_dict):
+        self.access_key = creds_dict['Credentials']['AccessKeyId']
+        self.secret_key = creds_dict['Credentials']['SecretAccessKey']
+        self.session_token = creds_dict['Credentials']['SessionToken']
+        self.expiration = creds_dict['Credentials']['Expiration']
+        self.assumed_role_id = creds_dict['AssumedRoleUser']['AssumedRoleId']
+        self.assumed_role_arn = creds_dict['AssumedRoleUser']['Arn']
 
 
 class Connectable(object):
@@ -66,6 +85,7 @@ class Connectable(object):
         :type driver: :py:obj:`function`
         :returns: connected boto service class instance
         """
+        # @TODO boto3 migration - remove this when done
         if self.account_id is not None:
             if Connectable.credentials is None:
                 logger.debug("Connecting to %s for account %s (STS; %s)",
@@ -87,6 +107,43 @@ class Connectable(object):
         logger.info("Connected to %s", self.service_name)
         return conn
 
+    def connect_client(self, service_name):
+        """
+        Connect to an AWS API and return the connected boto3 client object. If
+        ``self.account_id`` is None, call :py:meth:`boto3.client` with
+        ``region_name=self.region``. Otherwise, call :py:meth:`~._get_sts_token`
+        to get STS token credentials using
+        :py:meth:`boto.sts.STSConnection.assume_role` and call
+        :py:meth:`boto3.client` with those credentials to use an assumed role.
+
+        This method returns a low-level boto3 client object.
+
+        :param service_name: name of the AWS service API to connect to (passed
+          to :py:meth:`boto3.client` as the ``service_name`` parameter.)
+        :type driver: str
+        :returns: connected :py:meth:`boto3.client` class instance
+        """
+        if self.account_id is not None:
+            if Connectable.credentials is None:
+                logger.debug("Connecting to %s for account %s (STS; %s)",
+                             service_name, self.account_id, self.region)
+                Connectable.credentials = self._get_sts_token_boto3()
+            else:
+                logger.debug("Reusing previous STS credentials for account %s",
+                             self.account_id)
+            conn = boto3.client(
+                service_name,
+                region_name=self.region,
+                aws_access_key_id=Connectable.credentials.access_key,
+                aws_secret_access_key=Connectable.credentials.secret_key,
+                aws_session_token=Connectable.credentials.session_token)
+        else:
+            logger.debug("Connecting to %s (%s)",
+                         service_name, self.region)
+            conn = boto3.client(service_name, region_name=self.region)
+        logger.info("Connected to %s", service_name)
+        return conn
+
     def _get_sts_token(self):
         """
         Assume a role via STS and return the credentials.
@@ -101,6 +158,7 @@ class Connectable(object):
         :returns: STS assumed role credentials
         :rtype: :py:class:`boto.sts.credentials.Credentials`
         """
+        # @TODO boto3 migration - remove this when done
         logger.debug("Connecting to STS in region %s", self.region)
         sts = boto.sts.connect_to_region(self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
@@ -112,3 +170,31 @@ class Connectable(object):
         logger.debug("Got STS credentials for role; access_key_id=%s",
                      role.credentials.access_key)
         return role.credentials
+
+    def _get_sts_token_boto3(self):
+        """
+        Assume a role via STS and return the credentials.
+
+        First connect to STS via :py:func:`boto3.client`, then
+        assume a role using :py:meth:`boto3.STS.Client.assume_role`
+        using ``self.account_id`` and ``self.account_role`` (and optionally
+        ``self.external_id``, ``self.mfa_serial_number``, ``self.mfa_token``).
+        Return the resulting :py:class:`~.ConnectableCredentials`
+        object.
+
+        :returns: STS assumed role credentials
+        :rtype: :py:class:`~.ConnectableCredentials`
+        """
+        logger.debug("Connecting to STS in region %s", self.region)
+        sts = boto3.client('sts', region_name=self.region)
+        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        logger.debug("STS assume role for %s", arn)
+        role = sts.assume_role(RoleArn=arn,
+                               RoleSessionName="awslimitchecker",
+                               ExternalId=self.external_id,
+                               SerialNumber=self.mfa_serial_number,
+                               TokenCode=self.mfa_token)
+        creds = ConnectableCredentials(role)
+        logger.debug("Got STS credentials for role; access_key_id=%s",
+                     creds.access_key)
+        return creds

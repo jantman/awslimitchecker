@@ -282,6 +282,7 @@ texinfo_documents = [
 intersphinx_mapping = {
     'https://docs.python.org/': None,
     'boto': ('http://boto.readthedocs.org/en/latest/', None)
+    'boto3': ('http://boto3.readthedocs.org/en/latest/', None)
 }
 
 autoclass_content = 'init'
