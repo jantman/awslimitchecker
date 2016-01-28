@@ -38,8 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto
-import boto.ec2.autoscale
 import logging
 
 from .base import _AwsService
@@ -57,10 +55,8 @@ class _AutoscalingService(_AwsService):
         """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
-        elif self.region:
-            self.conn = self.connect_via(boto.ec2.autoscale.connect_to_region)
         else:
-            self.conn = boto.connect_autoscale()
+            self.conn = self.connect_client('autoscaling')
 
     def find_usage(self):
         """
@@ -75,7 +71,12 @@ class _AutoscalingService(_AwsService):
 
         self.limits['Auto Scaling groups']._add_current_usage(
             len(
-                boto_query_wrapper(self.conn.get_all_groups)
+                boto_query_wrapper(
+                    self.conn.describe_auto_scaling_groups,
+                    alc_marker_path=['NextToken'],
+                    alc_data_path=['AutoScalingGroups'],
+                    alc_marker_param='NextToken'
+                )['AutoScalingGroups']
             ),
             aws_type='AWS::AutoScaling::AutoScalingGroup',
         )
@@ -83,8 +84,11 @@ class _AutoscalingService(_AwsService):
         self.limits['Launch configurations']._add_current_usage(
             len(
                 boto_query_wrapper(
-                    self.conn.get_all_launch_configurations
-                )
+                    self.conn.describe_launch_configurations,
+                    alc_marker_path=['NextToken'],
+                    alc_data_path=['LaunchConfigurations'],
+                    alc_marker_param='NextToken'
+                )['LaunchConfigurations']
             ),
             aws_type='AWS::AutoScaling::LaunchConfiguration',
         )
@@ -145,9 +149,8 @@ class _AutoscalingService(_AwsService):
         """
         self.connect()
         logger.info("Querying EC2 DescribeAccountAttributes for limits")
-        lims = boto_query_wrapper(self.conn.get_account_limits)
+        lims = boto_query_wrapper(self.conn.describe_account_limits)
         self.limits['Auto Scaling groups']._set_api_limit(
-            lims.max_autoscaling_groups)
+            lims['MaxNumberOfAutoScalingGroups'])
         self.limits['Launch configurations']._set_api_limit(
-            lims.max_launch_configurations
-        )
+            lims['MaxNumberOfLaunchConfigurations'])
