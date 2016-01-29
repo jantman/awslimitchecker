@@ -139,9 +139,9 @@ and also handles paginated responses if they're not handled by boto.
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
-    `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/policies_policy-validator.html>`_.
+    `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
-    `Policy Simulator <https://policysim.aws.amazon.com/>`_.
+    `Policy Simulator <http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html>`_.
 14. Submit your pull request.
 
 .. _development.adding_ta:
@@ -160,7 +160,7 @@ For further information, see :ref:`Internals / Trusted Advisor <internals.truste
 Unit Testing
 ------------
 
-Testing is done via `pytest <http://pytest.org/latest/>`_, driven by `tox <http://tox.testrun.org/>`_.
+Testing is done via `pytest <http://pytest.org/latest/>`_, driven by `tox <https://tox.readthedocs.org/>`_.
 
 * testing is as simple as:
 
