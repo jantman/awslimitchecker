@@ -1334,6 +1334,9 @@ class Test_AGPLVersionChecker_Acceptance(object):
             print("\n" + "#" * 20 + " FAILED: " + ' '.join(args) + "#" * 20)
         pypath = os.path.join(path, 'bin', 'python')
         assert os.path.exists(pypath) is True, "does not exist: %s" % pypath
+        if sys.version_info[0] == 3 and sys.version_info[1] <= 2:
+            # py3.0 - py3.2 doesn't work with virtualenv >= 14
+            self._pip_install(path, ['--upgrade', 'virtualenv==13.1.2'])
 
     def _get_source_dir(self):
         """
