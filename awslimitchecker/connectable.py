@@ -49,8 +49,9 @@ class ConnectableCredentials(object):
     """
     boto's (2.x) :py:meth:`boto.sts.STSConnection.assume_role` returns a
     :py:class:`boto.sts.credentials.Credentials` object, but boto3's
-    :py:meth:`boto3.STS.Client.assume_role` just returns a dict. This class
-    provides a compatible interface for boto3.
+    `boto3.sts.STSConnection.assume_role <https://boto3.readthedocs.org/en/
+    latest/reference/services/sts.html#STS.Client.assume_role>`_ just returns
+    a dict. This class provides a compatible interface for boto3.
     """
 
     def __init__(self, creds_dict):
@@ -110,21 +111,25 @@ class Connectable(object):
     def connect_client(self, service_name, region=None):
         """
         Connect to an AWS API and return the connected boto3 client object. If
-        ``self.account_id`` is None, call :py:meth:`boto3.client` with
+        ``self.account_id`` is None, call `boto3.client <https://boto3.readthed
+        ocs.org/en/latest/reference/core/boto3.html#boto3.client>`_ with
         ``region_name=self.region``. Otherwise, call :py:meth:`~._get_sts_token`
         to get STS token credentials using
-        :py:meth:`boto.sts.STSConnection.assume_role` and call
-        :py:meth:`boto3.client` with those credentials to use an assumed role.
+        `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
+        latest/reference/services/sts.html#STS.Client.assume_role>`_ and call
+        `boto3.client <https://boto3.readthedocs.org/en/latest/reference/core/
+        boto3.html#boto3.client>`_ with those credentials to use an assumed
+        role.
 
         This method returns a low-level boto3 client object.
 
         :param service_name: name of the AWS service API to connect to (passed
-          to :py:meth:`boto3.client` as the ``service_name`` parameter.)
+          to ``boto3.client`` as the ``service_name`` parameter.)
         :type driver: str
         :param region: the region name to connect to.
           if None, use ``self.region``
         :type region_attr: str
-        :returns: connected :py:meth:`boto3.client` class instance
+        :returns: connected ``boto3.client`` class instance
         """
         if region is None:
             region = self.region
@@ -181,7 +186,8 @@ class Connectable(object):
         Assume a role via STS and return the credentials.
 
         First connect to STS via :py:func:`boto3.client`, then
-        assume a role using :py:meth:`boto3.STS.Client.assume_role`
+        assume a role using `boto3.STS.Client.assume_role <https://boto3.readthe
+        docs.org/en/latest/reference/services/sts.html#STS.Client.assume_role>`_
         using ``self.account_id`` and ``self.account_role`` (and optionally
         ``self.external_id``, ``self.mfa_serial_number``, ``self.mfa_token``).
         Return the resulting :py:class:`~.ConnectableCredentials`
