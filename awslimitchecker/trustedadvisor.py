@@ -37,8 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-import boto
-import boto.support
+from botocore.exceptions import ClientError
 from dateutil import parser
 import logging
 from .connectable import Connectable
@@ -98,14 +97,8 @@ class TrustedAdvisor(Connectable):
         """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
-        if self.ta_region:
-            logger.debug("Connecting to Support API (TrustedAdvisor) in %s",
-                         self.region)
-            self.conn = self.connect_via(boto.support.connect_to_region)
         else:
-            logger.debug("Connecting to Support API (TrustedAdvisor)")
-            self.conn = boto.connect_support()
-        logger.debug("Connected to Support API")
+            self.conn = self.connect_client('support', region=self.ta_region)
 
     def update_limits(self, services):
         """
@@ -148,10 +141,10 @@ class TrustedAdvisor(Connectable):
                             "check; not using Trusted Advisor data.")
             return
         check_id, metadata = tmp
-        region = self.ta_region or self.conn.region.name
+        region = self.ta_region or self.conn._client_config.region_name
         checks = boto_query_wrapper(
             self.conn.describe_trusted_advisor_check_result,
-            check_id, alc_no_paginate=True
+            checkId=check_id, language='en', alc_no_paginate=True
         )
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
@@ -180,13 +173,10 @@ class TrustedAdvisor(Connectable):
         try:
             checks = boto_query_wrapper(
                 self.conn.describe_trusted_advisor_checks,
-                'en', alc_no_paginate=True
+                language='en', alc_no_paginate=True
             )['checks']
-        except boto.exception.JSONResponseError as ex:
-            if (
-                    '__type' in ex.body and
-                    ex.body['__type'] == 'SubscriptionRequiredException'
-            ):
+        except ClientError as ex:
+            if ex.response['Error']['Code'] == 'SubscriptionRequiredException':
                 logger.warning(
                     "Cannot check TrustedAdvisor: %s",
                     ex.message

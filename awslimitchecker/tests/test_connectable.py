@@ -150,6 +150,15 @@ class Test_Connectable(object):
         ]
         assert res == mock_client.return_value
 
+    def test_connect_client_region_arg(self):
+        cls = ConnectableTester()
+        with patch('%s.boto3.client' % pbm) as mock_client:
+            res = cls.connect_client('foo', region='bar')
+        assert mock_client.mock_calls == [
+            call('foo', region_name='bar')
+        ]
+        assert res == mock_client.return_value
+
     def test_connect_client_with_region(self):
         cls = ConnectableTester(region='myregion')
         with patch('%s._get_sts_token_boto3' % pb) as mock_get_sts:
