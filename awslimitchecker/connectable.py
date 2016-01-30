@@ -146,7 +146,8 @@ class Connectable(object):
             logger.debug("Connecting to %s (%s)",
                          service_name, self.region)
             conn = boto3.client(service_name, region_name=self.region)
-        logger.info("Connected to %s", service_name)
+        logger.info("Connected to %s in region %s", service_name,
+                    conn._client_config.region_name)
         return conn
 
     def _get_sts_token(self):
