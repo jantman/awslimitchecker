@@ -530,3 +530,38 @@ class Test_TrustedAdvisor(object):
             call._set_ta_limit('blam', 10),
             call._set_ta_limit('VPC Elastic IP addresses (EIPs)', 11)
         ]
+
+    def test_update_services_no_ec2(self):
+
+        mock_autoscale = Mock(spec_set=_AwsService)
+        mock_vpc = Mock(spec_set=_AwsService)
+        services = {
+            'AutoScaling': mock_autoscale,
+            'VPC': mock_vpc,
+        }
+        ta_results = {
+            'AutoScaling': {
+                'foo': 20,
+                'bar': 40,
+            },
+            'EC2': {
+                'baz': 5,
+            },
+            'VPC': {
+                'VPC Elastic IP addresses (EIPs)': 11,
+            }
+        }
+        with patch('awslimitchecker.trustedadvisor'
+                   '.logger', autospec=True) as mock_logger:
+            self.cls._update_services(ta_results, services)
+        assert mock_logger.mock_calls == [
+            call.debug("Updating TA limits on all services"),
+            call.info("TrustedAdvisor returned check results for unknown "
+                      "service '%s'", 'EC2'),
+            call.info("Done updating TA limits on all services"),
+        ]
+        assert mock_autoscale.mock_calls == [
+            call._set_ta_limit('bar', 40),
+            call._set_ta_limit('foo', 20),
+        ]
+        assert mock_vpc.mock_calls == []

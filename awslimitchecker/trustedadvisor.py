@@ -224,9 +224,13 @@ class TrustedAdvisor(Connectable):
                     # better way of handling this - maybe with a mapping
                     if svc_name == 'VPC' and lim_name == 'VPC Elastic IP ' \
                        'addresses (EIPs)':
-                        services['EC2']._set_ta_limit(
-                            lim_name, limits[lim_name]
-                        )
+                        # this limit belongs under EC2, but if we're only
+                        # checking a specific list of services that doesn't
+                        # include EC2, we don't want to set it.
+                        if 'EC2' in services:
+                            services['EC2']._set_ta_limit(
+                                lim_name, limits[lim_name]
+                            )
                     else:
                         service._set_ta_limit(lim_name, limits[lim_name])
                 except ValueError:
