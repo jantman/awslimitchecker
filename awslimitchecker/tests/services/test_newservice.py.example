@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+import result_fixtures
 from awslimitchecker.services.XXnewserviceXX import _XXNewServiceXXService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -107,6 +108,8 @@ class Test_XXNewServiceXXService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
+        # put boto3 responses in response_fixtures.py, then do something like:
+        # response = result_fixtures.EBS.test_find_usage_ebs
         mock_conn = Mock(spec_set=XXNewServiceXXConnection)
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.boto_service_wrapper' % pbm) as mock_wrapper:

@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-
+import result_fixtures
 from awslimitchecker.services.vpc import _VpcService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -142,25 +142,7 @@ class Test_VpcService(object):
             assert mocks[x].mock_calls == [call()]
 
     def test_find_usage_vpcs(self):
-        response = {
-            'Vpcs': [
-                {
-                    'VpcId': 'vpc-1',
-                    'State': 'available',
-                    'CidrBlock': 'string',
-                    'DhcpOptionsId': 'string',
-                    'Tags': [
-                        {
-                            'Key': 'fooTag',
-                            'Value': 'fooVal'
-                        },
-                    ],
-                    'InstanceTenancy': 'default',
-                    'IsDefault': False
-                },
-                {'VpcId': 'vpc-2'},
-            ]
-        }
+        response = result_fixtures.VPC.test_find_usage_vpcs
 
         mock_conn = Mock()
 
@@ -179,28 +161,7 @@ class Test_VpcService(object):
         ]
 
     def test_find_usage_subnets(self):
-        response = {
-            'Subnets': [
-                {
-                    'SubnetId': 'string',
-                    'State': 'available',
-                    'VpcId': 'vpc-1',
-                    'CidrBlock': 'string',
-                    'AvailableIpAddressCount': 123,
-                    'AvailabilityZone': 'string',
-                    'DefaultForAz': False,
-                    'MapPublicIpOnLaunch': True,
-                    'Tags': [
-                        {
-                            'Key': 'tagKey',
-                            'Value': 'tagVal'
-                        },
-                    ]
-                },
-                {'VpcId': 'vpc-1'},
-                {'VpcId': 'vpc-2'},
-            ]
-        }
+        response = result_fixtures.VPC.test_find_usage_subnets
 
         mock_conn = Mock()
         cls = _VpcService(21, 43)
@@ -222,86 +183,7 @@ class Test_VpcService(object):
         ]
 
     def test_find_usage_acls(self):
-        response = {
-            'NetworkAcls': [
-                {
-                    'NetworkAclId': 'acl-1',
-                    'VpcId': 'vpc-1',
-                    'IsDefault': True,
-                    'Entries': [
-                        {
-                            'RuleNumber': 123,
-                            'Protocol': 'string',
-                            'RuleAction': 'allow',
-                            'Egress': True,
-                            'CidrBlock': 'string',
-                            'IcmpTypeCode': {
-                                'Type': 123,
-                                'Code': 123
-                            },
-                            'PortRange': {
-                                'From': 123,
-                                'To': 123
-                            }
-                        },
-                        {
-                            'RuleNumber': 124,
-                            'Protocol': 'string',
-                            'RuleAction': 'allow',
-                            'Egress': False,
-                            'CidrBlock': 'string',
-                            'IcmpTypeCode': {
-                                'Type': 123,
-                                'Code': 123
-                            },
-                            'PortRange': {
-                                'From': 124,
-                                'To': 124
-                            }
-                        },
-                        {
-                            'RuleNumber': 125,
-                            'Protocol': 'string',
-                            'RuleAction': 'deny',
-                            'Egress': False,
-                            'CidrBlock': 'string',
-                            'IcmpTypeCode': {
-                                'Type': 123,
-                                'Code': 123
-                            },
-                            'PortRange': {
-                                'From': 125,
-                                'To': 125
-                            }
-                        },
-                    ],
-                    'Associations': [
-                        {
-                            'NetworkAclAssociationId': 'string',
-                            'NetworkAclId': 'string',
-                            'SubnetId': 'string'
-                        },
-                    ],
-                    'Tags': [
-                        {
-                            'Key': 'tagKey',
-                            'Value': 'tagVal'
-                        },
-                    ]
-                },
-                {
-                    'NetworkAclId': 'acl-2',
-                    'VpcId': 'vpc-1',
-                    'Entries': [1],
-                },
-                {
-                    'NetworkAclId': 'acl-3',
-                    'VpcId': 'vpc-2',
-                    'Entries': [1, 2, 3, 4, 5],
-                },
-            ]
-        }
-
+        response = result_fixtures.VPC.test_find_usage_acls
         mock_conn = Mock()
 
         cls = _VpcService(21, 43)
@@ -332,67 +214,7 @@ class Test_VpcService(object):
         ]
 
     def test_find_usage_route_tables(self):
-        response = {
-            'RouteTables': [
-                {
-                    'RouteTableId': 'rt-1',
-                    'VpcId': 'vpc-1',
-                    'Routes': [
-                        {
-                            'DestinationCidrBlock': 'string',
-                            'DestinationPrefixListId': 'string',
-                            'GatewayId': 'string',
-                            'InstanceId': 'string',
-                            'InstanceOwnerId': 'string',
-                            'NetworkInterfaceId': 'string',
-                            'VpcPeeringConnectionId': 'string',
-                            'NatGatewayId': 'string',
-                            'State': 'active',
-                            'Origin': 'CreateRouteTable'
-                        },
-                        {'foo': 'bar', 'baz': 'blam'},
-                        {'foo': 'bar', 'baz': 'blam'},
-                    ],
-                    'Associations': [
-                        {
-                            'RouteTableAssociationId': 'string',
-                            'RouteTableId': 'string',
-                            'SubnetId': 'string',
-                            'Main': True
-                        },
-                    ],
-                    'Tags': [
-                        {
-                            'Key': 'tagKey',
-                            'Value': 'tagVal'
-                        },
-                    ],
-                    'PropagatingVgws': [
-                        {
-                            'GatewayId': 'string'
-                        },
-                    ]
-                },
-                {
-                    'RouteTableId': 'rt-2',
-                    'VpcId': 'vpc-1',
-                    'Routes': [
-                        {'foo': 'bar', 'baz': 'blam'},
-                    ],
-                },
-                {
-                    'RouteTableId': 'rt-3',
-                    'VpcId': 'vpc-2',
-                    'Routes': [
-                        {'foo': 'bar', 'baz': 'blam'},
-                        {'foo': 'bar', 'baz': 'blam'},
-                        {'foo': 'bar', 'baz': 'blam'},
-                        {'foo': 'bar', 'baz': 'blam'},
-                        {'foo': 'bar', 'baz': 'blam'},
-                    ],
-                }
-            ]
-        }
+        response = result_fixtures.VPC.test_find_usage_route_tables
 
         mock_conn = Mock()
 
@@ -424,26 +246,7 @@ class Test_VpcService(object):
         ]
 
     def test_find_usage_internet_gateways(self):
-        response = {
-            'InternetGateways': [
-                {
-                    'InternetGatewayId': 'gw-1',
-                    'Attachments': [
-                        {
-                            'VpcId': 'string',
-                            'State': 'attached'
-                        },
-                    ],
-                    'Tags': [
-                        {
-                            'Key': 'tagKey',
-                            'Value': 'tagVal'
-                        },
-                    ]
-                },
-                {'InternetGatewayId': 'gw-2'}
-            ]
-        }
+        response = result_fixtures.VPC.test_find_usage_internet_gateways
 
         mock_conn = Mock()
 

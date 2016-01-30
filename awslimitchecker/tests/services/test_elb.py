@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+import result_fixtures
 from awslimitchecker.services.elb import _ElbService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -110,43 +111,7 @@ class Test_ElbService(object):
     def test_find_usage(self):
         mock_conn = Mock()
 
-        return_value = {
-            # this is a subset of response items
-            'LoadBalancerDescriptions': [
-                {
-                    'LoadBalancerName': 'elb-1',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                    ],
-                },
-                {
-                    'LoadBalancerName': 'elb-2',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                },
-                {
-                    'LoadBalancerName': 'elb-3',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                },
-                {
-                    'LoadBalancerName': 'elb-4',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                },
-            ],
-        }
+        return_value = result_fixtures.ELB.test_find_usage
 
         with patch('%s.connect' % self.pb) as mock_connect:
             with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:

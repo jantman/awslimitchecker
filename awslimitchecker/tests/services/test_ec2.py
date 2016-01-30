@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+import result_fixtures
 from boto.ec2.connection import EC2Connection
 from boto.ec2.instance import Instance, Reservation
 from boto.ec2.reservedinstance import ReservedInstance

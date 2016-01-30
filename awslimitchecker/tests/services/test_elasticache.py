@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+import result_fixtures
 from botocore.exceptions import ClientError
 from awslimitchecker.services.elasticache import _ElastiCacheService
 import pytest
@@ -143,162 +144,7 @@ class TestElastiCacheService(object):
     def test_find_usage_nodes(self):
         """test find usage for nodes"""
         # this also tests pagination
-        responses = []
-        # first page of responses
-        responses.append({
-            'CacheClusters': [
-                {
-                    'Engine': 'memcached',
-                    'CacheParameterGroup': {
-                        'CacheNodeIdsToReboot': [],
-                        'CacheParameterGroupName': 'default.memcached1.4',
-                        'ParameterApplyStatus': 'in-sync'
-                    },
-                    'CacheClusterId': 'memcached1',
-                    'CacheSecurityGroups': [],
-                    'ConfigurationEndpoint': {
-                        'Port': 11211,
-                        'Address': 'memcached1.vfavzi.cfg.use1.'
-                                   'cache.amazonaws.com'
-                    },
-                    'CacheClusterCreateTime': 1431109646.755,
-                    'ReplicationGroupId': None,
-                    'AutoMinorVersionUpgrade': True,
-                    'CacheClusterStatus': 'available',
-                    'NumCacheNodes': 1,
-                    'PreferredAvailabilityZone': 'us-east-1d',
-                    'SecurityGroups': [
-                        {
-                            'Status': 'active',
-                            'SecurityGroupId': 'sg-11111111'
-                        }
-                    ],
-                    'CacheSubnetGroupName': 'csg-memcached1',
-                    'EngineVersion': '1.4.14',
-                    'PendingModifiedValues': {
-                        'NumCacheNodes': None,
-                        'EngineVersion': None,
-                        'CacheNodeIdsToRemove': None
-                    },
-                    'CacheNodeType': 'cache.t2.small',
-                    'NotificationConfiguration': None,
-                    'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
-                    'CacheNodes': [
-                        {
-                            'CacheNodeId': '0001',
-                            'Endpoint': {
-                                'Port': 11211,
-                                'Address': 'memcached1.vfavzi.0001.'
-                                           'use1.cache.amazonaws.com'
-                            },
-                            'CacheNodeStatus': 'available',
-                            'ParameterGroupStatus': 'in-sync',
-                            'CacheNodeCreateTime': 1431109646.755,
-                            'SourceCacheNodeId': None
-                        }
-                    ]
-                },
-                {
-                    'Engine': 'redis',
-                    'CacheParameterGroup': {
-                        'CacheNodeIdsToReboot': [],
-                        'CacheParameterGroupName': 'default.redis2.8',
-                        'ParameterApplyStatus': 'in-sync'
-                    },
-                    'CacheClusterId': 'redis1',
-                    'CacheSecurityGroups': [
-                        {
-                            'Status': 'active',
-                            'CacheSecurityGroupName': 'csg-redis1'
-                        }
-                    ],
-                    'ConfigurationEndpoint': None,
-                    'CacheClusterCreateTime': 1412253787.914,
-                    'ReplicationGroupId': None,
-                    'AutoMinorVersionUpgrade': True,
-                    'CacheClusterStatus': 'available',
-                    'NumCacheNodes': 2,
-                    'PreferredAvailabilityZone': 'us-east-1a',
-                    'SecurityGroups': None,
-                    'CacheSubnetGroupName': None,
-                    'EngineVersion': '2.8.6',
-                    'PendingModifiedValues': {
-                        'NumCacheNodes': None,
-                        'EngineVersion': None,
-                        'CacheNodeIdsToRemove': None
-                    },
-                    'CacheNodeType': 'cache.m3.medium',
-                    'NotificationConfiguration': None,
-                    'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
-                    'CacheNodes': [
-                        {
-                            'CacheNodeId': '0001',
-                            'Endpoint': {
-                                'Port': 6379,
-                                'Address': 'redis1.vfavzi.0001.use1.cache.'
-                                           'amazonaws.com'
-                            },
-                            'CacheNodeStatus': 'available',
-                            'ParameterGroupStatus': 'in-sync',
-                            'CacheNodeCreateTime': 1412253787.914,
-                            'SourceCacheNodeId': None
-                        },
-                        {
-                            'CacheNodeId': '0002',
-                            'Endpoint': {
-                                'Port': 6379,
-                                'Address': 'redis1.vfavzi.0002.use1.cache.'
-                                           'amazonaws.com'
-                            },
-                            'CacheNodeStatus': 'available',
-                            'ParameterGroupStatus': 'in-sync',
-                            'CacheNodeCreateTime': 1412253787.914,
-                            'SourceCacheNodeId': None
-                        }
-                    ]
-                }
-            ],
-            'NextToken': 'string',
-        })
-        # second page of responses
-        responses.append({
-            'CacheClusters': [
-                {
-                    'Engine': 'redis',
-                    'CacheParameterGroup': {
-                        'CacheNodeIdsToReboot': [],
-                        'CacheParameterGroupName': 'default.redis2.8',
-                        'ParameterApplyStatus': 'in-sync'
-                    },
-                    'CacheClusterId': 'redis2',
-                    'CacheSecurityGroups': [
-                        {
-                            'Status': 'active',
-                            'CacheSecurityGroupName': 'csg-redis2'
-                        }
-                    ],
-                    'ConfigurationEndpoint': None,
-                    'CacheClusterCreateTime': 1412253787.123,
-                    'ReplicationGroupId': None,
-                    'AutoMinorVersionUpgrade': True,
-                    'CacheClusterStatus': 'available',
-                    'NumCacheNodes': 4,
-                    'PreferredAvailabilityZone': 'us-east-1a',
-                    'SecurityGroups': None,
-                    'CacheSubnetGroupName': None,
-                    'EngineVersion': '2.8.6',
-                    'PendingModifiedValues': {
-                        'NumCacheNodes': None,
-                        'EngineVersion': None,
-                        'CacheNodeIdsToRemove': None
-                    },
-                    'CacheNodeType': 'cache.m3.medium',
-                    'NotificationConfiguration': None,
-                    'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
-                    'CacheNodes': None,
-                },
-            ],
-        })
+        responses = result_fixtures.ElastiCache.test_find_usage_nodes
 
         mock_conn = Mock()
         mock_paginator = Mock()
@@ -336,79 +182,7 @@ class TestElastiCacheService(object):
     def test_find_usage_subnet_groups(self):
         """test find usage for subnet groups"""
         # this also tests pagination
-        responses = []
-        # first page of responses
-        responses.append({
-            'CacheSubnetGroups': [
-                {
-                    'Subnets': [
-                        {
-                            'SubnetIdentifier': 'subnet-62e8783b',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1d'}
-                        },
-                        {
-                            'SubnetIdentifier': 'subnet-0b037e7c',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1a'
-                            }
-                        }
-                    ],
-                    'CacheSubnetGroupName': 'break-memca-135tjabqoyywd',
-                    'VpcId': 'vpc-73ec9716',
-                    'CacheSubnetGroupDescription': 'memcached'
-                },
-                {
-                    'Subnets': [
-                        {
-                            'SubnetIdentifier': 'subnet-38e87861',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1d'
-                            }
-                        },
-                        {
-                            'SubnetIdentifier': 'subnet-4f027f38',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1a'
-                            }
-                        }
-                    ],
-                    'CacheSubnetGroupName': 'break-memca-6yi6axon9ol9',
-                    'VpcId': 'vpc-1ee8937b',
-                    'CacheSubnetGroupDescription': 'memcached'
-                },
-            ],
-            'NextToken': 'str'
-        })
-        responses.append({
-            'CacheSubnetGroups': [
-                {
-                    'Subnets': [
-                        {
-                            'SubnetIdentifier': 'subnet-49071f61',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1e'
-                            }
-                        },
-                        {
-                            'SubnetIdentifier': 'subnet-6fe23c18',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1a'
-                            }
-                        },
-                        {
-                            'SubnetIdentifier': 'subnet-a9b54df0',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1d'
-                            }
-                        }
-                    ],
-                    'CacheSubnetGroupName': 'lsp-d-redis-14d9407dl05er',
-                    'VpcId': 'vpc-c300b9a6',
-                    'CacheSubnetGroupDescription': 'redis'
-                },
-            ],
-        })
+        responses = result_fixtures.ElastiCache.test_find_usage_subnet_groups
 
         mock_conn = Mock()
         mock_paginator = Mock()
@@ -434,33 +208,7 @@ class TestElastiCacheService(object):
     def test_find_usage_parameter_groups(self):
         """test find usage for parameter groups"""
         # this also tests pagination
-        responses = []
-        # first page of responses
-        responses.append({
-            'CacheParameterGroups': [
-                {
-                    'CacheParameterGroupName': 'default.memcached1.4',
-                    'CacheParameterGroupFamily': 'memcached1.4',
-                    'Description': 'Default for memcached1.4'
-                },
-                {
-                    'CacheParameterGroupName': 'default.redis2.6',
-                    'CacheParameterGroupFamily': 'redis2.6',
-                    'Description': 'Default for redis2.6'
-                },
-            ],
-            'NextToken': 'foo'
-        })
-        # second page of responses
-        responses.append({
-            'CacheParameterGroups': [
-                {
-                    'CacheParameterGroupName': 'default.redis2.8',
-                    'CacheParameterGroupFamily': 'redis2.8',
-                    'Description': 'Default for redis2.8'
-                }
-            ],
-        })
+        responses = result_fixtures.ElastiCache.test_find_usage_parameter_groups
 
         mock_conn = Mock()
         mock_paginator = Mock()
@@ -485,36 +233,7 @@ class TestElastiCacheService(object):
     def test_find_usage_security_groups(self):
         """test find usage for security groups"""
         # this also tests pagination
-        responses = []
-        # first page of responses
-        responses.append({
-            'CacheSecurityGroups': [
-                {
-                    'OwnerId': '123456789012',
-                    'CacheSecurityGroupName': 'default',
-                    'Description': 'default',
-                    'EC2SecurityGroups': []
-                },
-            ],
-            'NextToken': 'foo'
-        })
-        # second page of results
-        responses.append({
-            'CacheSecurityGroups': [
-                {
-                    'OwnerId': '123456789012',
-                    'CacheSecurityGroupName': 'csg1',
-                    'Description': 'foo bar',
-                    'EC2SecurityGroups': [
-                        {
-                            'EC2SecurityGroupName': 'ec2-sg1',
-                            'Status': 'authorized',
-                            'EC2SecurityGroupOwnerId': '123456789012'
-                        }
-                    ]
-                }
-            ]
-        })
+        responses = result_fixtures.ElastiCache.test_find_usage_security_groups
 
         mock_conn = Mock()
         mock_paginator = Mock()

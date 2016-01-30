@@ -40,7 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 from awslimitchecker.services.ebs import _EbsService
 from awslimitchecker.limit import AwsLimit
-from datetime import datetime
+import result_fixtures
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -144,80 +144,7 @@ class Test_EbsService(object):
             assert mocks[m].mock_calls == [call(cls)]
 
     def test_find_usage_ebs(self):
-        response = {
-            'Volumes': [
-                # 500G magnetic
-                {
-                    'VolumeId': 'vol-1',
-                    'Size': 500,
-                    'VolumeType': 'standard',
-                    'Iops': None,
-                    # boilerplate sample response
-                    'SnapshotId': 'string',
-                    'AvailabilityZone': 'string',
-                    'State': 'available',
-                    'CreateTime': datetime(2015, 1, 1),
-                    'Attachments': [
-                        {
-                            'VolumeId': 'string',
-                            'InstanceId': 'string',
-                            'Device': 'string',
-                            'State': 'attached',
-                            'AttachTime': datetime(2015, 1, 1),
-                            'DeleteOnTermination': True
-                        },
-                    ],
-                    'Tags': [
-                        {
-                            'Key': 'string',
-                            'Value': 'string'
-                        },
-                    ],
-                    'Encrypted': False,
-                    'KmsKeyId': 'string'
-                },
-                # 8G magnetic
-                {
-                    'VolumeId': 'vol-2',
-                    'Size': 8,
-                    'VolumeType': 'standard',
-                    'Iops': None,
-                },
-                # 15G general purpose SSD, 45 IOPS
-                {
-                    'VolumeId': 'vol-3',
-                    'Size': 15,
-                    'VolumeType': 'gp2',
-                    'Iops': 45,
-                },
-                # 30G general purpose SSD, 90 IOPS
-                {
-                    'VolumeId': 'vol-4',
-                    'Size': 30,
-                    'VolumeType': 'gp2',
-                    'Iops': 90,
-                },
-                # 400G PIOPS, 700 IOPS
-                {
-                    'VolumeId': 'vol-5',
-                    'Size': 400,
-                    'VolumeType': 'io1',
-                    'Iops': 700,
-                },
-                # 100G PIOPS, 300 IOPS
-                {
-                    'VolumeId': 'vol-6',
-                    'Size': 100,
-                    'VolumeType': 'io1',
-                    'Iops': 300,
-                },
-                # othertype
-                {
-                    'VolumeId': 'vol-7',
-                    'VolumeType': 'othertype',
-                },
-            ]
-        }
+        response = result_fixtures.EBS.test_find_usage_ebs
 
         mock_conn = Mock()
         cls = _EbsService(21, 43)
@@ -261,33 +188,7 @@ class Test_EbsService(object):
         ]
 
     def test_find_usage_snapshots(self):
-        response = {
-            'Snapshots': [
-                {
-                    'SnapshotId': 'snap-1',
-                    'VolumeId': 'string',
-                    'State': 'completed',
-                    'StateMessage': 'string',
-                    'StartTime': datetime(2015, 1, 1),
-                    'Progress': 'string',
-                    'OwnerId': 'string',
-                    'Description': 'string',
-                    'VolumeSize': 123,
-                    'OwnerAlias': 'string',
-                    'Tags': [
-                        {
-                            'Key': 'string',
-                            'Value': 'string'
-                        },
-                    ],
-                    'Encrypted': False,
-                    'KmsKeyId': 'string',
-                    'DataEncryptionKeyId': 'string'
-                },
-                {'SnapshotId': 'snap-2'},
-                {'SnapshotId': 'snap-3'},
-            ]
-        }
+        response = result_fixtures.EBS.test_find_usage_snapshots
 
         mock_conn = Mock()
 
