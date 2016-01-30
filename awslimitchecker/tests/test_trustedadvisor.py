@@ -118,7 +118,7 @@ class Test_TrustedAdvisor(object):
                 cls.connect()
         assert mock_conn.mock_calls == []
         assert mock_connect_client.mock_calls == [
-            call('support', region=None)
+            call('support')
         ]
         assert cls.conn == mock_conn
 
@@ -132,7 +132,7 @@ class Test_TrustedAdvisor(object):
                 cls.connect()
         assert mock_conn.mock_calls == []
         assert mock_connect_client.mock_calls == [
-            call('support', region='foo')
+            call('support')
         ]
         assert cls.conn == mock_conn
 

@@ -98,7 +98,7 @@ class TrustedAdvisor(Connectable):
         if self.conn is not None:
             return
         else:
-            self.conn = self.connect_client('support', region=self.ta_region)
+            self.conn = self.connect_client('support')
 
     def update_limits(self, services):
         """

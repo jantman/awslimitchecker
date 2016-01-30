@@ -108,7 +108,7 @@ class Connectable(object):
         logger.info("Connected to %s", self.service_name)
         return conn
 
-    def connect_client(self, service_name, region=None):
+    def connect_client(self, service_name):
         """
         Connect to an AWS API and return the connected boto3 client object. If
         ``self.account_id`` is None, call `boto3.client <https://boto3.readthed
@@ -126,31 +126,26 @@ class Connectable(object):
         :param service_name: name of the AWS service API to connect to (passed
           to ``boto3.client`` as the ``service_name`` parameter.)
         :type driver: str
-        :param region: the region name to connect to.
-          if None, use ``self.region``
-        :type region_attr: str
         :returns: connected ``boto3.client`` class instance
         """
-        if region is None:
-            region = self.region
         if self.account_id is not None:
             if Connectable.credentials is None:
                 logger.debug("Connecting to %s for account %s (STS; %s)",
-                             service_name, self.account_id, region)
+                             service_name, self.account_id, self.region)
                 Connectable.credentials = self._get_sts_token_boto3()
             else:
                 logger.debug("Reusing previous STS credentials for account %s",
                              self.account_id)
             conn = boto3.client(
                 service_name,
-                region_name=region,
+                region_name=self.region,
                 aws_access_key_id=Connectable.credentials.access_key,
                 aws_secret_access_key=Connectable.credentials.secret_key,
                 aws_session_token=Connectable.credentials.session_token)
         else:
             logger.debug("Connecting to %s (%s)",
-                         service_name, region)
-            conn = boto3.client(service_name, region_name=region)
+                         service_name, self.region)
+            conn = boto3.client(service_name, region_name=self.region)
         logger.info("Connected to %s", service_name)
         return conn
 
