@@ -38,8 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto
-import boto.ec2
 import logging
 
 from .base import _AwsService
@@ -57,10 +55,8 @@ class _EbsService(_AwsService):
         """Connect to API if not already connected; set self.conn."""
         if self.conn is not None:
             return
-        elif self.region:
-            self.conn = self.connect_via(boto.ec2.connect_to_region)
         else:
-            self.conn = boto.connect_ec2()
+            self.conn = self.connect_client('ec2')
 
     def find_usage(self):
         """
@@ -85,21 +81,27 @@ class _EbsService(_AwsService):
         gp_gb = 0
         mag_gb = 0
         logger.debug("Getting usage for EBS volumes")
-        for vol in boto_query_wrapper(self.conn.get_all_volumes):
+        results = boto_query_wrapper(
+            self.conn.describe_volumes,
+            alc_marker_path=['NextToken'],
+            alc_data_path=['Volumes'],
+            alc_marker_param='NextToken'
+        )
+        for vol in results['Volumes']:
             vols += 1
-            if vol.type == 'io1':
-                piops_gb += vol.size
-                piops += vol.iops
-            elif vol.type == 'gp2':
-                gp_gb += vol.size
-            elif vol.type == 'standard':
-                mag_gb += vol.size
+            if vol['VolumeType'] == 'io1':
+                piops_gb += vol['Size']
+                piops += vol['Iops']
+            elif vol['VolumeType'] == 'gp2':
+                gp_gb += vol['Size']
+            elif vol['VolumeType'] == 'standard':
+                mag_gb += vol['Size']
             else:
                 logger.error(
                     "ERROR - unknown volume type '%s' for volume %s;"
                     " not counting",
-                    vol.type,
-                    vol.id)
+                    vol['VolumeType'],
+                    vol['VolumeId'])
         self.limits['Provisioned IOPS']._add_current_usage(
             piops,
             aws_type='AWS::EC2::Volume'
@@ -127,9 +129,15 @@ class _EbsService(_AwsService):
     def _find_usage_snapshots(self):
         """find snapshot usage"""
         logger.debug("Getting usage for EBS snapshots")
-        snaps = boto_query_wrapper(self.conn.get_all_snapshots, owner='self')
+        snaps = boto_query_wrapper(
+            self.conn.describe_snapshots,
+            OwnerIds=['self'],
+            alc_marker_path=['NextToken'],
+            alc_data_path=['Snapshots'],
+            alc_marker_param='NextToken'
+        )
         self.limits['Active snapshots']._add_current_usage(
-            len(snaps),
+            len(snaps['Snapshots']),
             aws_type='AWS::EC2::VolumeSnapshot'
         )
 

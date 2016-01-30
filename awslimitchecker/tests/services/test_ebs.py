@@ -38,12 +38,9 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from boto.ec2.connection import EC2Connection
-from boto.ec2.volume import Volume
-from boto.ec2.snapshot import Snapshot
-from boto.ec2 import connect_to_region
 from awslimitchecker.services.ebs import _EbsService
 from awslimitchecker.limit import AwsLimit
+from datetime import datetime
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -72,45 +69,24 @@ class Test_EbsService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
-        mock_conn_via = Mock()
         cls = _EbsService(21, 43)
-        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_ec2.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
+        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+                mock_connect_client.return_value = mock_conn
                 cls.connect()
-        assert mock_ec2.mock_calls == [call()]
         assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
+        assert mock_connect_client.mock_calls == [call('ec2')]
         assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _EbsService(21, 43, region='foo')
-        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_ec2.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_ec2.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [call(connect_to_region)]
-        assert cls.conn == mock_conn_via
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
-        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_ec2.return_value = mock_conn
+        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+                mock_connect_client.return_value = mock_conn
                 cls.connect()
-        assert mock_ec2.mock_calls == []
         assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
+        assert mock_connect_client.mock_calls == []
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
@@ -168,67 +144,87 @@ class Test_EbsService(object):
             assert mocks[m].mock_calls == [call(cls)]
 
     def test_find_usage_ebs(self):
-        # 500G magnetic
-        mock_vol1 = Mock(spec_set=Volume)
-        type(mock_vol1).id = 'vol-1'
-        type(mock_vol1).type = 'standard'  # magnetic
-        type(mock_vol1).size = 500
-        type(mock_vol1).iops = None
+        response = {
+            'Volumes': [
+                # 500G magnetic
+                {
+                    'VolumeId': 'vol-1',
+                    'Size': 500,
+                    'VolumeType': 'standard',
+                    'Iops': None,
+                    # boilerplate sample response
+                    'SnapshotId': 'string',
+                    'AvailabilityZone': 'string',
+                    'State': 'available',
+                    'CreateTime': datetime(2015, 1, 1),
+                    'Attachments': [
+                        {
+                            'VolumeId': 'string',
+                            'InstanceId': 'string',
+                            'Device': 'string',
+                            'State': 'attached',
+                            'AttachTime': datetime(2015, 1, 1),
+                            'DeleteOnTermination': True
+                        },
+                    ],
+                    'Tags': [
+                        {
+                            'Key': 'string',
+                            'Value': 'string'
+                        },
+                    ],
+                    'Encrypted': False,
+                    'KmsKeyId': 'string'
+                },
+                # 8G magnetic
+                {
+                    'VolumeId': 'vol-2',
+                    'Size': 8,
+                    'VolumeType': 'standard',
+                    'Iops': None,
+                },
+                # 15G general purpose SSD, 45 IOPS
+                {
+                    'VolumeId': 'vol-3',
+                    'Size': 15,
+                    'VolumeType': 'gp2',
+                    'Iops': 45,
+                },
+                # 30G general purpose SSD, 90 IOPS
+                {
+                    'VolumeId': 'vol-4',
+                    'Size': 30,
+                    'VolumeType': 'gp2',
+                    'Iops': 90,
+                },
+                # 400G PIOPS, 700 IOPS
+                {
+                    'VolumeId': 'vol-5',
+                    'Size': 400,
+                    'VolumeType': 'io1',
+                    'Iops': 700,
+                },
+                # 100G PIOPS, 300 IOPS
+                {
+                    'VolumeId': 'vol-6',
+                    'Size': 100,
+                    'VolumeType': 'io1',
+                    'Iops': 300,
+                },
+                # othertype
+                {
+                    'VolumeId': 'vol-7',
+                    'VolumeType': 'othertype',
+                },
+            ]
+        }
 
-        # 8G magnetic
-        mock_vol2 = Mock(spec_set=Volume)
-        type(mock_vol2).id = 'vol-2'
-        type(mock_vol2).type = 'standard'  # magnetic
-        type(mock_vol2).size = 8
-        type(mock_vol2).iops = None
-
-        # 15G general purpose SSD, 45 IOPS
-        mock_vol3 = Mock(spec_set=Volume)
-        type(mock_vol3).id = 'vol-3'
-        type(mock_vol3).type = 'gp2'
-        type(mock_vol3).size = 15
-        type(mock_vol3).iops = 45
-
-        # 30G general purpose SSD, 90 IOPS
-        mock_vol4 = Mock(spec_set=Volume)
-        type(mock_vol4).id = 'vol-4'
-        type(mock_vol4).type = 'gp2'
-        type(mock_vol4).size = 30
-        type(mock_vol4).iops = 90
-
-        # 400G PIOPS, 700 IOPS
-        mock_vol5 = Mock(spec_set=Volume)
-        type(mock_vol5).id = 'vol-5'
-        type(mock_vol5).type = 'io1'
-        type(mock_vol5).size = 400
-        type(mock_vol5).iops = 700
-
-        # 100G PIOPS, 300 IOPS
-        mock_vol6 = Mock(spec_set=Volume)
-        type(mock_vol6).id = 'vol-6'
-        type(mock_vol6).type = 'io1'
-        type(mock_vol6).size = 100
-        type(mock_vol6).iops = 300
-
-        mock_vol7 = Mock(spec_set=Volume)
-        type(mock_vol7).id = 'vol-7'
-        type(mock_vol7).type = 'othertype'
-
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_vol1,
-            mock_vol2,
-            mock_vol3,
-            mock_vol4,
-            mock_vol5,
-            mock_vol6,
-            mock_vol7
-        ]
+        mock_conn = Mock()
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
             with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
+                mock_wrapper.return_value = response
                 cls._find_usage_ebs()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS volumes"),
@@ -256,30 +252,50 @@ class Test_EbsService(object):
                           ''].get_current_usage()[0].get_value() == 7
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_volumes)
+            call(
+                mock_conn.describe_volumes,
+                alc_marker_path=['NextToken'],
+                alc_data_path=['Volumes'],
+                alc_marker_param='NextToken'
+            )
         ]
 
     def test_find_usage_snapshots(self):
-        mock_snap1 = Mock(spec_set=Snapshot)
-        type(mock_snap1).id = 'snap-1'
+        response = {
+            'Snapshots': [
+                {
+                    'SnapshotId': 'snap-1',
+                    'VolumeId': 'string',
+                    'State': 'completed',
+                    'StateMessage': 'string',
+                    'StartTime': datetime(2015, 1, 1),
+                    'Progress': 'string',
+                    'OwnerId': 'string',
+                    'Description': 'string',
+                    'VolumeSize': 123,
+                    'OwnerAlias': 'string',
+                    'Tags': [
+                        {
+                            'Key': 'string',
+                            'Value': 'string'
+                        },
+                    ],
+                    'Encrypted': False,
+                    'KmsKeyId': 'string',
+                    'DataEncryptionKeyId': 'string'
+                },
+                {'SnapshotId': 'snap-2'},
+                {'SnapshotId': 'snap-3'},
+            ]
+        }
 
-        mock_snap2 = Mock(spec_set=Snapshot)
-        type(mock_snap2).id = 'snap-2'
+        mock_conn = Mock()
 
-        mock_snap3 = Mock(spec_set=Snapshot)
-        type(mock_snap3).id = 'snap-3'
-
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_snap1,
-            mock_snap2,
-            mock_snap3,
-        ]
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
             with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
+                mock_wrapper.return_value = response
                 cls._find_usage_snapshots()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS snapshots"),
@@ -289,7 +305,13 @@ class Test_EbsService(object):
                           ''].get_current_usage()[0].get_value() == 3
         assert mock_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_snapshots, owner='self')
+            call(
+                mock_conn.describe_snapshots,
+                OwnerIds=['self'],
+                alc_marker_path=['NextToken'],
+                alc_data_path=['Snapshots'],
+                alc_marker_param='NextToken'
+            )
         ]
 
     def test_required_iam_permissions(self):
