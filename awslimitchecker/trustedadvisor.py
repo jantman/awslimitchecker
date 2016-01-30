@@ -179,7 +179,7 @@ class TrustedAdvisor(Connectable):
             if ex.response['Error']['Code'] == 'SubscriptionRequiredException':
                 logger.warning(
                     "Cannot check TrustedAdvisor: %s",
-                    ex.message
+                    ex.response['Error']['Message']
                 )
                 self.have_ta = False
                 return (None, None)

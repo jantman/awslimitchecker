@@ -261,10 +261,8 @@ class Test_TrustedAdvisor(object):
         assert mock_logger.mock_calls == [
             call.debug("Querying Trusted Advisor checks"),
             call.warning("Cannot check TrustedAdvisor: %s",
-                         'An error occurred (SubscriptionRequiredException) '
-                         'when calling the operation operation: AWS Premium '
-                         'Support Subscription is required to use this '
-                         'service.')
+                         'AWS Premium Support Subscription is required to '
+                         'use this service.')
         ]
 
     def test_get_limit_check_id_other_exception(self):
