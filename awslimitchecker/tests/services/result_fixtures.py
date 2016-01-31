@@ -357,530 +357,596 @@ class VPC(object):
 
 
 class RDS(object):
-    test_find_usage_instances = [
-        {
-            'PubliclyAccessible': False,
-            'MasterUsername': 'myuser',
-            'LicenseModel': 'general-public-license',
-            'VpcSecurityGroups': [
-                {
-                    'Status': 'active',
-                    'VpcSecurityGroupId': 'sg-aaaaaaaa'
-                }
-            ],
-            'InstanceCreateTime': 1429910904.366,
-            'OptionGroupMemberships': [
-                {
-                    'Status': 'in-sync',
-                    'OptionGroupName': 'default:mysql-5-6'
-                }
-            ],
-            'PendingModifiedValues': {
-                'MultiAZ': None,
-                'MasterUserPassword': None,
-                'Port': None,
+    test_find_usage_instances = []
+    # first result page
+    test_find_usage_instances.append({
+        'DBInstances': [
+            {
+                'PubliclyAccessible': False,
+                'MasterUsername': 'myuser',
+                'LicenseModel': 'general-public-license',
+                'VpcSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'VpcSecurityGroupId': 'sg-aaaaaaaa'
+                    }
+                ],
+                'InstanceCreateTime': 1429910904.366,
+                'OptionGroupMemberships': [
+                    {
+                        'Status': 'in-sync',
+                        'OptionGroupName': 'default:mysql-5-6'
+                    }
+                ],
+                'PendingModifiedValues': {
+                    'MultiAZ': None,
+                    'MasterUserPassword': None,
+                    'Port': None,
+                    'Iops': None,
+                    'AllocatedStorage': None,
+                    'EngineVersion': None,
+                    'BackupRetentionPeriod': None,
+                    'DBInstanceClass': None,
+                    'DBInstanceIdentifier': None
+                },
+                'Engine': 'mysql',
+                'MultiAZ': True,
+                'LatestRestorableTime': 1435966800.0,
+                'DBSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'DBSecurityGroupName': 'mydb-dbsecuritygroup-aaaa'
+                    }
+                ],
+                'DBParameterGroups': [
+                    {
+                        'DBParameterGroupName': 'default.mysql5.6',
+                        'ParameterApplyStatus': 'in-sync'
+                    }
+                ],
+                'ReadReplicaSourceDBInstanceIdentifier': None,
+                'AutoMinorVersionUpgrade': True,
+                'PreferredBackupWindow': '07:00-08:00',
+                'DBSubnetGroup': {
+                    'VpcId': 'vpc-abcdef01',
+                    'Subnets': [
+                        {
+                            'SubnetStatus': 'Active',
+                            'SubnetIdentifier': 'subnet-aaaaaaaa',
+                            'SubnetAvailabilityZone': {
+                                'Name': 'us-east-1d',
+                                'ProvisionedIopsCapable': False
+                            }
+                        },
+                        {
+                            'SubnetStatus': 'Active',
+                            'SubnetIdentifier': 'subnet-22222222',
+                            'SubnetAvailabilityZone': {
+                                'Name': 'us-east-1a',
+                                'ProvisionedIopsCapable': False
+                            }
+                        }
+                    ],
+                    'DBSubnetGroupName': 'mydb-dbsubnetgroup-abcd',
+                    'SubnetGroupStatus': 'Complete',
+                    'DBSubnetGroupDescription': 'Subnet group for RDS instance'
+                },
+                'SecondaryAvailabilityZone': 'us-east-1a',
+                'ReadReplicaDBInstanceIdentifiers': [],
+                'AllocatedStorage': 200,
+                'BackupRetentionPeriod': 7,
+                'DBName': 'wordpress',
+                'PreferredMaintenanceWindow': 'tue:08:00-tue:09:00',
+                'Endpoint': {
+                    'Port': 3306,
+                    'Address': 'foo.bar.us-east-1.rds.amazonaws.com'
+                },
+                'DBInstanceStatus': 'available',
+                'StatusInfos': None,
+                'EngineVersion': '5.6.22',
+                'CharacterSetName': None,
+                'AvailabilityZone': 'us-east-1d',
                 'Iops': None,
-                'AllocatedStorage': None,
-                'EngineVersion': None,
-                'BackupRetentionPeriod': None,
-                'DBInstanceClass': None,
-                'DBInstanceIdentifier': None
+                'DBInstanceClass': 'db.t2.small',
+                'DBInstanceIdentifier': 'foo'
             },
-            'Engine': 'mysql',
-            'MultiAZ': True,
-            'LatestRestorableTime': 1435966800.0,
-            'DBSecurityGroups': [
-                {
-                    'Status': 'active',
-                    'DBSecurityGroupName': 'mydb-dbsecuritygroup-aaaa'
-                }
-            ],
-            'DBParameterGroups': [
-                {
-                    'DBParameterGroupName': 'default.mysql5.6',
-                    'ParameterApplyStatus': 'in-sync'
-                }
-            ],
-            'ReadReplicaSourceDBInstanceIdentifier': None,
-            'AutoMinorVersionUpgrade': True,
-            'PreferredBackupWindow': '07:00-08:00',
-            'DBSubnetGroup': {
-                'VpcId': 'vpc-abcdef01',
-                'Subnets': [
+        ],
+        'NextToken': 'string'
+    })
+    # second result page
+    test_find_usage_instances.append({
+        'DBInstances': [
+            {
+                'PubliclyAccessible': False,
+                'MasterUsername': 'myuser2',
+                'LicenseModel': 'postgresql-license',
+                'VpcSecurityGroups': [
                     {
-                        'SubnetStatus': 'Active',
-                        'SubnetIdentifier': 'subnet-aaaaaaaa',
-                        'SubnetAvailabilityZone': {
-                            'Name': 'us-east-1d',
-                            'ProvisionedIopsCapable': False
-                        }
-                    },
-                    {
-                        'SubnetStatus': 'Active',
-                        'SubnetIdentifier': 'subnet-22222222',
-                        'SubnetAvailabilityZone': {
-                            'Name': 'us-east-1a',
-                            'ProvisionedIopsCapable': False
-                        }
+                        'Status': 'active',
+                        'VpcSecurityGroupId': 'sg-12345678'
                     }
                 ],
-                'DBSubnetGroupName': 'mydb-dbsubnetgroup-abcd',
-                'SubnetGroupStatus': 'Complete',
-                'DBSubnetGroupDescription': 'Subnet group for RDS instance'
-            },
-            'SecondaryAvailabilityZone': 'us-east-1a',
-            'ReadReplicaDBInstanceIdentifiers': [],
-            'AllocatedStorage': 200,
-            'BackupRetentionPeriod': 7,
-            'DBName': 'wordpress',
-            'PreferredMaintenanceWindow': 'tue:08:00-tue:09:00',
-            'Endpoint': {
-                'Port': 3306,
-                'Address': 'foo.bar.us-east-1.rds.amazonaws.com'
-            },
-            'DBInstanceStatus': 'available',
-            'StatusInfos': None,
-            'EngineVersion': '5.6.22',
-            'CharacterSetName': None,
-            'AvailabilityZone': 'us-east-1d',
-            'Iops': None,
-            'DBInstanceClass': 'db.t2.small',
-            'DBInstanceIdentifier': 'foo'
-        },
-        {
-            'PubliclyAccessible': False,
-            'MasterUsername': 'myuser2',
-            'LicenseModel': 'postgresql-license',
-            'VpcSecurityGroups': [
-                {
-                    'Status': 'active',
-                    'VpcSecurityGroupId': 'sg-12345678'
-                }
-            ],
-            'InstanceCreateTime': 1432238504.239,
-            'OptionGroupMemberships': [
-                {
-                    'Status': 'in-sync',
-                    'OptionGroupName': 'default:postgres-9-3'
-                }
-            ],
-            'PendingModifiedValues': {
-                'MultiAZ': None,
-                'MasterUserPassword': None,
-                'Port': None,
+                'InstanceCreateTime': 1432238504.239,
+                'OptionGroupMemberships': [
+                    {
+                        'Status': 'in-sync',
+                        'OptionGroupName': 'default:postgres-9-3'
+                    }
+                ],
+                'PendingModifiedValues': {
+                    'MultiAZ': None,
+                    'MasterUserPassword': None,
+                    'Port': None,
+                    'Iops': None,
+                    'AllocatedStorage': None,
+                    'EngineVersion': None,
+                    'BackupRetentionPeriod': None,
+                    'DBInstanceClass': None,
+                    'DBInstanceIdentifier': None
+                },
+                'Engine': 'postgres',
+                'MultiAZ': False,
+                'LatestRestorableTime': 1435966550.0,
+                'DBSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'DBSecurityGroupName': 'sg1234-dbsecuritygroup-abcd'
+                    }
+                ],
+                'DBParameterGroups': [
+                    {
+                        'DBParameterGroupName': 'default.postgres9.3',
+                        'ParameterApplyStatus': 'in-sync'
+                    }
+                ],
+                'ReadReplicaSourceDBInstanceIdentifier': None,
+                'AutoMinorVersionUpgrade': True,
+                'PreferredBackupWindow': '03:09-03:39',
+                'DBSubnetGroup': {
+                    'VpcId': 'vpc-87654321',
+                    'Subnets': [
+                        {
+                            'SubnetStatus': 'Active',
+                            'SubnetIdentifier': 'subnet-a1234567',
+                            'SubnetAvailabilityZone': {
+                                'Name': 'us-east-1e',
+                                'ProvisionedIopsCapable': False
+                            }
+                        },
+                        {
+                            'SubnetStatus': 'Active',
+                            'SubnetIdentifier': 'subnet-b1234567',
+                            'SubnetAvailabilityZone': {
+                                'Name': 'us-east-1a',
+                                'ProvisionedIopsCapable': False
+                            }
+                        },
+                        {
+                            'SubnetStatus': 'Active',
+                            'SubnetIdentifier': 'subnet-c1234567',
+                            'SubnetAvailabilityZone': {
+                                'Name': 'us-east-1d',
+                                'ProvisionedIopsCapable': False
+                            }
+                        }
+                    ],
+                    'DBSubnetGroupName': 'mydb-dbsubnetgroup-abcdef',
+                    'SubnetGroupStatus': 'Complete',
+                    'DBSubnetGroupDescription': 'Subnet group for RDS instance'
+                },
+                'SecondaryAvailabilityZone': None,
+                'ReadReplicaDBInstanceIdentifiers': ['db-123', 'db-456'],
+                'AllocatedStorage': 50,
+                'BackupRetentionPeriod': 1,
+                'DBName': 'mydbname',
+                'PreferredMaintenanceWindow': 'mon:05:11-mon:05:41',
+                'Endpoint': {
+                    'Port': 5432,
+                    'Address': 'baz.blam.us-east-1.rds.amazonaws.com'
+                },
+                'DBInstanceStatus': 'available',
+                'StatusInfos': None,
+                'EngineVersion': '9.3.6',
+                'CharacterSetName': None,
+                'AvailabilityZone': 'us-east-1a',
                 'Iops': None,
-                'AllocatedStorage': None,
-                'EngineVersion': None,
-                'BackupRetentionPeriod': None,
-                'DBInstanceClass': None,
-                'DBInstanceIdentifier': None
+                'DBInstanceClass': 'db.t2.small',
+                'DBInstanceIdentifier': 'baz'
+            }
+        ]
+    })
+
+    test_find_usage_snapshots = []
+    # first result page
+    test_find_usage_snapshots.append({
+        "DBSnapshots": [
+            {
+                "AllocatedStorage": 100,
+                "AvailabilityZone": "us-east-1a",
+                "DBInstanceIdentifier": "foo-db",
+                "DBSnapshotIdentifier": "foo-db-final-snapshot",
+                "Engine": "postgres",
+                "EngineVersion": "9.3.3",
+                "InstanceCreateTime": 1408035263.101,
+                "Iops": 1000,
+                "LicenseModel": "postgresql-license",
+                "MasterUsername": "dbfoouser",
+                "OptionGroupName": "default:postgres-9-3",
+                "PercentProgress": 100,
+                "Port": 5432,
+                "SnapshotCreateTime": 1408454469.536,
+                "SnapshotType": "manual",
+                "SourceRegion": None,
+                "Status": "available",
+                "VpcId": None
             },
-            'Engine': 'postgres',
-            'MultiAZ': False,
-            'LatestRestorableTime': 1435966550.0,
-            'DBSecurityGroups': [
-                {
-                    'Status': 'active',
-                    'DBSecurityGroupName': 'sg1234-dbsecuritygroup-abcd'
-                }
-            ],
-            'DBParameterGroups': [
-                {
-                    'DBParameterGroupName': 'default.postgres9.3',
-                    'ParameterApplyStatus': 'in-sync'
-                }
-            ],
-            'ReadReplicaSourceDBInstanceIdentifier': None,
-            'AutoMinorVersionUpgrade': True,
-            'PreferredBackupWindow': '03:09-03:39',
-            'DBSubnetGroup': {
-                'VpcId': 'vpc-87654321',
-                'Subnets': [
+            {
+                "AllocatedStorage": 50,
+                "AvailabilityZone": "us-east-1d",
+                "DBInstanceIdentifier": "bd1t3lf90p3lqdx",
+                "DBSnapshotIdentifier":
+                    "rds:bd1t3lf90p3lqdx-2015-06-29-07-02",
+                "Engine": "mysql",
+                "EngineVersion": "5.6.22",
+                "InstanceCreateTime": 1429910904.366,
+                "Iops": None,
+                "LicenseModel": "general-public-license",
+                "MasterUsername": "dbuser3",
+                "OptionGroupName": "default:mysql-5-6",
+                "PercentProgress": 100,
+                "Port": 3306,
+                "SnapshotCreateTime": 1435561349.441,
+                "SnapshotType": "automated",
+                "SourceRegion": None,
+                "Status": "available",
+                "VpcId": "vpc-1ee8937b"
+            },
+        ],
+        'NextToken': 'string'
+    })
+    test_find_usage_snapshots.append({
+        'DBSnapshots': [
+            {
+                "AllocatedStorage": 25,
+                "AvailabilityZone": "us-east-1d",
+                "DBInstanceIdentifier": "md1e8qwtegkjdgy",
+                "DBSnapshotIdentifier":
+                    "rds:md1e8qwtegkjdgy-2015-06-29-07-06",
+                "Engine": "postgres",
+                "EngineVersion": "9.3.6",
+                "InstanceCreateTime": 1433883813.314,
+                "Iops": None,
+                "LicenseModel": "postgresql-license",
+                "MasterUsername": "dbuser4",
+                "OptionGroupName": "default:postgres-9-3",
+                "PercentProgress": 100,
+                "Port": 5432,
+                "SnapshotCreateTime": 1435561593.669,
+                "SnapshotType": "automated",
+                "SourceRegion": None,
+                "Status": "available",
+                "VpcId": "vpc-1ee8937b"
+            },
+        ],
+    })
+
+    test_find_usage_param_groups = []
+    test_find_usage_param_groups.append({
+        "DBParameterGroups": [
+            {
+                "DBParameterGroupFamily": "mysql5.6",
+                "DBParameterGroupName": "default.mysql5.6",
+                "Description":
+                    "Default parameter group for mysql5.6"
+            },
+        ],
+        'NextToken': 'string'
+    })
+    test_find_usage_param_groups.append({
+        'DBParameterGroups': [
+            {
+                "DBParameterGroupFamily": "postgres9.3",
+                "DBParameterGroupName": "default.postgres9.3",
+                "Description":
+                    "Default parameter group for postgres9.3"
+            }
+        ]
+    })
+
+    test_find_usage_subnet_groups = []
+    test_find_usage_subnet_groups.append({
+        "DBSubnetGroups": [
+            {
+                "DBSubnetGroupDescription":
+                    "Subnet group for CloudFormation RDS instance",
+                "DBSubnetGroupName":
+                    "SubnetGroup1",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
                     {
-                        'SubnetStatus': 'Active',
-                        'SubnetIdentifier': 'subnet-a1234567',
-                        'SubnetAvailabilityZone': {
-                            'Name': 'us-east-1e',
-                            'ProvisionedIopsCapable': False
-                        }
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1d",
+                            "ProvisionedIopsCapable": False
+                        },
+                        "SubnetIdentifier": "subnet-38e87861",
+                        "SubnetStatus": "Active"
                     },
                     {
-                        'SubnetStatus': 'Active',
-                        'SubnetIdentifier': 'subnet-b1234567',
-                        'SubnetAvailabilityZone': {
-                            'Name': 'us-east-1a',
-                            'ProvisionedIopsCapable': False
-                        }
-                    },
-                    {
-                        'SubnetStatus': 'Active',
-                        'SubnetIdentifier': 'subnet-c1234567',
-                        'SubnetAvailabilityZone': {
-                            'Name': 'us-east-1d',
-                            'ProvisionedIopsCapable': False
-                        }
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1a",
+                            "ProvisionedIopsCapable": False
+                        },
+                        "SubnetIdentifier": "subnet-4f027f38",
+                        "SubnetStatus": "Active"
                     }
                 ],
-                'DBSubnetGroupName': 'mydb-dbsubnetgroup-abcdef',
-                'SubnetGroupStatus': 'Complete',
-                'DBSubnetGroupDescription': 'Subnet group for RDS instance'
+                "VpcId": "vpc-1ee8937b"
             },
-            'SecondaryAvailabilityZone': None,
-            'ReadReplicaDBInstanceIdentifiers': ['db-123', 'db-456'],
-            'AllocatedStorage': 50,
-            'BackupRetentionPeriod': 1,
-            'DBName': 'mydbname',
-            'PreferredMaintenanceWindow': 'mon:05:11-mon:05:41',
-            'Endpoint': {
-                'Port': 5432,
-                'Address': 'baz.blam.us-east-1.rds.amazonaws.com'
-            },
-            'DBInstanceStatus': 'available',
-            'StatusInfos': None,
-            'EngineVersion': '9.3.6',
-            'CharacterSetName': None,
-            'AvailabilityZone': 'us-east-1a',
-            'Iops': None,
-            'DBInstanceClass': 'db.t2.small',
-            'DBInstanceIdentifier': 'baz'
-        }
-    ]
-
-    test_find_usage_snapshots = {
-        "DescribeDBSnapshotsResponse": {
-            "DescribeDBSnapshotsResult": {
-                "DBSnapshots": [
+        ],
+        'NextToken': 'string'
+    })
+    test_find_usage_subnet_groups.append({
+        'DBSubnetGroups': [
+            {
+                "DBSubnetGroupDescription":
+                    "Created from the RDS Management Console",
+                "DBSubnetGroupName": "default",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
                     {
-                        "AllocatedStorage": 100,
-                        "AvailabilityZone": "us-east-1a",
-                        "DBInstanceIdentifier": "foo-db",
-                        "DBSnapshotIdentifier": "foo-db-final-snapshot",
-                        "Engine": "postgres",
-                        "EngineVersion": "9.3.3",
-                        "InstanceCreateTime": 1408035263.101,
-                        "Iops": 1000,
-                        "LicenseModel": "postgresql-license",
-                        "MasterUsername": "dbfoouser",
-                        "OptionGroupName": "default:postgres-9-3",
-                        "PercentProgress": 100,
-                        "Port": 5432,
-                        "SnapshotCreateTime": 1408454469.536,
-                        "SnapshotType": "manual",
-                        "SourceRegion": None,
-                        "Status": "available",
-                        "VpcId": None
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1e",
+                            "ProvisionedIopsCapable": False
+                        },
+                        "SubnetIdentifier": "subnet-49071f61",
+                        "SubnetStatus": "Active"
                     },
                     {
-                        "AllocatedStorage": 50,
-                        "AvailabilityZone": "us-east-1d",
-                        "DBInstanceIdentifier": "bd1t3lf90p3lqdx",
-                        "DBSnapshotIdentifier":
-                            "rds:bd1t3lf90p3lqdx-2015-06-29-07-02",
-                        "Engine": "mysql",
-                        "EngineVersion": "5.6.22",
-                        "InstanceCreateTime": 1429910904.366,
-                        "Iops": None,
-                        "LicenseModel": "general-public-license",
-                        "MasterUsername": "dbuser3",
-                        "OptionGroupName": "default:mysql-5-6",
-                        "PercentProgress": 100,
-                        "Port": 3306,
-                        "SnapshotCreateTime": 1435561349.441,
-                        "SnapshotType": "automated",
-                        "SourceRegion": None,
-                        "Status": "available",
-                        "VpcId": "vpc-1ee8937b"
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1a",
+                            "ProvisionedIopsCapable": False
+                        },
+                        "SubnetIdentifier": "subnet-6fe23c18",
+                        "SubnetStatus": "Active"
                     },
                     {
-                        "AllocatedStorage": 25,
-                        "AvailabilityZone": "us-east-1d",
-                        "DBInstanceIdentifier": "md1e8qwtegkjdgy",
-                        "DBSnapshotIdentifier":
-                            "rds:md1e8qwtegkjdgy-2015-06-29-07-06",
-                        "Engine": "postgres",
-                        "EngineVersion": "9.3.6",
-                        "InstanceCreateTime": 1433883813.314,
-                        "Iops": None,
-                        "LicenseModel": "postgresql-license",
-                        "MasterUsername": "dbuser4",
-                        "OptionGroupName": "default:postgres-9-3",
-                        "PercentProgress": 100,
-                        "Port": 5432,
-                        "SnapshotCreateTime": 1435561593.669,
-                        "SnapshotType": "automated",
-                        "SourceRegion": None,
-                        "Status": "available",
-                        "VpcId": "vpc-1ee8937b"
-                    },
-                ],
-                "Marker":
-                    "YXJuOmF3czpyZHM6dXMtZWFzdC0xOjkzNDQ0NjIwOTU0MTpzbm"
-                    "Fwc2hvdDpyZHM6bWQxZThxd3RlZ2tqZGd5LTIwMTUtMDctMDEt"
-                    "MDctMDc="
-            },
-            "ResponseMetadata": {
-                "RequestId": "5fe976b3-2499-11e5-ad5a-1fed04d9fd3d"
-            }
-        }
-    }
-
-    test_find_usage_param_groups = {
-        "DescribeDBParameterGroupsResponse": {
-            "DescribeDBParameterGroupsResult": {
-                "DBParameterGroups": [
-                    {
-                        "DBParameterGroupFamily": "mysql5.6",
-                        "DBParameterGroupName": "default.mysql5.6",
-                        "Description":
-                            "Default parameter group for mysql5.6"
-                    },
-                    {
-                        "DBParameterGroupFamily": "postgres9.3",
-                        "DBParameterGroupName": "default.postgres9.3",
-                        "Description":
-                            "Default parameter group for postgres9.3"
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1d",
+                            "ProvisionedIopsCapable": False
+                        },
+                        "SubnetIdentifier": "subnet-a9b54df0",
+                        "SubnetStatus": "Active"
                     }
                 ],
-                "Marker": None
+                "VpcId": "vpc-c300b9a6"
             },
-            "ResponseMetadata": {
-                "RequestId": "xxxxxxxxxxxxxxx"
-            }
-        }
-    }
+            {
+                "DBSubnetGroupDescription":
+                    "Subnet group for CloudFormation RDS instance",
+                "DBSubnetGroupName":
+                    "SubnetGroup2",
+                "SubnetGroupStatus": "Complete",
+                "Subnets": [
+                    {
+                        "SubnetAvailabilityZone": {
+                            "Name": "us-east-1a",
+                            "ProvisionedIopsCapable": False
+                        },
+                        "SubnetIdentifier": "subnet-0b037e7c",
+                        "SubnetStatus": "Active"
+                    }
+                ],
+                "VpcId": "vpc-73ec9716"
+            },
+        ],
+    })
 
-    test_find_usage_subnet_groups = {
-        "DescribeDBSubnetGroupsResponse": {
-            "DescribeDBSubnetGroupsResult": {
-                "DBSubnetGroups": [
+    test_find_usage_option_groups = []
+    test_find_usage_option_groups.append({
+        "OptionGroupsList": [
+            {
+                "AllowsVpcAndNonVpcInstanceMemberships": True,
+                "EngineName": "mysql",
+                "MajorEngineVersion": "5.6",
+                "OptionGroupDescription":
+                    "Default option group for mysql 5.6",
+                "OptionGroupName": "default:mysql-5-6",
+                "Options": [],
+                "VpcId": None
+            },
+        ],
+        'NextToken': 'string'
+    })
+    test_find_usage_option_groups.append({
+        'OptionGroupsList': [
+            {
+                "AllowsVpcAndNonVpcInstanceMemberships": True,
+                "EngineName": "postgres",
+                "MajorEngineVersion": "9.3",
+                "OptionGroupDescription":
+                    "Default option group for postgres 9.3",
+                "OptionGroupName": "default:postgres-9-3",
+                "Options": [],
+                "VpcId": None
+            }
+        ]
+    })
+
+    test_find_usage_event_subscriptions = []
+    test_find_usage_event_subscriptions.append({
+        "EventSubscriptionsList": [
+            {
+                'CustomerAwsId': 'string',
+                'CustSubscriptionId': 'string',
+                'SnsTopicArn': 'string',
+                'Status': 'string',
+                'SubscriptionCreationTime': 'string',
+                'SourceType': 'string',
+                'SourceIdsList': [
+                    'string',
+                ],
+                'EventCategoriesList': [
+                    'string',
+                ],
+                'Enabled': True
+            }
+        ],
+        "NextToken": 'string'
+    })
+    test_find_usage_event_subscriptions.append({
+        "EventSubscriptionsList": [
+            {
+                'CustomerAwsId': 'string',
+                'CustSubscriptionId': 'string',
+                'SnsTopicArn': 'string',
+                'Status': 'string',
+                'SubscriptionCreationTime': 'string',
+                'SourceType': 'string',
+                'SourceIdsList': [
+                    'string',
+                ],
+                'EventCategoriesList': [
+                    'string',
+                ],
+                'Enabled': False
+            }
+        ]
+    })
+
+    test_find_usage_security_groups = []
+    test_find_usage_security_groups.append({
+        "DBSecurityGroups": [
+            {
+                "DBSecurityGroupDescription": "Frontend Access",
+                "DBSecurityGroupName":
+                    "SecurityGroup1",
+                "EC2SecurityGroups": [
                     {
-                        "DBSubnetGroupDescription":
-                            "Subnet group for CloudFormation RDS instance",
-                        "DBSubnetGroupName":
-                            "SubnetGroup1",
-                        "SubnetGroupStatus": "Complete",
-                        "Subnets": [
-                            {
-                                "SubnetAvailabilityZone": {
-                                    "Name": "us-east-1d",
-                                    "ProvisionedIopsCapable": False
-                                },
-                                "SubnetIdentifier": "subnet-38e87861",
-                                "SubnetStatus": "Active"
-                            },
-                            {
-                                "SubnetAvailabilityZone": {
-                                    "Name": "us-east-1a",
-                                    "ProvisionedIopsCapable": False
-                                },
-                                "SubnetIdentifier": "subnet-4f027f38",
-                                "SubnetStatus": "Active"
-                            }
-                        ],
-                        "VpcId": "vpc-1ee8937b"
+                        "EC2SecurityGroupId": "sg-c6dd95a2",
+                        "EC2SecurityGroupName":
+                            "EC2SG1",
+                        "EC2SecurityGroupOwnerId": None,
+                        "Status": "authorized"
+                    }
+                ],
+                "IPRanges": [],
+                "OwnerId": "123456789012",
+                "VpcId": None
+            },
+            {
+                "DBSecurityGroupDescription":
+                    "default:vpc-a926c2cc",
+                "DBSecurityGroupName": "default:vpc-a926c2cc",
+                "EC2SecurityGroups": [],
+                "IPRanges": [],
+                "OwnerId": "123456789012",
+                "VpcId": "vpc-a926c2cc"
+            },
+        ],
+        'NextToken': 'string'
+    })
+    test_find_usage_security_groups.append({
+        'DBSecurityGroups': [
+            {
+                "DBSecurityGroupDescription": "Frontend Access",
+                "DBSecurityGroupName": "SecurityGroup2",
+                "EC2SecurityGroups": [
+                    {
+                        "EC2SecurityGroupId": "sg-aaaaaaaa",
+                        "EC2SecurityGroupName": "SGName-aaaaaaaa",
+                        "EC2SecurityGroupOwnerId": None,
+                        "Status": "authorized"
                     },
                     {
-                        "DBSubnetGroupDescription":
-                            "Created from the RDS Management Console",
-                        "DBSubnetGroupName": "default",
-                        "SubnetGroupStatus": "Complete",
-                        "Subnets": [
-                            {
-                                "SubnetAvailabilityZone": {
-                                    "Name": "us-east-1e",
-                                    "ProvisionedIopsCapable": False
-                                },
-                                "SubnetIdentifier": "subnet-49071f61",
-                                "SubnetStatus": "Active"
-                            },
-                            {
-                                "SubnetAvailabilityZone": {
-                                    "Name": "us-east-1a",
-                                    "ProvisionedIopsCapable": False
-                                },
-                                "SubnetIdentifier": "subnet-6fe23c18",
-                                "SubnetStatus": "Active"
-                            },
-                            {
-                                "SubnetAvailabilityZone": {
-                                    "Name": "us-east-1d",
-                                    "ProvisionedIopsCapable": False
-                                },
-                                "SubnetIdentifier": "subnet-a9b54df0",
-                                "SubnetStatus": "Active"
-                            }
-                        ],
-                        "VpcId": "vpc-c300b9a6"
+                        "EC2SecurityGroupId": "sg-bbbbbbbb",
+                        "EC2SecurityGroupName": "SGName-bbbbbbbb",
+                        "EC2SecurityGroupOwnerId": None,
+                        "Status": "authorized"
                     },
                     {
-                        "DBSubnetGroupDescription":
-                            "Subnet group for CloudFormation RDS instance",
-                        "DBSubnetGroupName":
-                            "SubnetGroup2",
-                        "SubnetGroupStatus": "Complete",
-                        "Subnets": [
-                            {
-                                "SubnetAvailabilityZone": {
-                                    "Name": "us-east-1a",
-                                    "ProvisionedIopsCapable": False
-                                },
-                                "SubnetIdentifier": "subnet-0b037e7c",
-                                "SubnetStatus": "Active"
-                            }
-                        ],
-                        "VpcId": "vpc-73ec9716"
+                        "EC2SecurityGroupId": "sg-cccccccc",
+                        "EC2SecurityGroupName": "SGName-cccccccc",
+                        "EC2SecurityGroupOwnerId": None,
+                        "Status": "authorized"
                     },
                 ],
-                "Marker": None
+                "IPRanges": [],
+                "OwnerId": "123456789012",
+                "VpcId": "vpc-73ec9716"
             },
-            "ResponseMetadata": {
-                "RequestId": "7cd7ed68-2499-11e5-ad44-cdf98c606d42"
-            }
-        }
-    }
-
-    test_find_usage_option_groups = {
-        "DescribeOptionGroupsResponse": {
-            "DescribeOptionGroupsResult": {
-                "Marker": None,
-                "OptionGroupsList": [
+            {
+                'VpcId': None,
+                'DBSecurityGroupDescription':
+                    'awslimitchecker test',
+                'IPRanges': [
                     {
-                        "AllowsVpcAndNonVpcInstanceMemberships": True,
-                        "EngineName": "mysql",
-                        "MajorEngineVersion": "5.6",
-                        "OptionGroupDescription":
-                            "Default option group for mysql 5.6",
-                        "OptionGroupName": "default:mysql-5-6",
-                        "Options": [],
-                        "VpcId": None
+                        'Status': 'authorized',
+                        'CIDRIP': '76.122.124.15/32'
                     },
                     {
-                        "AllowsVpcAndNonVpcInstanceMemberships": True,
-                        "EngineName": "postgres",
-                        "MajorEngineVersion": "9.3",
-                        "OptionGroupDescription":
-                            "Default option group for postgres 9.3",
-                        "OptionGroupName": "default:postgres-9-3",
-                        "Options": [],
-                        "VpcId": None
+                        'Status': 'authorized',
+                        'CIDRIP': '66.6.152.59/32'
                     }
+                ],
+                'OwnerId': '123456789012',
+                'EC2SecurityGroups': [],
+                'DBSecurityGroupName': 'alctest'
+            }
+        ],
+    })
+
+    test_find_usage_reserved_instances = []
+    test_find_usage_reserved_instances.append({
+        'ReservedDBInstances': [
+            {
+                'ReservedDBInstanceId': 'string',
+                'ReservedDBInstancesOfferingId': 'string',
+                'DBInstanceClass': 'string',
+                'StartTime': datetime(2015, 1, 1),
+                'Duration': 123,
+                'FixedPrice': 123.0,
+                'UsagePrice': 123.0,
+                'CurrencyCode': 'string',
+                'DBInstanceCount': 123,
+                'ProductDescription': 'string',
+                'OfferingType': 'string',
+                'MultiAZ': False,
+                'State': 'string',
+                'RecurringCharges': [
+                    {
+                        'RecurringChargeAmount': 123.0,
+                        'RecurringChargeFrequency': 'string'
+                    },
                 ]
             },
-            "ResponseMetadata": {
-                "RequestId": "8725ddc9-2499-11e5-9ed1-d5a3270e57f9"
-            }
-        }
-    }
-
-    # @TODO update this with realistic test data
-    test_find_usage_event_subscriptions = {
-        "DescribeEventSubscriptionsResponse": {
-            "DescribeEventSubscriptionsResult": {
-                "EventSubscriptionsList": ['a'],
-                "Marker": None
-            },
-            "ResponseMetadata": {
-                "RequestId": "91c0b568-2499-11e5-8440-1fb643a72e45"
-            }
-        }
-    }
-
-    test_find_usage_security_groups = {
-        "DescribeDBSecurityGroupsResponse": {
-            "DescribeDBSecurityGroupsResult": {
-                "DBSecurityGroups": [
+        ],
+        'NextToken': 'string'
+    })
+    test_find_usage_reserved_instances.append({
+        'ReservedDBInstances': [
+            {
+                'ReservedDBInstanceId': 'string',
+                'ReservedDBInstancesOfferingId': 'string',
+                'DBInstanceClass': 'string',
+                'StartTime': datetime(2015, 1, 1),
+                'Duration': 123,
+                'FixedPrice': 123.0,
+                'UsagePrice': 123.0,
+                'CurrencyCode': 'string',
+                'DBInstanceCount': 123,
+                'ProductDescription': 'string',
+                'OfferingType': 'string',
+                'MultiAZ': True,
+                'State': 'string',
+                'RecurringCharges': [
                     {
-                        "DBSecurityGroupDescription": "Frontend Access",
-                        "DBSecurityGroupName":
-                            "SecurityGroup1",
-                        "EC2SecurityGroups": [
-                            {
-                                "EC2SecurityGroupId": "sg-c6dd95a2",
-                                "EC2SecurityGroupName":
-                                    "EC2SG1",
-                                "EC2SecurityGroupOwnerId": None,
-                                "Status": "authorized"
-                            }
-                        ],
-                        "IPRanges": [],
-                        "OwnerId": "123456789012",
-                        "VpcId": None
+                        'RecurringChargeAmount': 123.0,
+                        'RecurringChargeFrequency': 'string'
                     },
-                    {
-                        "DBSecurityGroupDescription":
-                            "default:vpc-a926c2cc",
-                        "DBSecurityGroupName": "default:vpc-a926c2cc",
-                        "EC2SecurityGroups": [],
-                        "IPRanges": [],
-                        "OwnerId": "123456789012",
-                        "VpcId": "vpc-a926c2cc"
-                    },
-                    {
-                        "DBSecurityGroupDescription": "Frontend Access",
-                        "DBSecurityGroupName": "SecurityGroup2",
-                        "EC2SecurityGroups": [
-                            {
-                                "EC2SecurityGroupId": "sg-aaaaaaaa",
-                                "EC2SecurityGroupName": "SGName-aaaaaaaa",
-                                "EC2SecurityGroupOwnerId": None,
-                                "Status": "authorized"
-                            },
-                            {
-                                "EC2SecurityGroupId": "sg-bbbbbbbb",
-                                "EC2SecurityGroupName": "SGName-bbbbbbbb",
-                                "EC2SecurityGroupOwnerId": None,
-                                "Status": "authorized"
-                            },
-                            {
-                                "EC2SecurityGroupId": "sg-cccccccc",
-                                "EC2SecurityGroupName": "SGName-cccccccc",
-                                "EC2SecurityGroupOwnerId": None,
-                                "Status": "authorized"
-                            },
-                        ],
-                        "IPRanges": [],
-                        "OwnerId": "123456789012",
-                        "VpcId": "vpc-73ec9716"
-                    },
-                    {
-                        'VpcId': None,
-                        'DBSecurityGroupDescription':
-                            'awslimitchecker test',
-                        'IPRanges': [
-                            {
-                                'Status': 'authorized',
-                                'CIDRIP': '76.122.124.15/32'
-                            },
-                            {
-                                'Status': 'authorized',
-                                'CIDRIP': '66.6.152.59/32'
-                            }
-                        ],
-                        'OwnerId': '123456789012',
-                        'EC2SecurityGroups': [],
-                        'DBSecurityGroupName': 'alctest'
-                    }
-                ],
-                "Marker": None
+                ]
             },
-            "ResponseMetadata": {
-                "RequestId": "9c78d95d-2499-11e5-9456-735a7f5001de"
-            }
-        }
-    }
-
-    # @TODO update this with realistic test data
-    test_find_usage_reserved_instances = {
-        'DescribeReservedDBInstancesResponse': {
-            'DescribeReservedDBInstancesResult': {
-                'Marker': None,
-                'ReservedDBInstances': [1, 2]
-            },
-            'ResponseMetadata': {
-                'RequestId': '75366d86-25a9-11e5-b6fa-c9da955772c6'
-            }
-        }
-    }
+        ],
+    })
 
 
 class ELB(object):

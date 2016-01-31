@@ -39,8 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 import result_fixtures
-from boto.rds2.layer1 import RDSConnection
-from boto.rds2 import connect_to_region
 from awslimitchecker.services.rds import _RDSService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -70,48 +68,24 @@ class Test_RDSService(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
-        mock_conn_via = Mock()
         cls = _RDSService(21, 43)
-        with patch('%s.boto.connect_rds2' % self.pbm) as mock_rds:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_rds.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
+        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+                mock_connect_client.return_value = mock_conn
                 cls.connect()
-        assert mock_rds.mock_calls == [call()]
         assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
+        assert mock_connect_client.mock_calls == [call('rds')]
         assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _RDSService(21, 43, region='foo')
-        with patch('%s.boto.connect_rds2' % self.pbm) as mock_rds:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_rds.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_rds.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-        assert cls.conn == mock_conn_via
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
-        with patch('awslimitchecker.services.rds.boto.connect_rds2'
-                   '') as mock_rds:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_rds.return_value = mock_conn
+        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+                mock_connect_client.return_value = mock_conn
                 cls.connect()
-        assert mock_rds.mock_calls == []
         assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
+        assert mock_connect_client.mock_calls == []
 
     def test_get_limits(self):
         cls = _RDSService(21, 43)
@@ -148,7 +122,7 @@ class Test_RDSService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
 
         with patch('%s.connect' % self.pb) as mock_connect:
             with patch.multiple(
@@ -188,38 +162,24 @@ class Test_RDSService(object):
         ]
 
     def test_find_usage_instances(self):
-        mock_conn = Mock(spec_set=RDSConnection)
+        instances = result_fixtures.RDS.test_find_usage_instances
+
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = instances
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
-        instances = result_fixtures.RDS.test_find_usage_instances
-        return_value = {
-            'DescribeDBInstancesResponse': {
-                'DescribeDBInstancesResult': {
-                    'DBInstances': instances
-                }
-            }
-        }
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = return_value
-            cls._find_usage_instances()
+        cls._find_usage_instances()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_instances,
-                alc_marker_path=[
-                    'DescribeDBInstancesResponse',
-                    'DescribeDBInstancesResult',
-                    'Marker'
-                ],
-                alc_data_path=[
-                    'DescribeDBInstancesResponse',
-                    'DescribeDBInstancesResult',
-                    'DBInstances'
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_instances'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB instances'].get_current_usage())
@@ -242,32 +202,24 @@ class Test_RDSService(object):
         assert usage[1].resource_id == 'baz'
 
     def test_find_usage_snapshots(self):
-        data = result_fixtures.RDS.test_find_usage_snapshots
+        response = result_fixtures.RDS.test_find_usage_snapshots
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = response
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_snapshots()
+        cls._find_usage_snapshots()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_snapshots,
-                alc_marker_path=[
-                    "DescribeDBSnapshotsResponse",
-                    "DescribeDBSnapshotsResult",
-                    'Marker'
-                ],
-                alc_data_path=[
-                    "DescribeDBSnapshotsResponse",
-                    "DescribeDBSnapshotsResult",
-                    "DBSnapshots"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_snapshots'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB snapshots per user'].get_current_usage())
@@ -278,30 +230,22 @@ class Test_RDSService(object):
     def test_find_usage_param_groups(self):
         data = result_fixtures.RDS.test_find_usage_param_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_param_groups()
+        cls._find_usage_param_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_parameter_groups,
-                alc_marker_path=[
-                    "DescribeDBParameterGroupsResponse",
-                    "DescribeDBParameterGroupsResult",
-                    'Marker'
-                ],
-                alc_data_path=[
-                    "DescribeDBParameterGroupsResponse",
-                    "DescribeDBParameterGroupsResult",
-                    "DBParameterGroups"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_parameter_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB parameter groups'].get_current_usage())
@@ -312,30 +256,22 @@ class Test_RDSService(object):
     def test_find_usage_subnet_groups(self):
         data = result_fixtures.RDS.test_find_usage_subnet_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_subnet_groups()
+        cls._find_usage_subnet_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_subnet_groups,
-                alc_marker_path=[
-                    "DescribeDBSubnetGroupsResponse",
-                    "DescribeDBSubnetGroupsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeDBSubnetGroupsResponse",
-                    "DescribeDBSubnetGroupsResult",
-                    "DBSubnetGroups"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_subnet_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Subnet Groups'].get_current_usage())
@@ -359,30 +295,22 @@ class Test_RDSService(object):
     def test_find_usage_option_groups(self):
         data = result_fixtures.RDS.test_find_usage_option_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_option_groups()
+        cls._find_usage_option_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_option_groups,
-                alc_marker_path=[
-                    "DescribeOptionGroupsResponse",
-                    "DescribeOptionGroupsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeOptionGroupsResponse",
-                    "DescribeOptionGroupsResult",
-                    "OptionGroupsList"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_option_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Option Groups'].get_current_usage())
@@ -393,64 +321,48 @@ class Test_RDSService(object):
     def test_find_usage_event_subscriptions(self):
         data = result_fixtures.RDS.test_find_usage_event_subscriptions
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_event_subscriptions()
+        cls._find_usage_event_subscriptions()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_event_subscriptions,
-                alc_marker_path=[
-                    "DescribeEventSubscriptionsResponse",
-                    "DescribeEventSubscriptionsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeEventSubscriptionsResponse",
-                    "DescribeEventSubscriptionsResult",
-                    "EventSubscriptionsList"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_event_subscriptions'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Event Subscriptions'].get_current_usage())
         assert len(usage) == 1
-        assert usage[0].get_value() == 1
+        assert usage[0].get_value() == 2
         assert usage[0].aws_type == 'AWS::RDS::EventSubscription'
 
     def test_find_usage_security_groups(self):
         data = result_fixtures.RDS.test_find_usage_security_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_security_groups()
+        cls._find_usage_security_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_security_groups,
-                alc_marker_path=[
-                    "DescribeDBSecurityGroupsResponse",
-                    "DescribeDBSecurityGroupsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeDBSecurityGroupsResponse",
-                    "DescribeDBSecurityGroupsResult",
-                    "DBSecurityGroups"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_security_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB security groups'].get_current_usage())
@@ -482,30 +394,22 @@ class Test_RDSService(object):
     def test_find_usage_reserved_instances(self):
         data = result_fixtures.RDS.test_find_usage_reserved_instances
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_reserved_instances()
+        cls._find_usage_reserved_instances()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_reserved_db_instances,
-                alc_marker_path=[
-                    'DescribeReservedDBInstancesResponse',
-                    'DescribeReservedDBInstancesResult',
-                    "Marker"
-                ],
-                alc_data_path=[
-                    'DescribeReservedDBInstancesResponse',
-                    'DescribeReservedDBInstancesResult',
-                    'ReservedDBInstances'
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_reserved_db_instances'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Reserved Instances'].get_current_usage())
