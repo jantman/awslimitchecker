@@ -49,13 +49,7 @@ logger = logging.getLogger(__name__)
 class _RDSService(_AwsService):
 
     service_name = 'RDS'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        else:
-            self.conn = self.connect_boto3('rds')
+    api_name = 'rds'
 
     def find_usage(self):
         """

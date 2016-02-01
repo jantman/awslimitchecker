@@ -65,43 +65,9 @@ class Test_Ec2Service(object):
         cls = _Ec2Service(21, 43)
         assert cls.service_name == 'EC2'
         assert cls.conn is None
+        assert cls.resource_conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
-
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_res_conn = Mock()
-        cls = _Ec2Service(21, 43)
-        with patch('%s.connect_boto3' % self.pb) as mock_connect_boto3:
-            with patch('%s.connect_resource' % self.pb) as mock_connect_res:
-                mock_connect_boto3.return_value = mock_conn
-                mock_connect_res.return_value = mock_res_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == [call('ec2')]
-        assert mock_connect_res.mock_calls == [call('ec2')]
-        assert cls.conn == mock_res_conn
-        assert cls.client_conn == mock_conn
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        mock_res_conn = Mock()
-        cls = _Ec2Service(21, 43)
-        cls.conn = mock_res_conn
-        cls.client_conn = mock_conn
-
-        with patch('%s.connect_boto3' % self.pb) as mock_connect_boto3:
-            with patch('%s.connect_resource' % self.pb) as mock_connect_res:
-                mock_connect_boto3.return_value = mock_conn
-                mock_connect_res.return_value = mock_res_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == []
-        assert mock_connect_res.mock_calls == []
-        assert cls.conn == mock_res_conn
-        assert cls.client_conn == mock_conn
 
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
@@ -211,7 +177,7 @@ class Test_Ec2Service(object):
         retval = fixtures.test_instance_usage
         mock_conn.instances.all.return_value = retval
 
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
         cls.limits = limits
 
         with patch('awslimitchecker.services.ec2._Ec2Service._instance_types',
@@ -240,9 +206,9 @@ class Test_Ec2Service(object):
 
         cls = _Ec2Service(21, 43)
         mock_client_conn = Mock()
-        cls.client_conn = mock_client_conn
+        cls.conn = mock_client_conn
         mock_conn = Mock()
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
 
         with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
             mock_wrapper.return_value = response
@@ -303,7 +269,7 @@ class Test_Ec2Service(object):
 
         cls = _Ec2Service(21, 43)
         mock_conn = Mock()
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
         cls.limits = limits
         with patch('%s._instance_usage' % self.pb,
                    autospec=True) as mock_inst_usage:
@@ -337,7 +303,7 @@ class Test_Ec2Service(object):
         data = fixtures.test_instance_usage_key_error
         mock_conn.instances.all.return_value = data
         cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
         cls.limits = {'Running On-Demand t2.micro instances': Mock()}
 
         with patch(
@@ -381,7 +347,7 @@ class Test_Ec2Service(object):
         mock_conn.security_groups.all.return_value = mocks
 
         cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
 
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_networking_sgs()
@@ -424,7 +390,7 @@ class Test_Ec2Service(object):
         mock_conn.classic_addresses.all.return_value = mocks['Classic']
         mock_conn.vpc_addresses.all.return_value = mocks['Vpc']
         cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
 
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_networking_eips()
@@ -458,7 +424,7 @@ class Test_Ec2Service(object):
         mock_conn = Mock()
         mock_conn.network_interfaces.all.return_value = mocks
         cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
+        cls.resource_conn = mock_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_networking_eni_sg()
         assert mock_logger.mock_calls == [
@@ -499,8 +465,8 @@ class Test_Ec2Service(object):
         mock_client_conn.describe_account_attributes.return_value = data
 
         cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
-        cls.client_conn = mock_client_conn
+        cls.resource_conn = mock_conn
+        cls.conn = mock_client_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._update_limits_from_api()
         assert mock_conn.mock_calls == []

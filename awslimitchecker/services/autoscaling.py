@@ -50,13 +50,7 @@ logger = logging.getLogger(__name__)
 class _AutoscalingService(_AwsService):
 
     service_name = 'AutoScaling'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        else:
-            self.conn = self.connect_boto3('autoscaling')
+    api_name = 'autoscaling'
 
     def find_usage(self):
         """

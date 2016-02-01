@@ -66,28 +66,6 @@ class Test_EbsService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        cls = _EbsService(21, 43)
-        with patch('%s.connect_boto3' % self.pb) as mock_connect_boto3:
-                mock_connect_boto3.return_value = mock_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == [call('ec2')]
-        assert cls.conn == mock_conn
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        cls = _EbsService(21, 43)
-        cls.conn = mock_conn
-        with patch('%s.connect_boto3' % self.pb) as mock_connect_boto3:
-                mock_connect_boto3.return_value = mock_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == []
-
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         cls = _EbsService(21, 43)

@@ -49,9 +49,11 @@ Guidelines
 
 * pep8 compliant with some exceptions (see pytest.ini)
 * 100% test coverage with pytest (with valid tests)
-* each :py:class:`~awslimitchecker.services.base._AwsService` subclass
-  should only connect to boto once, and should save the connection as ``self.conn``.
-  They *must not* connect in the class constructor.
+* Connections to the AWS services should only be made by the class's
+  :py:meth:`~awslimitchecker.connectable.Connectable.connect` and
+  :py:meth:`~awslimitchecker.connectable.Connectable.connect_resource` methods,
+  inherited from the :py:class:`~awslimitchecker.connectable.Connectable`
+  mixin.
 * All modules should have (and use) module-level loggers.
 * See the section on the AGPL license below.
 * **Commit messages** should be meaningful, and reference the Issue number
@@ -69,21 +71,17 @@ Guidelines
 Adding New Limits and Checks to Existing Services
 -------------------------------------------------
 
-First, note that all calls to AWS APIs should be handled through
-:py:func:`~awslimitchecker.utils.boto_query_wrapper`, which handles
-retries (with exponential backoff) when API request rate limits are hit,
-and also handles paginated responses if they're not handled by boto.
-
-Second, note that queries which may be paginated **and return a dict** instead
-of a ResultSet object must have the proper parameters for
-:py:func:`~awslimitchecker.utils._paginate_dict` passed in to
-:py:func:`~awslimitchecker.utils.boto_query_wrapper`.
+First, note that any calls to boto3 client ("low-level") APIs that do
+have a Paginator should be handled through
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`, and most have the proper
+parameters passed for :py:func:`~awslimitchecker.utils._paginate_dict` to
+paginate them.
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method.
 2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method
    called by that, in the case of large or complex services), get the usage information
-   via `boto` and pass it to the appropriate AwsLimit object via its
+   via ``self.conn`` and/or ``self.resource_conn`` and pass it to the appropriate AwsLimit object via its
    :py:meth:`~.AwsLimit._add_current_usage` method. For anything more than trivial
    services (those with only 2-3 limits), ``find_usage()`` should be broken into
    multiple methods, generally one per AWS API call.
@@ -101,10 +99,11 @@ Adding New Services
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
 
-First, note that all calls to AWS APIs should be handled through
-:py:func:`~awslimitchecker.utils.boto_query_wrapper`, which handles
-retries (with exponential backoff) when API request rate limits are hit,
-and also handles paginated responses if they're not handled by boto.
+First, note that any calls to boto3 client ("low-level") APIs that do
+have a Paginator should be handled through
+:py:func:`~awslimitchecker.utils.boto_query_wrapper`, and most have the proper
+parameters passed for :py:func:`~awslimitchecker.utils._paginate_dict` to
+paginate them.
 
 1. The new service name should be in CamelCase, preferably one word (if not one word, it should be underscore-separated).
    In ``awslimitchecker/services``, use the ``addservice`` script; this will create a templated service class in the
@@ -117,11 +116,9 @@ and also handles paginated responses if they're not handled by boto.
 2. Find all "TODO" comments in the newly-created files; these have instructions on things to change for new services.
    Add yourself to the Authors section in the header if desired.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
-4. Ensure that the :py:meth:`~awslimitchecker.services.base._AwsService.connect` method is properly defined; if ``self.conn`` is not None, then it
-   should return None. If ``self.region`` is None, it should set ``self.conn`` to the return value of the appropriate
-   ``boto.connect_*()`` method for the service, specifically the connected connection class for the service. Otherwise,
-   it should call ``self.connect_via()`` (:py:meth:`~.Connectable.connect_via`) passing in the service's ``connect_to_region()``
-   function as the argument. This is done to centralize region and STS connection logic in :py:class:`~._AwsService`.
+4. Be sure to set the class's ``api_name`` attribute to the correct name of the
+   AWS service API (i.e. the parameter passed to `boto3.client() <https://boto3.readthedocs.org/en/latest/reference/core/boto3.html#boto3.client>`_). This string can
+   typically be found at the top of the Service page in the `boto3 docs<http://boto3.readthedocs.org/en/latest/reference/services/index.html>`_.
 5. Write at least high-level tests; TDD is greatly preferred.
 6. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
    small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
@@ -132,17 +129,16 @@ and also handles paginated responses if they're not handled by boto.
 8. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
 9. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
    returns a list of all IAM permissions required for it to work.
-10. Write integration tests. (currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_)
-11. Run all tox jobs, or at least one python version, docs and coverage.
-12. Commit the updated documentation to the repository.
-13. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+10. Run all tox jobs, or at least one python version, docs and coverage.
+11. Commit the updated documentation to the repository.
+12. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
     `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
     `Policy Simulator <http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html>`_.
-14. Submit your pull request.
+13. Submit your pull request.
 
 .. _development.adding_ta:
 
@@ -182,7 +178,16 @@ is ready for it when boto is.
 Integration Testing
 -------------------
 
-currently not implemented; see `issue #21 <https://github.com/jantman/awslimitchecker/issues/21>`_
+Integration tests are automatically run in TravisCI for all __non-pull request__
+branches. You can run them manually from your local machine using:
+
+.. code-block:: console
+
+    tox -r -e integration,integration3
+
+These tests simply run ``awslimitchecker``'s CLI script for both usage and limits, for all services and each service individually. Note that this covers a very small amount of the code, as the account that I use for integration tests has virtually no resources in it.
+
+If integration tests fail, check the required IAM permissions. The IAM user that I use for Travis integration tests has a manually-maintained IAM policy.
 
 .. _development.docs:
 

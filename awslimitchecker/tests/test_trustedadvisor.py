@@ -109,44 +109,6 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
 
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        cls = TrustedAdvisor(21, 43)
-        with patch('%s.connect_boto3' % pb) as mock_connect_boto3:
-                mock_connect_boto3.return_value = mock_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == [
-            call('support')
-        ]
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        cls = TrustedAdvisor(21, 43)
-        cls.ta_region = 'foo'
-        with patch('%s.connect_boto3' % pb) as mock_connect_boto3:
-                mock_connect_boto3.return_value = mock_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == [
-            call('support')
-        ]
-        assert cls.conn == mock_conn
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        cls = TrustedAdvisor(21, 43)
-        cls.conn = mock_conn
-        with patch('%s.connect_boto3' % pb) as mock_connect_boto3:
-                mock_connect_boto3.return_value = mock_conn
-                cls.connect()
-        assert mock_conn.mock_calls == []
-        assert mock_connect_boto3.mock_calls == []
-
     def test_update_limits(self):
         mock_results = Mock()
         with patch('%s.connect' % pb, autospec=True) as mock_connect:

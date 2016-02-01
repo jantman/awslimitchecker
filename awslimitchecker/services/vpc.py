@@ -51,13 +51,7 @@ logger = logging.getLogger(__name__)
 class _VpcService(_AwsService):
 
     service_name = 'VPC'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        else:
-            self.conn = self.connect_boto3('ec2')
+    api_name = 'ec2'
 
     def find_usage(self):
         """

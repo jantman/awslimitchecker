@@ -52,18 +52,7 @@ logger = logging.getLogger(__name__)
 class _Ec2Service(_AwsService):
 
     service_name = 'EC2'
-
-    def __init__(self, *args, **kwargs):
-        """Supplement superclass constructor to add self.client_conn"""
-        self.client_conn = None
-        super(_Ec2Service, self).__init__(*args, **kwargs)
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is None:
-            self.conn = self.connect_resource('ec2')
-        if self.client_conn is None:
-            self.client_conn = self.connect_boto3('ec2')
+    api_name = 'ec2'
 
     def find_usage(self):
         """
@@ -73,6 +62,7 @@ class _Ec2Service(_AwsService):
         """
         logger.debug("Checking usage for service %s", self.service_name)
         self.connect()
+        self.connect_resource()
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_instances()
@@ -133,7 +123,7 @@ class _Ec2Service(_AwsService):
         az_to_res = {}
         logger.debug("Getting reserved instance information")
         res = boto_query_wrapper(
-            self.client_conn.describe_reserved_instances,
+            self.conn.describe_reserved_instances,
             alc_no_paginate=True
         )
         for x in res['ReservedInstances']:
@@ -165,7 +155,7 @@ class _Ec2Service(_AwsService):
             ondemand[t] = 0
         az_to_inst = {}
         logger.debug("Getting usage for on-demand instances")
-        for inst in self.conn.instances.all():
+        for inst in self.resource_conn.instances.all():
             if inst.spot_instance_request_id:
                 logger.warning("Spot instance found (%s); awslimitchecker "
                                "does not yet support spot "
@@ -208,9 +198,10 @@ class _Ec2Service(_AwsService):
         with the quotas returned. Updates ``self.limits``.
         """
         self.connect()
+        self.connect_resource()
         logger.info("Querying EC2 DescribeAccountAttributes for limits")
         # no need to paginate
-        attribs = self.client_conn.describe_account_attributes()
+        attribs = self.conn.describe_account_attributes()
         for attrib in attribs['AccountAttributes']:
             aname = attrib['AttributeName']
             val = attrib['AttributeValues'][0]['AttributeValue']
@@ -289,7 +280,7 @@ class _Ec2Service(_AwsService):
         logger.debug("Getting usage for EC2 VPC resources")
         sgs_per_vpc = defaultdict(int)
         rules_per_sg = defaultdict(int)
-        for sg in self.conn.security_groups.all():
+        for sg in self.resource_conn.security_groups.all():
             if sg.vpc_id is not None:
                 sgs_per_vpc[sg.vpc_id] += 1
                 rules_per_sg[sg.id] = len(sg.ip_permissions)
@@ -309,14 +300,14 @@ class _Ec2Service(_AwsService):
 
     def _find_usage_networking_eips(self):
         logger.debug("Getting usage for EC2 EIPs")
-        vpc_addrs = self.conn.vpc_addresses.all()
+        vpc_addrs = self.resource_conn.vpc_addresses.all()
         self.limits['VPC Elastic IP addresses (EIPs)']._add_current_usage(
             sum(1 for a in vpc_addrs if a.domain == 'vpc'),
             aws_type='AWS::EC2::EIP',
         )
         # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
         # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
-        classic_addrs = self.conn.classic_addresses.all()
+        classic_addrs = self.resource_conn.classic_addresses.all()
         self.limits['Elastic IP addresses (EIPs)']._add_current_usage(
             sum(1 for a in classic_addrs if a.domain == 'standard'),
             aws_type='AWS::EC2::EIP',
@@ -324,7 +315,7 @@ class _Ec2Service(_AwsService):
 
     def _find_usage_networking_eni_sg(self):
         logger.debug("Getting usage for EC2 Network Interfaces")
-        ints = self.conn.network_interfaces.all()
+        ints = self.resource_conn.network_interfaces.all()
         for iface in ints:
             if iface.vpc is None:
                 continue

@@ -57,7 +57,7 @@ Develop:
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
    :alt: sphinx documentation for develop branch
 
-A script and python module to check your AWS service limits and usage using `boto <http://docs.pythonboto.org/en/latest/>`_.
+A script and python module to check your AWS service limits and usage using `boto3 <http://boto3.readthedocs.org/>`_.
 
 Users building out scalable services in Amazon AWS often run into AWS' `service limits <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html>`_ -
 often at the least convenient time (i.e. mid-deploy or when autoscaling fails). Amazon's `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
@@ -71,8 +71,11 @@ Full project documentation is available at `http://awslimitchecker.readthedocs.o
 Status
 ------
 
-This project is currently in very early development. At this time please consider it beta code and not fully tested in all situations;
-furthermore its API may be changing rapidly. I hope to have this stabilized soon.
+This project has just undergone a relatively major refactor to migrate from
+[boto](http://boto.readthedocs.org) to [boto3](http://boto3.readthedocs.org/),
+along with a refactor of much of the connection and usage gathering code. Until
+it's been running in production for a while, please consider this to be "beta"
+and make every effort to manually confirm the results for your environment.
 
 What It Does
 ------------
@@ -91,10 +94,9 @@ What It Does
 Requirements
 ------------
 
-* Python 2.6 through 3.4. Python 2.x is recommended, as `boto <http://docs.pythonboto.org/en/latest/>`_ (the AWS client library) currently has
-  incomplete Python3 support. See the `boto documentation <http://boto.readthedocs.org/en/latest/>`_ for a list of AWS services that are Python3-compatible.
+* Python 2.6 through 3.5.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.32.0
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 Installation
 ------------
@@ -114,7 +116,7 @@ Credentials
 Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
 files, or set as environment variables. See
-`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+`boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.

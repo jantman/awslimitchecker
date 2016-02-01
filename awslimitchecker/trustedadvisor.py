@@ -54,6 +54,7 @@ class TrustedAdvisor(Connectable):
     """
 
     service_name = 'TrustedAdvisor'
+    api_name = 'support'
 
     def __init__(self, account_id=None, account_role=None, region=None,
                  external_id=None, mfa_serial_number=None, mfa_token=None):
@@ -92,13 +93,6 @@ class TrustedAdvisor(Connectable):
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        else:
-            self.conn = self.connect_boto3('support')
 
     def update_limits(self, services):
         """

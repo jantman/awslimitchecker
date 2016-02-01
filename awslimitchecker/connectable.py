@@ -73,135 +73,71 @@ class Connectable(object):
     # Class attribute to reuse credentials between calls
     credentials = None
 
-    def connect_via(self, driver):
+    @property
+    def _boto3_connection_kwargs(self):
         """
-        Connect to an AWS API and return the connection object. If
-        ``self.account_id`` is None, call ``driver(self.region)``. Otherwise,
-        call :py:meth:`~._get_sts_token` to get STS token credentials using
-        :py:meth:`boto.sts.STSConnection.assume_role` and call ``driver()`` with
-        those credentials to use an assumed role.
-
-        :param driver: the connect_to_region() function of the boto
-          submodule to use to create this connection
-        :type driver: :py:obj:`function`
-        :returns: connected boto service class instance
-        """
-        # @TODO boto3 migration - remove this when done
-        if self.account_id is not None:
-            if Connectable.credentials is None:
-                logger.debug("Connecting to %s for account %s (STS; %s)",
-                             self.service_name, self.account_id, self.region)
-                Connectable.credentials = self._get_sts_token()
-            else:
-                logger.debug("Reusing previous STS credentials for account %s",
-                             self.account_id)
-
-            conn = driver(
-                self.region,
-                aws_access_key_id=Connectable.credentials.access_key,
-                aws_secret_access_key=Connectable.credentials.secret_key,
-                security_token=Connectable.credentials.session_token)
-        else:
-            logger.debug("Connecting to %s (%s)",
-                         self.service_name, self.region)
-            conn = driver(self.region)
-        logger.info("Connected to %s", self.service_name)
-        return conn
-
-    def connect_boto3(self, service_name, connect_method=None):
-        """
-        Connect to an AWS API and return the connected boto3 connection object.
-        If ``self.account_id`` is None, call ``connect_method``  with
+        Generate keyword arguments for boto3 connection functions.
+        If ``self.account_id`` is None, this will just include
         ``region_name=self.region``. Otherwise, call :py:meth:`~._get_sts_token`
         to get STS token credentials using
         `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
-        latest/reference/services/sts.html#STS.Client.assume_role>`_ and call
-        ``connect_method``  with those credentials to use an assumed role.
+        latest/reference/services/sts.html#STS.Client.assume_role>`_ and include
+        those credentials in the return value.
 
-        ``connect_method`` is assumed to be one of the boto3 connection methods,
-        specifically one of:
-
-        * __Default:__ `boto3.client <https://boto3.readthed
-        ocs.org/en/latest/reference/core/boto3.html#boto3.client>`_
-        * `boto3.resource <https://boto3.readthedocs.org/en/latest/reference/
-        core/boto3.html#boto3.resource>`_
-
-        If ``connect_method`` is not specified (left as default of ``None``),
-        ``boto3.client`` will be used. (Using ``None`` as the default is a
-        side-effect of Python's module loading order and Mock usage for
-        testing.)
-
-        :param service_name: name of the AWS service API to connect to (passed
-          to ``boto3.client`` as the ``service_name`` parameter.)
-        :type service_name: str
-        :param connect_method: boto3 method to connect with
-        :type connect_method: function
-        :returns: connected ``boto3.session.Session`` subclass instance
+        :return: keyword arguments for boto3 connection functions
+        :rtype: dict
         """
-        if connect_method is None:
-            connect_method = boto3.client
+        kwargs = {'region_name': self.region}
         if self.account_id is not None:
             if Connectable.credentials is None:
-                logger.debug("Connecting to %s for account %s (STS; %s)",
-                             service_name, self.account_id, self.region)
-                Connectable.credentials = self._get_sts_token_boto3()
-            else:
-                logger.debug("Reusing previous STS credentials for account %s",
-                             self.account_id)
-            conn = connect_method(
-                service_name,
-                region_name=self.region,
-                aws_access_key_id=Connectable.credentials.access_key,
-                aws_secret_access_key=Connectable.credentials.secret_key,
-                aws_session_token=Connectable.credentials.session_token)
-        else:
-            logger.debug("Connecting to %s (%s)",
-                         service_name, self.region)
-            conn = connect_method(service_name, region_name=self.region)
-        logger.info("Connected to %s in region %s", service_name,
-                    conn._client_config.region_name)
-        return conn
-
-    def connect_resource(self, service_name):
-        """
-        Connect to an AWS API and return the connected boto3 resource object. If
-        ``self.account_id`` is None, call  with ``region_name=self.region``. Otherwise, call
-        :py:meth:`~._get_sts_token` to get STS token credentials using
-        `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
-        latest/reference/services/sts.html#STS.Client.assume_role>`_ and call
-        `boto3.resource <https://boto3.readthedocs.org/en/latest/reference/core/
-        boto3.html#boto3.resource>`_ with those credentials to use an assumed
-        role.
-
-        This method returns a high-level boto3 Resource object.
-
-        :param service_name: name of the AWS service API to connect to (passed
-          to ``boto3.resource`` as the ``service_name`` parameter.)
-        :type driver: str
-        :returns: connected ``boto3.resource`` class instance
-        """
-        if self.account_id is not None:
-            if Connectable.credentials is None:
-                logger.debug("Connecting to %s (resource) for account %s "
-                             "(STS; %s)", service_name, self.account_id,
+                logger.debug("Connecting for account %s role '%s' with STS "
+                             "(region: %s)", self.account_id, self.account_role,
                              self.region)
                 Connectable.credentials = self._get_sts_token_boto3()
             else:
                 logger.debug("Reusing previous STS credentials for account %s",
                              self.account_id)
-            conn = boto3.resource(
-                service_name,
-                region_name=self.region,
-                aws_access_key_id=Connectable.credentials.access_key,
-                aws_secret_access_key=Connectable.credentials.secret_key,
-                aws_session_token=Connectable.credentials.session_token)
+            kwargs['aws_access_key_id'] = Connectable.credentials.access_key
+            kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
+            kwargs['aws_session_token'] = Connectable.credentials.session_token
         else:
-            logger.debug("Connecting to %s (resource) (%s)",
-                         service_name, self.region)
-            conn = boto3.resource(service_name, region_name=self.region)
-        logger.info("Connected to %s (resource) in region %s", service_name,
-                    conn.meta.client._client_config.region_name)
-        return conn
+            logger.debug("Connecting to region %s", self.region)
+        return kwargs
+
+    def connect(self):
+        """
+        Connect to an AWS API via boto3 low-level client and set ``self.conn``
+        to the `boto3.client <https://boto3.readthed
+        ocs.org/en/latest/reference/core/boto3.html#boto3.client>`_ object
+        (a ``botocore.client.*`` instance). If ``self.conn`` is not None,
+        do nothing. This connects to the API name given by ``self.api_name``.
+
+        :returns: None
+        """
+        if self.conn is not None:
+            return
+        kwargs = self._boto3_connection_kwargs
+        self.conn = boto3.client(self.api_name, **kwargs)
+        logger.info("Connected to %s in region %s", self.api_name,
+                    self.conn._client_config.region_name)
+
+    def connect_resource(self):
+        """
+        Connect to an AWS API via boto3 high-level resource connection and set
+        ``self.resource_conn`` to the `boto3.resource <https://boto3.readthed
+        ocs.org/en/latest/reference/core/boto3.html#boto3.resource>`_ object
+        (a ``boto3.resources.factory.*.ServiceResource`` instance).
+        If ``self.resource_conn`` is not None,
+        do nothing. This connects to the API name given by ``self.api_name``.
+
+        :returns: None
+        """
+        if self.resource_conn is not None:
+            return
+        kwargs = self._boto3_connection_kwargs
+        self.resource_conn = boto3.resource(self.api_name, **kwargs)
+        logger.info("Connected to %s (resource) in region %s", self.api_name,
+                    self.resource_conn.meta.client._client_config.region_name)
 
     def _get_sts_token(self):
         """
