@@ -73,13 +73,13 @@ class Test_Ec2Service(object):
         mock_conn = Mock()
         mock_res_conn = Mock()
         cls = _Ec2Service(21, 43)
-        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+        with patch('%s.connect_boto3' % self.pb) as mock_connect_boto3:
             with patch('%s.connect_resource' % self.pb) as mock_connect_res:
-                mock_connect_client.return_value = mock_conn
+                mock_connect_boto3.return_value = mock_conn
                 mock_connect_res.return_value = mock_res_conn
                 cls.connect()
         assert mock_conn.mock_calls == []
-        assert mock_connect_client.mock_calls == [call('ec2')]
+        assert mock_connect_boto3.mock_calls == [call('ec2')]
         assert mock_connect_res.mock_calls == [call('ec2')]
         assert cls.conn == mock_res_conn
         assert cls.client_conn == mock_conn
@@ -92,13 +92,13 @@ class Test_Ec2Service(object):
         cls.conn = mock_res_conn
         cls.client_conn = mock_conn
 
-        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+        with patch('%s.connect_boto3' % self.pb) as mock_connect_boto3:
             with patch('%s.connect_resource' % self.pb) as mock_connect_res:
-                mock_connect_client.return_value = mock_conn
+                mock_connect_boto3.return_value = mock_conn
                 mock_connect_res.return_value = mock_res_conn
                 cls.connect()
         assert mock_conn.mock_calls == []
-        assert mock_connect_client.mock_calls == []
+        assert mock_connect_boto3.mock_calls == []
         assert mock_connect_res.mock_calls == []
         assert cls.conn == mock_res_conn
         assert cls.client_conn == mock_conn

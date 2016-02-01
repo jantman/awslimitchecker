@@ -113,11 +113,11 @@ class Test_TrustedAdvisor(object):
         """test connect()"""
         mock_conn = Mock()
         cls = TrustedAdvisor(21, 43)
-        with patch('%s.connect_client' % pb) as mock_connect_client:
-                mock_connect_client.return_value = mock_conn
+        with patch('%s.connect_boto3' % pb) as mock_connect_boto3:
+                mock_connect_boto3.return_value = mock_conn
                 cls.connect()
         assert mock_conn.mock_calls == []
-        assert mock_connect_client.mock_calls == [
+        assert mock_connect_boto3.mock_calls == [
             call('support')
         ]
         assert cls.conn == mock_conn
@@ -127,11 +127,11 @@ class Test_TrustedAdvisor(object):
         mock_conn = Mock()
         cls = TrustedAdvisor(21, 43)
         cls.ta_region = 'foo'
-        with patch('%s.connect_client' % pb) as mock_connect_client:
-                mock_connect_client.return_value = mock_conn
+        with patch('%s.connect_boto3' % pb) as mock_connect_boto3:
+                mock_connect_boto3.return_value = mock_conn
                 cls.connect()
         assert mock_conn.mock_calls == []
-        assert mock_connect_client.mock_calls == [
+        assert mock_connect_boto3.mock_calls == [
             call('support')
         ]
         assert cls.conn == mock_conn
@@ -141,11 +141,11 @@ class Test_TrustedAdvisor(object):
         mock_conn = Mock()
         cls = TrustedAdvisor(21, 43)
         cls.conn = mock_conn
-        with patch('%s.connect_client' % pb) as mock_connect_client:
-                mock_connect_client.return_value = mock_conn
+        with patch('%s.connect_boto3' % pb) as mock_connect_boto3:
+                mock_connect_boto3.return_value = mock_conn
                 cls.connect()
         assert mock_conn.mock_calls == []
-        assert mock_connect_client.mock_calls == []
+        assert mock_connect_boto3.mock_calls == []
 
     def test_update_limits(self):
         mock_results = Mock()

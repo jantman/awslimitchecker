@@ -63,7 +63,7 @@ class _Ec2Service(_AwsService):
         if self.conn is None:
             self.conn = self.connect_resource('ec2')
         if self.client_conn is None:
-            self.client_conn = self.connect_client('ec2')
+            self.client_conn = self.connect_boto3('ec2')
 
     def find_usage(self):
         """

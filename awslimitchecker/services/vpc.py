@@ -57,7 +57,7 @@ class _VpcService(_AwsService):
         if self.conn is not None:
             return
         else:
-            self.conn = self.connect_client('ec2')
+            self.conn = self.connect_boto3('ec2')
 
     def find_usage(self):
         """

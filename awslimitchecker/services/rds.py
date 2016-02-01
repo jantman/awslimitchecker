@@ -55,7 +55,7 @@ class _RDSService(_AwsService):
         if self.conn is not None:
             return
         else:
-            self.conn = self.connect_client('rds')
+            self.conn = self.connect_boto3('rds')
 
     def find_usage(self):
         """

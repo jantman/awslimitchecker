@@ -56,7 +56,7 @@ class _AutoscalingService(_AwsService):
         if self.conn is not None:
             return
         else:
-            self.conn = self.connect_client('autoscaling')
+            self.conn = self.connect_boto3('autoscaling')
 
     def find_usage(self):
         """

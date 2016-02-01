@@ -56,7 +56,7 @@ class _ElbService(_AwsService):
         if self.conn is not None:
             return
         else:
-            self.conn = self.connect_client('elb')
+            self.conn = self.connect_boto3('elb')
 
     def find_usage(self):
         """

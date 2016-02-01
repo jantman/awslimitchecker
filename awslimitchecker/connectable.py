@@ -108,26 +108,38 @@ class Connectable(object):
         logger.info("Connected to %s", self.service_name)
         return conn
 
-    def connect_client(self, service_name):
+    def connect_boto3(self, service_name, connect_method=None):
         """
-        Connect to an AWS API and return the connected boto3 client object. If
-        ``self.account_id`` is None, call `boto3.client <https://boto3.readthed
-        ocs.org/en/latest/reference/core/boto3.html#boto3.client>`_ with
+        Connect to an AWS API and return the connected boto3 connection object.
+        If ``self.account_id`` is None, call ``connect_method``  with
         ``region_name=self.region``. Otherwise, call :py:meth:`~._get_sts_token`
         to get STS token credentials using
         `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
         latest/reference/services/sts.html#STS.Client.assume_role>`_ and call
-        `boto3.client <https://boto3.readthedocs.org/en/latest/reference/core/
-        boto3.html#boto3.client>`_ with those credentials to use an assumed
-        role.
+        ``connect_method``  with those credentials to use an assumed role.
 
-        This method returns a low-level boto3 client object.
+        ``connect_method`` is assumed to be one of the boto3 connection methods,
+        specifically one of:
+
+        * __Default:__ `boto3.client <https://boto3.readthed
+        ocs.org/en/latest/reference/core/boto3.html#boto3.client>`_
+        * `boto3.resource <https://boto3.readthedocs.org/en/latest/reference/
+        core/boto3.html#boto3.resource>`_
+
+        If ``connect_method`` is not specified (left as default of ``None``),
+        ``boto3.client`` will be used. (Using ``None`` as the default is a
+        side-effect of Python's module loading order and Mock usage for
+        testing.)
 
         :param service_name: name of the AWS service API to connect to (passed
           to ``boto3.client`` as the ``service_name`` parameter.)
-        :type driver: str
-        :returns: connected ``boto3.client`` class instance
+        :type service_name: str
+        :param connect_method: boto3 method to connect with
+        :type connect_method: function
+        :returns: connected ``boto3.session.Session`` subclass instance
         """
+        if connect_method is None:
+            connect_method = boto3.client
         if self.account_id is not None:
             if Connectable.credentials is None:
                 logger.debug("Connecting to %s for account %s (STS; %s)",
@@ -136,7 +148,7 @@ class Connectable(object):
             else:
                 logger.debug("Reusing previous STS credentials for account %s",
                              self.account_id)
-            conn = boto3.client(
+            conn = connect_method(
                 service_name,
                 region_name=self.region,
                 aws_access_key_id=Connectable.credentials.access_key,
@@ -145,7 +157,7 @@ class Connectable(object):
         else:
             logger.debug("Connecting to %s (%s)",
                          service_name, self.region)
-            conn = boto3.client(service_name, region_name=self.region)
+            conn = connect_method(service_name, region_name=self.region)
         logger.info("Connected to %s in region %s", service_name,
                     conn._client_config.region_name)
         return conn
@@ -153,9 +165,7 @@ class Connectable(object):
     def connect_resource(self, service_name):
         """
         Connect to an AWS API and return the connected boto3 resource object. If
-        ``self.account_id`` is None, call `boto3.resource
-        <https://boto3.readthedocs.org/en/latest/reference/core/boto3.html#
-        boto3.resource>`_ with ``region_name=self.region``. Otherwise, call
+        ``self.account_id`` is None, call  with ``region_name=self.region``. Otherwise, call
         :py:meth:`~._get_sts_token` to get STS token credentials using
         `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
         latest/reference/services/sts.html#STS.Client.assume_role>`_ and call

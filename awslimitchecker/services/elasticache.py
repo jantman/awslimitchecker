@@ -56,7 +56,7 @@ class _ElastiCacheService(_AwsService):
         if self.conn is not None:
             return
         else:
-            self.conn = self.connect_client('elasticache')
+            self.conn = self.connect_boto3('elasticache')
 
     def find_usage(self):
         """
