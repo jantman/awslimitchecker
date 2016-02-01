@@ -38,8 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import logging
-import boto  # @TODO boto3 migration - remove this when done
-import boto.sts  # @TODO boto3 migration - remove this when done
 import boto3
 
 logger = logging.getLogger(__name__)
@@ -138,33 +136,6 @@ class Connectable(object):
         self.resource_conn = boto3.resource(self.api_name, **kwargs)
         logger.info("Connected to %s (resource) in region %s", self.api_name,
                     self.resource_conn.meta.client._client_config.region_name)
-
-    def _get_sts_token(self):
-        """
-        Assume a role via STS and return the credentials.
-
-        First connect to STS via :py:func:`boto.sts.connect_to_region`, then
-        assume a role using :py:meth:`boto.sts.STSConnection.assume_role`
-        using ``self.account_id`` and ``self.account_role`` (and optionally
-        ``self.external_id``, ``self.mfa_serial_number``, ``self.mfa_token``).
-        Return the resulting :py:class:`boto.sts.credentials.Credentials`
-        object.
-
-        :returns: STS assumed role credentials
-        :rtype: :py:class:`boto.sts.credentials.Credentials`
-        """
-        # @TODO boto3 migration - remove this when done
-        logger.debug("Connecting to STS in region %s", self.region)
-        sts = boto.sts.connect_to_region(self.region)
-        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
-        logger.debug("STS assume role for %s", arn)
-        role = sts.assume_role(arn, "awslimitchecker",
-                               external_id=self.external_id,
-                               mfa_serial_number=self.mfa_serial_number,
-                               mfa_token=self.mfa_token)
-        logger.debug("Got STS credentials for role; access_key_id=%s",
-                     role.credentials.access_key)
-        return role.credentials
 
     def _get_sts_token_boto3(self):
         """
