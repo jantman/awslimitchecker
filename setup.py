@@ -45,7 +45,6 @@ with open('README.rst') as file:
     long_description = file.read()
 
 requires = [
-    'boto>=2.32.0',
     'boto3>=1.2.3',
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.2',
