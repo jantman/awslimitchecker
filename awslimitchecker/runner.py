@@ -55,7 +55,12 @@ boto_log = logging.getLogger("boto")
 boto_log.setLevel(logging.WARNING)
 boto_log.propagate = True
 
-# suppress boto internal logging below WARNING level
+# suppress boto3 internal logging below WARNING level
+boto3_log = logging.getLogger("boto3")
+boto3_log.setLevel(logging.WARNING)
+boto3_log.propagate = True
+
+# suppress botocore internal logging below WARNING level
 botocore_log = logging.getLogger("botocore")
 botocore_log.setLevel(logging.WARNING)
 botocore_log.propagate = True
