@@ -150,6 +150,49 @@ class Connectable(object):
                     conn._client_config.region_name)
         return conn
 
+    def connect_resource(self, service_name):
+        """
+        Connect to an AWS API and return the connected boto3 resource object. If
+        ``self.account_id`` is None, call `boto3.resource
+        <https://boto3.readthedocs.org/en/latest/reference/core/boto3.html#
+        boto3.resource>`_ with ``region_name=self.region``. Otherwise, call
+        :py:meth:`~._get_sts_token` to get STS token credentials using
+        `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
+        latest/reference/services/sts.html#STS.Client.assume_role>`_ and call
+        `boto3.resource <https://boto3.readthedocs.org/en/latest/reference/core/
+        boto3.html#boto3.resource>`_ with those credentials to use an assumed
+        role.
+
+        This method returns a high-level boto3 Resource object.
+
+        :param service_name: name of the AWS service API to connect to (passed
+          to ``boto3.resource`` as the ``service_name`` parameter.)
+        :type driver: str
+        :returns: connected ``boto3.resource`` class instance
+        """
+        if self.account_id is not None:
+            if Connectable.credentials is None:
+                logger.debug("Connecting to %s (resource) for account %s "
+                             "(STS; %s)", service_name, self.account_id,
+                             self.region)
+                Connectable.credentials = self._get_sts_token_boto3()
+            else:
+                logger.debug("Reusing previous STS credentials for account %s",
+                             self.account_id)
+            conn = boto3.resource(
+                service_name,
+                region_name=self.region,
+                aws_access_key_id=Connectable.credentials.access_key,
+                aws_secret_access_key=Connectable.credentials.secret_key,
+                aws_session_token=Connectable.credentials.session_token)
+        else:
+            logger.debug("Connecting to %s (resource) (%s)",
+                         service_name, self.region)
+            conn = boto3.resource(service_name, region_name=self.region)
+        logger.info("Connected to %s (resource) in region %s", service_name,
+                    conn.meta.client._client_config.region_name)
+        return conn
+
     def _get_sts_token(self):
         """
         Assume a role via STS and return the credentials.

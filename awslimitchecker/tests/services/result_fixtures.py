@@ -37,9 +37,61 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+import sys
 from datetime import datetime
+import boto3
+from boto3.utils import ServiceContext
+
+# https://code.google.com/p/mock/issues/detail?id=249
+# py>=3.4 should use unittest.mock not the mock package on pypi
+if (
+        sys.version_info[0] < 3 or
+        sys.version_info[0] == 3 and sys.version_info[1] < 4
+):
+    from mock import Mock
+else:
+    from unittest.mock import Mock
 
 # boto3 response fixtures
+
+
+def get_boto3_resource_model(service_name, resource_name):
+    """
+    Return a boto3 resource model class for the given service_name and
+    resource_name (type).
+
+    :param service_name: name of the service
+    :type service_name: str
+    :param resource_name: name of the resource type/model to get
+    :type resource_name: str
+    :return: boto3 resource model class
+    """
+    session = boto3.session.Session(region_name='us-east-1')
+    loader = session._session.get_component('data_loader')
+    json_resource_model = loader.load_service_model(service_name,
+                                                    'resources-1')
+    service_resource = session.resource(service_name)
+    service_model = service_resource.meta.client.meta.service_model
+
+    resource_model = json_resource_model['resources'][resource_name]
+    resource_cls = session.resource_factory.load_from_definition(
+        resource_name=resource_name,
+        single_resource_json_definition=resource_model,
+        service_context=ServiceContext(
+            service_name=service_name,
+            resource_json_definitions=json_resource_model['resources'],
+            service_model=service_model,
+            service_waiter_model=None
+        )
+    )
+    return resource_cls
+
+# get some resource models for specs...
+Instance = get_boto3_resource_model('ec2', 'Instance')
+SecurityGroup = get_boto3_resource_model('ec2', 'SecurityGroup')
+ClassicAddress = get_boto3_resource_model('ec2', 'ClassicAddress')
+VpcAddress = get_boto3_resource_model('ec2', 'VpcAddress')
+NetworkInterface = get_boto3_resource_model('ec2', 'NetworkInterface')
 
 
 class EBS(object):
@@ -1285,4 +1337,255 @@ class ElastiCache(object):
 
 class EC2(object):
 
-    pass
+    @property
+    def test_instance_usage(self):
+        mock_inst1A = Mock(spec_set=Instance)
+        type(mock_inst1A).id = '1A'
+        type(mock_inst1A).instance_type = 't2.micro'
+        type(mock_inst1A).spot_instance_request_id = None
+        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
+
+        mock_inst1B = Mock(spec_set=Instance)
+        type(mock_inst1B).id = '1B'
+        type(mock_inst1B).instance_type = 'r3.2xlarge'
+        type(mock_inst1B).spot_instance_request_id = None
+        type(mock_inst1B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1B).state = {'Code': 0, 'Name': 'pending'}
+
+        mock_inst2A = Mock(spec_set=Instance)
+        type(mock_inst2A).id = '2A'
+        type(mock_inst2A).instance_type = 'c4.4xlarge'
+        type(mock_inst2A).spot_instance_request_id = None
+        type(mock_inst2A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2A).state = {'Code': 32, 'Name': 'shutting-down'}
+
+        mock_inst2B = Mock(spec_set=Instance)
+        type(mock_inst2B).id = '2B'
+        type(mock_inst2B).instance_type = 't2.micro'
+        type(mock_inst2B).spot_instance_request_id = '1234'
+        type(mock_inst2B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2B).state = {'Code': 64, 'Name': 'stopping'}
+
+        mock_inst2C = Mock(spec_set=Instance)
+        type(mock_inst2C).id = '2C'
+        type(mock_inst2C).instance_type = 'm4.8xlarge'
+        type(mock_inst2C).spot_instance_request_id = None
+        type(mock_inst2C).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2C).state = {'Code': 16, 'Name': 'running'}
+
+        mock_instStopped = Mock(spec_set=Instance)
+        type(mock_instStopped).id = '2C'
+        type(mock_instStopped).instance_type = 'm4.8xlarge'
+        type(mock_instStopped).spot_instance_request_id = None
+        type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instStopped).state = {'Code': 80, 'Name': 'stopped'}
+
+        mock_instTerm = Mock(spec_set=Instance)
+        type(mock_instTerm).id = '2C'
+        type(mock_instTerm).instance_type = 'm4.8xlarge'
+        type(mock_instTerm).spot_instance_request_id = None
+        type(mock_instTerm).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instTerm).state = {'Code': 48, 'Name': 'terminated'}
+
+        return_value = [
+            mock_inst1A,
+            mock_inst1B,
+            mock_inst2A,
+            mock_inst2B,
+            mock_inst2C,
+            mock_instStopped,
+            mock_instTerm
+        ]
+        return return_value
+
+    @property
+    def test_instance_usage_key_error(self):
+        mock_inst1A = Mock(spec_set=Instance)
+        type(mock_inst1A).id = '1A'
+        type(mock_inst1A).instance_type = 'foobar'
+        type(mock_inst1A).spot_instance_request_id = None
+        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
+        return [mock_inst1A]
+
+    @property
+    def test_find_usage_networking_sgs(self):
+        mock_sg1 = Mock(spec_set=SecurityGroup)
+        type(mock_sg1).id = 'sg-1'
+        type(mock_sg1).vpc_id = 'vpc-aaa'
+        type(mock_sg1).ip_permissions = []
+        type(mock_sg1).ip_permissions_egress = []
+        mock_sg2 = Mock(spec_set=SecurityGroup)
+        type(mock_sg2).id = 'sg-2'
+        type(mock_sg2).vpc_id = None
+        type(mock_sg2).ip_permissions = [1, 2, 3, 4, 5, 6]
+        type(mock_sg2).ip_permissions_egress = [8, 9, 10]
+        mock_sg3 = Mock(spec_set=SecurityGroup)
+        type(mock_sg3).id = 'sg-3'
+        type(mock_sg3).vpc_id = 'vpc-bbb'
+        type(mock_sg3).ip_permissions = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        type(mock_sg3).ip_permissions_egress = [6, 7, 8, 9]
+        mock_sg4 = Mock(spec_set=SecurityGroup)
+        type(mock_sg4).id = 'sg-4'
+        type(mock_sg4).vpc_id = 'vpc-aaa'
+        type(mock_sg4).ip_permissions = [1, 2, 3]
+        type(mock_sg4).ip_permissions_egress = [21, 22, 23, 24]
+
+        return_value = [
+            mock_sg1,
+            mock_sg2,
+            mock_sg3,
+            mock_sg4,
+        ]
+        return return_value
+
+    test_get_reserved_instance_count = {
+        'ReservedInstances': [
+            {
+                'ReservedInstancesId': 'res1',
+                'InstanceType': 'it1',
+                'AvailabilityZone': 'az1',
+                'Start': datetime(2015, 1, 1),
+                'End': datetime(2015, 1, 1),
+                'Duration': 123,
+                'UsagePrice': 12,
+                'FixedPrice': 14,
+                'InstanceCount': 1,
+                'ProductDescription': 'Linux/UNIX',
+                'State': 'active',
+                'Tags': [
+                    {
+                        'Key': 'tagKey',
+                        'Value': 'tagVal'
+                    },
+                ],
+                'InstanceTenancy': 'default',
+                'CurrencyCode': 'USD',
+                'OfferingType': 'Heavy Utilization',
+                'RecurringCharges': [
+                    {
+                        'Frequency': 'Hourly',
+                        'Amount': 123.0
+                    },
+                ]
+            },
+            {
+                'ReservedInstancesId': 'res2',
+                'InstanceType': 'it2',
+                'AvailabilityZone': 'az1',
+                'InstanceCount': 1,
+                'State': 'retired',
+            },
+            {
+                'ReservedInstancesId': 'res3',
+                'InstanceType': 'it1',
+                'AvailabilityZone': 'az1',
+                'InstanceCount': 9,
+                'State': 'active',
+            },
+            {
+                'ReservedInstancesId': 'res4',
+                'InstanceType': 'it2',
+                'AvailabilityZone': 'az2',
+                'InstanceCount': 98,
+                'State': 'active',
+            },
+        ]
+    }
+
+    @property
+    def test_find_usage_networking_eips(self):
+        mock_addr1 = Mock(spec_set=VpcAddress)
+        type(mock_addr1).domain = 'vpc'
+        mock_addr2 = Mock(spec_set=VpcAddress)
+        type(mock_addr2).domain = 'vpc'
+        mock_addr3 = Mock(spec_set=ClassicAddress)
+        type(mock_addr3).domain = 'standard'
+        return {
+            'Classic': [mock_addr3],
+            'Vpc': [mock_addr1, mock_addr2]
+        }
+
+    @property
+    def test_find_usage_networking_eni_sg(self):
+        mock_if1 = Mock(spec_set=NetworkInterface)
+        type(mock_if1).id = 'if-1'
+        type(mock_if1).groups = []
+        type(mock_if1).vpc = Mock()
+
+        mock_if2 = Mock(spec_set=NetworkInterface)
+        type(mock_if2).id = 'if-2'
+        type(mock_if2).groups = [1, 2, 3]
+        type(mock_if2).vpc = Mock()
+
+        mock_if3 = Mock(spec_set=NetworkInterface)
+        type(mock_if3).id = 'if-3'
+        type(mock_if3).groups = [1, 2, 3, 4, 5, 6, 7, 8]
+        type(mock_if3).vpc = Mock()
+
+        mock_if4 = Mock(spec_set=NetworkInterface)
+        type(mock_if4).id = 'if-4'
+        type(mock_if4).groups = [1, 2, 3, 4, 5, 6, 7, 8]
+        type(mock_if4).vpc = None
+        return [mock_if1, mock_if2, mock_if3, mock_if4]
+
+    test_update_limits_from_api = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'supported-platforms',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': 'EC2'
+                    },
+                    {
+                        'AttributeValue': 'VPC'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'vpc-max-security-groups-per-interface',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '5'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'max-elastic-ips',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '40'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'max-instances',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '400'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'vpc-max-elastic-ips',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '200'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'default-vpc',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': 'none'
+                    }
+                ]
+            }
+        ]
+    }

@@ -39,15 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 import result_fixtures
-from boto.ec2.connection import EC2Connection
-from boto.ec2.instance import Instance, Reservation
-from boto.ec2.reservedinstance import ReservedInstance
-from boto.ec2.securitygroup import SecurityGroup
-from boto.ec2.address import Address
-from boto.ec2.networkinterface import NetworkInterface
-from boto.ec2 import connect_to_region
-from boto.ec2.attributes import AccountAttribute
-from boto.resultset import ResultSet
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
 
@@ -60,6 +51,8 @@ if (
     from mock import patch, call, Mock, DEFAULT
 else:
     from unittest.mock import patch, call, Mock, DEFAULT
+
+fixtures = result_fixtures.EC2()
 
 
 class Test_Ec2Service(object):
@@ -78,43 +71,37 @@ class Test_Ec2Service(object):
     def test_connect(self):
         """test connect()"""
         mock_conn = Mock()
-        mock_conn_via = Mock()
+        mock_res_conn = Mock()
         cls = _Ec2Service(21, 43)
-        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_ec2.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
+        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+            with patch('%s.connect_resource' % self.pb) as mock_connect_res:
+                mock_connect_client.return_value = mock_conn
+                mock_connect_res.return_value = mock_res_conn
                 cls.connect()
-        assert mock_ec2.mock_calls == [call()]
         assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _Ec2Service(21, 43, region='bar')
-        with patch('%s.boto.connect_ec2' % self.pbm) as mock_ec2:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_ec2.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_ec2.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [call(connect_to_region)]
-        assert cls.conn == mock_conn_via
+        assert mock_connect_client.mock_calls == [call('ec2')]
+        assert mock_connect_res.mock_calls == [call('ec2')]
+        assert cls.conn == mock_res_conn
+        assert cls.client_conn == mock_conn
 
     def test_connect_again(self):
         """make sure we re-use the connection"""
         mock_conn = Mock()
+        mock_res_conn = Mock()
         cls = _Ec2Service(21, 43)
-        cls.conn = mock_conn
-        with patch('awslimitchecker.services.ec2.boto.connect_ec2') as mock_ec2:
-            mock_ec2.return_value = mock_conn
-            cls.connect()
-        assert mock_ec2.mock_calls == []
+        cls.conn = mock_res_conn
+        cls.client_conn = mock_conn
+
+        with patch('%s.connect_client' % self.pb) as mock_connect_client:
+            with patch('%s.connect_resource' % self.pb) as mock_connect_res:
+                mock_connect_client.return_value = mock_conn
+                mock_connect_res.return_value = mock_res_conn
+                cls.connect()
         assert mock_conn.mock_calls == []
+        assert mock_connect_client.mock_calls == []
+        assert mock_connect_res.mock_calls == []
+        assert cls.conn == mock_res_conn
+        assert cls.client_conn == mock_conn
 
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
@@ -219,82 +206,23 @@ class Test_Ec2Service(object):
         }
 
         cls = _Ec2Service(21, 43)
-        mock_inst1A = Mock(spec_set=Instance)
-        type(mock_inst1A).id = '1A'
-        type(mock_inst1A).instance_type = 't2.micro'
-        type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = 'az1a'
-        type(mock_inst1A).state = 'running'
+        mock_conn = Mock()
 
-        mock_inst1B = Mock(spec_set=Instance)
-        type(mock_inst1B).id = '1B'
-        type(mock_inst1B).instance_type = 'r3.2xlarge'
-        type(mock_inst1B).spot_instance_request_id = None
-        type(mock_inst1B).placement = 'az1a'
-        type(mock_inst1B).state = 'pending'
+        retval = fixtures.test_instance_usage
+        mock_conn.instances.all.return_value = retval
 
-        mock_res1 = Mock(spec_set=Reservation)
-        type(mock_res1).instances = [mock_inst1A, mock_inst1B]
-
-        mock_inst2A = Mock(spec_set=Instance)
-        type(mock_inst2A).id = '2A'
-        type(mock_inst2A).instance_type = 'c4.4xlarge'
-        type(mock_inst2A).spot_instance_request_id = None
-        type(mock_inst2A).placement = 'az1a'
-        type(mock_inst2A).state = 'shutting-down'
-
-        mock_inst2B = Mock(spec_set=Instance)
-        type(mock_inst2B).id = '2B'
-        type(mock_inst2B).instance_type = 't2.micro'
-        type(mock_inst2B).spot_instance_request_id = '1234'
-        type(mock_inst2B).placement = 'az1a'
-        type(mock_inst2B).state = 'stopping'
-
-        mock_inst2C = Mock(spec_set=Instance)
-        type(mock_inst2C).id = '2C'
-        type(mock_inst2C).instance_type = 'm4.8xlarge'
-        type(mock_inst2C).spot_instance_request_id = None
-        type(mock_inst2C).placement = 'az1a'
-        type(mock_inst2C).state = 'running'
-
-        mock_instStopped = Mock(spec_set=Instance)
-        type(mock_instStopped).id = '2C'
-        type(mock_instStopped).instance_type = 'm4.8xlarge'
-        type(mock_instStopped).spot_instance_request_id = None
-        type(mock_instStopped).placement = 'az1a'
-        type(mock_instStopped).state = 'stopped'
-
-        mock_instTerm = Mock(spec_set=Instance)
-        type(mock_instTerm).id = '2C'
-        type(mock_instTerm).instance_type = 'm4.8xlarge'
-        type(mock_instTerm).spot_instance_request_id = None
-        type(mock_instTerm).placement = 'az1a'
-        type(mock_instTerm).state = 'terminated'
-
-        mock_res2 = Mock(spec_set=Reservation)
-        type(mock_res2).instances = [
-            mock_inst2A, mock_inst2B, mock_inst2C, mock_instStopped,
-            mock_instTerm
-        ]
-
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_res1,
-            mock_res2
-        ]
         cls.conn = mock_conn
         cls.limits = limits
+
         with patch('awslimitchecker.services.ec2._Ec2Service._instance_types',
                    autospec=True) as mock_itypes:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
-                mock_itypes.return_value = [
-                    't2.micro',
-                    'r3.2xlarge',
-                    'c4.4xlarge',
-                    'm4.8xlarge',
-                ]
-                res = cls._instance_usage()
+            mock_itypes.return_value = [
+                't2.micro',
+                'r3.2xlarge',
+                'c4.4xlarge',
+                'm4.8xlarge',
+            ]
+            res = cls._instance_usage()
         assert res == {
             'az1a': {
                 't2.micro': 1,
@@ -303,51 +231,21 @@ class Test_Ec2Service(object):
                 'm4.8xlarge': 1,
             }
         }
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_reservations)
+        assert mock_conn.mock_calls == [
+            call.instances.all()
         ]
 
     def test_get_reserved_instance_count(self):
-        mock_res1 = Mock(spec_set=ReservedInstance)
-        type(mock_res1).state = 'active'
-        type(mock_res1).id = 'res1'
-        type(mock_res1).availability_zone = 'az1'
-        type(mock_res1).instance_type = 'it1'
-        type(mock_res1).instance_count = 1
-
-        mock_res2 = Mock(spec_set=ReservedInstance)
-        type(mock_res2).state = 'inactive'
-        type(mock_res2).id = 'res2'
-        type(mock_res2).availability_zone = 'az1'
-        type(mock_res2).instance_type = 'it2'
-        type(mock_res2).instance_count = 1
-
-        mock_res3 = Mock(spec_set=ReservedInstance)
-        type(mock_res3).state = 'active'
-        type(mock_res3).id = 'res3'
-        type(mock_res3).availability_zone = 'az1'
-        type(mock_res3).instance_type = 'it1'
-        type(mock_res3).instance_count = 9
-
-        mock_res4 = Mock(spec_set=ReservedInstance)
-        type(mock_res4).state = 'active'
-        type(mock_res4).id = 'res4'
-        type(mock_res4).availability_zone = 'az2'
-        type(mock_res4).instance_type = 'it2'
-        type(mock_res4).instance_count = 98
+        response = fixtures.test_get_reserved_instance_count
 
         cls = _Ec2Service(21, 43)
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_res1,
-            mock_res2,
-            mock_res3,
-            mock_res4
-        ]
+        mock_client_conn = Mock()
+        cls.client_conn = mock_client_conn
+        mock_conn = Mock()
         cls.conn = mock_conn
+
         with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = return_value
+            mock_wrapper.return_value = response
             res = cls._get_reserved_instance_count()
         assert res == {
             'az1': {
@@ -358,8 +256,10 @@ class Test_Ec2Service(object):
             },
         }
         assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == []
         assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_reserved_instances)
+            call(mock_client_conn.describe_reserved_instances,
+                 alc_no_paginate=True)
         ]
 
     def test_find_usage_instances(self):
@@ -402,13 +302,12 @@ class Test_Ec2Service(object):
         }
 
         cls = _Ec2Service(21, 43)
-        mock_conn = Mock(spec_set=EC2Connection)
+        mock_conn = Mock()
         cls.conn = mock_conn
         cls.limits = limits
-        with patch('awslimitchecker.services.ec2._Ec2Service.'
-                   '_instance_usage', autospec=True) as mock_inst_usage:
-            with patch('awslimitchecker.services.ec2._Ec2Service.'
-                       '_get_reserved_instance_count',
+        with patch('%s._instance_usage' % self.pb,
+                   autospec=True) as mock_inst_usage:
+            with patch('%s._get_reserved_instance_count' % self.pb,
                        autospec=True) as mock_res_inst_count:
                 mock_inst_usage.return_value = iusage
                 mock_res_inst_count.return_value = ri_count
@@ -433,34 +332,28 @@ class Test_Ec2Service(object):
         assert mock_res_inst_count.mock_calls == [call(cls)]
         assert mock_conn.mock_calls == []
 
-    def test_find_usage_instances_key_error(self):
-        mock_inst1A = Mock(spec_set=Instance)
-        type(mock_inst1A).id = '1A'
-        type(mock_inst1A).instance_type = 'foobar'
-        type(mock_inst1A).spot_instance_request_id = None
-        mock_res1 = Mock(spec_set=Reservation)
-        type(mock_res1).instances = [mock_inst1A]
-
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [mock_res1]
+    def test_instance_usage_key_error(self):
+        mock_conn = Mock()
+        data = fixtures.test_instance_usage_key_error
+        mock_conn.instances.all.return_value = data
         cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
         cls.limits = {'Running On-Demand t2.micro instances': Mock()}
+
         with patch(
                 '%s._instance_types' % self.pb,
                 autospec=True) as mock_itypes:
             with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-                with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                    mock_wrapper.return_value = return_value
-                    mock_itypes.return_value = ['t2.micro']
-                    cls._instance_usage()
+                mock_itypes.return_value = ['t2.micro']
+                cls._instance_usage()
         assert mock_logger.mock_calls == [
             call.debug('Getting usage for on-demand instances'),
             call.error("ERROR - unknown instance type '%s'; not counting",
                        'foobar'),
         ]
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(mock_conn.get_all_reservations)]
+        assert mock_conn.mock_calls == [
+            call.instances.all()
+        ]
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service(21, 43)
@@ -482,36 +375,16 @@ class Test_Ec2Service(object):
         ]
 
     def test_find_usage_networking_sgs(self):
-        mock_sg1 = Mock(spec_set=SecurityGroup)
-        type(mock_sg1).id = 'sg-1'
-        type(mock_sg1).vpc_id = 'vpc-aaa'
-        type(mock_sg1).rules = []
-        mock_sg2 = Mock(spec_set=SecurityGroup)
-        type(mock_sg2).id = 'sg-2'
-        type(mock_sg2).vpc_id = None
-        type(mock_sg2).rules = [1, 2, 3, 4, 5, 6]
-        mock_sg3 = Mock(spec_set=SecurityGroup)
-        type(mock_sg3).id = 'sg-3'
-        type(mock_sg3).vpc_id = 'vpc-bbb'
-        type(mock_sg3).rules = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        mock_sg4 = Mock(spec_set=SecurityGroup)
-        type(mock_sg4).id = 'sg-4'
-        type(mock_sg4).vpc_id = 'vpc-aaa'
-        type(mock_sg4).rules = [1, 2, 3]
+        mocks = fixtures.test_find_usage_networking_sgs
 
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_sg1,
-            mock_sg2,
-            mock_sg3,
-            mock_sg4,
-        ]
+        mock_conn = Mock()
+        mock_conn.security_groups.all.return_value = mocks
+
         cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
+
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
-                cls._find_usage_networking_sgs()
+            cls._find_usage_networking_sgs()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EC2 VPC resources"),
         ]
@@ -540,31 +413,21 @@ class Test_Ec2Service(object):
         assert sorted_usage[2].limit == limit
         assert sorted_usage[2].resource_id == 'sg-3'
         assert sorted_usage[2].get_value() == 9
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_security_groups)
+        assert mock_conn.mock_calls == [
+            call.security_groups.all()
         ]
 
     def test_find_usage_networking_eips(self):
-        mock_addr1 = Mock(spec_set=Address)
-        type(mock_addr1).domain = 'vpc'
-        mock_addr2 = Mock(spec_set=Address)
-        type(mock_addr2).domain = 'vpc'
-        mock_addr3 = Mock(spec_set=Address)
-        type(mock_addr3).domain = 'standard'
+        mocks = fixtures.test_find_usage_networking_eips
 
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_addr1,
-            mock_addr2,
-            mock_addr3,
-        ]
+        mock_conn = Mock()
+        mock_conn.classic_addresses.all.return_value = mocks['Classic']
+        mock_conn.vpc_addresses.all.return_value = mocks['Vpc']
         cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
+
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
-                cls._find_usage_networking_eips()
+            cls._find_usage_networking_eips()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EC2 EIPs"),
         ]
@@ -583,34 +446,21 @@ class Test_Ec2Service(object):
         assert usage[0].get_value() == 1
         assert usage[0].resource_id is None
         assert usage[0].aws_type == 'AWS::EC2::EIP'
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_addresses)
+
+        assert mock_conn.mock_calls == [
+            call.vpc_addresses.all(),
+            call.classic_addresses.all()
         ]
 
     def test_find_usage_networking_eni_sg(self):
-        mock_if1 = Mock(spec_set=NetworkInterface)
-        type(mock_if1).id = 'if-1'
-        type(mock_if1).groups = []
-        mock_if2 = Mock(spec_set=NetworkInterface)
-        type(mock_if2).id = 'if-2'
-        type(mock_if2).groups = [1, 2, 3]
-        mock_if3 = Mock(spec_set=NetworkInterface)
-        type(mock_if3).id = 'if-3'
-        type(mock_if3).groups = [1, 2, 3, 4, 5, 6, 7, 8]
+        mocks = fixtures.test_find_usage_networking_eni_sg
 
-        mock_conn = Mock(spec_set=EC2Connection)
-        return_value = [
-            mock_if1,
-            mock_if2,
-            mock_if3,
-        ]
+        mock_conn = Mock()
+        mock_conn.network_interfaces.all.return_value = mocks
         cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
-                cls._find_usage_networking_eni_sg()
+            cls._find_usage_networking_eni_sg()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EC2 Network Interfaces"),
         ]
@@ -626,9 +476,8 @@ class Test_Ec2Service(object):
         assert sorted_usage[2].limit == limit
         assert sorted_usage[2].resource_id == 'if-3'
         assert sorted_usage[2].get_value() == 8
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_network_interfaces)
+        assert mock_conn.mock_calls == [
+            call.network_interfaces.all()
         ]
 
     def test_get_limits_networking(self):
@@ -644,44 +493,20 @@ class Test_Ec2Service(object):
         assert sorted(limits.keys()) == sorted(expected)
 
     def test_update_limits_from_api(self):
-        mock_conn = Mock(spec_set=EC2Connection)
-
-        rs = ResultSet()
-        a1 = AccountAttribute(connection=mock_conn)
-        a1.attribute_name = 'supported-platforms'
-        a1.attribute_values = ['EC2', 'VPC']
-        rs.append(a1)
-        a2 = AccountAttribute(connection=mock_conn)
-        a2.attribute_name = 'vpc-max-security-groups-per-interface'
-        a2.attribute_values = ['5']
-        rs.append(a2)
-        a3 = AccountAttribute(connection=mock_conn)
-        a3.attribute_name = 'max-elastic-ips'
-        a3.attribute_values = ['40']
-        rs.append(a3)
-        a4 = AccountAttribute(connection=mock_conn)
-        a4.attribute_name = 'max-instances'
-        a4.attribute_values = ['400']
-        rs.append(a4)
-        a5 = AccountAttribute(connection=mock_conn)
-        a5.attribute_name = 'vpc-max-elastic-ips'
-        a5.attribute_values = ['200']
-        rs.append(a5)
-        a6 = AccountAttribute(connection=mock_conn)
-        a6.attribute_name = 'default-vpc'
-        a6.attribute_values = ['none']
-        rs.append(a6)
+        data = fixtures.test_update_limits_from_api
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_account_attributes.return_value = data
 
         cls = _Ec2Service(21, 43)
         cls.conn = mock_conn
+        cls.client_conn = mock_client_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = rs
-                cls._update_limits_from_api()
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_account_attributes)
-        ]
+            cls._update_limits_from_api()
         assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_account_attributes()
+        ]
         assert mock_logger.mock_calls == [
             call.info("Querying EC2 DescribeAccountAttributes for limits"),
             call.debug('Done setting limits from API')
