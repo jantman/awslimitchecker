@@ -194,7 +194,7 @@ class AwsLimitChecker(object):
     def find_usage(self, service=None, use_ta=True):
         """
         For each limit in the specified service (or all services if
-        ``service`` is ``None``), query the AWS API via :py:mod:`boto`
+        ``service`` is ``None``), query the AWS API via ``boto3``
         and find the current usage amounts for that limit.
 
         This method updates the ``current_usage`` attribute of the

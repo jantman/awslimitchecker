@@ -292,7 +292,7 @@ class Test_AGPLVersionChecker(object):
             ':alt: PyPi package version',
             'Status',
             '------',
-            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Keywords: AWS EC2 Amazon boto boto3 limits cloud',
             'Platform: UNKNOWN',
             'Classifier: Environment :: Console',
         ]
@@ -330,7 +330,7 @@ class Test_AGPLVersionChecker(object):
             ':alt: PyPi package version',
             'Status',
             '------',
-            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Keywords: AWS EC2 Amazon boto boto3 limits cloud',
             'Platform: UNKNOWN',
             'Classifier: Environment :: Console',
         ]
@@ -365,7 +365,7 @@ class Test_AGPLVersionChecker(object):
             ':alt: PyPi package version',
             'Status',
             '------',
-            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Keywords: AWS EC2 Amazon boto boto3 limits cloud',
             'Platform: UNKNOWN',
             'Classifier: Environment :: Console',
         ]
