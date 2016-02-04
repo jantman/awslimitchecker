@@ -60,6 +60,11 @@ def get_boto3_resource_model(service_name, resource_name):
     Return a boto3 resource model class for the given service_name and
     resource_name (type).
 
+    NOTE that when the boto3.session.Session object is instantiated, the
+     underlying botocore Session will attempt HTTP requests to 169.254.169.254
+     to retrieve Instance Metadata and an IAM Role. In order to prevent this,
+     you should simply export some bogus AWS credential environment variables.
+
     :param service_name: name of the service
     :type service_name: str
     :param resource_name: name of the resource type/model to get
