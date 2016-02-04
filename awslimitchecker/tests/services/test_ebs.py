@@ -40,7 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 from awslimitchecker.services.ebs import _EbsService
 from awslimitchecker.limit import AwsLimit
-import result_fixtures
+from awslimitchecker.tests.services import result_fixtures
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi

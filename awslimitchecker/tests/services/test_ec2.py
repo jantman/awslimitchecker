@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-import result_fixtures
+from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
 

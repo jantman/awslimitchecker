@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-import result_fixtures
+from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.vpc import _VpcService
 
 # https://code.google.com/p/mock/issues/detail?id=249

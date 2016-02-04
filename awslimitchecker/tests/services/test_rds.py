@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-import result_fixtures
+from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.rds import _RDSService
 
 # https://code.google.com/p/mock/issues/detail?id=249
