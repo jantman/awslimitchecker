@@ -76,8 +76,8 @@ class Connectable(object):
         """
         Generate keyword arguments for boto3 connection functions.
         If ``self.account_id`` is None, this will just include
-        ``region_name=self.region``. Otherwise, call :py:meth:`~._get_sts_token`
-        to get STS token credentials using
+        ``region_name=self.region``. Otherwise, call
+        :py:meth:`~._get_sts_token_boto3` to get STS token credentials using
         `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
         latest/reference/services/sts.html#STS.Client.assume_role>`_ and include
         those credentials in the return value.

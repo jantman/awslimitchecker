@@ -23,7 +23,7 @@ To setup awslimitchecker for development:
 
 1. Fork the `awslimitchecker <https://github.com/jantman/awslimitchecker>`_ repository on GitHub
 
-2. Create a `virtualenv` to run the code in:
+2. Create a ``virtualenv`` to run the code in:
 
 .. code-block:: bash
 
@@ -117,8 +117,8 @@ paginate them.
    Add yourself to the Authors section in the header if desired.
 3. Add an import line for the new service in ``awslimitchecker/services/__init__.py``.
 4. Be sure to set the class's ``api_name`` attribute to the correct name of the
-   AWS service API (i.e. the parameter passed to `boto3.client() <https://boto3.readthedocs.org/en/latest/reference/core/boto3.html#boto3.client>`_). This string can
-   typically be found at the top of the Service page in the `boto3 docs<http://boto3.readthedocs.org/en/latest/reference/services/index.html>`_.
+   AWS service API (i.e. the parameter passed to `boto3.client <https://boto3.readthedocs.org/en/latest/reference/core/boto3.html#boto3.client>`_). This string can
+   typically be found at the top of the Service page in the `boto3 docs <http://boto3.readthedocs.org/en/latest/reference/services/index.html>`_.
 5. Write at least high-level tests; TDD is greatly preferred.
 6. Implement all abstract methods from :py:class:`~awslimitchecker.services.base._AwsService` and any other methods you need;
    small, easily-testable methods are preferred. Ensure all methods have full documentation. For simple services, you need only
@@ -178,7 +178,7 @@ is ready for it when boto is.
 Integration Testing
 -------------------
 
-Integration tests are automatically run in TravisCI for all __non-pull request__
+Integration tests are automatically run in TravisCI for all **non-pull request**
 branches. You can run them manually from your local machine using:
 
 .. code-block:: console
@@ -220,7 +220,7 @@ work needed. See the guidelines below for information.
 * If you're using awslimitchecker in your own software in a way that allows users to interact with it over the network (i.e. in your
   deployment or monitoring systems), but not modifying it, you also don't need to do anything special; awslimitchecker will log a
   WARNING-level message indicating where the source code of the currently-running version can be obtained. So long as you've installed
-  awslimitchecker via Python's packaging system (i.e. with `pip`), its current version and source will be automatically detected. This
+  awslimitchecker via Python's packaging system (i.e. with ``pip``), its current version and source will be automatically detected. This
   suffices for the AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
 * If you wish to modify the source code of awslimitchecker, you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
   always returns correct and accutate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
