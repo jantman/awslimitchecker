@@ -38,13 +38,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto
-import boto.rds2
 import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -52,15 +49,7 @@ logger = logging.getLogger(__name__)
 class _RDSService(_AwsService):
 
     service_name = 'RDS'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        elif self.region:
-            self.conn = self.connect_via(boto.rds2.connect_to_region)
-        else:
-            self.conn = boto.connect_rds2()
+    api_name = 'rds'
 
     def find_usage(self):
         """
@@ -85,40 +74,25 @@ class _RDSService(_AwsService):
 
     def _find_usage_instances(self):
         """find usage for DB Instances and related limits"""
-        # instance count
-        instances = boto_query_wrapper(
-            self.conn.describe_db_instances,
-            alc_marker_path=[
-                'DescribeDBInstancesResponse',
-                'DescribeDBInstancesResult',
-                'Marker'
-            ],
-            alc_data_path=[
-                'DescribeDBInstancesResponse',
-                'DescribeDBInstancesResult',
-                'DBInstances'
-            ],
-            alc_marker_param='marker'
-        )
-        instances = instances[
-            'DescribeDBInstancesResponse'][
-                'DescribeDBInstancesResult']['DBInstances']
+        count = 0
+        allocated_gb = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_db_instances')
+        for page in paginator.paginate():
+            for instance in page['DBInstances']:
+                count += 1
+                allocated_gb += instance['AllocatedStorage']
+                self.limits['Read replicas per master']._add_current_usage(
+                    len(instance['ReadReplicaDBInstanceIdentifiers']),
+                    aws_type='AWS::RDS::DBInstance',
+                    resource_id=instance['DBInstanceIdentifier']
+                )
+
         self.limits['DB instances']._add_current_usage(
-            len(instances),
+            count,
             aws_type='AWS::RDS::DBInstance'
         )
 
-        # per-instance limits
-        allocated_gb = 0
-        for i in instances:
-            allocated_gb += i['AllocatedStorage']
-            self.limits['Read replicas per master']._add_current_usage(
-                len(i['ReadReplicaDBInstanceIdentifiers']),
-                aws_type='AWS::RDS::DBInstance',
-                resource_id=i['DBInstanceIdentifier']
-            )
-
-        # overall storage quota
         self.limits['Storage quota (GB)']._add_current_usage(
             allocated_gb,
             aws_type='AWS::RDS::DBInstance'
@@ -126,108 +100,57 @@ class _RDSService(_AwsService):
 
     def _find_usage_reserved_instances(self):
         """find usage for reserved instances"""
-        reserved = boto_query_wrapper(
-            self.conn.describe_reserved_db_instances,
-            alc_marker_path=[
-                'DescribeReservedDBInstancesResponse',
-                'DescribeReservedDBInstancesResult',
-                "Marker"
-            ],
-            alc_data_path=[
-                'DescribeReservedDBInstancesResponse',
-                'DescribeReservedDBInstancesResult',
-                'ReservedDBInstances'
-            ],
-            alc_marker_param='marker'
-        )[
-            'DescribeReservedDBInstancesResponse'][
-            'DescribeReservedDBInstancesResult'][
-            'ReservedDBInstances']
+        count = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_reserved_db_instances')
+        for page in paginator.paginate():
+            for inst in page['ReservedDBInstances']:
+                count += 1
         self.limits['Reserved Instances']._add_current_usage(
-            len(reserved),
+            count,
             aws_type='AWS::RDS::DBInstance'
         )
 
     def _find_usage_snapshots(self):
         """find usage for (manual) DB snapshots"""
-        snaps = boto_query_wrapper(
-            self.conn.describe_db_snapshots,
-            alc_marker_path=[
-                "DescribeDBSnapshotsResponse",
-                "DescribeDBSnapshotsResult",
-                'Marker'
-            ],
-            alc_data_path=[
-                "DescribeDBSnapshotsResponse",
-                "DescribeDBSnapshotsResult",
-                "DBSnapshots"
-            ],
-            alc_marker_param='marker'
-        )
-        snaps = snaps[
-            "DescribeDBSnapshotsResponse"]["DescribeDBSnapshotsResult"][
-                "DBSnapshots"]
-        num_manual_snaps = 0
-        for snap in snaps:
-            if snap['SnapshotType'] == 'manual':
-                num_manual_snaps += 1
+        count = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_db_snapshots')
+        for page in paginator.paginate():
+            for snap in page['DBSnapshots']:
+                if snap['SnapshotType'] == 'manual':
+                    count += 1
         self.limits['DB snapshots per user']._add_current_usage(
-            num_manual_snaps,
+            count,
             aws_type='AWS::RDS::DBSnapshot'
         )
 
     def _find_usage_param_groups(self):
         """find usage for parameter groups"""
-        params = boto_query_wrapper(
-            self.conn.describe_db_parameter_groups,
-            alc_marker_path=[
-                "DescribeDBParameterGroupsResponse",
-                "DescribeDBParameterGroupsResult",
-                'Marker'
-            ],
-            alc_data_path=[
-                "DescribeDBParameterGroupsResponse",
-                "DescribeDBParameterGroupsResult",
-                "DBParameterGroups"
-            ],
-            alc_marker_param='marker'
-        )
-        params = params[
-            "DescribeDBParameterGroupsResponse"][
-                "DescribeDBParameterGroupsResult"][
-                    "DBParameterGroups"]
+        count = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_db_parameter_groups')
+        for page in paginator.paginate():
+            for group in page['DBParameterGroups']:
+                count += 1
         self.limits['DB parameter groups']._add_current_usage(
-            len(params),
+            count,
             aws_type='AWS::RDS::DBParameterGroup'
         )
 
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
-        groups = boto_query_wrapper(
-            self.conn.describe_db_subnet_groups,
-            alc_marker_path=[
-                "DescribeDBSubnetGroupsResponse",
-                "DescribeDBSubnetGroupsResult",
-                "Marker"
-            ],
-            alc_data_path=[
-                "DescribeDBSubnetGroupsResponse",
-                "DescribeDBSubnetGroupsResult",
-                "DBSubnetGroups"
-            ],
-            alc_marker_param='marker'
-        )[
-            "DescribeDBSubnetGroupsResponse"][
-                "DescribeDBSubnetGroupsResult"][
-                    "DBSubnetGroups"]
         count = 0
-        for group in groups:
-            count += 1
-            self.limits['Subnets per Subnet Group']._add_current_usage(
-                len(group['Subnets']),
-                aws_type='AWS::RDS::DBSubnetGroup',
-                resource_id=group["DBSubnetGroupName"],
-            )
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_db_subnet_groups')
+        for page in paginator.paginate():
+            for group in page['DBSubnetGroups']:
+                count += 1
+                self.limits['Subnets per Subnet Group']._add_current_usage(
+                    len(group['Subnets']),
+                    aws_type='AWS::RDS::DBSubnetGroup',
+                    resource_id=group["DBSubnetGroupName"],
+                )
         self.limits['Subnet Groups']._add_current_usage(
             count,
             aws_type='AWS::RDS::DBSubnetGroup',
@@ -235,82 +158,47 @@ class _RDSService(_AwsService):
 
     def _find_usage_option_groups(self):
         """find usage for option groups"""
-        groups = boto_query_wrapper(
-            self.conn.describe_option_groups,
-            alc_marker_path=[
-                "DescribeOptionGroupsResponse",
-                "DescribeOptionGroupsResult",
-                "Marker"
-            ],
-            alc_data_path=[
-                "DescribeOptionGroupsResponse",
-                "DescribeOptionGroupsResult",
-                "OptionGroupsList"
-            ],
-            alc_marker_param='marker'
-        )[
-            "DescribeOptionGroupsResponse"][
-                "DescribeOptionGroupsResult"]["OptionGroupsList"]
+        count = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_option_groups')
+        for page in paginator.paginate():
+            for group in page['OptionGroupsList']:
+                count += 1
         self.limits['Option Groups']._add_current_usage(
-            len(groups),
+            count,
             aws_type='AWS::RDS::DBOptionGroup',
         )
 
     def _find_usage_event_subscriptions(self):
         """find usage for event subscriptions"""
-        subs = boto_query_wrapper(
-            self.conn.describe_event_subscriptions,
-            alc_marker_path=[
-                "DescribeEventSubscriptionsResponse",
-                "DescribeEventSubscriptionsResult",
-                "Marker"
-            ],
-            alc_data_path=[
-                "DescribeEventSubscriptionsResponse",
-                "DescribeEventSubscriptionsResult",
-                "EventSubscriptionsList"
-            ],
-            alc_marker_param='marker'
-        )[
-            "DescribeEventSubscriptionsResponse"][
-            "DescribeEventSubscriptionsResult"][
-            "EventSubscriptionsList"]
+        count = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_event_subscriptions')
+        for page in paginator.paginate():
+            for group in page['EventSubscriptionsList']:
+                count += 1
         self.limits['Event Subscriptions']._add_current_usage(
-            len(subs),
+            count,
             aws_type='AWS::RDS::EventSubscription',
         )
 
     def _find_usage_security_groups(self):
         """find usage for security groups"""
-        groups = boto_query_wrapper(
-            self.conn.describe_db_security_groups,
-            alc_marker_path=[
-                "DescribeDBSecurityGroupsResponse",
-                "DescribeDBSecurityGroupsResult",
-                "Marker"
-            ],
-            alc_data_path=[
-                "DescribeDBSecurityGroupsResponse",
-                "DescribeDBSecurityGroupsResult",
-                "DBSecurityGroups"
-            ],
-            alc_marker_param='marker'
-        )[
-            "DescribeDBSecurityGroupsResponse"][
-            "DescribeDBSecurityGroupsResult"][
-            "DBSecurityGroups"]
         vpc_count = 0
         classic_count = 0
-        for group in groups:
-            if group['VpcId'] is None:
-                classic_count += 1
-            else:
-                vpc_count += 1
-            self.limits['Max auths per security group']._add_current_usage(
-                len(group["EC2SecurityGroups"]) + len(group["IPRanges"]),
-                aws_type='AWS::RDS::DBSecurityGroup',
-                resource_id=group['DBSecurityGroupName']
-            )
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_db_security_groups')
+        for page in paginator.paginate():
+            for group in page['DBSecurityGroups']:
+                if 'VpcId' not in group or group['VpcId'] is None:
+                    classic_count += 1
+                else:
+                    vpc_count += 1
+                self.limits['Max auths per security group']._add_current_usage(
+                    len(group["EC2SecurityGroups"]) + len(group["IPRanges"]),
+                    aws_type='AWS::RDS::DBSecurityGroup',
+                    resource_id=group['DBSecurityGroupName']
+                )
 
         self.limits['DB security groups']._add_current_usage(
             classic_count,

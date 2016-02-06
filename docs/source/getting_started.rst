@@ -49,9 +49,9 @@ Threshold
 Requirements
 ------------
 
-* Python 2.6 or 2.7 (`boto <http://docs.pythonboto.org/en/latest/>`_ currently has incomplete python3 support)
+* Python 2.6 through 3.5.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 
 .. _getting_started.installing:
@@ -78,7 +78,7 @@ Credentials
 Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
 files, or set as environment variables. See
-`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+`boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.

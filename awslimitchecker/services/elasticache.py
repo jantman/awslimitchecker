@@ -38,14 +38,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto.elasticache
-from boto.elasticache.layer1 import ElastiCacheConnection
-from boto.exception import BotoServerError
+from botocore.exceptions import ClientError
 import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -53,15 +50,7 @@ logger = logging.getLogger(__name__)
 class _ElastiCacheService(_AwsService):
 
     service_name = 'ElastiCache'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        elif self.region:
-            self.conn = self.connect_via(boto.elasticache.connect_to_region)
-        else:
-            self.conn = ElastiCacheConnection()
+    api_name = 'elasticache'
 
     def find_usage(self):
         """
@@ -83,40 +72,29 @@ class _ElastiCacheService(_AwsService):
     def _find_usage_nodes(self):
         """find usage for cache nodes"""
         nodes = 0
-        clusters = boto_query_wrapper(
-            self.conn.describe_cache_clusters,
-            show_cache_node_info=True,
-            alc_marker_path=[
-                'DescribeCacheClustersResponse',
-                'DescribeCacheClustersResult',
-                'Marker'
-            ],
-            alc_data_path=[
-                'DescribeCacheClustersResponse',
-                'DescribeCacheClustersResult',
-                'CacheClusters'
-            ],
-            alc_marker_param='marker'
-        )[
-            'DescribeCacheClustersResponse']['DescribeCacheClustersResult'][
-                'CacheClusters']
-        for cluster in clusters:
-            try:
-                num_nodes = len(cluster['CacheNodes'])
-            except (IndexError, TypeError):
-                # sometimes CacheNodes is None...
-                logger.debug("Cache Cluster '%s' returned dict with CacheNodes "
-                             "None", cluster['CacheClusterId'])
-                num_nodes = cluster['NumCacheNodes']
-            nodes += num_nodes
-            self.limits['Nodes per Cluster']._add_current_usage(
-                num_nodes,
-                aws_type='AWS::ElastiCache::CacheCluster',
-                resource_id=cluster['CacheClusterId'],
-            )
+        num_clusters = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_cache_clusters')
+        for page in paginator.paginate(ShowCacheNodeInfo=True):
+            for cluster in page['CacheClusters']:
+                try:
+                    num_nodes = len(cluster['CacheNodes'])
+                except (IndexError, TypeError):
+                    # sometimes CacheNodes is None...
+                    logger.debug(
+                        "Cache Cluster '%s' returned dict with CacheNodes "
+                        "None", cluster['CacheClusterId'])
+                    num_nodes = cluster['NumCacheNodes']
+                nodes += num_nodes
+                num_clusters += 1
+                self.limits['Nodes per Cluster']._add_current_usage(
+                    num_nodes,
+                    aws_type='AWS::ElastiCache::CacheCluster',
+                    resource_id=cluster['CacheClusterId'],
+                )
 
         self.limits['Clusters']._add_current_usage(
-            len(clusters),
+            num_clusters,
             aws_type='AWS::ElastiCache::CacheCluster'
         )
         self.limits['Nodes']._add_current_usage(
@@ -126,85 +104,54 @@ class _ElastiCacheService(_AwsService):
 
     def _find_usage_subnet_groups(self):
         """find usage for elasticache subnet groups"""
-        groups = boto_query_wrapper(
-            self.conn.describe_cache_subnet_groups,
-            alc_marker_path=[
-                'DescribeCacheSubnetGroupsResponse',
-                'DescribeCacheSubnetGroupsResult',
-                'Marker'
-            ],
-            alc_data_path=[
-                'DescribeCacheSubnetGroupsResponse',
-                'DescribeCacheSubnetGroupsResult',
-                'CacheSubnetGroups'
-            ],
-            alc_marker_param='marker'
-        )[
-            'DescribeCacheSubnetGroupsResponse'][
-            'DescribeCacheSubnetGroupsResult'][
-            'CacheSubnetGroups']
+        num_groups = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_cache_subnet_groups')
+        for page in paginator.paginate():
+            for group in page['CacheSubnetGroups']:
+                num_groups += 1
         self.limits['Subnet Groups']._add_current_usage(
-            len(groups),
+            num_groups,
             aws_type='AWS::ElastiCache::SubnetGroup'
         )
 
     def _find_usage_parameter_groups(self):
         """find usage for elasticache parameter groups"""
-        groups = boto_query_wrapper(
-            self.conn.describe_cache_parameter_groups,
-            alc_marker_path=[
-                'DescribeCacheParameterGroupsResponse',
-                'DescribeCacheParameterGroupsResult',
-                'Marker'
-            ],
-            alc_data_path=[
-                'DescribeCacheParameterGroupsResponse',
-                'DescribeCacheParameterGroupsResult',
-                'CacheParameterGroups'
-            ],
-            alc_marker_param='marker'
-        )[
-            'DescribeCacheParameterGroupsResponse'][
-            'DescribeCacheParameterGroupsResult'][
-            'CacheParameterGroups']
+        num_groups = 0
+        # this boto3 class has a paginator, so no need for boto_query_wrapper
+        paginator = self.conn.get_paginator('describe_cache_parameter_groups')
+        for page in paginator.paginate():
+            for group in page['CacheParameterGroups']:
+                num_groups += 1
         self.limits['Parameter Groups']._add_current_usage(
-            len(groups),
+            num_groups,
             aws_type='AWS::ElastiCache::ParameterGroup'
         )
 
     def _find_usage_security_groups(self):
         """find usage for elasticache security groups"""
+        num_groups = 0
+        # If EC2-Classic isn't available (e.g., a new account)
+        # this method will fail with:
+        #   Code:    "InvalidParameterValue"
+        #   Message: "Use of cache security groups is not permitted in
+        #             this API version for your account."
+        #   Type:    "Sender"
         try:
-            # If EC2-Classic isn't available (e.g., a new account)
-            # this method will fail with:
-            #   Code:    "InvalidParameterValue"
-            #   Message: "Use of cache security groups is not permitted in
-            #             this API version for your account."
-            #   Type:    "Sender"
-            groups = boto_query_wrapper(
-                self.conn.describe_cache_security_groups,
-                alc_marker_path=[
-                    'DescribeCacheSecurityGroupsResponse',
-                    'DescribeCacheSecurityGroupsResult',
-                    'Marker'
-                ],
-                alc_data_path=[
-                    'DescribeCacheSecurityGroupsResponse',
-                    'DescribeCacheSecurityGroupsResult',
-                    'CacheSecurityGroups'
-                ],
-                alc_marker_param='marker'
-            )[
-                'DescribeCacheSecurityGroupsResponse'][
-                'DescribeCacheSecurityGroupsResult'][
-                'CacheSecurityGroups']
-        except BotoServerError:
-            logger.debug("caught BotoServerError checking ElastiCache security "
+            # this boto3 class has a paginator, no need for boto_query_wrapper
+            paginator = self.conn.get_paginator(
+                'describe_cache_security_groups')
+            for page in paginator.paginate():
+                for secgroup in page['CacheSecurityGroups']:
+                    num_groups += 1
+        except ClientError as ex:
+            if ex.response['Error']['Code'] != 'InvalidParameterValue':
+                raise ex
+            logger.debug("caught ClientError checking ElastiCache security "
                          "groups (account without EC2-Classic?)")
-            groups = []
 
         self.limits['Security Groups']._add_current_usage(
-            len(groups),
+            num_groups,
             aws_type='WS::ElastiCache::SecurityGroup'
         )
 

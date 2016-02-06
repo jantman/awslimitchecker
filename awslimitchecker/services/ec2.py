@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto
 import logging
 from collections import defaultdict
 from copy import deepcopy
@@ -53,15 +52,7 @@ logger = logging.getLogger(__name__)
 class _Ec2Service(_AwsService):
 
     service_name = 'EC2'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        elif self.region:
-            self.conn = self.connect_via(boto.ec2.connect_to_region)
-        else:
-            self.conn = boto.connect_ec2()
+    api_name = 'ec2'
 
     def find_usage(self):
         """
@@ -71,6 +62,7 @@ class _Ec2Service(_AwsService):
         """
         logger.debug("Checking usage for service %s", self.service_name)
         self.connect()
+        self.connect_resource()
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_instances()
@@ -130,15 +122,19 @@ class _Ec2Service(_AwsService):
         reservations = defaultdict(int)
         az_to_res = {}
         logger.debug("Getting reserved instance information")
-        res = boto_query_wrapper(self.conn.get_all_reserved_instances)
-        for x in res:
-            if x.state != 'active':
+        res = boto_query_wrapper(
+            self.conn.describe_reserved_instances,
+            alc_no_paginate=True
+        )
+        for x in res['ReservedInstances']:
+            if x['State'] != 'active':
                 logger.debug("Skipping ReservedInstance %s with state %s",
-                             x.id, x.state)
+                             x['ReservedInstancesId'], x['State'])
                 continue
-            if x.availability_zone not in az_to_res:
-                az_to_res[x.availability_zone] = deepcopy(reservations)
-            az_to_res[x.availability_zone][x.instance_type] += x.instance_count
+            if x['AvailabilityZone'] not in az_to_res:
+                az_to_res[x['AvailabilityZone']] = deepcopy(reservations)
+            az_to_res[x['AvailabilityZone']][
+                x['InstanceType']] += x['InstanceCount']
         # flatten and return
         for x in az_to_res:
             az_to_res[x] = dict(az_to_res[x])
@@ -159,24 +155,25 @@ class _Ec2Service(_AwsService):
             ondemand[t] = 0
         az_to_inst = {}
         logger.debug("Getting usage for on-demand instances")
-        for res in boto_query_wrapper(self.conn.get_all_reservations):
-            for inst in res.instances:
-                if inst.spot_instance_request_id:
-                    logger.warning("Spot instance found (%s); awslimitchecker "
-                                   "does not yet support spot "
-                                   "instances.", inst.id)
-                    continue
-                if inst.state in ['stopped', 'terminated']:
-                    logger.debug("Ignoring instance %s in state %s", inst.id,
-                                 inst.state)
-                    continue
-                if inst.placement not in az_to_inst:
-                    az_to_inst[inst.placement] = deepcopy(ondemand)
-                try:
-                    az_to_inst[inst.placement][inst.instance_type] += 1
-                except KeyError:
-                    logger.error("ERROR - unknown instance type '%s'; not "
-                                 "counting", inst.instance_type)
+        for inst in self.resource_conn.instances.all():
+            if inst.spot_instance_request_id:
+                logger.warning("Spot instance found (%s); awslimitchecker "
+                               "does not yet support spot "
+                               "instances.", inst.id)
+                continue
+            if inst.state['Name'] in ['stopped', 'terminated']:
+                logger.debug("Ignoring instance %s in state %s", inst.id,
+                             inst.state['Name'])
+                continue
+            if inst.placement['AvailabilityZone'] not in az_to_inst:
+                az_to_inst[
+                    inst.placement['AvailabilityZone']] = deepcopy(ondemand)
+            try:
+                az_to_inst[
+                    inst.placement['AvailabilityZone']][inst.instance_type] += 1
+            except KeyError:
+                logger.error("ERROR - unknown instance type '%s'; not "
+                             "counting", inst.instance_type)
         return az_to_inst
 
     def get_limits(self):
@@ -201,11 +198,13 @@ class _Ec2Service(_AwsService):
         with the quotas returned. Updates ``self.limits``.
         """
         self.connect()
+        self.connect_resource()
         logger.info("Querying EC2 DescribeAccountAttributes for limits")
-        attribs = boto_query_wrapper(self.conn.describe_account_attributes)
-        for attrib in attribs:
-            aname = attrib.attribute_name
-            val = attrib.attribute_values[0]
+        # no need to paginate
+        attribs = self.conn.describe_account_attributes()
+        for attrib in attribs['AccountAttributes']:
+            aname = attrib['AttributeName']
+            val = attrib['AttributeValues'][0]['AttributeValue']
             lname = None
             if aname == 'max-elastic-ips':
                 lname = 'Elastic IP addresses (EIPs)'
@@ -281,10 +280,10 @@ class _Ec2Service(_AwsService):
         logger.debug("Getting usage for EC2 VPC resources")
         sgs_per_vpc = defaultdict(int)
         rules_per_sg = defaultdict(int)
-        for sg in boto_query_wrapper(self.conn.get_all_security_groups):
+        for sg in self.resource_conn.security_groups.all():
             if sg.vpc_id is not None:
                 sgs_per_vpc[sg.vpc_id] += 1
-                rules_per_sg[sg.id] = len(sg.rules)
+                rules_per_sg[sg.id] = len(sg.ip_permissions)
         # set usage
         for vpc_id, count in sgs_per_vpc.items():
             self.limits['Security groups per VPC']._add_current_usage(
@@ -301,22 +300,25 @@ class _Ec2Service(_AwsService):
 
     def _find_usage_networking_eips(self):
         logger.debug("Getting usage for EC2 EIPs")
-        addrs = boto_query_wrapper(self.conn.get_all_addresses)
+        vpc_addrs = self.resource_conn.vpc_addresses.all()
         self.limits['VPC Elastic IP addresses (EIPs)']._add_current_usage(
-            sum(1 for a in addrs if a.domain == 'vpc'),
+            sum(1 for a in vpc_addrs if a.domain == 'vpc'),
             aws_type='AWS::EC2::EIP',
         )
         # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
         # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
+        classic_addrs = self.resource_conn.classic_addresses.all()
         self.limits['Elastic IP addresses (EIPs)']._add_current_usage(
-            sum(1 for a in addrs if a.domain == 'standard'),
+            sum(1 for a in classic_addrs if a.domain == 'standard'),
             aws_type='AWS::EC2::EIP',
         )
 
     def _find_usage_networking_eni_sg(self):
         logger.debug("Getting usage for EC2 Network Interfaces")
-        ints = boto_query_wrapper(self.conn.get_all_network_interfaces)
+        ints = self.resource_conn.network_interfaces.all()
         for iface in ints:
+            if iface.vpc is None:
+                continue
             self.limits['VPC security groups per elastic network '
                         'interface']._add_current_usage(
                             len(iface.groups),

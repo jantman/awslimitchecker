@@ -281,7 +281,8 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'https://docs.python.org/': None,
-    'boto': ('http://boto.readthedocs.org/en/latest/', None)
+    'boto': ('http://boto.readthedocs.org/en/latest/', None),
+    'boto3': ('http://boto3.readthedocs.org/en/latest/', None)
 }
 
 autoclass_content = 'init'
@@ -290,6 +291,10 @@ autodoc_default_flags = ['members', 'undoc-members', 'private-members', 'special
 nitpick_ignore = [
     ('py:class', 'ABCMeta'),
     ('py:obj', 'function')
+]
+
+linkcheck_ignore = [
+    r'https?://landscape\.io.*'
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734

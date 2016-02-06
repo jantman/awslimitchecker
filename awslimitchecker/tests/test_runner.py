@@ -107,7 +107,7 @@ class TestAwsLimitCheckerRunner(object):
 
     def test_parse_args_parser(self):
         argv = ['-V']
-        desc = 'Report on AWS service limits and usage via boto, optionally ' \
+        desc = 'Report on AWS service limits and usage via boto3, optionally ' \
                'warn about any services with usage nearing or exceeding ' \
                'their limits. For further help, see ' \
                '<http://awslimitchecker.readthedocs.org/>'
