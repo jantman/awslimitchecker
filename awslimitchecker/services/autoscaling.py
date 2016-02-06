@@ -42,7 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
+from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class _AutoscalingService(_AwsService):
 
         self.limits['Auto Scaling groups']._add_current_usage(
             len(
-                boto_query_wrapper(
+                paginate_dict(
                     self.conn.describe_auto_scaling_groups,
                     alc_marker_path=['NextToken'],
                     alc_data_path=['AutoScalingGroups'],
@@ -77,7 +77,7 @@ class _AutoscalingService(_AwsService):
 
         self.limits['Launch configurations']._add_current_usage(
             len(
-                boto_query_wrapper(
+                paginate_dict(
                     self.conn.describe_launch_configurations,
                     alc_marker_path=['NextToken'],
                     alc_data_path=['LaunchConfigurations'],
@@ -143,7 +143,7 @@ class _AutoscalingService(_AwsService):
         """
         self.connect()
         logger.info("Querying EC2 DescribeAccountAttributes for limits")
-        lims = boto_query_wrapper(self.conn.describe_account_limits)
+        lims = self.conn.describe_account_limits()
         self.limits['Auto Scaling groups']._set_api_limit(
             lims['MaxNumberOfAutoScalingGroups'])
         self.limits['Launch configurations']._set_api_limit(

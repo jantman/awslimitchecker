@@ -89,18 +89,16 @@ class Test_XXNewServiceXXService(object):
     def test_find_usage(self):
         # put boto3 responses in response_fixtures.py, then do something like:
         # response = result_fixtures.EBS.test_find_usage_ebs
-        mock_conn = Mock(spec_set=XXNewServiceXXConnection)
+        mock_conn = Mock()
+        mock_conn.some_method.return_value =  # some logical return value
         with patch('%s.connect' % pb) as mock_connect:
-            with patch('%s.boto_service_wrapper' % pbm) as mock_wrapper:
-                cls = _XXNewServiceXXService(21, 43)
-                cls.conn = mock_conn
-                mock_wrapper.return_value =  # some logical return value
-                assert cls._have_usage is False
-                cls.find_usage()
+            cls = _XXNewServiceXXService(21, 43)
+            cls.conn = mock_conn
+            assert cls._have_usage is False
+            cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(mock_conn.some_method)]
+        assert mock_conn.mock_calls == [call.some_method()]
         # TODO - assert about usage
 
     def test_required_iam_permissions(self):

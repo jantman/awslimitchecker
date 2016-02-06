@@ -41,7 +41,6 @@ from botocore.exceptions import ClientError
 from dateutil import parser
 import logging
 from .connectable import Connectable
-from .utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -136,9 +135,8 @@ class TrustedAdvisor(Connectable):
             return
         check_id, metadata = tmp
         region = self.ta_region or self.conn._client_config.region_name
-        checks = boto_query_wrapper(
-            self.conn.describe_trusted_advisor_check_result,
-            checkId=check_id, language='en', alc_no_paginate=True
+        checks = self.conn.describe_trusted_advisor_check_result(
+            checkId=check_id, language='en'
         )
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
@@ -165,9 +163,8 @@ class TrustedAdvisor(Connectable):
         """
         logger.debug("Querying Trusted Advisor checks")
         try:
-            checks = boto_query_wrapper(
-                self.conn.describe_trusted_advisor_checks,
-                language='en', alc_no_paginate=True
+            checks = self.conn.describe_trusted_advisor_checks(
+                language='en'
             )['checks']
         except ClientError as ex:
             if ex.response['Error']['Code'] == 'SubscriptionRequiredException':

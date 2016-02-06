@@ -42,7 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
+from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class _ElbService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        lbs = boto_query_wrapper(
+        lbs = paginate_dict(
             self.conn.describe_load_balancers,
             alc_marker_path=['NextMarker'],
             alc_data_path=['LoadBalancerDescriptions'],

@@ -73,7 +73,7 @@ class _ElastiCacheService(_AwsService):
         """find usage for cache nodes"""
         nodes = 0
         num_clusters = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_cache_clusters')
         for page in paginator.paginate(ShowCacheNodeInfo=True):
             for cluster in page['CacheClusters']:
@@ -105,7 +105,7 @@ class _ElastiCacheService(_AwsService):
     def _find_usage_subnet_groups(self):
         """find usage for elasticache subnet groups"""
         num_groups = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_cache_subnet_groups')
         for page in paginator.paginate():
             for group in page['CacheSubnetGroups']:
@@ -118,7 +118,7 @@ class _ElastiCacheService(_AwsService):
     def _find_usage_parameter_groups(self):
         """find usage for elasticache parameter groups"""
         num_groups = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_cache_parameter_groups')
         for page in paginator.paginate():
             for group in page['CacheParameterGroups']:
@@ -138,7 +138,6 @@ class _ElastiCacheService(_AwsService):
         #             this API version for your account."
         #   Type:    "Sender"
         try:
-            # this boto3 class has a paginator, no need for boto_query_wrapper
             paginator = self.conn.get_paginator(
                 'describe_cache_security_groups')
             for page in paginator.paginate():

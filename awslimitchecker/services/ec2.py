@@ -44,7 +44,6 @@ from copy import deepcopy
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -122,10 +121,8 @@ class _Ec2Service(_AwsService):
         reservations = defaultdict(int)
         az_to_res = {}
         logger.debug("Getting reserved instance information")
-        res = boto_query_wrapper(
-            self.conn.describe_reserved_instances,
-            alc_no_paginate=True
-        )
+        res = self.conn.describe_reserved_instances()
+
         for x in res['ReservedInstances']:
             if x['State'] != 'active':
                 logger.debug("Skipping ReservedInstance %s with state %s",

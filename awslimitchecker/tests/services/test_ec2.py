@@ -207,12 +207,11 @@ class Test_Ec2Service(object):
         cls = _Ec2Service(21, 43)
         mock_client_conn = Mock()
         cls.conn = mock_client_conn
+        mock_client_conn.describe_reserved_instances.return_value = response
         mock_conn = Mock()
         cls.resource_conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = response
-            res = cls._get_reserved_instance_count()
+        res = cls._get_reserved_instance_count()
         assert res == {
             'az1': {
                 'it1': 10,
@@ -222,10 +221,8 @@ class Test_Ec2Service(object):
             },
         }
         assert mock_conn.mock_calls == []
-        assert mock_client_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_client_conn.describe_reserved_instances,
-                 alc_no_paginate=True)
+        assert mock_client_conn.mock_calls == [
+            call.describe_reserved_instances()
         ]
 
     def test_find_usage_instances(self):
