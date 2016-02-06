@@ -76,12 +76,20 @@ Credentials
 -----------
 
 Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
-You must either have your credentials configured in one of boto's supported config
+You must either have your credentials configured in one of boto3's supported config
 files, or set as environment variables. See
 `boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
+
+**Please note** that version 0.3.0 of awslimitchecker moved from using ``boto`` as its AWS API client to using
+``boto3``. This change is mostly transparent, but there is a minor change in how AWS credentials are handled. In
+``boto``, if the ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environment variables were set, and the
+region was not set explicitly via awslimitchecker, the AWS region would either be taken from the ``AWS_DEFAULT_REGION``
+environment variable or would default to us-east-1, regardless of whether a configuration file (``~/.aws/credentials``
+or ``~/.aws/config``) was present. With boto3, it appears that the default region from the configuration file will be
+used if present, regardless of whether the credentials come from that file or from environment variables.
 
 When using STS, you will need to specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
 and ``-R`` / ``--sts-account-role`` options to specify the Account ID that you want to assume a role in, and the
