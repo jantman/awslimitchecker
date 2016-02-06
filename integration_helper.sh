@@ -29,12 +29,12 @@ FAILURES=0
 # if the tests start failing, it's probably because someone with access to the
 # limitchecker test AWS account needs to manually update the IAM permissions
 # on the test user.
-awslimitchecker -vv -r us-west-2 -l || FAILURES=1
-awslimitchecker -vv -r us-west-2 -u || FAILURES=1
+awslimitchecker -vv -r us-west-2 -l || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
+awslimitchecker -vv -r us-west-2 -u || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
 
 while read svcname; do
-    awslimitchecker -vv -r us-west-2 -l -S $svcname || FAILURES=1
-    awslimitchecker -vv -r us-west-2 -u -S $svcname || FAILURES=1
+    awslimitchecker -vv -r us-west-2 -l -S $svcname || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
+    awslimitchecker -vv -r us-west-2 -u -S $svcname || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
 done< <(awslimitchecker -s)
 
 ###############################################################################
@@ -47,16 +47,21 @@ done< <(awslimitchecker -s)
 ###############################################################################
 
 # STS tests
+set +x
 AWS_ACCESS_KEY_ID=$AWS_INTEGRATION_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY=$AWS_INTEGRATION_SECRET_KEY
 
 # STS normal role
-awslimitchecker -vv -r us-west-2 -l -S VPC --sts-account-id=${AWS_MASTER_ACCOUNT_ID} --sts-account-role=alc-integration-sts || FAILURES=1
-awslimitchecker -vv -r us-west-2 -u -S VPC --sts-account-id=${AWS_MASTER_ACCOUNT_ID} --sts-account-role=alc-integration-sts || FAILURES=1
+echo "running: awslimitchecker -vv -r us-west-2 -l -S VPC --sts-account-id=XXX --sts-account-role=alc-integration-sts"
+awslimitchecker -vv -r us-west-2 -l -S VPC --sts-account-id=${AWS_MASTER_ACCOUNT_ID} --sts-account-role=alc-integration-sts || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
+echo "running: awslimitchecker -vv -r us-west-2 -u -S VPC --sts-account-id=XXX --sts-account-role=alc-integration-sts"
+awslimitchecker -vv -r us-west-2 -u -S VPC --sts-account-id=${AWS_MASTER_ACCOUNT_ID} --sts-account-role=alc-integration-sts || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
 
 # STS external ID role
-awslimitchecker -vv -r us-west-2 -l -S VPC --sts-account-id="$AWS_MASTER_ACCOUNT_ID" --sts-account-role=alc-integration-sts-extid --external-id="$AWS_EXTERNAL_ID" || FAILURES=1
-awslimitchecker -vv -r us-west-2 -u -S VPC --sts-account-id="$AWS_MASTER_ACCOUNT_ID" --sts-account-role=alc-integration-sts-extid --external-id="$AWS_EXTERNAL_ID" || FAILURES=1
+echo "running: awslimitchecker -vv -r us-west-2 -l -S VPC --sts-account-id=XXX --sts-account-role=alc-integration-sts-extid --external-id=XXX"
+awslimitchecker -vv -r us-west-2 -l -S VPC --sts-account-id=${AWS_MASTER_ACCOUNT_ID} --sts-account-role=alc-integration-sts-extid --external-id="$AWS_EXTERNAL_ID" || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
+echo "running: awslimitchecker -vv -r us-west-2 -u -S VPC --sts-account-id=XXX --sts-account-role=alc-integration-sts-extid --external-id=XXX"
+awslimitchecker -vv -r us-west-2 -u -S VPC --sts-account-id=${AWS_MASTER_ACCOUNT_ID} --sts-account-role=alc-integration-sts-extid --external-id="$AWS_EXTERNAL_ID" || { FAILURES=1; echo -e "\n\n>>>> ABOVE TEST FAILED <<<<\n\n"; }
 
 if [ "$FAILURES" -eq 1 ]; then
     echo "ERROR: some tests failed!"
