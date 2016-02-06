@@ -42,8 +42,8 @@ import pytest
 import sys
 
 from awslimitchecker.utils import (
-    StoreKeyValuePair, dict2cols, boto_query_wrapper, paginate_query,
-    _paginate_dict, _get_dict_value_by_path, _set_dict_value_by_path
+    StoreKeyValuePair, dict2cols, paginate_dict, _get_dict_value_by_path,
+    _set_dict_value_by_path
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -52,9 +52,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, DEFAULT
+    from mock import call, Mock
 else:
-    from unittest.mock import patch, call, Mock, DEFAULT
+    from unittest.mock import call, Mock
 
 pbm = 'awslimitchecker.utils'
 
@@ -148,200 +148,35 @@ class Test_dict2cols(object):
         assert res == ''
 
 
-class TestBotoQueryWrapper(object):
-
-    def test_invoke_noargs(self):
-        func = Mock()
-        retval = Mock()
-
-        with patch('%s.paginate_query' % pbm) as mock_paginate:
-            mock_paginate.return_value = retval
-            res = boto_query_wrapper(func)
-        assert res == retval
-        assert mock_paginate.mock_calls == [call(func)]
-
-    def test_invoke_args(self):
-        func = Mock()
-        retval = Mock()
-
-        with patch('%s.paginate_query' % pbm) as mock_paginate:
-            mock_paginate.return_value = retval
-            res = boto_query_wrapper(func, 'foo', 'bar')
-        assert res == retval
-        assert mock_paginate.mock_calls == [call(func, 'foo', 'bar')]
-
-    def test_invoke_kwargs(self):
-        func = Mock()
-        retval = Mock()
-
-        with patch('%s.paginate_query' % pbm) as mock_paginate:
-            mock_paginate.return_value = retval
-            res = boto_query_wrapper(
-                func, 'foo', bar='barval', baz='bazval'
-            )
-        assert res == retval
-        assert mock_paginate.mock_calls == [
-            call(func, 'foo', bar='barval', baz='bazval')
-        ]
-
-    def test_invoke_kwargs_alc(self):
-        func = Mock()
-        retval = Mock()
-
-        with patch('%s.paginate_query' % pbm) as mock_paginate:
-            mock_paginate.return_value = retval
-            res = boto_query_wrapper(func, 'foo', bar='barval',
-                                     baz='bazval', alc_foo='alcfoo',
-                                     alc_bar='alcbar')
-        assert res == retval
-        assert mock_paginate.mock_calls == [
-            call(func, 'foo', bar='barval', baz='bazval', alc_foo='alcfoo',
-                 alc_bar='alcbar')
-        ]
-
-    def test_invoke_paginate(self):
-        func = Mock()
-        retval = Mock()
-
-        with patch('%s.paginate_query' % pbm) as mock_paginate:
-            mock_paginate.return_value = retval
-            res = boto_query_wrapper(
-                func, 'foo', bar='barval', baz='bazval'
-            )
-        assert res == retval
-        assert mock_paginate.mock_calls == [
-            call(func, 'foo', bar='barval', baz='bazval')
-        ]
-
-
-class TestPaginateQuery(object):
-
-    def test_alc_no_paginate(self):
-        result = {'foo': 'bar'}
-        func = Mock()
-        func.return_value = result
-
-        with patch.multiple(
-                pbm,
-                _paginate_dict=DEFAULT,
-        ) as mocks:
-            res = paginate_query(func, 'foo', bar='barval',
-                                 alc_no_paginate=True)
-        assert res == result
-        assert func.mock_calls == [
-            call('foo', bar='barval')
-        ]
-        assert mocks['_paginate_dict'].mock_calls == []
-
-    def test_dict(self):
-        result = {'foo': 'bar'}
-        func = Mock()
-        func.return_value = result
-        final_result = Mock()
-
-        with patch.multiple(
-                pbm,
-                _paginate_dict=DEFAULT,
-                logger=DEFAULT,
-        ) as mocks:
-            mocks['_paginate_dict'].return_value = final_result
-            res = paginate_query(
-                func,
-                'foo',
-                bar='barval',
-                alc_marker_path=[],
-                alc_data_path=[],
-                alc_marker_param='p'
-            )
-        assert res == final_result
-        assert func.mock_calls == [
-            call('foo', bar='barval')
-        ]
-        assert mocks['_paginate_dict'].mock_calls == [
-            call(result, func, 'foo', bar='barval', alc_marker_path=[],
-                 alc_data_path=[], alc_marker_param='p')
-        ]
-        assert mocks['logger'].mock_calls == []
-
-    def test_dict_missing_params(self):
-        result = {'foo': 'bar'}
-        func = Mock()
-        func.return_value = result
-        final_result = Mock()
-
-        with patch.multiple(
-                pbm,
-                _paginate_dict=DEFAULT,
-                logger=DEFAULT,
-        ) as mocks:
-            mocks['_paginate_dict'].return_value = final_result
-            res = paginate_query(
-                func,
-                'foo',
-                bar='barval'
-            )
-        assert res == result
-        assert func.mock_calls == [
-            call('foo', bar='barval')
-        ]
-        assert mocks['_paginate_dict'].mock_calls == []
-        assert len(mocks['logger'].mock_calls) == 1
-        args = mocks['logger'].warning.mock_calls[0][1]
-        assert len(args) == 1
-        assert args[0].startswith(
-            "Query returned a dict, but does not have _paginate_dict params "
-            "set; cannot paginate (<Mock id='") is True
-
-    def test_other_type(self):
-        func = Mock()
-        func.return_value = 'foobar'
-
-        with patch.multiple(
-                pbm,
-                _paginate_dict=DEFAULT,
-                logger=DEFAULT,
-        ) as mocks:
-            res = paginate_query(func, 'foo', bar='barval')
-        assert res == 'foobar'
-        assert func.mock_calls == [
-            call('foo', bar='barval')
-        ]
-        assert mocks['_paginate_dict'].mock_calls == []
-        assert mocks['logger'].mock_calls == [
-            call.warning("Query result of type %s cannot be paginated",
-                         type('foo'))
-        ]
-
-
 class TestPaginateDict(object):
 
     def test_no_marker_path(self):
-        result = {}
         func = Mock()
 
         with pytest.raises(Exception) as excinfo:
-            _paginate_dict(result, func)
+            paginate_dict(func)
         ex_str = "alc_marker_path must be specified for queries " \
                  "that return a dict."
         assert ex_str in str(excinfo)
 
     def test_no_data_path(self):
-        result = {}
         func = Mock()
 
         with pytest.raises(Exception) as excinfo:
-            _paginate_dict(result, func, alc_marker_path=[])
+            paginate_dict(func, alc_marker_path=[])
         ex_str = "alc_data_path must be specified for queries " \
                  "that return a dict."
         assert ex_str in str(excinfo)
 
     def test_no_marker_param(self):
-        result = {}
         func = Mock()
 
         with pytest.raises(Exception) as excinfo:
-            _paginate_dict(result, func, alc_marker_path=[],
-                           alc_data_path=[])
+            paginate_dict(
+                func,
+                alc_marker_path=[],
+                alc_data_path=[]
+            )
         ex_str = "alc_marker_param must be specified for queries " \
                  "that return a dict."
         assert ex_str in str(excinfo)
@@ -353,16 +188,16 @@ class TestPaginateDict(object):
             }
         }
         func = Mock()
+        func.return_value = result
 
-        res = _paginate_dict(
-            result,
+        res = paginate_dict(
             func,
             alc_marker_path=['k1', 'k2', 'Marker'],
             alc_data_path=['k1', 'k2', 'Data'],
             alc_marker_param='Marker'
         )
         assert res == result
-        assert func.mock_calls == []
+        assert func.mock_calls == [call()]
 
     def test_no_marker(self):
         result = {
@@ -373,16 +208,16 @@ class TestPaginateDict(object):
             }
         }
         func = Mock()
+        func.return_value = result
 
-        res = _paginate_dict(
-            result,
+        res = paginate_dict(
             func,
             alc_marker_path=['k1', 'k2', 'Marker'],
             alc_data_path=['k1', 'k2', 'Data'],
             alc_marker_param='Marker'
         )
         assert res == result
-        assert func.mock_calls == []
+        assert func.mock_calls == [call()]
 
     def test_two_iterations(self):
         e1 = Mock()
@@ -429,19 +264,9 @@ class TestPaginateDict(object):
             }
         }
 
-        def se_invoke(*args, **kwargs):
-            if 'MarkerParam' not in kwargs:
-                return -1
-            if kwargs['MarkerParam'] == 'marker1':
-                return res2
-            if kwargs['MarkerParam'] == 'marker2':
-                return res3
-            return kwargs['MarkerParam']
+        func.side_effect = [res1, res2, res3]
 
-        func.side_effect = se_invoke
-
-        res = _paginate_dict(
-            res1,
+        res = paginate_dict(
             func,
             'foo',
             bar='baz',
@@ -451,6 +276,7 @@ class TestPaginateDict(object):
         )
         assert res == expected
         assert func.mock_calls == [
+            call('foo', bar='baz'),
             call(
                 'foo',
                 bar='baz',

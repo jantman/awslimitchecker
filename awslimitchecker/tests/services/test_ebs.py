@@ -128,8 +128,8 @@ class Test_EbsService(object):
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = response
+            with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
+                mock_paginate.return_value = response
                 cls._find_usage_ebs()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS volumes"),
@@ -156,7 +156,7 @@ class Test_EbsService(object):
         assert cls.limits['Active volumes'
                           ''].get_current_usage()[0].get_value() == 7
         assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
+        assert mock_paginate.mock_calls == [
             call(
                 mock_conn.describe_volumes,
                 alc_marker_path=['NextToken'],
@@ -173,8 +173,8 @@ class Test_EbsService(object):
         cls = _EbsService(21, 43)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = response
+            with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
+                mock_paginate.return_value = response
                 cls._find_usage_snapshots()
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EBS snapshots"),
@@ -183,7 +183,7 @@ class Test_EbsService(object):
         assert cls.limits['Active snapshots'
                           ''].get_current_usage()[0].get_value() == 3
         assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
+        assert mock_paginate.mock_calls == [
             call(
                 mock_conn.describe_snapshots,
                 OwnerIds=['self'],

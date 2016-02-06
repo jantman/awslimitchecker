@@ -92,8 +92,8 @@ class Test_ElbService(object):
         return_value = result_fixtures.ELB.test_find_usage
 
         with patch('%s.connect' % self.pb) as mock_connect:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
+            with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
+                mock_paginate.return_value = return_value
                 cls = _ElbService(21, 43)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
@@ -102,7 +102,7 @@ class Test_ElbService(object):
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
         assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
+        assert mock_paginate.mock_calls == [
             call(
                 mock_conn.describe_load_balancers,
                 alc_marker_path=['NextMarker'],

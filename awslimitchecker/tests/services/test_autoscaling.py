@@ -108,15 +108,15 @@ class Test_AutoscalingService(object):
             return None
 
         with patch('%s.connect' % self.pb) as mock_connect:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
                 cls = _AutoscalingService(21, 43)
                 cls.conn = mock_conn
-                mock_wrapper.side_effect = se_wrapper
+                mock_paginate.side_effect = se_wrapper
                 assert cls._have_usage is False
                 cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
+        assert mock_paginate.mock_calls == [
             call(
                 mock_conn.describe_auto_scaling_groups,
                 alc_marker_path=['NextToken'],

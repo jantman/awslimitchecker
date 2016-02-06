@@ -71,11 +71,9 @@ Guidelines
 Adding New Limits and Checks to Existing Services
 -------------------------------------------------
 
-First, note that any calls to boto3 client ("low-level") APIs that do
-have a Paginator should be handled through
-:py:func:`~awslimitchecker.utils.boto_query_wrapper`, and most have the proper
-parameters passed for :py:func:`~awslimitchecker.utils._paginate_dict` to
-paginate them.
+First, note that all calls to boto3 client ("low-level") methods that return a dict response that can
+include 'NextToken' or another pagination marker, should be called through
+:py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method.
@@ -99,11 +97,9 @@ Adding New Services
 All Services are sublcasses of :py:class:`~awslimitchecker.services.base._AwsService`
 using the :py:mod:`abc` module.
 
-First, note that any calls to boto3 client ("low-level") APIs that do
-have a Paginator should be handled through
-:py:func:`~awslimitchecker.utils.boto_query_wrapper`, and most have the proper
-parameters passed for :py:func:`~awslimitchecker.utils._paginate_dict` to
-paginate them.
+First, note that all calls to boto3 client ("low-level") methods that return a dict response that can
+include 'NextToken' or another pagination marker, should be called through
+:py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
 
 1. The new service name should be in CamelCase, preferably one word (if not one word, it should be underscore-separated).
    In ``awslimitchecker/services``, use the ``addservice`` script; this will create a templated service class in the

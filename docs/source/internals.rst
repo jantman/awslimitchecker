@@ -23,11 +23,9 @@ connections; connections are created lazily as needed and stored as a class attr
 services, limits and default limit values without ever connecting to AWS (this is also used to generate the
 :ref:`Supported Limits <limits>` documentation automatically).
 
-All calls to boto3 client ("low-level") APIs that do
-have a Paginator should be handled through
-:py:func:`~awslimitchecker.utils.boto_query_wrapper`, and most have the proper
-parameters passed for :py:func:`~awslimitchecker.utils._paginate_dict` to
-paginate them.
+All calls to boto3 client ("low-level") methods that return a dict response that can
+include 'NextToken' or another pagination marker, should be called through
+:py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is instantiated, it imports :py:mod:`~awslimitchecker.services`
 which in turn creates instances of all ``awslimitchecker.services.*`` classes and adds them to a dict mapping the

@@ -42,7 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
+from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class _EbsService(_AwsService):
         gp_gb = 0
         mag_gb = 0
         logger.debug("Getting usage for EBS volumes")
-        results = boto_query_wrapper(
+        results = paginate_dict(
             self.conn.describe_volumes,
             alc_marker_path=['NextToken'],
             alc_data_path=['Volumes'],
@@ -123,7 +123,7 @@ class _EbsService(_AwsService):
     def _find_usage_snapshots(self):
         """find snapshot usage"""
         logger.debug("Getting usage for EBS snapshots")
-        snaps = boto_query_wrapper(
+        snaps = paginate_dict(
             self.conn.describe_snapshots,
             OwnerIds=['self'],
             alc_marker_path=['NextToken'],

@@ -96,51 +96,7 @@ def dict2cols(d, spaces=2, separator=' '):
     return s
 
 
-def paginate_query(function_ref, *argv, **kwargs):
-    """
-    Invoke a Boto operation, automatically paginating through all responses.
-
-    If kwargs['alc_no_paginate'] is True, return the result immediately.
-
-    If ``function_ref`` returns a dict, pass it through to
-    :py:func:`~._paginate_dict` and return the result.
-
-    Else, return the result.
-
-    :param function_ref: the function to call
-    :type function_ref: function
-    :param argv: the parameters to pass to the function
-    :type argv: tuple
-    :param kwargs: keyword arguments to pass to the function
-    :type kwargs: dict
-    """
-    paginate_dict_params = [
-        'alc_marker_path', 'alc_data_path', 'alc_marker_param'
-    ]
-
-    # strip off "^alc_" args
-    pass_kwargs = {}
-    for k, v in kwargs.items():
-        if not k.startswith('alc_'):
-            pass_kwargs[k] = v
-
-    result = function_ref(*argv, **pass_kwargs)
-    if 'alc_no_paginate' in kwargs and kwargs['alc_no_paginate'] is True:
-        logger.debug("explicitly not paginating query")
-        return result
-    if isinstance(result, dict):
-        if set(paginate_dict_params).issubset(kwargs):
-            return _paginate_dict(result, function_ref, *argv, **kwargs)
-        else:
-            logger.warning("Query returned a dict, but does not have "
-                           "_paginate_dict params set; cannot paginate (" +
-                           str(function_ref) + ")")
-            return result
-    logger.warning("Query result of type %s cannot be paginated", type(result))
-    return result
-
-
-def _paginate_dict(result, function_ref, *argv, **kwargs):
+def paginate_dict(function_ref, *argv, **kwargs):
     """
     Paginate through a query that returns a dict result, and return the
     combined result.
@@ -157,8 +113,6 @@ def _paginate_dict(result, function_ref, *argv, **kwargs):
     These paths should be lists, in a form usable by
     :py:func:`~._get_dict_value_by_path`.
 
-    :param result: the first result from the query
-    :type result: dict
     :param function_ref: the function to call
     :type function_ref: function
     :param argv: the parameters to pass to the function
@@ -185,6 +139,9 @@ def _paginate_dict(result, function_ref, *argv, **kwargs):
     for k, v in kwargs.items():
         if not k.startswith('alc_'):
             pass_kwargs[k] = v
+
+    # first function call
+    result = function_ref(*argv, **pass_kwargs)
 
     # check for marker, return if not present
     marker = _get_dict_value_by_path(result, marker_path)
@@ -252,24 +209,3 @@ def _set_dict_value_by_path(d, val, path):
         k = tmp_path.pop(0)
         result = result[k]
     return tmp_d
-
-
-def boto_query_wrapper(function_ref, *argv, **kwargs):
-    """
-    Function to add pagination to boto client query methods that don't have
-    Paginators.
-
-    Calls :py:func:`~.paginate_query` and returns the result.
-
-    :param function_ref: the function to call
-    :type function_ref: function
-    :param argv: the parameters to pass to the function
-    :type argv: tuple
-    :param kwargs: keyword arguments to pass to the function
-      (:py:func:`~.paginate_query`)
-    :type kwargs: dict
-    :returns: return value of ``function_ref``
-    """
-    # pagination
-    result = paginate_query(function_ref, *argv, **kwargs)
-    return result

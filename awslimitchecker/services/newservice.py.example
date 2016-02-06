@@ -42,7 +42,6 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +63,15 @@ class _XXNewServiceXXService(_AwsService):
             lim._reset_usage()
         # TODO: update your usage here, i.e.:
         """
-        u = boto_query_wrapper(self.conn.some_method)  # count of something, from boto
-        # be sure to set the pagination parameters per
-        # awslimitchecker.utils.boto_query_wrapper and
-        # awslimitchecker.utils.paginate_query
+        usage = self.conn.method_to_get_usage()
+        # or, if it needs to be paginated,  something like:
+        # remebering to 'from ..utils import paginate_dict'
+        usage = paginate_dict(
+            self.conn.method_to_get_usage,
+            alc_marker_path=['NextToken'],
+            alc_data_path=['ResourceListName'],
+            alc_marker_param='NextToken'
+        )
         u_id = (resource id from AWS)
         self.limits['Number of u']._add_current_usage(u, aws_type='U', id=u_id)
         """

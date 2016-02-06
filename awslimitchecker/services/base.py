@@ -116,14 +116,25 @@ class _AwsService(Connectable):
         :py:class:`~.AwsLimit` instance.
 
         This method MUST set ``self._have_usage = True``.
-        This method MUST make all API calls through
-        :py:func:`~awslimitchecker.utils.boto_query_wrapper`.
+
+        If the boto3 method being called returns a dict response that can
+        include 'NextToken' or another pagination marker, it should be called
+        through
+        :py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate
+        parameters.
         """
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
-        usage = boto_query_wrapper(self.conn.method_to_get_usage)
+        usage = self.conn.method_to_get_usage()
+        # or, if it needs to be paginated, something like:
+        usage = paginate_dict(
+            self.conn.method_to_get_usage,
+            alc_marker_path=['NextToken'],
+            alc_data_path=['ResourceListName'],
+            alc_marker_param='NextToken'
+        )
         logger.debug("Done checking usage.")
         self._have_usage = True
         """
