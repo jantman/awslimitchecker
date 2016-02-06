@@ -6,6 +6,8 @@ Pre-release (develop branch)
 
 * Add coverage for one code branch introduced in `PR #100 <https://github.com/jantman/awslimitchecker/pull/100>`_ that wasn't covered by tests.
 * `#112 <https://github.com/jantman/awslimitchecker/issues/112>`_ fix a bug in the versioncheck integration tests, and a bug uncovered in versioncheck itself, both dealing with checkouts that are on a un-cloned branch.
+* `#105 <https://github.com/jantman/awslimitchecker/issues/105>`_ build and upload wheels in addition to sdist
+* `#95 <https://github.com/jantman/awslimitchecker/issues/95>`_ **major** refactor to convert AWS client library from `boto <https://github.com/boto/boto>`_ to `boto3 <https://github.com/boto/boto3>`_. This also includes significant changes to the internal connection logic and some of the internal (private) API. Pagination has been moved to boto3 wherever possible, and handling of API request throttling has been removed from awslimitchecker, as boto3 handles this itself. This also introduces full, official support for python3.
 
 0.2.3 (2015-12-16)
 ------------------
