@@ -143,7 +143,7 @@ class _AutoscalingService(_AwsService):
         """
         self.connect()
         logger.info("Querying EC2 DescribeAccountAttributes for limits")
-        lims = boto_query_wrapper(self.conn.describe_account_limits)
+        lims = self.conn.describe_account_limits()
         self.limits['Auto Scaling groups']._set_api_limit(
             lims['MaxNumberOfAutoScalingGroups'])
         self.limits['Launch configurations']._set_api_limit(

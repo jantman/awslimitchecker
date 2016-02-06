@@ -76,7 +76,7 @@ class _RDSService(_AwsService):
         """find usage for DB Instances and related limits"""
         count = 0
         allocated_gb = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_db_instances')
         for page in paginator.paginate():
             for instance in page['DBInstances']:
@@ -101,7 +101,7 @@ class _RDSService(_AwsService):
     def _find_usage_reserved_instances(self):
         """find usage for reserved instances"""
         count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_reserved_db_instances')
         for page in paginator.paginate():
             for inst in page['ReservedDBInstances']:
@@ -114,7 +114,7 @@ class _RDSService(_AwsService):
     def _find_usage_snapshots(self):
         """find usage for (manual) DB snapshots"""
         count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_db_snapshots')
         for page in paginator.paginate():
             for snap in page['DBSnapshots']:
@@ -128,7 +128,7 @@ class _RDSService(_AwsService):
     def _find_usage_param_groups(self):
         """find usage for parameter groups"""
         count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_db_parameter_groups')
         for page in paginator.paginate():
             for group in page['DBParameterGroups']:
@@ -141,7 +141,7 @@ class _RDSService(_AwsService):
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
         count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_db_subnet_groups')
         for page in paginator.paginate():
             for group in page['DBSubnetGroups']:
@@ -159,7 +159,7 @@ class _RDSService(_AwsService):
     def _find_usage_option_groups(self):
         """find usage for option groups"""
         count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_option_groups')
         for page in paginator.paginate():
             for group in page['OptionGroupsList']:
@@ -172,7 +172,7 @@ class _RDSService(_AwsService):
     def _find_usage_event_subscriptions(self):
         """find usage for event subscriptions"""
         count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_event_subscriptions')
         for page in paginator.paginate():
             for group in page['EventSubscriptionsList']:
@@ -186,7 +186,7 @@ class _RDSService(_AwsService):
         """find usage for security groups"""
         vpc_count = 0
         classic_count = 0
-        # this boto3 class has a paginator, so no need for boto_query_wrapper
+
         paginator = self.conn.get_paginator('describe_db_security_groups')
         for page in paginator.paginate():
             for group in page['DBSecurityGroups']:

@@ -155,15 +155,14 @@ class Test_AutoscalingService(object):
             'NumberOfLaunchConfigurations': 6
         }
 
+        mock_conn.describe_account_limits.return_value = aslimits
         with patch('%s.connect' % self.pb) as mock_connect:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                cls = _AutoscalingService(21, 43)
-                cls.conn = mock_conn
-                mock_wrapper.return_value = aslimits
-                cls._update_limits_from_api()
+            cls = _AutoscalingService(21, 43)
+            cls.conn = mock_conn
+            cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.describe_account_limits)
+        assert mock_conn.mock_calls == [
+            call.describe_account_limits()
         ]
         assert cls.limits['Auto Scaling groups'].api_limit == 11
         assert cls.limits['Launch configurations'].api_limit == 22

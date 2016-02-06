@@ -43,7 +43,6 @@ from collections import defaultdict
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +73,7 @@ class _VpcService(_AwsService):
     def _find_usage_vpcs(self):
         """find usage for VPCs"""
         # overall number of VPCs
-        vpcs = boto_query_wrapper(self.conn.describe_vpcs,
-                                  alc_no_paginate=True)
+        vpcs = self.conn.describe_vpcs()
         self.limits['VPCs']._add_current_usage(
             len(vpcs['Vpcs']),
             aws_type='AWS::EC2::VPC'
@@ -85,8 +83,7 @@ class _VpcService(_AwsService):
         """find usage for Subnets"""
         # subnets per VPC
         subnets = defaultdict(int)
-        for subnet in boto_query_wrapper(self.conn.describe_subnets,
-                                         alc_no_paginate=True)['Subnets']:
+        for subnet in self.conn.describe_subnets()['Subnets']:
             subnets[subnet['VpcId']] += 1
         for vpc_id in subnets:
             self.limits['Subnets per VPC']._add_current_usage(
@@ -99,9 +96,7 @@ class _VpcService(_AwsService):
         """find usage for ACLs"""
         # Network ACLs per VPC
         acls = defaultdict(int)
-        result = boto_query_wrapper(self.conn.describe_network_acls,
-                                    alc_no_paginate=True)
-        for acl in result['NetworkAcls']:
+        for acl in self.conn.describe_network_acls()['NetworkAcls']:
             acls[acl['VpcId']] += 1
             # Rules per network ACL
             self.limits['Rules per network ACL']._add_current_usage(
@@ -120,9 +115,7 @@ class _VpcService(_AwsService):
         """find usage for route tables"""
         # Route tables per VPC
         tables = defaultdict(int)
-        result = boto_query_wrapper(self.conn.describe_route_tables,
-                                    alc_no_paginate=True)
-        for table in result['RouteTables']:
+        for table in self.conn.describe_route_tables()['RouteTables']:
             tables[table['VpcId']] += 1
             # Entries per route table
             self.limits['Entries per route table']._add_current_usage(
@@ -140,8 +133,7 @@ class _VpcService(_AwsService):
     def _find_usage_gateways(self):
         """find usage for Internet Gateways"""
         # Internet gateways
-        gws = boto_query_wrapper(self.conn.describe_internet_gateways,
-                                 alc_no_paginate=True)
+        gws = self.conn.describe_internet_gateways()
         self.limits['Internet gateways']._add_current_usage(
             len(gws['InternetGateways']),
             aws_type='AWS::EC2::InternetGateway',
