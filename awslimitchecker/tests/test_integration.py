@@ -44,6 +44,7 @@ from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.services import _services
+from awslimitchecker.connectable import Connectable
 
 REGION = 'us-west-2'
 
@@ -75,7 +76,7 @@ class TestIntegration(object):
         # capture the AWS-related env vars
 
     @pytest.mark.integration
-    def verify_limits(self, checker, creds, service_name, use_ta,
+    def verify_limits(self, checker_args, creds, service_name, use_ta,
                       expect_api_source):
         """
         This essentially replicates what's done when awslimitchecker is called
@@ -92,8 +93,9 @@ class TestIntegration(object):
         This method is largely a duplication of
         :py:meth:`~awslimitchecker.runner.Runner.list_limits`.
 
-        :param checker: the Checker instance to use
-        :type checker: :py:class:`awslimitchecker.checker.Checker`
+        :param checker_args: dict of kwargs to pass to
+          :py:class:`awslimitchecker.checker.Checker` constructor
+        :type checker_args: dict
         :param creds: AWS access key ID and secret key
         :type creds: tuple
         :param service_name: the Service name to test limits for; if None,
@@ -105,9 +107,11 @@ class TestIntegration(object):
           API source
         :type expect_api_source: bool
         """
+        Connectable.credentials = None
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
+        checker = AwsLimitChecker(**checker_args)
         limits = checker.get_limits(use_ta=use_ta, service=service_name)
 
         have_api_source = False
@@ -129,7 +133,7 @@ class TestIntegration(object):
             assert have_api_source is True
 
     @pytest.mark.integration
-    def verify_usage(self, checker, creds, service_name, expect_usage):
+    def verify_usage(self, checker_args, creds, service_name, expect_usage):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-u``. This replicates some of the internal
@@ -145,8 +149,9 @@ class TestIntegration(object):
         This method is largely a duplication of
         :py:meth:`~awslimitchecker.runner.Runner.show_usage`.
 
-        :param checker: the Checker instance to use
-        :type checker: :py:class:`awslimitchecker.checker.Checker`
+        :param checker_args: dict of kwargs to pass to
+          :py:class:`awslimitchecker.checker.Checker` constructor
+        :type checker_args: dict
         :param creds: AWS access key ID and secret key
         :type creds: tuple
         :param service_name: the Service name to test usage for; if None,
@@ -155,9 +160,11 @@ class TestIntegration(object):
         :param expect_usage: whether or not to expect non-zero usage
         :type expect_usage: bool
         """
+        Connectable.credentials = None
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
+        checker = AwsLimitChecker(**checker_args)
         checker.find_usage(service=service_name)
         limits = checker.get_limits(service=service_name)
         have_usage = False
@@ -179,22 +186,23 @@ class TestIntegration(object):
     def DONOTtest_default_creds_all_services(self):
         """Test running alc with all services enabled"""
         creds = self.normal_creds()
-        checker = AwsLimitChecker(region=REGION)
-        yield "limits", self.verify_limits, checker, creds, None, True, True
-        yield "usage", self.verify_usage, checker, creds, None, True
+        checker_args = {'region': REGION}
+        yield "limits", self.verify_limits, checker_args, \
+              creds, None, True, True
+        yield "usage", self.verify_usage, checker_args, creds, None, True
 
     @pytest.mark.integration
-    def test_default_creds_each_service(self):
+    def DONOTtest_default_creds_each_service(self):
         """test running one service at a time for all services"""
         creds = self.normal_creds()
-        checker = AwsLimitChecker(region=REGION)
+        checker_args = {'region': REGION}
         for sname in _services:
             eu = False
             if sname in ['RDS', 'VPC', 'EC2', 'ElastiCache', 'EBS']:
                 eu = True
-            yield "%s limits" % sname, self.verify_limits, checker, \
+            yield "%s limits" % sname, self.verify_limits, checker_args, \
                   creds, sname, True, False
-            yield "%s usage" % sname, self.verify_usage, checker, \
+            yield "%s usage" % sname, self.verify_usage, checker_args, \
                   creds, sname, eu
 
     ###########################################################################
@@ -211,44 +219,44 @@ class TestIntegration(object):
     def test_sts(self):
         """test normal STS role"""
         creds = self.sts_creds()
-        checker = AwsLimitChecker(
-            account_id=os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            account_role='alc-integration-sts',
-            region=REGION,
-        )
-        yield "VPC limits", self.verify_limits, checker, creds, \
+        checker_args = {
+            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+            'account_role': 'alc-integration-sts',
+            'region': REGION,
+        }
+        yield "VPC limits", self.verify_limits, checker_args, creds, \
               'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker, creds, 'VPC', True
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     @pytest.mark.integration
     def test_sts_external_id(self):
         """test STS role with external ID"""
         creds = self.sts_creds()
-        checker = AwsLimitChecker(
-            account_id=os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            account_role='alc-integration-sts',
-            region=REGION,
-            external_id=os.environ.get('AWS_EXTERNAL_ID', None),
-        )
-        yield "VPC limits", self.verify_limits, checker, creds, \
+        checker_args = {
+            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+            'account_role': 'alc-integration-sts',
+            'region': REGION,
+            'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
+        }
+        yield "VPC limits", self.verify_limits, checker_args, creds, \
               'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker, creds, 'VPC', True
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     @pytest.mark.integration
     def DONOTtest_sts_mfa(self):
         """test STS role with MFA"""
         creds = self.sts_creds()
-        checker = AwsLimitChecker(
-            account_id=os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            account_role='alc-integration-sts-mfa',
-            region=REGION,
-            external_id=args.external_id,
-            mfa_serial_number=args.mfa_serial_number,
-            mfa_token=args.mfa_token
-        )
-        yield "VPC limits", self.verify_limits, checker, creds, \
+        checker_args = {
+            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+            'account_role': 'alc-integration-sts',
+            'region': REGION,
+            'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
+            'mfa_serial_number': '',
+            'mfa_token': ''
+        }
+        yield "VPC limits", self.verify_limits, checker_args, creds, \
               'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker, creds, 'VPC', True
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     def normal_creds(self):
         return (
