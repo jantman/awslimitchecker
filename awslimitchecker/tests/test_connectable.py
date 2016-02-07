@@ -286,10 +286,82 @@ class Test_Connectable(object):
             call('sts', region_name='foobar'),
             call().assume_role(
                 RoleArn=arn,
+                RoleSessionName='awslimitchecker'),
+        ]
+        assert mock_creds.mock_calls == [
+            call(ret_dict)
+        ]
+        assert res == mock_creds.return_value
+
+    def test_get_sts_token_extid(self):
+        ret_dict = Mock()
+        cls = ConnectableTester(account_id='789',
+                                account_role='myr', region='foobar',
+                                external_id='extid')
+        with patch('%s.boto3.client' % pbm) as mock_connect:
+            with patch('%s.ConnectableCredentials' % pbm,
+                       create=True) as mock_creds:
+                mock_connect.return_value.assume_role.return_value = ret_dict
+                res = cls._get_sts_token()
+        arn = 'arn:aws:iam::789:role/myr'
+        assert mock_connect.mock_calls == [
+            call('sts', region_name='foobar'),
+            call().assume_role(
+                RoleArn=arn,
                 RoleSessionName='awslimitchecker',
-                ExternalId=None,
-                SerialNumber=None,
-                TokenCode=None),
+                ExternalId='extid'),
+        ]
+        assert mock_creds.mock_calls == [
+            call(ret_dict)
+        ]
+        assert res == mock_creds.return_value
+
+    def test_get_sts_token_mfa(self):
+        ret_dict = Mock()
+        cls = ConnectableTester(account_id='789',
+                                account_role='myr', region='foobar',
+                                mfa_serial_number='mfaser',
+                                mfa_token='mfatoken')
+        with patch('%s.boto3.client' % pbm) as mock_connect:
+            with patch('%s.ConnectableCredentials' % pbm,
+                       create=True) as mock_creds:
+                mock_connect.return_value.assume_role.return_value = ret_dict
+                res = cls._get_sts_token()
+        arn = 'arn:aws:iam::789:role/myr'
+        assert mock_connect.mock_calls == [
+            call('sts', region_name='foobar'),
+            call().assume_role(
+                RoleArn=arn,
+                RoleSessionName='awslimitchecker',
+                SerialNumber='mfaser',
+                TokenCode='mfatoken'),
+        ]
+        assert mock_creds.mock_calls == [
+            call(ret_dict)
+        ]
+        assert res == mock_creds.return_value
+
+    def test_get_sts_token_extid_mfa(self):
+        ret_dict = Mock()
+        cls = ConnectableTester(account_id='789',
+                                account_role='myr', region='foobar',
+                                external_id='extid',
+                                mfa_serial_number='mfaser',
+                                mfa_token='mfatoken')
+        with patch('%s.boto3.client' % pbm) as mock_connect:
+            with patch('%s.ConnectableCredentials' % pbm,
+                       create=True) as mock_creds:
+                mock_connect.return_value.assume_role.return_value = ret_dict
+                res = cls._get_sts_token()
+        arn = 'arn:aws:iam::789:role/myr'
+        assert mock_connect.mock_calls == [
+            call('sts', region_name='foobar'),
+            call().assume_role(
+                RoleArn=arn,
+                RoleSessionName='awslimitchecker',
+                ExternalId='extid',
+                SerialNumber='mfaser',
+                TokenCode='mfatoken'),
         ]
         assert mock_creds.mock_calls == [
             call(ret_dict)

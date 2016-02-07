@@ -156,11 +156,17 @@ class Connectable(object):
         sts = boto3.client('sts', region_name=self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
         logger.debug("STS assume role for %s", arn)
-        role = sts.assume_role(RoleArn=arn,
-                               RoleSessionName="awslimitchecker",
-                               ExternalId=self.external_id,
-                               SerialNumber=self.mfa_serial_number,
-                               TokenCode=self.mfa_token)
+        assume_kwargs = {
+            'RoleArn': arn,
+            'RoleSessionName': 'awslimitchecker'
+        }
+        if self.external_id is not None:
+            assume_kwargs['ExternalId'] = self.external_id
+        if self.mfa_serial_number is not None:
+            assume_kwargs['SerialNumber'] = self.mfa_serial_number
+        if self.mfa_token is not None:
+            assume_kwargs['TokenCode'] = self.mfa_token
+        role = sts.assume_role(**assume_kwargs)
         creds = ConnectableCredentials(role)
         logger.debug("Got STS credentials for role; access_key_id=%s",
                      creds.access_key)
