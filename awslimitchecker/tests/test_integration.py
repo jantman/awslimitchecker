@@ -40,7 +40,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import pytest
 import os
 import logging
-import inspect
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
@@ -179,7 +178,7 @@ class TestIntegration(object):
     @pytest.mark.integration
     def DONOTtest_default_creds_all_services(self):
         """Test running alc with all services enabled"""
-        creds = self.normal_creds
+        creds = self.normal_creds()
         checker = AwsLimitChecker(region=REGION)
         yield "limits", self.verify_limits, checker, creds, None, True, True
         yield "usage", self.verify_usage, checker, creds, None, True
@@ -187,7 +186,7 @@ class TestIntegration(object):
     @pytest.mark.integration
     def test_default_creds_each_service(self):
         """test running one service at a time for all services"""
-        creds = self.normal_creds
+        creds = self.normal_creds()
         checker = AwsLimitChecker(region=REGION)
         for sname in _services:
             eu = False
@@ -211,9 +210,9 @@ class TestIntegration(object):
     @pytest.mark.integration
     def test_sts(self):
         """test normal STS role"""
-        creds = self.sts_creds
+        creds = self.sts_creds()
         checker = AwsLimitChecker(
-            account_id=os.environ['AWS_MASTER_ACCOUNT_ID'],
+            account_id=os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
             account_role='alc-integration-sts',
             region=REGION,
         )
@@ -224,12 +223,12 @@ class TestIntegration(object):
     @pytest.mark.integration
     def test_sts_external_id(self):
         """test STS role with external ID"""
-        creds = self.sts_creds
+        creds = self.sts_creds()
         checker = AwsLimitChecker(
-            account_id=os.environ['AWS_MASTER_ACCOUNT_ID'],
+            account_id=os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
             account_role='alc-integration-sts',
             region=REGION,
-            external_id=os.environ['AWS_EXTERNAL_ID'],
+            external_id=os.environ.get('AWS_EXTERNAL_ID', None),
         )
         yield "VPC limits", self.verify_limits, checker, creds, \
               'VPC', True, False
@@ -238,9 +237,9 @@ class TestIntegration(object):
     @pytest.mark.integration
     def DONOTtest_sts_mfa(self):
         """test STS role with MFA"""
-        creds = self.sts_creds
+        creds = self.sts_creds()
         checker = AwsLimitChecker(
-            account_id=os.environ['AWS_MASTER_ACCOUNT_ID'],
+            account_id=os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
             account_role='alc-integration-sts-mfa',
             region=REGION,
             external_id=args.external_id,
@@ -251,16 +250,14 @@ class TestIntegration(object):
               'VPC', True, False
         yield "VPC usage", self.verify_usage, checker, creds, 'VPC', True
 
-    @property
     def normal_creds(self):
         return (
-            os.environ['AWS_MAIN_ACCESS_KEY_ID'],
-            os.environ['AWS_MAIN_SECRET_ACCESS_KEY']
+            os.environ.get('AWS_MAIN_ACCESS_KEY_ID', None),
+            os.environ.get('AWS_MAIN_SECRET_ACCESS_KEY', None)
         )
 
-    @property
     def sts_creds(self):
         return (
-            os.environ['AWS_INTEGRATION_ACCESS_KEY_ID'],
-            os.environ['AWS_INTEGRATION_SECRET_KEY'],
+            os.environ.get('AWS_INTEGRATION_ACCESS_KEY_ID', None),
+            os.environ.get('AWS_INTEGRATION_SECRET_KEY', None)
         )
