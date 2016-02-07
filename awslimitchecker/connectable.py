@@ -77,7 +77,7 @@ class Connectable(object):
         Generate keyword arguments for boto3 connection functions.
         If ``self.account_id`` is None, this will just include
         ``region_name=self.region``. Otherwise, call
-        :py:meth:`~._get_sts_token_boto3` to get STS token credentials using
+        :py:meth:`~._get_sts_token` to get STS token credentials using
         `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
         latest/reference/services/sts.html#STS.Client.assume_role>`_ and include
         those credentials in the return value.
@@ -91,7 +91,7 @@ class Connectable(object):
                 logger.debug("Connecting for account %s role '%s' with STS "
                              "(region: %s)", self.account_id, self.account_role,
                              self.region)
-                Connectable.credentials = self._get_sts_token_boto3()
+                Connectable.credentials = self._get_sts_token()
             else:
                 logger.debug("Reusing previous STS credentials for account %s",
                              self.account_id)
@@ -137,7 +137,7 @@ class Connectable(object):
         logger.info("Connected to %s (resource) in region %s", self.api_name,
                     self.resource_conn.meta.client._client_config.region_name)
 
-    def _get_sts_token_boto3(self):
+    def _get_sts_token(self):
         """
         Assume a role via STS and return the credentials.
 

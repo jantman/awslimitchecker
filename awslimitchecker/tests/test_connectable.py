@@ -78,7 +78,7 @@ class Test_Connectable(object):
     def test_boto3_connection_kwargs(self):
         cls = ConnectableTester()
 
-        with patch('%s._get_sts_token_boto3' % pb) as mock_get_sts:
+        with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
                 Connectable.credentials = None
                 res = cls._boto3_connection_kwargs
@@ -93,7 +93,7 @@ class Test_Connectable(object):
     def test_boto3_connection_kwargs_region(self):
         cls = ConnectableTester(region='myregion')
 
-        with patch('%s._get_sts_token_boto3' % pb) as mock_get_sts:
+        with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
                 Connectable.credentials = None
                 res = cls._boto3_connection_kwargs
@@ -113,7 +113,7 @@ class Test_Connectable(object):
         type(mock_creds).secret_key = 'sts_sk'
         type(mock_creds).session_token = 'sts_token'
 
-        with patch('%s._get_sts_token_boto3' % pb) as mock_get_sts:
+        with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
                 mock_get_sts.return_value = mock_creds
                 Connectable.credentials = None
@@ -138,7 +138,7 @@ class Test_Connectable(object):
         type(mock_creds).secret_key = 'sts_sk'
         type(mock_creds).session_token = 'sts_token'
 
-        with patch('%s._get_sts_token_boto3' % pb) as mock_get_sts:
+        with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
                 mock_get_sts.return_value = mock_creds
                 Connectable.credentials = mock_creds
@@ -272,7 +272,7 @@ class Test_Connectable(object):
         assert mock_resource.mock_calls == []
         assert cls.resource_conn == mock_conn
 
-    def test_get_sts_token_boto3(self):
+    def test_get_sts_token(self):
         ret_dict = Mock()
         cls = ConnectableTester(account_id='789',
                                 account_role='myr', region='foobar')
@@ -280,7 +280,7 @@ class Test_Connectable(object):
             with patch('%s.ConnectableCredentials' % pbm,
                        create=True) as mock_creds:
                 mock_connect.return_value.assume_role.return_value = ret_dict
-                res = cls._get_sts_token_boto3()
+                res = cls._get_sts_token()
         arn = 'arn:aws:iam::789:role/myr'
         assert mock_connect.mock_calls == [
             call('sts', region_name='foobar'),
