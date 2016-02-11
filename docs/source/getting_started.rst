@@ -60,7 +60,7 @@ Installing
 ----------
 
 It's recommended that you install into a virtual environment (virtualenv /
-venv). See the `virtualenv usage documentation <http://www.virtualenv.org/en/latest/>`_
+venv). See the `virtualenv usage documentation <https://github.com/pypa/virtualenv>`_
 for more details, but the gist is as follows (the virtualenv name, "limitchecker" here,
 can be whatever you want):
 
