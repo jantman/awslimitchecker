@@ -183,7 +183,7 @@ class TestIntegration(object):
             assert have_usage is True
 
     @pytest.mark.integration
-    def DONOTtest_default_creds_all_services(self):
+    def test_default_creds_all_services(self):
         """Test running alc with all services enabled"""
         creds = self.normal_creds()
         checker_args = {'region': REGION}
@@ -192,7 +192,7 @@ class TestIntegration(object):
         yield "usage", self.verify_usage, checker_args, creds, None, True
 
     @pytest.mark.integration
-    def DONOTtest_default_creds_each_service(self):
+    def test_default_creds_each_service(self):
         """test running one service at a time for all services"""
         creds = self.normal_creds()
         checker_args = {'region': REGION}
