@@ -80,6 +80,9 @@ class OutputSanitizer(object):
             line = line.replace(repl_set[0], repl_set[1])
         return line
 
+    def sep(self, *args, **kwargs):
+        self._tw.sep(*args, **kwargs)
+
     @property
     def fullwidth(self):
         return self._tw.fullwidth
