@@ -47,6 +47,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 import os
+import re
 
 from _pytest.terminal import TerminalReporter
 import pytest
@@ -55,6 +56,8 @@ import pytest
 class OutputSanitizer(object):
 
     def __init__(self, tw):
+        self.mfa_re = re.compile(r"'mfa_token':\s*b?'\d+'")
+        self.tc_re = re.compile(r"'TokenCode':\s*b?'\d+'")
         self._tw = tw
         self.replace = []
         for keyname in [
@@ -83,6 +86,8 @@ class OutputSanitizer(object):
     def sanitize_line(self, line):
         for repl_set in self.replace:
             line = line.replace(repl_set[0], repl_set[1])
+        line = self.mfa_re.sub("'mfa_token': 'XXXXXX", line)
+        line = self.tc_re.sub("'TokenCode': 'XXXXXX", line)
         return line
 
     def sep(self, *args, **kwargs):
