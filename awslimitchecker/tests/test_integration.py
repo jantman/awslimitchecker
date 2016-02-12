@@ -320,14 +320,16 @@ class TestIntegration(object):
         """
         global MFA_CODE
         # need to make sure we have a unique code
-        new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'], as_string=True)
+        new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'])
+        code_str = "%06d" % new_code  # need to make sure it's a 0-padded str
         num_tries = 0
-        while new_code == MFA_CODE and num_tries < 12:
+        while code_str == MFA_CODE and num_tries < 12:
             time.sleep(10)
             num_tries += 1
-            new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'],
-                                    as_string=True)
+            new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'])
+            code_str = "%06d" % new_code  # need to make sure it's 0-padded
         if num_tries >= 12:
-            return new_code
-        MFA_CODE = new_code
-        return new_code
+            # if we timed out, return the old code but don't update the global
+            return code_str
+        MFA_CODE = code_str
+        return code_str
