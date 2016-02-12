@@ -41,6 +41,8 @@ import pytest
 import os
 import logging
 import boto3
+import time
+import onetimepass as otp
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
@@ -48,6 +50,7 @@ from awslimitchecker.services import _services
 from awslimitchecker.connectable import Connectable
 
 REGION = 'us-west-2'
+MFA_CODE = None
 
 
 @pytest.mark.integration
@@ -116,6 +119,11 @@ class TestIntegration(object):
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
+        # this has to be generated inside the method, not in the method that
+        # yields it
+        if 'mfa_token' in checker_args:
+            checker_args['mfa_token'] = self.totp_code()
+
         checker = AwsLimitChecker(**checker_args)
         limits = checker.get_limits(use_ta=use_ta, service=service_name)
 
@@ -172,6 +180,11 @@ class TestIntegration(object):
         # set the env vars to the creds we want
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
+
+        # this has to be generated inside the method, not in the method that
+        # yields it
+        if 'mfa_token' in checker_args:
+            checker_args['mfa_token'] = self.totp_code()
 
         checker = AwsLimitChecker(**checker_args)
         checker.find_usage(service=service_name)
@@ -252,16 +265,31 @@ class TestIntegration(object):
         yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     @pytest.mark.integration
-    def DONOTtest_sts_mfa(self):
+    def test_sts_mfa(self):
         """test STS role with MFA"""
-        creds = self.sts_creds()
+        creds = self.sts_mfa_creds()
         checker_args = {
             'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            'account_role': 'alc-integration-sts',
+            'account_role': 'alc-integration-sts-mfa',
             'region': REGION,
-            'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
-            'mfa_serial_number': '',
-            'mfa_token': ''
+            'mfa_serial_number': os.environ.get('AWS_MFA_SERIAL', None),
+            'mfa_token': 'foo'  # will be replaced in the method
+        }
+        yield "VPC limits", self.verify_limits, checker_args, creds, \
+              'VPC', True, False
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
+
+    @pytest.mark.integration
+    def test_sts_mfa_external_id(self):
+        """test STS role with MFA"""
+        creds = self.sts_mfa_creds()
+        checker_args = {
+            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+            'account_role': 'alc-integration-sts-mfa-extid',
+            'region': REGION,
+            'external_id': os.environ.get('AWS_MFA_EXTERNAL_ID', None),
+            'mfa_serial_number': os.environ.get('AWS_MFA_SERIAL', None),
+            'mfa_token': 'foo'  # will be replaced in the method
         }
         yield "VPC limits", self.verify_limits, checker_args, creds, \
               'VPC', True, False
@@ -278,3 +306,27 @@ class TestIntegration(object):
             os.environ.get('AWS_INTEGRATION_ACCESS_KEY_ID', None),
             os.environ.get('AWS_INTEGRATION_SECRET_KEY', None)
         )
+
+    def sts_mfa_creds(self):
+        return (
+            os.environ.get('AWS_MFA_INTEGRATION_ACCESS_KEY_ID', None),
+            os.environ.get('AWS_MFA_INTEGRATION_SECRET_KEY', None)
+        )
+
+    def totp_code(self):
+        """
+        note - this must be called from the yielded method, not the yielding one
+        if it's called from the yielding method, all the codes will be the same
+        """
+        global MFA_CODE
+        # need to make sure we have a unique code
+        new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'], as_string=True)
+        num_tries = 0
+        while new_code == MFA_CODE and num_tries < 12:
+            time.sleep(10)
+            num_tries += 1
+            new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'], as_string=True)
+        if num_tries >= 12:
+            return new_code
+        MFA_CODE = new_code
+        return new_code

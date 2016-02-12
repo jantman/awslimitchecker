@@ -63,7 +63,12 @@ class OutputSanitizer(object):
             'AWS_MASTER_ACCOUNT_ID',
             'AWS_EXTERNAL_ID',
             'AWS_INTEGRATION_ACCESS_KEY_ID',
-            'AWS_INTEGRATION_SECRET_KEY'
+            'AWS_INTEGRATION_SECRET_KEY',
+            'AWS_MFA_INTEGRATION_ACCESS_KEY_ID',
+            'AWS_MFA_INTEGRATION_SECRET_KEY',
+            'AWS_MFA_SERIAL',
+            'AWS_MFA_SECRET',
+            'AWS_MFA_EXTERNAL_ID'
         ]:
             if keyname in os.environ:
                 self.replace.append((
