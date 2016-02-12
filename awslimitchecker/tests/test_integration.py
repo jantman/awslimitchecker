@@ -40,6 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import pytest
 import os
 import logging
+import boto3
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
@@ -107,7 +108,11 @@ class TestIntegration(object):
           API source
         :type expect_api_source: bool
         """
+        # clear the Connectable credentials
         Connectable.credentials = None
+        # destroy boto3's session, so it creates a new one
+        boto3.DEFAULT_SESSION = None
+        # set the env vars to the creds we want
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
@@ -160,7 +165,11 @@ class TestIntegration(object):
         :param expect_usage: whether or not to expect non-zero usage
         :type expect_usage: bool
         """
+        # clear the Connectable credentials
         Connectable.credentials = None
+        # destroy boto3's session, so it creates a new one
+        boto3.DEFAULT_SESSION = None
+        # set the env vars to the creds we want
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
