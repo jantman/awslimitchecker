@@ -325,7 +325,8 @@ class TestIntegration(object):
         while new_code == MFA_CODE and num_tries < 12:
             time.sleep(10)
             num_tries += 1
-            new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'], as_string=True)
+            new_code = otp.get_totp(os.environ['AWS_MFA_SECRET'],
+                                    as_string=True)
         if num_tries >= 12:
             return new_code
         MFA_CODE = new_code
