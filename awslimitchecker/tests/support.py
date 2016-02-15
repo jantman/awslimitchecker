@@ -38,6 +38,109 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.limit import AwsLimit
+import logging
+
+
+class LogRecordHelper(object):
+    """class to help working with an array of LogRecords"""
+
+    levelmap = {
+        logging.CRITICAL: 'critical',
+        logging.ERROR: 'error',
+        logging.WARNING: 'warning',
+        logging.INFO: 'info',
+        logging.DEBUG: 'debug',
+        logging.NOTSET: 'notset'
+    }
+
+    def __init__(self, logcapture):
+        """
+        Initialize LogRecord helper.
+
+        :param logcapture: testfixtures.logcapture.LogCapture object
+        """
+        self._logcapture = logcapture
+        self.records = logcapture.records
+
+    def get_at_level(self, lvl):
+        """
+        Return a list of all records in order for a given numeric logging level
+
+        :param lvl: the level to get
+        :type lvl: int
+        :returns: list of LogRecord objects
+        """
+        res = []
+        for rec in self.records:
+            if rec.levelno == lvl:
+                res.append(rec)
+        return res
+
+    def get_at_or_above_level(self, lvl):
+        """
+        Return a list of all records in order, at OR ABOVE a given numeric
+        logging level
+
+        :param lvl: the level to get
+        :type lvl: int
+        :returns: list of LogRecord objects
+        """
+        res = []
+        for rec in self.records:
+            if rec.levelno >= lvl:
+                res.append(rec)
+        return res
+
+    def assert_failed_message(self, records):
+        """
+        Return a list of string representations of the log records, for use
+        in assertion failure messages.
+
+        :param records: list of LogRecord objects
+        :return: list of strings
+        """
+        res = ""
+        for r in records:
+            res += '%s:%s.%s (%s:%s) %s - %s %s\n' % (
+                r.name,
+                r.module,
+                r.funcName,
+                r.filename,
+                r.lineno,
+                r.levelname,
+                r.msg,
+                r.args
+            )
+        return res
+
+    def unexpected_logs(self):
+        """
+        Return a list of strings representing awslimitchecker log messages
+        in this object's log records, that shouldn't be encountered in normal
+        operation.
+
+        :return: list of strings representing log records
+        """
+        res = []
+        msg = 'Cannot check TrustedAdvisor: %s'
+        args = ('AWS Premium Support Subscription is required to use this '
+                'service.', )
+        for r in self.get_at_or_above_level(logging.WARN):
+            if (r.levelno == logging.WARN and r.module == 'trustedadvisor'
+                and r.funcName == '_get_limit_check_id' and r.msg == msg and
+                        r.args == args):
+                continue
+            res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
+                r.name,
+                r.module,
+                r.funcName,
+                r.filename,
+                r.lineno,
+                r.levelname,
+                r.msg,
+                r.args
+            ))
+        return res
 
 
 def sample_limits():

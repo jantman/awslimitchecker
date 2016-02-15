@@ -43,11 +43,13 @@ import logging
 import boto3
 import time
 import onetimepass as otp
+from testfixtures import LogCapture
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.services import _services
 from awslimitchecker.connectable import Connectable
+from awslimitchecker.tests.support import LogRecordHelper
 
 REGION = 'us-west-2'
 MFA_CODE = None
@@ -124,8 +126,12 @@ class TestIntegration(object):
         if 'mfa_token' in checker_args:
             checker_args['mfa_token'] = self.totp_code()
 
-        checker = AwsLimitChecker(**checker_args)
-        limits = checker.get_limits(use_ta=use_ta, service=service_name)
+        # pytest-capturelog looked good, but won't work with our yielded
+        # test functions, per https://github.com/pytest-dev/pytest/issues/227
+        with LogCapture() as l:
+            checker = AwsLimitChecker(**checker_args)
+            limits = checker.get_limits(use_ta=use_ta, service=service_name)
+        logs = LogRecordHelper(l)
 
         have_api_source = False
         data = {}
@@ -144,6 +150,11 @@ class TestIntegration(object):
         print(dict2cols(data))
         if expect_api_source:
             assert have_api_source is True
+        # ensure we didn't log anything at WARN or above, except possibly
+        # a TrustedAdvisor subscription required message
+        records = logs.unexpected_logs()
+        assert len(records) == 0, "awslimitchecker emitted unexpected log " \
+            "messages at WARN or higher: \n%s" % "\n".join(records)
 
     @pytest.mark.integration
     def verify_usage(self, checker_args, creds, service_name, expect_usage):
@@ -186,9 +197,14 @@ class TestIntegration(object):
         if 'mfa_token' in checker_args:
             checker_args['mfa_token'] = self.totp_code()
 
-        checker = AwsLimitChecker(**checker_args)
-        checker.find_usage(service=service_name)
-        limits = checker.get_limits(service=service_name)
+        # pytest-capturelog looked good, but won't work with our yielded
+        # test functions, per https://github.com/pytest-dev/pytest/issues/227
+        with LogCapture() as l:
+            checker = AwsLimitChecker(**checker_args)
+            checker.find_usage(service=service_name)
+            limits = checker.get_limits(service=service_name)
+        logs = LogRecordHelper(l)
+
         have_usage = False
         data = {}
         for svc in sorted(limits.keys()):
@@ -203,6 +219,11 @@ class TestIntegration(object):
         print(dict2cols(data))
         if expect_usage:
             assert have_usage is True
+        # ensure we didn't log anything at WARN or above, except possibly
+        # a TrustedAdvisor subscription required message
+        records = logs.unexpected_logs()
+        assert len(records) == 0, "awslimitchecker emitted unexpected log " \
+            "messages at WARN or higher: \n%s" % "\n".join(records)
 
     @pytest.mark.integration
     def test_default_creds_all_services(self):
