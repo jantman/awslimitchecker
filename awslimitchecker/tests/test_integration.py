@@ -43,14 +43,18 @@ import logging
 import boto3
 import time
 import sys
+from platform import python_implementation
 import onetimepass as otp
-from testfixtures import LogCapture
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.services import _services
 from awslimitchecker.connectable import Connectable
 from awslimitchecker.tests.support import LogRecordHelper
+
+if python_implementation() == 'CPython':
+    # this doesn't work under PyPy
+    from testfixtures import LogCapture
 
 REGION = 'us-west-2'
 MFA_CODE = None
