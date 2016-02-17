@@ -339,13 +339,13 @@ class TestIntegration(object):
                 os.environ.get('AWS_MFA_INTEGRATION_ACCESS_KEY_ID', None),
                 os.environ.get('AWS_MFA_INTEGRATION_SECRET_KEY', None),
                 os.environ.get('AWS_MFA_SERIAL', None),
-                os.environ['AWS_MFA_SECRET']
+                os.environ.get('AWS_MFA_SECRET', None)
             )
         return (
             os.environ.get('AWS_MFA3_INTEGRATION_ACCESS_KEY_ID', None),
             os.environ.get('AWS_MFA3_INTEGRATION_SECRET_KEY', None),
             os.environ.get('AWS_MFA3_SERIAL', None),
-            os.environ['AWS_MFA3_SECRET']
+            os.environ.get('AWS_MFA3_SECRET', None)
         )
 
     def totp_code(self, secret):
