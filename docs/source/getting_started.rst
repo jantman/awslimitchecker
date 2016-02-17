@@ -51,7 +51,7 @@ Requirements
 
 * Python 2.6 through 3.5.
 * Python `VirtualEnv <https://github.com/pypa/virtualenv>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto3 <http://boto3.readthedocs.org/en/latest/>`_ >= 1.2.3
+* `boto3 <https://github.com/boto/boto3>`_ >= 1.2.3
 
 
 .. _getting_started.installing:
