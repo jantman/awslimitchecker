@@ -77,7 +77,7 @@ class Connectable(object):
         Generate keyword arguments for boto3 connection functions.
         If ``self.account_id`` is None, this will just include
         ``region_name=self.region``. Otherwise, call
-        :py:meth:`~._get_sts_token_boto3` to get STS token credentials using
+        :py:meth:`~._get_sts_token` to get STS token credentials using
         `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
         latest/reference/services/sts.html#STS.Client.assume_role>`_ and include
         those credentials in the return value.
@@ -91,7 +91,7 @@ class Connectable(object):
                 logger.debug("Connecting for account %s role '%s' with STS "
                              "(region: %s)", self.account_id, self.account_role,
                              self.region)
-                Connectable.credentials = self._get_sts_token_boto3()
+                Connectable.credentials = self._get_sts_token()
             else:
                 logger.debug("Reusing previous STS credentials for account %s",
                              self.account_id)
@@ -137,7 +137,7 @@ class Connectable(object):
         logger.info("Connected to %s (resource) in region %s", self.api_name,
                     self.resource_conn.meta.client._client_config.region_name)
 
-    def _get_sts_token_boto3(self):
+    def _get_sts_token(self):
         """
         Assume a role via STS and return the credentials.
 
@@ -156,11 +156,17 @@ class Connectable(object):
         sts = boto3.client('sts', region_name=self.region)
         arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
         logger.debug("STS assume role for %s", arn)
-        role = sts.assume_role(RoleArn=arn,
-                               RoleSessionName="awslimitchecker",
-                               ExternalId=self.external_id,
-                               SerialNumber=self.mfa_serial_number,
-                               TokenCode=self.mfa_token)
+        assume_kwargs = {
+            'RoleArn': arn,
+            'RoleSessionName': 'awslimitchecker'
+        }
+        if self.external_id is not None:
+            assume_kwargs['ExternalId'] = self.external_id
+        if self.mfa_serial_number is not None:
+            assume_kwargs['SerialNumber'] = self.mfa_serial_number
+        if self.mfa_token is not None:
+            assume_kwargs['TokenCode'] = self.mfa_token
+        role = sts.assume_role(**assume_kwargs)
         creds = ConnectableCredentials(role)
         logger.debug("Got STS credentials for role; access_key_id=%s",
                      creds.access_key)
