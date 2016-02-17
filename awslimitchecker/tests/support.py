@@ -126,9 +126,9 @@ class LogRecordHelper(object):
         args = ('AWS Premium Support Subscription is required to use this '
                 'service.', )
         for r in self.get_at_or_above_level(logging.WARN):
-            if (r.levelno == logging.WARN and r.module == 'trustedadvisor'
-                and r.funcName == '_get_limit_check_id' and r.msg == msg and
-                        r.args == args):
+            if (r.levelno == logging.WARN and r.module == 'trustedadvisor' and
+                    r.funcName == '_get_limit_check_id' and r.msg == msg and
+                    r.args == args):
                 continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,
