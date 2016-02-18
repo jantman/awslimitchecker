@@ -50,8 +50,8 @@ Requirements
 ------------
 
 * Python 2.6 through 3.5.
-* Python `VirtualEnv <https://github.com/pypa/virtualenv>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto3 <https://github.com/boto/boto3>`_ >= 1.2.3
+* Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 
 .. _getting_started.installing:
@@ -60,7 +60,7 @@ Installing
 ----------
 
 It's recommended that you install into a virtual environment (virtualenv /
-venv). See the `virtualenv usage documentation <https://github.com/pypa/virtualenv>`_
+venv). See the `virtualenv usage documentation <http://www.virtualenv.org/>`_
 for more details, but the gist is as follows (the virtualenv name, "limitchecker" here,
 can be whatever you want):
 
