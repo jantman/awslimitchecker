@@ -75,7 +75,7 @@ Status
 -------
 
 This project has just undergone a relatively major refactor to migrate from
-[boto](https://github.com/boto/boto) to [boto3](https://github.com/boto/boto3),
+`boto <http://docs.pythonboto.org/en/latest/>`_ to `boto3 <http://boto3.readthedocs.org/>`_,
 along with a refactor of much of the connection and usage gathering code. Until
 it's been running in production for a while, please consider this to be "beta"
 and make every effort to manually confirm the results for your environment.
@@ -99,7 +99,7 @@ Requirements
 
 * Python 2.6 through 3.5.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto3 <https://github.com/boto/boto3>`_ >= 1.2.3
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 Installation and Usage
 -----------------------

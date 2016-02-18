@@ -57,7 +57,7 @@ Develop:
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
    :alt: sphinx documentation for develop branch
 
-A script and python module to check your AWS service limits and usage using `boto3 <http://boto3.readthedocs.org/>`_.
+A script and python module to check your AWS service limits and usage using `boto <http://docs.pythonboto.org/en/latest/>`_.
 
 Users building out scalable services in Amazon AWS often run into AWS' `service limits <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html>`_ -
 often at the least convenient time (i.e. mid-deploy or when autoscaling fails). Amazon's `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
@@ -72,7 +72,7 @@ Status
 ------
 
 This project has just undergone a relatively major refactor to migrate from
-[boto](http://boto.readthedocs.org) to [boto3](http://boto3.readthedocs.org/),
+`boto <http://docs.pythonboto.org/en/latest/>`_ to `boto3 <http://boto3.readthedocs.org/>`_,
 along with a refactor of much of the connection and usage gathering code. Until
 it's been running in production for a while, please consider this to be "beta"
 and make every effort to manually confirm the results for your environment.

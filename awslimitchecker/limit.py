@@ -292,6 +292,17 @@ class AwsLimit(object):
         this limit's usage. Theresholds can be specified as a percentage
         of the limit, or as a usage count, or both.
 
+        **Note:** The percent thresholds (``warn_percent`` and ``crit_percent``)
+        have default values that are set globally for awslimitchecker, unlike
+        the count thresholds. When setting threshold overrides to quiet or
+        suppress alerts for a limit, you **must** set the percent thresholds.
+        If you only set overrides for the ``count`` thresholds, the percent
+        thresholds will continue to be evaluated at their awslimitchecker-wide
+        default, and likely prevent alerts from being suppressed.
+
+        see :py:meth:`~.check_thresholds` for further information on threshold
+        evaluation.
+
         :param warn_percent: new warning threshold, percentage used
         :type warn_percent: int
         :param warn_count: new warning threshold, actual count/number
@@ -310,22 +321,22 @@ class AwsLimit(object):
         """
         Check this limit's current usage against the specified default
         thresholds, and any custom theresholds that have been set on the
-        instance. Return True if usage is within thresholds, or false if
+        class instance. Return True if usage is within thresholds, or false if
         warning or critical thresholds have been surpassed.
 
         This method sets internal variables in this instance which can be
         queried via :py:meth:`~.get_warnings` and :py:meth:`~.get_criticals`
         to obtain further details about the thresholds that were crossed.
 
-        :param default_warning: default warning threshold in percentage;
-          usage higher than this percent of the limit will be considered
-          a warning
-        :type default_warning: :py:obj:`int` or :py:obj:`float` percentage
-        :param default_critical: default critical threshold in percentage;
-          usage higher than this percent of the limit will be considered
-          a critical
-        :type default_critical: :py:obj:`int` or :py:obj:`float` percentage
-        :returns: False if any thresholds crossed, True otherwise
+        **Note** This function returns False if *any* thresholds were crossed.
+        Please be aware of this when setting threshold overrides to suppress
+        alerts. Each threshold (``warn_percent``, ``warn_count``,
+        ``crit_percent``, ``crit_count``) that has been set is evaluated
+        individually and the result appended to a list of warnings or criticals,
+        respectively. If *any* of these evaluations failed, the method returns
+        False.
+
+        :returns: False if any thresholds were crossed, True otherwise
         :rtype: bool
         """
         (warn_int, warn_pct, crit_int, crit_pct) = self._get_thresholds()

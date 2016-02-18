@@ -84,6 +84,43 @@ using :py:meth:`~.AwsLimitChecker.set_limit_override`.
 
    >>> c.set_limit_override('EC2', 'EC2-Classic Elastic IPs', 20)
 
+.. _python_usage.threshold_overrides:
+
+Setting a Threshold Override
+++++++++++++++++++++++++++++
+
+``awslimitchecker`` has two sets of thresholds, warning and critical (intended to be used to
+trigger different levels of alert/alarm or action). The default thresholds for warning and critical
+are 80% and 99%, respectively; these program-wide defaults can be overridden by passing the
+``warning_threshold`` and/or ``critical_threshold`` arguments to the :py:class:`~.AwsLimitChecker`
+class constructor.
+
+It is also possible to override these values on a per-limit basis, using the AwsLimitChecker
+class's :py:meth:`~.AwsLimitChecker.set_threshold_override` (single limit's threshold override)
+and :py:meth:`~.AwsLimitChecker.set_threshold_overrides` (dict of overrides) methods. When setting
+threshold overrides, you can specify not only the percent threshold, but also a ``count`` of usage;
+any limits which have a usage of more than this number will be detected as a warning or critical,
+respectively.
+
+To warn when our ``EC2-Classic Elastic IPs`` usage is above 50% (as opposed to the default of 80%)
+and store a critical alert when it's above 75% (as opposed to 99%):
+
+.. code-block:: pycon
+
+   >>> c.set_threshold_override('EC2', 'EC2-Classic Elastic IPs', warn_percent=50, crit_percent=75)
+
+Another use could be to warn when certain services are used at all. As of the time of writing, the
+i2.8xlarge instances cost USD $6.82/hour, or $163/day.
+
+To report a critical status if *any* i2.8xlarge instances are running:
+
+.. code-block:: pycon
+
+   >>> c.set_threshold_override('EC2', 'Running On-Demand i2.8xlarge instances', crit_count=1)
+
+You do not need to also override the percent thresholds. Because of how :py:meth:`~.AwsLimitChecker.check_thresholds`
+evaluates thresholds, *any* crossed threshold will be considered an error condition.
+
 Checking Thresholds
 ++++++++++++++++++++
 

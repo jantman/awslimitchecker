@@ -42,7 +42,9 @@ Threshold
    and usage >= 99% of limit for "critical" severity. Limits which have reached or exceeded their threshold will be reported separately for warning and critical (we generally
    consider "warning" to be something that will require human intervention in the near future, and "critical" something that is an immediate problem, i.e. should block
    automated processes). The ``awslimitchecker`` command line wrapper can override the default global thresholds. The :py:class:`~.AwsLimitChecker` class can both override
-   global percentage thresholds, as well as specify per-limit thresholds as a percentage, a fixed usage value, or both.
+   global percentage thresholds, as well as specify per-limit thresholds as a percentage, a fixed usage value, or both. For more information on overriding thresholds, see
+   :ref:`Python Usage / Setting a Threshold Override <python_usage.threshold_overrides>` as well as the documentation for :py:meth:`.AwsLimitChecker.check_thresholds`
+   and :py:meth:`.AwsLimitChecker.set_threshold_override`.
 
 .. _getting_started.requirements:
 

@@ -83,3 +83,10 @@ The value used for a limit is the first match in the following list:
 2. API Limit
 3. Trusted Advisor
 4. Hard-coded default
+
+Threshold Overrides
+-------------------
+
+For more information on overriding thresholds, see
+:ref:`Python Usage / Setting a Threshold Override <python_usage.threshold_overrides>` as well as the
+documentation for :py:meth:`.AwsLimitChecker.check_thresholds` and :py:meth:`.AwsLimitChecker.set_threshold_override`.
