@@ -42,16 +42,18 @@ Threshold
    and usage >= 99% of limit for "critical" severity. Limits which have reached or exceeded their threshold will be reported separately for warning and critical (we generally
    consider "warning" to be something that will require human intervention in the near future, and "critical" something that is an immediate problem, i.e. should block
    automated processes). The ``awslimitchecker`` command line wrapper can override the default global thresholds. The :py:class:`~.AwsLimitChecker` class can both override
-   global percentage thresholds, as well as specify per-limit thresholds as a percentage, a fixed usage value, or both.
+   global percentage thresholds, as well as specify per-limit thresholds as a percentage, a fixed usage value, or both. For more information on overriding thresholds, see
+   :ref:`Python Usage / Setting a Threshold Override <python_usage.threshold_overrides>` as well as the documentation for :py:meth:`.AwsLimitChecker.check_thresholds`
+   and :py:meth:`.AwsLimitChecker.set_threshold_override`.
 
 .. _getting_started.requirements:
 
 Requirements
 ------------
 
-* Python 2.6 or 2.7 (`boto <http://docs.pythonboto.org/en/latest/>`_ currently has incomplete python3 support)
+* Python 2.6 through 3.5.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 
 .. _getting_started.installing:
@@ -60,7 +62,7 @@ Installing
 ----------
 
 It's recommended that you install into a virtual environment (virtualenv /
-venv). See the `virtualenv usage documentation <http://www.virtualenv.org/en/latest/>`_
+venv). See the `virtualenv usage documentation <http://www.virtualenv.org/>`_
 for more details, but the gist is as follows (the virtualenv name, "limitchecker" here,
 can be whatever you want):
 
@@ -76,12 +78,20 @@ Credentials
 -----------
 
 Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
-You must either have your credentials configured in one of boto's supported config
+You must either have your credentials configured in one of boto3's supported config
 files, or set as environment variables. See
-`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+`boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
+
+**Please note** that version 0.3.0 of awslimitchecker moved from using ``boto`` as its AWS API client to using
+``boto3``. This change is mostly transparent, but there is a minor change in how AWS credentials are handled. In
+``boto``, if the ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environment variables were set, and the
+region was not set explicitly via awslimitchecker, the AWS region would either be taken from the ``AWS_DEFAULT_REGION``
+environment variable or would default to us-east-1, regardless of whether a configuration file (``~/.aws/credentials``
+or ``~/.aws/config``) was present. With boto3, it appears that the default region from the configuration file will be
+used if present, regardless of whether the credentials come from that file or from environment variables.
 
 When using STS, you will need to specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
 and ``-R`` / ``--sts-account-role`` options to specify the Account ID that you want to assume a role in, and the

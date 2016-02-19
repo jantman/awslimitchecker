@@ -71,8 +71,11 @@ Full project documentation is available at `http://awslimitchecker.readthedocs.o
 Status
 ------
 
-This project is currently in very early development. At this time please consider it beta code and not fully tested in all situations;
-furthermore its API may be changing rapidly. I hope to have this stabilized soon.
+This project has just undergone a relatively major refactor to migrate from
+`boto <http://docs.pythonboto.org/en/latest/>`_ to `boto3 <http://boto3.readthedocs.org/>`_,
+along with a refactor of much of the connection and usage gathering code. Until
+it's been running in production for a while, please consider this to be "beta"
+and make every effort to manually confirm the results for your environment.
 
 What It Does
 ------------
@@ -91,10 +94,9 @@ What It Does
 Requirements
 ------------
 
-* Python 2.6 through 3.4. Python 2.x is recommended, as `boto <http://docs.pythonboto.org/en/latest/>`_ (the AWS client library) currently has
-  incomplete Python3 support. See the `boto documentation <http://boto.readthedocs.org/en/latest/>`_ for a list of AWS services that are Python3-compatible.
+* Python 2.6 through 3.5.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.32.0
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 Installation
 ------------
@@ -114,10 +116,18 @@ Credentials
 Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto's supported config
 files, or set as environment variables. See
-`boto config <http://docs.pythonboto.org/en/latest/boto_config_tut.html>`_
+`boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
 for further information.
+
+**Please note** that version 0.3.0 of awslimitchecker moved from using ``boto`` as its AWS API client to using
+``boto3``. This change is mostly transparent, but there is a minor change in how AWS credentials are handled. In
+``boto``, if the ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environment variables were set, and the
+region was not set explicitly via awslimitchecker, the AWS region would either be taken from the ``AWS_DEFAULT_REGION``
+environment variable or would default to us-east-1, regardless of whether a configuration file (``~/.aws/credentials``
+or ``~/.aws/config``) was present. With boto3, it appears that the default region from the configuration file will be
+used if present, regardless of whether the credentials come from that file or from environment variables.
 
 When using STS, you will need to specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
 and ``-R`` / ``--sts-account-role`` options to specify the Account ID that you want to assume a role in, and the
@@ -142,8 +152,8 @@ Questions, comments, Bug reports and feature requests are happily accepted via
 the `GitHub Issue Tracker <https://github.com/jantman/awslimitchecker/issues>`_.
 Pull requests are always welcome.
 
-Please see the [Development](http://awslimitchecker.readthedocs.org/en/latest/development.html)
-and [Getting Help](http://awslimitchecker.readthedocs.org/en/latest/getting_help.html) documentation for more information.
+Please see the `Development <http://awslimitchecker.readthedocs.org/en/latest/development.html>`_
+and `Getting Help <http://awslimitchecker.readthedocs.org/en/latest/getting_help.html>`_ documentation for more information.
 
 Changelog
 ---------
@@ -154,7 +164,7 @@ Contributions
 -------------
 
 Pull requests are most definitely welcome. Please cut them against the **develop** branch. For more information, see
-the [development documentation](http://awslimitchecker.readthedocs.org/en/latest/development.html#pull-requests). I'm
+the `development documentation <http://awslimitchecker.readthedocs.org/en/latest/development.html#pull-requests>`_. I'm
 also happy to accept contributions in the form of bug reports, feature requests, testing, etc.
 
 License

@@ -38,10 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from boto.support.layer1 import SupportConnection
-from boto.support import connect_to_region
-from boto.regioninfo import RegionInfo
-from boto.exception import JSONResponseError, BotoServerError
+from botocore.exceptions import ClientError
 from awslimitchecker.trustedadvisor import TrustedAdvisor
 from awslimitchecker.services.base import _AwsService
 import pytest
@@ -64,8 +61,10 @@ pb = '%s.TrustedAdvisor' % pbm
 class Test_TrustedAdvisor(object):
 
     def setup(self):
-        self.mock_conn = Mock(spec_set=SupportConnection)
-        type(self.mock_conn).region = RegionInfo(name='us-east-1')
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
         self.cls = TrustedAdvisor()
         self.cls.conn = self.mock_conn
 
@@ -110,45 +109,6 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
 
-    def test_connect(self):
-        cls = TrustedAdvisor()
-        mock_conn = Mock(spec_set=SupportConnection, name='mock_conn')
-        with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                   '', autospec=True) as mock_connect:
-            mock_connect.return_value = mock_conn
-            cls.connect()
-        assert cls.conn == mock_conn
-        assert mock_connect.mock_calls == [call()]
-
-    def test_connect_region(self):
-        cls = TrustedAdvisor(account_id='foo', account_role='bar', region='re')
-        mock_conn = Mock(spec_set=SupportConnection, name='mock_conn')
-        mock_conn_via = Mock(spec_set=SupportConnection, name='mock_conn')
-        with patch('awslimitchecker.trustedadvisor.TrustedAdvisor.connect_via'
-                   '') as mock_connect_via:
-            mock_connect_via.return_value = mock_conn_via
-            with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                       '', autospec=True) as mock_connect:
-                mock_connect.return_value = mock_conn
-                cls.connect()
-        assert cls.conn == mock_conn_via
-        assert mock_connect.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-
-    def test_connect_again(self):
-        cls = TrustedAdvisor()
-        mock_original_conn = Mock(spec_set=SupportConnection)
-        cls.conn = mock_original_conn
-        mock_conn = Mock(spec_set=SupportConnection)
-        with patch('awslimitchecker.trustedadvisor.boto.connect_support'
-                   '') as mock_connect:
-            mock_connect.return_value = mock_conn
-            cls.connect()
-        assert cls.conn == mock_original_conn
-        assert mock_connect.mock_calls == []
-
     def test_update_limits(self):
         mock_results = Mock()
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
@@ -186,9 +146,8 @@ class Test_TrustedAdvisor(object):
                 },
             ]
         }
-        with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-            mock_wrapper.return_value = api_resp
-            res = self.cls._get_limit_check_id()
+        self.mock_conn.describe_trusted_advisor_checks.return_value = api_resp
+        res = self.cls._get_limit_check_id()
         assert res == (
             'bar',
             [
@@ -200,11 +159,9 @@ class Test_TrustedAdvisor(object):
                 'Status'
             ]
         )
-        assert self.mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(
-            self.mock_conn.describe_trusted_advisor_checks,
-            'en', alc_no_paginate=True
-            )]
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks(language='en')
+        ]
 
     def test_get_limit_check_id_none(self):
         api_resp = {
@@ -221,80 +178,78 @@ class Test_TrustedAdvisor(object):
                 },
             ]
         }
-        with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-            mock_wrapper.return_value = api_resp
-            res = self.cls._get_limit_check_id()
+        self.mock_conn.describe_trusted_advisor_checks.return_value = api_resp
+        res = self.cls._get_limit_check_id()
         assert res == (None, None)
-        assert self.mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(
-            self.mock_conn.describe_trusted_advisor_checks,
-            'en', alc_no_paginate=True
-        )]
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks(language='en')
+        ]
 
     def test_get_limit_check_id_subscription_required(self):
 
-        def se_api(foo, language, alc_no_paginate=False):
-            status = 400
-            reason = 'Bad Request'
-            body = {
-                'message': 'AWS Premium Support Subscription is required to '
-                'use this service.',
-                '__type': 'SubscriptionRequiredException'
+        def se_api(language=None):
+            response = {
+                'ResponseMetadata': {
+                    'HTTPStatusCode': 400,
+                    'RequestId': '3cc9b2a8-c6e5-11e5-bc1d-b13dcea36176'
+                },
+                'Error': {
+                    'Message': 'AWS Premium Support Subscription is required '
+                               'to use this service.',
+                    'Code': 'SubscriptionRequiredException'
+                }
             }
-            raise JSONResponseError(status, reason, body)
+            raise ClientError(response, 'operation')
 
         assert self.cls.have_ta is True
+        self.mock_conn.describe_trusted_advisor_checks.side_effect = se_api
         with patch('awslimitchecker.trustedadvisor'
                    '.logger', autospec=True) as mock_logger:
-            with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-                mock_wrapper.side_effect = se_api
-                res = self.cls._get_limit_check_id()
+            res = self.cls._get_limit_check_id()
         assert self.cls.have_ta is False
         assert res == (None, None)
-        assert self.mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(
-            self.mock_conn.describe_trusted_advisor_checks,
-            'en', alc_no_paginate=True
-        )]
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks(language='en')
+        ]
         assert mock_logger.mock_calls == [
             call.debug("Querying Trusted Advisor checks"),
             call.warning("Cannot check TrustedAdvisor: %s",
-                         "AWS Premium Support "
-                         "Subscription is required to use this service.")
+                         'AWS Premium Support Subscription is required to '
+                         'use this service.')
         ]
 
     def test_get_limit_check_id_other_exception(self):
 
-        def se_api(foo, language, alc_no_paginate=False):
-            status = 400
-            reason = 'foobar'
-            body = {
-                'message': 'other message',
-                '__type': 'OtherException'
+        def se_api(language=None):
+            response = {
+                'ResponseMetadata': {
+                    'HTTPStatusCode': 400,
+                    'RequestId': '3cc9b2a8-c6e5-11e5-bc1d-b13dcea36176'
+                },
+                'Error': {
+                    'Message': 'foo',
+                    'Code': 'SomeOtherException'
+                }
             }
-            raise JSONResponseError(status, reason, body)
+            raise ClientError(response, 'operation')
 
-        with pytest.raises(BotoServerError) as excinfo:
-            with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-                mock_wrapper.side_effect = se_api
-                self.cls._get_limit_check_id()
-        assert self.mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [call(
-            self.mock_conn.describe_trusted_advisor_checks,
-            'en', alc_no_paginate=True
-        )]
-        assert excinfo.value.status == 400
-        assert excinfo.value.reason == 'foobar'
-        assert excinfo.value.body['__type'] == 'OtherException'
+        self.mock_conn.describe_trusted_advisor_checks.side_effect = se_api
+        with pytest.raises(ClientError) as excinfo:
+            self.cls._get_limit_check_id()
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_checks(language='en')
+        ]
+        assert excinfo.value.response['ResponseMetadata'][
+                   'HTTPStatusCode'] == 400
+        assert excinfo.value.response['Error']['Message'] == 'foo'
+        assert excinfo.value.response['Error']['Code'] == 'SomeOtherException'
 
     def test_poll_id_none(self):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-                mock_id.return_value = None
-                res = self.cls._poll()
+            mock_id.return_value = None
+            res = self.cls._poll()
         assert tmp.mock_calls == []
-        assert mock_wrapper.mock_calls == []
         assert res is None
 
     def test_poll(self):
@@ -348,24 +303,24 @@ class Test_TrustedAdvisor(object):
                 ]
             }
         }
+        tmp.return_value = poll_return_val
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-                mock_id.return_value = (
-                    'foo',
-                    [
-                        'Region',
-                        'Service',
-                        'Limit Name',
-                        'Limit Amount',
-                        'Current Usage',
-                        'Status'
-                    ]
-                )
-                mock_wrapper.return_value = poll_return_val
-                res = self.cls._poll()
-        assert tmp.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(tmp, 'foo', alc_no_paginate=True)
+            mock_id.return_value = (
+                'foo',
+                [
+                    'Region',
+                    'Service',
+                    'Limit Name',
+                    'Limit Amount',
+                    'Current Usage',
+                    'Status'
+                ]
+            )
+            res = self.cls._poll()
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_check_result(
+                checkId='foo', language='en'
+            )
         ]
         assert mock_id.mock_calls == [call(self.cls)]
         assert res == {
@@ -427,24 +382,24 @@ class Test_TrustedAdvisor(object):
                 ]
             }
         }
+        tmp.return_value = poll_return_value
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-                mock_id.return_value = (
-                    'foo',
-                    [
-                        'Region',
-                        'Service',
-                        'Limit Name',
-                        'Limit Amount',
-                        'Current Usage',
-                        'Status'
-                    ]
-                )
-                mock_wrapper.return_value = poll_return_value
-                res = self.cls._poll()
-        assert tmp.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(tmp, 'foo', alc_no_paginate=True)
+            mock_id.return_value = (
+                'foo',
+                [
+                    'Region',
+                    'Service',
+                    'Limit Name',
+                    'Limit Amount',
+                    'Current Usage',
+                    'Status'
+                ]
+            )
+            res = self.cls._poll()
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_check_result(
+                checkId='foo', language='en'
+            )
         ]
         assert mock_id.mock_calls == [call(self.cls)]
         assert res == {
@@ -457,11 +412,10 @@ class Test_TrustedAdvisor(object):
         self.cls.have_ta = False
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s.boto_query_wrapper' % pbm) as mock_wrapper:
-                with patch('awslimitchecker.trustedadvisor'
-                           '.logger', autospec=True) as mock_logger:
-                    res = self.cls._poll()
-        assert mock_wrapper.mock_calls == []
+            with patch('awslimitchecker.trustedadvisor'
+                       '.logger', autospec=True) as mock_logger:
+                res = self.cls._poll()
+        assert self.mock_conn.mock_calls == []
         assert tmp.mock_calls == []
         assert mock_id.mock_calls == [
             call(self.cls)
@@ -523,3 +477,38 @@ class Test_TrustedAdvisor(object):
             call._set_ta_limit('blam', 10),
             call._set_ta_limit('VPC Elastic IP addresses (EIPs)', 11)
         ]
+
+    def test_update_services_no_ec2(self):
+
+        mock_autoscale = Mock(spec_set=_AwsService)
+        mock_vpc = Mock(spec_set=_AwsService)
+        services = {
+            'AutoScaling': mock_autoscale,
+            'VPC': mock_vpc,
+        }
+        ta_results = {
+            'AutoScaling': {
+                'foo': 20,
+                'bar': 40,
+            },
+            'EC2': {
+                'baz': 5,
+            },
+            'VPC': {
+                'VPC Elastic IP addresses (EIPs)': 11,
+            }
+        }
+        with patch('awslimitchecker.trustedadvisor'
+                   '.logger', autospec=True) as mock_logger:
+            self.cls._update_services(ta_results, services)
+        assert mock_logger.mock_calls == [
+            call.debug("Updating TA limits on all services"),
+            call.info("TrustedAdvisor returned check results for unknown "
+                      "service '%s'", 'EC2'),
+            call.info("Done updating TA limits on all services"),
+        ]
+        assert mock_autoscale.mock_calls == [
+            call._set_ta_limit('bar', 40),
+            call._set_ta_limit('foo', 20),
+        ]
+        assert mock_vpc.mock_calls == []

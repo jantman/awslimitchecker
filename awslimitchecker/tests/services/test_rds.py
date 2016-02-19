@@ -38,8 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from boto.rds2.layer1 import RDSConnection
-from boto.rds2 import connect_to_region
+from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.rds import _RDSService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -65,52 +64,6 @@ class Test_RDSService(object):
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
-
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _RDSService(21, 43)
-        with patch('%s.boto.connect_rds2' % self.pbm) as mock_rds:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_rds.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_rds.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _RDSService(21, 43, region='foo')
-        with patch('%s.boto.connect_rds2' % self.pbm) as mock_rds:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_rds.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_rds.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-        assert cls.conn == mock_conn_via
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-        with patch('awslimitchecker.services.rds.boto.connect_rds2'
-                   '') as mock_rds:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_rds.return_value = mock_conn
-                cls.connect()
-        assert mock_rds.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
 
     def test_get_limits(self):
         cls = _RDSService(21, 43)
@@ -147,7 +100,7 @@ class Test_RDSService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
 
         with patch('%s.connect' % self.pb) as mock_connect:
             with patch.multiple(
@@ -187,225 +140,24 @@ class Test_RDSService(object):
         ]
 
     def test_find_usage_instances(self):
-        mock_conn = Mock(spec_set=RDSConnection)
+        instances = result_fixtures.RDS.test_find_usage_instances
+
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = instances
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
-        instances = [
-            {
-                'PubliclyAccessible': False,
-                'MasterUsername': 'myuser',
-                'LicenseModel': 'general-public-license',
-                'VpcSecurityGroups': [
-                    {
-                        'Status': 'active',
-                        'VpcSecurityGroupId': 'sg-aaaaaaaa'
-                    }
-                ],
-                'InstanceCreateTime': 1429910904.366,
-                'OptionGroupMemberships': [
-                    {
-                        'Status': 'in-sync',
-                        'OptionGroupName': 'default:mysql-5-6'
-                    }
-                ],
-                'PendingModifiedValues': {
-                    'MultiAZ': None,
-                    'MasterUserPassword': None,
-                    'Port': None,
-                    'Iops': None,
-                    'AllocatedStorage': None,
-                    'EngineVersion': None,
-                    'BackupRetentionPeriod': None,
-                    'DBInstanceClass': None,
-                    'DBInstanceIdentifier': None
-                },
-                'Engine': 'mysql',
-                'MultiAZ': True,
-                'LatestRestorableTime': 1435966800.0,
-                'DBSecurityGroups': [
-                    {
-                        'Status': 'active',
-                        'DBSecurityGroupName': 'mydb-dbsecuritygroup-aaaa'
-                    }
-                ],
-                'DBParameterGroups': [
-                    {
-                        'DBParameterGroupName': 'default.mysql5.6',
-                        'ParameterApplyStatus': 'in-sync'
-                    }
-                ],
-                'ReadReplicaSourceDBInstanceIdentifier': None,
-                'AutoMinorVersionUpgrade': True,
-                'PreferredBackupWindow': '07:00-08:00',
-                'DBSubnetGroup': {
-                    'VpcId': 'vpc-abcdef01',
-                    'Subnets': [
-                        {
-                            'SubnetStatus': 'Active',
-                            'SubnetIdentifier': 'subnet-aaaaaaaa',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1d',
-                                'ProvisionedIopsCapable': False
-                            }
-                        },
-                        {
-                            'SubnetStatus': 'Active',
-                            'SubnetIdentifier': 'subnet-22222222',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1a',
-                                'ProvisionedIopsCapable': False
-                            }
-                        }
-                    ],
-                    'DBSubnetGroupName': 'mydb-dbsubnetgroup-abcd',
-                    'SubnetGroupStatus': 'Complete',
-                    'DBSubnetGroupDescription': 'Subnet group for RDS instance'
-                },
-                'SecondaryAvailabilityZone': 'us-east-1a',
-                'ReadReplicaDBInstanceIdentifiers': [],
-                'AllocatedStorage': 200,
-                'BackupRetentionPeriod': 7,
-                'DBName': 'wordpress',
-                'PreferredMaintenanceWindow': 'tue:08:00-tue:09:00',
-                'Endpoint': {
-                    'Port': 3306,
-                    'Address': 'foo.bar.us-east-1.rds.amazonaws.com'
-                },
-                'DBInstanceStatus': 'available',
-                'StatusInfos': None,
-                'EngineVersion': '5.6.22',
-                'CharacterSetName': None,
-                'AvailabilityZone': 'us-east-1d',
-                'Iops': None,
-                'DBInstanceClass': 'db.t2.small',
-                'DBInstanceIdentifier': 'foo'
-            },
-            {
-                'PubliclyAccessible': False,
-                'MasterUsername': 'myuser2',
-                'LicenseModel': 'postgresql-license',
-                'VpcSecurityGroups': [
-                    {
-                        'Status': 'active',
-                        'VpcSecurityGroupId': 'sg-12345678'
-                    }
-                ],
-                'InstanceCreateTime': 1432238504.239,
-                'OptionGroupMemberships': [
-                    {
-                        'Status': 'in-sync',
-                        'OptionGroupName': 'default:postgres-9-3'
-                    }
-                ],
-                'PendingModifiedValues': {
-                    'MultiAZ': None,
-                    'MasterUserPassword': None,
-                    'Port': None,
-                    'Iops': None,
-                    'AllocatedStorage': None,
-                    'EngineVersion': None,
-                    'BackupRetentionPeriod': None,
-                    'DBInstanceClass': None,
-                    'DBInstanceIdentifier': None
-                },
-                'Engine': 'postgres',
-                'MultiAZ': False,
-                'LatestRestorableTime': 1435966550.0,
-                'DBSecurityGroups': [
-                    {
-                        'Status': 'active',
-                        'DBSecurityGroupName': 'sg1234-dbsecuritygroup-abcd'
-                    }
-                ],
-                'DBParameterGroups': [
-                    {
-                        'DBParameterGroupName': 'default.postgres9.3',
-                        'ParameterApplyStatus': 'in-sync'
-                    }
-                ],
-                'ReadReplicaSourceDBInstanceIdentifier': None,
-                'AutoMinorVersionUpgrade': True,
-                'PreferredBackupWindow': '03:09-03:39',
-                'DBSubnetGroup': {
-                    'VpcId': 'vpc-87654321',
-                    'Subnets': [
-                        {
-                            'SubnetStatus': 'Active',
-                            'SubnetIdentifier': 'subnet-a1234567',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1e',
-                                'ProvisionedIopsCapable': False
-                            }
-                        },
-                        {
-                            'SubnetStatus': 'Active',
-                            'SubnetIdentifier': 'subnet-b1234567',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1a',
-                                'ProvisionedIopsCapable': False
-                            }
-                        },
-                        {
-                            'SubnetStatus': 'Active',
-                            'SubnetIdentifier': 'subnet-c1234567',
-                            'SubnetAvailabilityZone': {
-                                'Name': 'us-east-1d',
-                                'ProvisionedIopsCapable': False
-                            }
-                        }
-                    ],
-                    'DBSubnetGroupName': 'mydb-dbsubnetgroup-abcdef',
-                    'SubnetGroupStatus': 'Complete',
-                    'DBSubnetGroupDescription': 'Subnet group for RDS instance'
-                },
-                'SecondaryAvailabilityZone': None,
-                'ReadReplicaDBInstanceIdentifiers': ['db-123', 'db-456'],
-                'AllocatedStorage': 50,
-                'BackupRetentionPeriod': 1,
-                'DBName': 'mydbname',
-                'PreferredMaintenanceWindow': 'mon:05:11-mon:05:41',
-                'Endpoint': {
-                    'Port': 5432,
-                    'Address': 'baz.blam.us-east-1.rds.amazonaws.com'
-                },
-                'DBInstanceStatus': 'available',
-                'StatusInfos': None,
-                'EngineVersion': '9.3.6',
-                'CharacterSetName': None,
-                'AvailabilityZone': 'us-east-1a',
-                'Iops': None,
-                'DBInstanceClass': 'db.t2.small',
-                'DBInstanceIdentifier': 'baz'
-            }
+
+        cls._find_usage_instances()
+
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_instances'),
+            call.get_paginator().paginate()
         ]
-        return_value = {
-            'DescribeDBInstancesResponse': {
-                'DescribeDBInstancesResult': {
-                    'DBInstances': instances
-                }
-            }
-        }
-
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = return_value
-            cls._find_usage_instances()
-
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_instances,
-                alc_marker_path=[
-                    'DescribeDBInstancesResponse',
-                    'DescribeDBInstancesResult',
-                    'Marker'
-                ],
-                alc_data_path=[
-                    'DescribeDBInstancesResponse',
-                    'DescribeDBInstancesResult',
-                    'DBInstances'
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB instances'].get_current_usage())
@@ -428,108 +180,24 @@ class Test_RDSService(object):
         assert usage[1].resource_id == 'baz'
 
     def test_find_usage_snapshots(self):
-        data = {
-            "DescribeDBSnapshotsResponse": {
-                "DescribeDBSnapshotsResult": {
-                    "DBSnapshots": [
-                        {
-                            "AllocatedStorage": 100,
-                            "AvailabilityZone": "us-east-1a",
-                            "DBInstanceIdentifier": "foo-db",
-                            "DBSnapshotIdentifier": "foo-db-final-snapshot",
-                            "Engine": "postgres",
-                            "EngineVersion": "9.3.3",
-                            "InstanceCreateTime": 1408035263.101,
-                            "Iops": 1000,
-                            "LicenseModel": "postgresql-license",
-                            "MasterUsername": "dbfoouser",
-                            "OptionGroupName": "default:postgres-9-3",
-                            "PercentProgress": 100,
-                            "Port": 5432,
-                            "SnapshotCreateTime": 1408454469.536,
-                            "SnapshotType": "manual",
-                            "SourceRegion": None,
-                            "Status": "available",
-                            "VpcId": None
-                        },
-                        {
-                            "AllocatedStorage": 50,
-                            "AvailabilityZone": "us-east-1d",
-                            "DBInstanceIdentifier": "bd1t3lf90p3lqdx",
-                            "DBSnapshotIdentifier":
-                                "rds:bd1t3lf90p3lqdx-2015-06-29-07-02",
-                            "Engine": "mysql",
-                            "EngineVersion": "5.6.22",
-                            "InstanceCreateTime": 1429910904.366,
-                            "Iops": None,
-                            "LicenseModel": "general-public-license",
-                            "MasterUsername": "dbuser3",
-                            "OptionGroupName": "default:mysql-5-6",
-                            "PercentProgress": 100,
-                            "Port": 3306,
-                            "SnapshotCreateTime": 1435561349.441,
-                            "SnapshotType": "automated",
-                            "SourceRegion": None,
-                            "Status": "available",
-                            "VpcId": "vpc-1ee8937b"
-                        },
-                        {
-                            "AllocatedStorage": 25,
-                            "AvailabilityZone": "us-east-1d",
-                            "DBInstanceIdentifier": "md1e8qwtegkjdgy",
-                            "DBSnapshotIdentifier":
-                                "rds:md1e8qwtegkjdgy-2015-06-29-07-06",
-                            "Engine": "postgres",
-                            "EngineVersion": "9.3.6",
-                            "InstanceCreateTime": 1433883813.314,
-                            "Iops": None,
-                            "LicenseModel": "postgresql-license",
-                            "MasterUsername": "dbuser4",
-                            "OptionGroupName": "default:postgres-9-3",
-                            "PercentProgress": 100,
-                            "Port": 5432,
-                            "SnapshotCreateTime": 1435561593.669,
-                            "SnapshotType": "automated",
-                            "SourceRegion": None,
-                            "Status": "available",
-                            "VpcId": "vpc-1ee8937b"
-                        },
-                    ],
-                    "Marker":
-                        "YXJuOmF3czpyZHM6dXMtZWFzdC0xOjkzNDQ0NjIwOTU0MTpzbm"
-                        "Fwc2hvdDpyZHM6bWQxZThxd3RlZ2tqZGd5LTIwMTUtMDctMDEt"
-                        "MDctMDc="
-                },
-                "ResponseMetadata": {
-                    "RequestId": "5fe976b3-2499-11e5-ad5a-1fed04d9fd3d"
-                }
-            }
-        }
+        response = result_fixtures.RDS.test_find_usage_snapshots
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = response
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_snapshots()
+        cls._find_usage_snapshots()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_snapshots,
-                alc_marker_path=[
-                    "DescribeDBSnapshotsResponse",
-                    "DescribeDBSnapshotsResult",
-                    'Marker'
-                ],
-                alc_data_path=[
-                    "DescribeDBSnapshotsResponse",
-                    "DescribeDBSnapshotsResult",
-                    "DBSnapshots"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_snapshots'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB snapshots per user'].get_current_usage())
@@ -538,55 +206,24 @@ class Test_RDSService(object):
         assert usage[0].aws_type == 'AWS::RDS::DBSnapshot'
 
     def test_find_usage_param_groups(self):
-        data = {
-            "DescribeDBParameterGroupsResponse": {
-                "DescribeDBParameterGroupsResult": {
-                    "DBParameterGroups": [
-                        {
-                            "DBParameterGroupFamily": "mysql5.6",
-                            "DBParameterGroupName": "default.mysql5.6",
-                            "Description":
-                                "Default parameter group for mysql5.6"
-                        },
-                        {
-                            "DBParameterGroupFamily": "postgres9.3",
-                            "DBParameterGroupName": "default.postgres9.3",
-                            "Description":
-                                "Default parameter group for postgres9.3"
-                        }
-                    ],
-                    "Marker": None
-                },
-                "ResponseMetadata": {
-                    "RequestId": "xxxxxxxxxxxxxxx"
-                }
-            }
-        }
+        data = result_fixtures.RDS.test_find_usage_param_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_param_groups()
+        cls._find_usage_param_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_parameter_groups,
-                alc_marker_path=[
-                    "DescribeDBParameterGroupsResponse",
-                    "DescribeDBParameterGroupsResult",
-                    'Marker'
-                ],
-                alc_data_path=[
-                    "DescribeDBParameterGroupsResponse",
-                    "DescribeDBParameterGroupsResult",
-                    "DBParameterGroups"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_parameter_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB parameter groups'].get_current_usage())
@@ -595,120 +232,24 @@ class Test_RDSService(object):
         assert usage[0].aws_type == 'AWS::RDS::DBParameterGroup'
 
     def test_find_usage_subnet_groups(self):
-        data = {
-            "DescribeDBSubnetGroupsResponse": {
-                "DescribeDBSubnetGroupsResult": {
-                    "DBSubnetGroups": [
-                        {
-                            "DBSubnetGroupDescription":
-                                "Subnet group for CloudFormation RDS instance",
-                            "DBSubnetGroupName":
-                                "SubnetGroup1",
-                            "SubnetGroupStatus": "Complete",
-                            "Subnets": [
-                                {
-                                    "SubnetAvailabilityZone": {
-                                        "Name": "us-east-1d",
-                                        "ProvisionedIopsCapable": False
-                                    },
-                                    "SubnetIdentifier": "subnet-38e87861",
-                                    "SubnetStatus": "Active"
-                                },
-                                {
-                                    "SubnetAvailabilityZone": {
-                                        "Name": "us-east-1a",
-                                        "ProvisionedIopsCapable": False
-                                    },
-                                    "SubnetIdentifier": "subnet-4f027f38",
-                                    "SubnetStatus": "Active"
-                                }
-                            ],
-                            "VpcId": "vpc-1ee8937b"
-                        },
-                        {
-                            "DBSubnetGroupDescription":
-                                "Created from the RDS Management Console",
-                            "DBSubnetGroupName": "default",
-                            "SubnetGroupStatus": "Complete",
-                            "Subnets": [
-                                {
-                                    "SubnetAvailabilityZone": {
-                                        "Name": "us-east-1e",
-                                        "ProvisionedIopsCapable": False
-                                    },
-                                    "SubnetIdentifier": "subnet-49071f61",
-                                    "SubnetStatus": "Active"
-                                },
-                                {
-                                    "SubnetAvailabilityZone": {
-                                        "Name": "us-east-1a",
-                                        "ProvisionedIopsCapable": False
-                                    },
-                                    "SubnetIdentifier": "subnet-6fe23c18",
-                                    "SubnetStatus": "Active"
-                                },
-                                {
-                                    "SubnetAvailabilityZone": {
-                                        "Name": "us-east-1d",
-                                        "ProvisionedIopsCapable": False
-                                    },
-                                    "SubnetIdentifier": "subnet-a9b54df0",
-                                    "SubnetStatus": "Active"
-                                }
-                            ],
-                            "VpcId": "vpc-c300b9a6"
-                        },
-                        {
-                            "DBSubnetGroupDescription":
-                                "Subnet group for CloudFormation RDS instance",
-                            "DBSubnetGroupName":
-                                "SubnetGroup2",
-                            "SubnetGroupStatus": "Complete",
-                            "Subnets": [
-                                {
-                                    "SubnetAvailabilityZone": {
-                                        "Name": "us-east-1a",
-                                        "ProvisionedIopsCapable": False
-                                    },
-                                    "SubnetIdentifier": "subnet-0b037e7c",
-                                    "SubnetStatus": "Active"
-                                }
-                            ],
-                            "VpcId": "vpc-73ec9716"
-                        },
-                    ],
-                    "Marker": None
-                },
-                "ResponseMetadata": {
-                    "RequestId": "7cd7ed68-2499-11e5-ad44-cdf98c606d42"
-                }
-            }
-        }
+        data = result_fixtures.RDS.test_find_usage_subnet_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_subnet_groups()
+        cls._find_usage_subnet_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_subnet_groups,
-                alc_marker_path=[
-                    "DescribeDBSubnetGroupsResponse",
-                    "DescribeDBSubnetGroupsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeDBSubnetGroupsResponse",
-                    "DescribeDBSubnetGroupsResult",
-                    "DBSubnetGroups"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_subnet_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Subnet Groups'].get_current_usage())
@@ -730,63 +271,24 @@ class Test_RDSService(object):
         assert usage[2].resource_id == "default"
 
     def test_find_usage_option_groups(self):
-        data = {
-            "DescribeOptionGroupsResponse": {
-                "DescribeOptionGroupsResult": {
-                    "Marker": None,
-                    "OptionGroupsList": [
-                        {
-                            "AllowsVpcAndNonVpcInstanceMemberships": True,
-                            "EngineName": "mysql",
-                            "MajorEngineVersion": "5.6",
-                            "OptionGroupDescription":
-                                "Default option group for mysql 5.6",
-                            "OptionGroupName": "default:mysql-5-6",
-                            "Options": [],
-                            "VpcId": None
-                        },
-                        {
-                            "AllowsVpcAndNonVpcInstanceMemberships": True,
-                            "EngineName": "postgres",
-                            "MajorEngineVersion": "9.3",
-                            "OptionGroupDescription":
-                                "Default option group for postgres 9.3",
-                            "OptionGroupName": "default:postgres-9-3",
-                            "Options": [],
-                            "VpcId": None
-                        }
-                    ]
-                },
-                "ResponseMetadata": {
-                    "RequestId": "8725ddc9-2499-11e5-9ed1-d5a3270e57f9"
-                }
-            }
-        }
+        data = result_fixtures.RDS.test_find_usage_option_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_option_groups()
+        cls._find_usage_option_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_option_groups,
-                alc_marker_path=[
-                    "DescribeOptionGroupsResponse",
-                    "DescribeOptionGroupsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeOptionGroupsResponse",
-                    "DescribeOptionGroupsResult",
-                    "OptionGroupsList"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_option_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Option Groups'].get_current_usage())
@@ -795,159 +297,50 @@ class Test_RDSService(object):
         assert usage[0].aws_type == 'AWS::RDS::DBOptionGroup'
 
     def test_find_usage_event_subscriptions(self):
-        # @TODO update this with realistic test data
-        data = {
-            "DescribeEventSubscriptionsResponse": {
-                "DescribeEventSubscriptionsResult": {
-                    "EventSubscriptionsList": ['a'],
-                    "Marker": None
-                },
-                "ResponseMetadata": {
-                    "RequestId": "91c0b568-2499-11e5-8440-1fb643a72e45"
-                }
-            }
-        }
+        data = result_fixtures.RDS.test_find_usage_event_subscriptions
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_event_subscriptions()
+        cls._find_usage_event_subscriptions()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_event_subscriptions,
-                alc_marker_path=[
-                    "DescribeEventSubscriptionsResponse",
-                    "DescribeEventSubscriptionsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeEventSubscriptionsResponse",
-                    "DescribeEventSubscriptionsResult",
-                    "EventSubscriptionsList"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_event_subscriptions'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Event Subscriptions'].get_current_usage())
         assert len(usage) == 1
-        assert usage[0].get_value() == 1
+        assert usage[0].get_value() == 2
         assert usage[0].aws_type == 'AWS::RDS::EventSubscription'
 
     def test_find_usage_security_groups(self):
-        data = {
-            "DescribeDBSecurityGroupsResponse": {
-                "DescribeDBSecurityGroupsResult": {
-                    "DBSecurityGroups": [
-                        {
-                            "DBSecurityGroupDescription": "Frontend Access",
-                            "DBSecurityGroupName":
-                                "SecurityGroup1",
-                            "EC2SecurityGroups": [
-                                {
-                                    "EC2SecurityGroupId": "sg-c6dd95a2",
-                                    "EC2SecurityGroupName":
-                                        "EC2SG1",
-                                    "EC2SecurityGroupOwnerId": None,
-                                    "Status": "authorized"
-                                }
-                            ],
-                            "IPRanges": [],
-                            "OwnerId": "123456789012",
-                            "VpcId": None
-                        },
-                        {
-                            "DBSecurityGroupDescription":
-                                "default:vpc-a926c2cc",
-                            "DBSecurityGroupName": "default:vpc-a926c2cc",
-                            "EC2SecurityGroups": [],
-                            "IPRanges": [],
-                            "OwnerId": "123456789012",
-                            "VpcId": "vpc-a926c2cc"
-                        },
-                        {
-                            "DBSecurityGroupDescription": "Frontend Access",
-                            "DBSecurityGroupName": "SecurityGroup2",
-                            "EC2SecurityGroups": [
-                                {
-                                    "EC2SecurityGroupId": "sg-aaaaaaaa",
-                                    "EC2SecurityGroupName": "SGName-aaaaaaaa",
-                                    "EC2SecurityGroupOwnerId": None,
-                                    "Status": "authorized"
-                                },
-                                {
-                                    "EC2SecurityGroupId": "sg-bbbbbbbb",
-                                    "EC2SecurityGroupName": "SGName-bbbbbbbb",
-                                    "EC2SecurityGroupOwnerId": None,
-                                    "Status": "authorized"
-                                },
-                                {
-                                    "EC2SecurityGroupId": "sg-cccccccc",
-                                    "EC2SecurityGroupName": "SGName-cccccccc",
-                                    "EC2SecurityGroupOwnerId": None,
-                                    "Status": "authorized"
-                                },
-                            ],
-                            "IPRanges": [],
-                            "OwnerId": "123456789012",
-                            "VpcId": "vpc-73ec9716"
-                        },
-                        {
-                            'VpcId': None,
-                            'DBSecurityGroupDescription':
-                                'awslimitchecker test',
-                            'IPRanges': [
-                                {
-                                    'Status': 'authorized',
-                                    'CIDRIP': '76.122.124.15/32'
-                                },
-                                {
-                                    'Status': 'authorized',
-                                    'CIDRIP': '66.6.152.59/32'
-                                }
-                            ],
-                            'OwnerId': '123456789012',
-                            'EC2SecurityGroups': [],
-                            'DBSecurityGroupName': 'alctest'
-                        }
-                    ],
-                    "Marker": None
-                },
-                "ResponseMetadata": {
-                    "RequestId": "9c78d95d-2499-11e5-9456-735a7f5001de"
-                }
-            }
-        }
+        data = result_fixtures.RDS.test_find_usage_security_groups
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_security_groups()
+        cls._find_usage_security_groups()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_db_security_groups,
-                alc_marker_path=[
-                    "DescribeDBSecurityGroupsResponse",
-                    "DescribeDBSecurityGroupsResult",
-                    "Marker"
-                ],
-                alc_data_path=[
-                    "DescribeDBSecurityGroupsResponse",
-                    "DescribeDBSecurityGroupsResult",
-                    "DBSecurityGroups"
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_db_security_groups'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['DB security groups'].get_current_usage())
@@ -977,43 +370,24 @@ class Test_RDSService(object):
         assert usage[3].aws_type == 'AWS::RDS::DBSecurityGroup'
 
     def test_find_usage_reserved_instances(self):
-        # @TODO update this with realistic test data
-        data = {
-            'DescribeReservedDBInstancesResponse': {
-                'DescribeReservedDBInstancesResult': {
-                    'Marker': None,
-                    'ReservedDBInstances': [1, 2]
-                },
-                'ResponseMetadata': {
-                    'RequestId': '75366d86-25a9-11e5-b6fa-c9da955772c6'
-                }
-            }
-        }
+        data = result_fixtures.RDS.test_find_usage_reserved_instances
 
-        mock_conn = Mock(spec_set=RDSConnection)
+        mock_conn = Mock()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = data
+        mock_conn.get_paginator.return_value = mock_paginator
+
         cls = _RDSService(21, 43)
         cls.conn = mock_conn
 
-        with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-            mock_wrapper.return_value = data
-            cls._find_usage_reserved_instances()
+        cls._find_usage_reserved_instances()
 
-        assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(
-                mock_conn.describe_reserved_db_instances,
-                alc_marker_path=[
-                    'DescribeReservedDBInstancesResponse',
-                    'DescribeReservedDBInstancesResult',
-                    "Marker"
-                ],
-                alc_data_path=[
-                    'DescribeReservedDBInstancesResponse',
-                    'DescribeReservedDBInstancesResult',
-                    'ReservedDBInstances'
-                ],
-                alc_marker_param='marker'
-            )
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_reserved_db_instances'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [
+            call.paginate()
         ]
 
         usage = sorted(cls.limits['Reserved Instances'].get_current_usage())

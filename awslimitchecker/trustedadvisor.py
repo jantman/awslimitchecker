@@ -37,12 +37,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-import boto
-import boto.support
+from botocore.exceptions import ClientError
 from dateutil import parser
 import logging
 from .connectable import Connectable
-from .utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +53,7 @@ class TrustedAdvisor(Connectable):
     """
 
     service_name = 'TrustedAdvisor'
+    api_name = 'support'
 
     def __init__(self, account_id=None, account_role=None, region=None,
                  external_id=None, mfa_serial_number=None, mfa_token=None):
@@ -93,19 +92,6 @@ class TrustedAdvisor(Connectable):
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        if self.ta_region:
-            logger.debug("Connecting to Support API (TrustedAdvisor) in %s",
-                         self.region)
-            self.conn = self.connect_via(boto.support.connect_to_region)
-        else:
-            logger.debug("Connecting to Support API (TrustedAdvisor)")
-            self.conn = boto.connect_support()
-        logger.debug("Connected to Support API")
 
     def update_limits(self, services):
         """
@@ -148,10 +134,9 @@ class TrustedAdvisor(Connectable):
                             "check; not using Trusted Advisor data.")
             return
         check_id, metadata = tmp
-        region = self.ta_region or self.conn.region.name
-        checks = boto_query_wrapper(
-            self.conn.describe_trusted_advisor_check_result,
-            check_id, alc_no_paginate=True
+        region = self.ta_region or self.conn._client_config.region_name
+        checks = self.conn.describe_trusted_advisor_check_result(
+            checkId=check_id, language='en'
         )
         check_datetime = parser.parse(checks['result']['timestamp'])
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
@@ -178,18 +163,14 @@ class TrustedAdvisor(Connectable):
         """
         logger.debug("Querying Trusted Advisor checks")
         try:
-            checks = boto_query_wrapper(
-                self.conn.describe_trusted_advisor_checks,
-                'en', alc_no_paginate=True
+            checks = self.conn.describe_trusted_advisor_checks(
+                language='en'
             )['checks']
-        except boto.exception.JSONResponseError as ex:
-            if (
-                    '__type' in ex.body and
-                    ex.body['__type'] == 'SubscriptionRequiredException'
-            ):
+        except ClientError as ex:
+            if ex.response['Error']['Code'] == 'SubscriptionRequiredException':
                 logger.warning(
                     "Cannot check TrustedAdvisor: %s",
-                    ex.message
+                    ex.response['Error']['Message']
                 )
                 self.have_ta = False
                 return (None, None)
@@ -234,9 +215,13 @@ class TrustedAdvisor(Connectable):
                     # better way of handling this - maybe with a mapping
                     if svc_name == 'VPC' and lim_name == 'VPC Elastic IP ' \
                        'addresses (EIPs)':
-                        services['EC2']._set_ta_limit(
-                            lim_name, limits[lim_name]
-                        )
+                        # this limit belongs under EC2, but if we're only
+                        # checking a specific list of services that doesn't
+                        # include EC2, we don't want to set it.
+                        if 'EC2' in services:
+                            services['EC2']._set_ta_limit(
+                                lim_name, limits[lim_name]
+                            )
                     else:
                         service._set_ta_limit(lim_name, limits[lim_name])
                 except ValueError:

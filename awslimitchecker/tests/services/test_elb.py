@@ -38,9 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from boto.ec2.elb import ELBConnection
-from boto.ec2.elb.loadbalancer import LoadBalancer
-from boto.ec2.elb import connect_to_region
+from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.elb import _ElbService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -67,51 +65,6 @@ class Test_ElbService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _ElbService(21, 43)
-        with patch('%s.boto.connect_elb' % self.pbm) as mock_elb:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_elb.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_elb.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _ElbService(21, 43, region='myregion')
-        with patch('%s.boto.connect_elb' % self.pbm) as mock_elb:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_elb.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_elb.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-        assert cls.conn == mock_conn_via
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        cls = _ElbService(21, 43)
-        cls.conn = mock_conn
-        with patch('awslimitchecker.services.elb.boto.connect_elb') as mock_elb:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_elb.return_value = mock_conn
-                cls.connect()
-        assert mock_elb.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert mock_connect_via.mock_calls == []
-
     def test_get_limits(self):
         cls = _ElbService(21, 43)
         cls.limits = {}
@@ -134,33 +87,13 @@ class Test_ElbService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
-        mock_elb1 = Mock(spec_set=LoadBalancer)
-        type(mock_elb1).name = 'elb-1'
-        type(mock_elb1).listeners = [1]
+        mock_conn = Mock()
 
-        mock_elb2 = Mock(spec_set=LoadBalancer)
-        type(mock_elb2).name = 'elb-2'
-        type(mock_elb2).listeners = [1, 2]
-
-        mock_elb3 = Mock(spec_set=LoadBalancer)
-        type(mock_elb3).name = 'elb-3'
-        type(mock_elb3).listeners = [1, 2, 3]
-
-        mock_elb4 = Mock(spec_set=LoadBalancer)
-        type(mock_elb4).name = 'elb-4'
-        type(mock_elb4).listeners = [1, 2, 3, 4, 5, 6]
-
-        mock_conn = Mock(spec_set=ELBConnection)
-        return_value = [
-            mock_elb1,
-            mock_elb2,
-            mock_elb3,
-            mock_elb4
-        ]
+        return_value = result_fixtures.ELB.test_find_usage
 
         with patch('%s.connect' % self.pb) as mock_connect:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                mock_wrapper.return_value = return_value
+            with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
+                mock_paginate.return_value = return_value
                 cls = _ElbService(21, 43)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
@@ -169,8 +102,13 @@ class Test_ElbService(object):
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
         assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_load_balancers)
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_load_balancers,
+                alc_marker_path=['NextMarker'],
+                alc_data_path=['LoadBalancerDescriptions'],
+                alc_marker_param='Marker'
+            )
         ]
         assert len(cls.limits['Active load balancers'].get_current_usage()) == 1
         assert cls.limits['Active load balancers'

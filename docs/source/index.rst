@@ -74,8 +74,11 @@ Advisor where available), notifying you when you are approaching or at your limi
 Status
 -------
 
-This project is currently in very early development. At this time please consider it beta code and not fully tested in all situations;
-furthermore its API may be changing rapidly. I hope to have this stabilized soon.
+This project has just undergone a relatively major refactor to migrate from
+`boto <http://docs.pythonboto.org/en/latest/>`_ to `boto3 <http://boto3.readthedocs.org/>`_,
+along with a refactor of much of the connection and usage gathering code. Until
+it's been running in production for a while, please consider this to be "beta"
+and make every effort to manually confirm the results for your environment.
 
 What It Does
 ------------
@@ -94,10 +97,9 @@ What It Does
 Requirements
 ------------
 
-* Python 2.6 through 3.4. Python 2.x is recommended, as `boto <http://docs.pythonboto.org/en/latest/>`_ (the AWS client library) currently has
-  incomplete Python3 support. See the `boto documentation <http://boto.readthedocs.org/en/latest/>`_ for a list of AWS services that are Python3-compatible.
+* Python 2.6 through 3.5.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
-* `boto <http://docs.pythonboto.org/en/latest/>`_ >= 2.32.0
+* `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
 Installation and Usage
 -----------------------

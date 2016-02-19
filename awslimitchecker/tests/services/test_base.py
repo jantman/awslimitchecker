@@ -58,6 +58,7 @@ class AwsServiceTester(_AwsService):
     """class to test non-abstract methods on base class"""
 
     service_name = 'AwsServiceTester'
+    api_name = 'awsservicetester'
 
     def connect(self):
         pass
@@ -286,6 +287,7 @@ class Test_AwsServiceSubclasses(object):
         assert mock_get_limits.mock_calls == [call()]
         # ensure service name is changed
         assert inst.service_name != 'baseclass'
+        assert inst.api_name != 'baseclass'
         # ensure an IAM permissions list, even if empty
         assert isinstance(inst.required_iam_permissions(), list)
         # ensure warning and critical thresholds

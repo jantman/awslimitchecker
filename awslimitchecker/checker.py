@@ -194,7 +194,7 @@ class AwsLimitChecker(object):
     def find_usage(self, service=None, use_ta=True):
         """
         For each limit in the specified service (or all services if
-        ``service`` is ``None``), query the AWS API via :py:mod:`boto`
+        ``service`` is ``None``), query the AWS API via ``boto3``
         and find the current usage amounts for that limit.
 
         This method updates the ``current_usage`` attribute of the
@@ -236,7 +236,7 @@ class AwsLimitChecker(object):
 
         Internally, for each limit override for each service in
         ``override_dict``, this method calls
-        :py:meth:`~._AwsService.set_limit_override` on the corresponding
+        :py:meth:`._AwsService.set_limit_override` on the corresponding
         _AwsService instance.
 
         Explicitly set limit overrides using this method will take
@@ -266,7 +266,7 @@ class AwsLimitChecker(object):
         Set a manual override on an AWS service limits, i.e. if you
         had limits increased by AWS support.
 
-        This method calls :py:meth:`~._AwsService.set_limit_override`
+        This method calls :py:meth:`._AwsService.set_limit_override`
         on the corresponding _AwsService instance.
 
         Explicitly set limit overrides using this method will take
@@ -322,7 +322,7 @@ class AwsLimitChecker(object):
                 }
             }
 
-        See :py:meth:`~.AwsLimit.set_threshold_override`.
+        See :py:meth:`.AwsLimit.set_threshold_override`.
 
         :param override_dict: nested dict of threshold overrides
         :type override_dict: dict
@@ -355,7 +355,7 @@ class AwsLimitChecker(object):
         :py:class:`~.AwsLimitChecker` for information on Warning and
         Critical thresholds.
 
-        See :py:meth:`~.AwsLimit.set_threshold_override`.
+        See :py:meth:`.AwsLimit.set_threshold_override`.
 
         :param service_name: the name of the service to override limit for
         :type service_name: string
@@ -393,6 +393,8 @@ class AwsLimitChecker(object):
         the details of usage that crossed the thresholds
         (:py:meth:`~.AwsLimit.get_warnings` and
         :py:meth:`~.AwsLimit.get_criticals`).
+
+        See :py:meth:`.AwsLimit.check_thresholds`.
 
         :param service: the name of one service to return results for
         :type service: string

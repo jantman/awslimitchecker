@@ -38,8 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from boto.ec2.autoscale import AutoScaleConnection, connect_to_region
-from boto.ec2.autoscale.limits import AccountLimits
 from awslimitchecker.services.autoscaling import _AutoscalingService
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -67,50 +65,6 @@ class Test_AutoscalingService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_connect(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _AutoscalingService(21, 43)
-        with patch('%s.boto.connect_autoscale' % self.pbm) as mock_autoscaling:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_autoscaling.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_autoscaling.mock_calls == [call()]
-        assert mock_connect_via.mock_calls == []
-        assert mock_conn.mock_calls == []
-        assert cls.conn == mock_conn
-
-    def test_connect_region(self):
-        """test connect()"""
-        mock_conn = Mock()
-        mock_conn_via = Mock()
-        cls = _AutoscalingService(21, 43, region='myreg')
-        with patch('%s.boto.connect_autoscale' % self.pbm) as mock_autoscaling:
-            with patch('%s.connect_via' % self.pb) as mock_connect_via:
-                mock_autoscaling.return_value = mock_conn
-                mock_connect_via.return_value = mock_conn_via
-                cls.connect()
-        assert mock_autoscaling.mock_calls == []
-        assert mock_connect_via.mock_calls == [
-            call(connect_to_region)
-        ]
-        assert mock_conn.mock_calls == []
-        assert cls.conn == mock_conn_via
-
-    def test_connect_again(self):
-        """make sure we re-use the connection"""
-        mock_conn = Mock()
-        cls = _AutoscalingService(21, 43)
-        cls.conn = mock_conn
-        with patch('awslimitchecker.services.autoscaling.boto.connect_'
-                   'autoscale') as mock_autoscaling:
-            mock_autoscaling.return_value = mock_conn
-            cls.connect()
-        assert mock_autoscaling.mock_calls == []
-        assert mock_conn.mock_calls == []
-
     def test_get_limits(self):
         cls = _AutoscalingService(21, 43)
         cls.limits = {}
@@ -133,27 +87,48 @@ class Test_AutoscalingService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
-        mock_conn = Mock(spec_set=AutoScaleConnection)
+        mock_conn = Mock()
 
         def se_wrapper(func, *args, **kwargs):
-            if func == mock_conn.get_all_groups:
-                return [1, 2, 3]
-            elif func == mock_conn.get_all_launch_configurations:
-                return [1, 2]
+            if func == mock_conn.describe_auto_scaling_groups:
+                return {
+                    'AutoScalingGroups': [
+                        {'AutoScalingGroupName': 'foo'},
+                        {'AutoScalingGroupName': 'bar'},
+                        {'AutoScalingGroupName': 'baz'},
+                    ],
+                }
+            elif func == mock_conn.describe_launch_configurations:
+                return {
+                    'LaunchConfigurations': [
+                        {'LaunchConfigurationName': 'foo'},
+                        {'LaunchConfigurationName': 'bar'},
+                    ],
+                }
             return None
 
         with patch('%s.connect' % self.pb) as mock_connect:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
+            with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
                 cls = _AutoscalingService(21, 43)
                 cls.conn = mock_conn
-                mock_wrapper.side_effect = se_wrapper
+                mock_paginate.side_effect = se_wrapper
                 assert cls._have_usage is False
                 cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == []
-        assert mock_wrapper.mock_calls == [
-            call(mock_conn.get_all_groups),
-            call(mock_conn.get_all_launch_configurations)
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_auto_scaling_groups,
+                alc_marker_path=['NextToken'],
+                alc_data_path=['AutoScalingGroups'],
+                alc_marker_param='NextToken'
+            ),
+            call(
+                mock_conn.describe_launch_configurations,
+                alc_marker_path=['NextToken'],
+                alc_data_path=['LaunchConfigurations'],
+                alc_marker_param='NextToken'
+            )
         ]
         assert cls._have_usage is True
         asgs = sorted(cls.limits['Auto Scaling groups'].get_current_usage())
@@ -172,18 +147,22 @@ class Test_AutoscalingService(object):
         ]
 
     def test_update_limits_from_api(self):
-        mock_conn = Mock(spec_set=AutoScaleConnection)
-        aslimits = AccountLimits(connection=mock_conn)
-        aslimits.max_autoscaling_groups = 11
-        aslimits.max_launch_configurations = 22
+        mock_conn = Mock()
+        aslimits = {
+            'MaxNumberOfAutoScalingGroups': 11,
+            'MaxNumberOfLaunchConfigurations': 22,
+            'NumberOfAutoScalingGroups': 5,
+            'NumberOfLaunchConfigurations': 6
+        }
 
+        mock_conn.describe_account_limits.return_value = aslimits
         with patch('%s.connect' % self.pb) as mock_connect:
-            with patch('%s.boto_query_wrapper' % self.pbm) as mock_wrapper:
-                cls = _AutoscalingService(21, 43)
-                cls.conn = mock_conn
-                mock_wrapper.return_value = aslimits
-                cls._update_limits_from_api()
+            cls = _AutoscalingService(21, 43)
+            cls.conn = mock_conn
+            cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
-        assert mock_wrapper.mock_calls == [call(mock_conn.get_account_limits)]
+        assert mock_conn.mock_calls == [
+            call.describe_account_limits()
+        ]
         assert cls.limits['Auto Scaling groups'].api_limit == 11
         assert cls.limits['Launch configurations'].api_limit == 22

@@ -45,7 +45,7 @@ with open('README.rst') as file:
     long_description = file.read()
 
 requires = [
-    'boto>=2.32.0',
+    'boto3>=1.2.3',
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.2',
 ]
@@ -64,8 +64,10 @@ classifiers = [
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.2',
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
     'Topic :: Internet',
     'Topic :: System :: Monitoring',
 ]
@@ -84,6 +86,6 @@ setup(
     description='A script and python module to check your AWS service limits and usage using boto.',
     long_description=long_description,
     install_requires=requires,
-    keywords="AWS EC2 Amazon boto limits cloud",
+    keywords="AWS EC2 Amazon boto boto3 limits cloud",
     classifiers=classifiers
 )

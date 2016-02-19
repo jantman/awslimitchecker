@@ -101,6 +101,19 @@ class Test_AGPLVersionChecker(object):
             call(['git', 'status', '-u'], stderr=DEVNULL)
         ]
 
+    def test_is_git_dirty_false_no_branch(self):
+        cls = AGPLVersionChecker()
+        with patch('%s._check_output' % self.mpb) as mock_check_out:
+            mock_check_out.return_value = dedent("""
+            Not currently on any branch.
+            nothing to commit, working directory clean
+            """)
+            res = cls._is_git_dirty()
+        assert res is False
+        assert mock_check_out.mock_calls == [
+            call(['git', 'status', '-u'], stderr=DEVNULL)
+        ]
+
     def test_is_git_dirty_true_ahead(self):
         cls = AGPLVersionChecker()
         with patch('%s._check_output' % self.mpb) as mock_check_out:
@@ -279,7 +292,7 @@ class Test_AGPLVersionChecker(object):
             ':alt: PyPi package version',
             'Status',
             '------',
-            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Keywords: AWS EC2 Amazon boto boto3 limits cloud',
             'Platform: UNKNOWN',
             'Classifier: Environment :: Console',
         ]
@@ -317,7 +330,7 @@ class Test_AGPLVersionChecker(object):
             ':alt: PyPi package version',
             'Status',
             '------',
-            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Keywords: AWS EC2 Amazon boto boto3 limits cloud',
             'Platform: UNKNOWN',
             'Classifier: Environment :: Console',
         ]
@@ -352,7 +365,7 @@ class Test_AGPLVersionChecker(object):
             ':alt: PyPi package version',
             'Status',
             '------',
-            'Keywords: AWS EC2 Amazon boto limits cloud',
+            'Keywords: AWS EC2 Amazon boto boto3 limits cloud',
             'Platform: UNKNOWN',
             'Classifier: Environment :: Console',
         ]
@@ -1475,7 +1488,8 @@ class Test_AGPLVersionChecker_Acceptance(object):
             '-u'
         ]).strip()
         if ('Your branch is up-to-date with' not in status and
-                'HEAD detached at' not in status):
+                'HEAD detached at' not in status and
+                '# Not currently on any branch' not in status):
             print("\ngit status -u:\n" + status + "\n")
             return 1
         if 'nothing to commit' not in status:

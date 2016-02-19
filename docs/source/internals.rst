@@ -16,18 +16,16 @@ and should be the only portion directly used by external code.
 Each AWS Service is represented by a subclass of the :py:class:`~awslimitchecker.services.base._AwsService` abstract base
 class; these Service Classes are responsible for knowing which limits exist for the service they represent, what the
 default values for these limits are, querying current limits from the service's API (if supported),
-and how to check the current usage via the AWS API (via :py:mod:`boto`). When the
+and how to check the current usage via the AWS API (``boto3``). When the
 Service Classes are instantiated, they build a dict of all of their limits, correlating a string key (the "limit name")
 with an :py:class:`~awslimitchecker.limit.AwsLimit` object. The Service Class constructors *must not* make any network
 connections; connections are created lazily as needed and stored as a class attribute. This allows us to inspect the
 services, limits and default limit values without ever connecting to AWS (this is also used to generate the
 :ref:`Supported Limits <limits>` documentation automatically).
 
-All calls to the AWS APIs should be made through :py:func:`~awslimitchecker.utils.boto_query_wrapper`. This function
-encapsulates both retrying queries with an exponential backoff when queries are throttled due to your account hitting
-the `request rate limit <http://docs.aws.amazon.com/AWSEC2/latest/APIReference/query-api-troubleshooting.html#api-request-rate>`_
-(via :py:func:`~awslimitchecker.utils.invoke_with_throttling_retries`) and automatically paginating query responses
-that aren't automatically handled by boto.
+All calls to boto3 client ("low-level") methods that return a dict response that can
+include 'NextToken' or another pagination marker, should be called through
+:py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is instantiated, it imports :py:mod:`~awslimitchecker.services`
 which in turn creates instances of all ``awslimitchecker.services.*`` classes and adds them to a dict mapping the
@@ -85,3 +83,10 @@ The value used for a limit is the first match in the following list:
 2. API Limit
 3. Trusted Advisor
 4. Hard-coded default
+
+Threshold Overrides
+-------------------
+
+For more information on overriding thresholds, see
+:ref:`Python Usage / Setting a Threshold Override <python_usage.threshold_overrides>` as well as the
+documentation for :py:meth:`.AwsLimitChecker.check_thresholds` and :py:meth:`.AwsLimitChecker.set_threshold_override`.

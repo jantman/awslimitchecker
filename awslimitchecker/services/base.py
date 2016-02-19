@@ -48,6 +48,7 @@ class _AwsService(Connectable):
     __metaclass__ = abc.ABCMeta
 
     service_name = 'baseclass'
+    api_name = 'baseclass'
 
     def __init__(self, warning_threshold, critical_threshold, account_id=None,
                  account_role=None, region=None, external_id=None,
@@ -104,26 +105,8 @@ class _AwsService(Connectable):
         self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
+        self.resource_conn = None
         self._have_usage = False
-
-    @abc.abstractmethod
-    def connect(self):
-        """
-        If not already done, establish a connection to the relevant AWS service
-        and save as ``self.conn``. If ``self.region`` is defined, call
-        ``self.connect_via()`` (:py:meth:`~.Connectable.connect_via`)
-        passing the appripriate boto ``connect_to_region()`` function as the
-        argument, else call the boto.connect_SERVICE_NAME() method directly.
-        """
-        """
-        if self.conn is not None:
-            return
-        elif self.region:
-            self.conn = self.connect_via(boto.ec2.connect_to_region)
-        else:
-            self.conn = boto.connect_ec2()
-        """
-        raise NotImplementedError('abstract base class')
 
     @abc.abstractmethod
     def find_usage(self):
@@ -133,14 +116,25 @@ class _AwsService(Connectable):
         :py:class:`~.AwsLimit` instance.
 
         This method MUST set ``self._have_usage = True``.
-        This method MUST make all API calls through
-        :py:func:`~awslimitchecker.utils.boto_query_wrapper`.
+
+        If the boto3 method being called returns a dict response that can
+        include 'NextToken' or another pagination marker, it should be called
+        through
+        :py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate
+        parameters.
         """
         """
         logger.debug("Checking usage for service {n}".format(
             n=self.service_name))
         self.connect()
-        usage = boto_query_wrapper(self.conn.method_to_get_usage)
+        usage = self.conn.method_to_get_usage()
+        # or, if it needs to be paginated, something like:
+        usage = paginate_dict(
+            self.conn.method_to_get_usage,
+            alc_marker_path=['NextToken'],
+            alc_data_path=['ResourceListName'],
+            alc_marker_param='NextToken'
+        )
         logger.debug("Done checking usage.")
         self._have_usage = True
         """

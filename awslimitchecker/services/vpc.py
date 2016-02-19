@@ -38,14 +38,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
-import boto
-import boto.vpc
 import logging
 from collections import defaultdict
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import boto_query_wrapper
 
 logger = logging.getLogger(__name__)
 
@@ -53,15 +50,7 @@ logger = logging.getLogger(__name__)
 class _VpcService(_AwsService):
 
     service_name = 'VPC'
-
-    def connect(self):
-        """Connect to API if not already connected; set self.conn."""
-        if self.conn is not None:
-            return
-        elif self.region:
-            self.conn = self.connect_via(boto.vpc.connect_to_region)
-        else:
-            self.conn = boto.connect_vpc()
+    api_name = 'ec2'
 
     def find_usage(self):
         """
@@ -84,9 +73,9 @@ class _VpcService(_AwsService):
     def _find_usage_vpcs(self):
         """find usage for VPCs"""
         # overall number of VPCs
-        vpcs = boto_query_wrapper(self.conn.get_all_vpcs)
+        vpcs = self.conn.describe_vpcs()
         self.limits['VPCs']._add_current_usage(
-            len(vpcs),
+            len(vpcs['Vpcs']),
             aws_type='AWS::EC2::VPC'
         )
 
@@ -94,9 +83,8 @@ class _VpcService(_AwsService):
         """find usage for Subnets"""
         # subnets per VPC
         subnets = defaultdict(int)
-        for subnet in boto_query_wrapper(self.conn.get_all_subnets):
-            # boto.vpc.subnet.Subnet
-            subnets[subnet.vpc_id] += 1
+        for subnet in self.conn.describe_subnets()['Subnets']:
+            subnets[subnet['VpcId']] += 1
         for vpc_id in subnets:
             self.limits['Subnets per VPC']._add_current_usage(
                 subnets[vpc_id],
@@ -108,14 +96,13 @@ class _VpcService(_AwsService):
         """find usage for ACLs"""
         # Network ACLs per VPC
         acls = defaultdict(int)
-        for acl in boto_query_wrapper(self.conn.get_all_network_acls):
-            # boto.vpc.networkacl.NetworkAcl
-            acls[acl.vpc_id] += 1
+        for acl in self.conn.describe_network_acls()['NetworkAcls']:
+            acls[acl['VpcId']] += 1
             # Rules per network ACL
             self.limits['Rules per network ACL']._add_current_usage(
-                len(acl.network_acl_entries),
+                len(acl['Entries']),
                 aws_type='AWS::EC2::NetworkAcl',
-                resource_id=acl.id
+                resource_id=acl['NetworkAclId']
             )
         for vpc_id in acls:
             self.limits['Network ACLs per VPC']._add_current_usage(
@@ -128,14 +115,13 @@ class _VpcService(_AwsService):
         """find usage for route tables"""
         # Route tables per VPC
         tables = defaultdict(int)
-        for table in boto_query_wrapper(self.conn.get_all_route_tables):
-            # boto.vpc.routetable.RouteTable
-            tables[table.vpc_id] += 1
+        for table in self.conn.describe_route_tables()['RouteTables']:
+            tables[table['VpcId']] += 1
             # Entries per route table
             self.limits['Entries per route table']._add_current_usage(
-                len(table.routes),
+                len(table['Routes']),
                 aws_type='AWS::EC2::RouteTable',
-                resource_id=table.id
+                resource_id=table['RouteTableId']
             )
         for vpc_id in tables:
             self.limits['Route tables per VPC']._add_current_usage(
@@ -147,9 +133,9 @@ class _VpcService(_AwsService):
     def _find_usage_gateways(self):
         """find usage for Internet Gateways"""
         # Internet gateways
-        gws = boto_query_wrapper(self.conn.get_all_internet_gateways)
+        gws = self.conn.describe_internet_gateways()
         self.limits['Internet gateways']._add_current_usage(
-            len(gws),
+            len(gws['InternetGateways']),
             aws_type='AWS::EC2::InternetGateway',
         )
 

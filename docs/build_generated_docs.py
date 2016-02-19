@@ -295,9 +295,12 @@ def build_docs():
     if os.environ.get('CI', None) is not None:
         print("Not building dynamic docs in CI environment")
         raise SystemExit(0)
+    region = os.environ.get('AWS_DEFAULT_REGION', None)
+    if region is None:
+        raise SystemExit("ERROR: Please export AWS_DEFAULT_REGION")
     logger.info("Beginning build of dynamically-generated docs")
     logger.info("Instantiating AwsLimitChecker")
-    c = AwsLimitChecker()
+    c = AwsLimitChecker(region=region)
     build_iam_policy(c)
     build_limits(c)
     build_runner_examples()
