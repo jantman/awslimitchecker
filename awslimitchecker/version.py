@@ -42,7 +42,7 @@ from awslimitchecker.versioncheck import AGPLVersionChecker
 import logging
 logger = logging.getLogger(__name__)
 
-_VERSION = '0.2.3'
+_VERSION = '0.3.0'
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
 
 
