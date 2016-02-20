@@ -4,6 +4,8 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* `#117 <https://github.com/jantman/awslimitchecker/issues/117>`_ fix Python 3.5 TravisCI tests and re-enable automatic testing for 3.5.
+
 0.3.0 (2016-02-18)
 ------------------
 
