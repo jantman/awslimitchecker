@@ -72,7 +72,7 @@ class Test_Ec2Service(object):
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
-        assert len(types) == 53
+        assert len(types) == 54
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -121,7 +121,7 @@ class Test_Ec2Service(object):
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
-        assert len(limits) == 54
+        assert len(limits) == 55
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
