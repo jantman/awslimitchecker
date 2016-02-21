@@ -83,7 +83,7 @@ setup(
     awslimitchecker = awslimitchecker.runner:console_entry_point
     """,
     url=_PROJECT_URL,
-    description='A script and python module to check your AWS service limits and usage using boto.',
+    description='A script and python module to check your AWS service limits and usage, and warn when usage approaches limits.',
     long_description=long_description,
     install_requires=requires,
     keywords="AWS EC2 Amazon boto boto3 limits cloud",
