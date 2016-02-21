@@ -243,6 +243,8 @@ class _Ec2Service(_AwsService):
             'i2.8xlarge': (2, 20, 0),
             'd2.4xlarge': (10, 20, 5),
             'd2.8xlarge': (5, 20, 5),
+            'm4.4xlarge': (10, 20, 5),
+            'm4.10xlarge': (5, 20, 5)
         }
         limits = {}
         for i_type in self._instance_types():
