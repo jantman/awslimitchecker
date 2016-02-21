@@ -415,6 +415,7 @@ class _Ec2Service(_AwsService):
         :rtype: list
         """
         GENERAL_TYPES = [
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -427,7 +428,7 @@ class _Ec2Service(_AwsService):
             'm4.xlarge',
             'm4.2xlarge',
             'm4.4xlarge',
-            'm4.8xlarge',
+            'm4.10xlarge'
         ]
 
         PREV_GENERAL_TYPES = [
