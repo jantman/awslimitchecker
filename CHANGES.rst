@@ -4,6 +4,9 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* `#117 <https://github.com/jantman/awslimitchecker/issues/117>`_ fix Python 3.5 TravisCI tests and re-enable automatic testing for 3.5.
+* `#116 <https://github.com/jantman/awslimitchecker/issues/116>`_ add t2.nano EC2 instance type; fix typo - "m4.8xlarge" should have been "m4.10xlarge"; update default limits for m4.(4|10)xlarge
+
 0.3.0 (2016-02-18)
 ------------------
 
