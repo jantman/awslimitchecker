@@ -3,6 +3,13 @@
 Development
 ===========
 
+Any and all contributions to awslimitchecker are welcome. Guidelines for submitting
+code contributions in the form of pull requests on `GitHub <https://github.com/jantman/awslimitchecker>`_
+can be found below. For guidelines on submitting bug reports or feature requests,
+please see the template used when creating a `new issue <https://github.com/jantman/awslimitchecker/issues/new>`_.
+For any contributions that don't fall into the above categories, please open an issue
+for further assistance.
+
 .. _development.pull_requests:
 
 Pull Requests
