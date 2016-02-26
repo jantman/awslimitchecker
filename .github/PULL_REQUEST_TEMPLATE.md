@@ -19,5 +19,5 @@ and specifically the [Pull Request Guidelines](http://awslimitchecker.readthedoc
       refrain from using the "fixes #x" notation unless you are *sure* that the
       the issue is fixed in that commit.
     - [ ] Git history is fully intact; please do not squash or rewrite history.
-- [] If you made changes to the ``versioncheck`` code, be sure to locally run the
+- [ ] If you made changes to the ``versioncheck`` code, be sure to locally run the
 ``-versioncheck`` tox tests.
