@@ -145,8 +145,8 @@ For basic usage, see:
 See the `project documentation <http://awslimitchecker.readthedocs.org>`_
 for further information.
 
-Bugs, Feature Requests
-----------------------
+Bugs, Feature Requests, Support
+-------------------------------
 
 Questions, comments, Bug reports and feature requests are happily accepted via
 the `GitHub Issue Tracker <https://github.com/jantman/awslimitchecker/issues>`_.
@@ -154,6 +154,10 @@ Pull requests are always welcome.
 
 Please see the `Development <http://awslimitchecker.readthedocs.org/en/latest/development.html>`_
 and `Getting Help <http://awslimitchecker.readthedocs.org/en/latest/getting_help.html>`_ documentation for more information.
+
+For paid support and development options, please see the
+`Enterprise Support Agreements and Contract Development <getting_help.paid_support>_`
+section of the documentation.
 
 Changelog
 ---------

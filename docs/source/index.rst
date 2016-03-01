@@ -109,6 +109,10 @@ Getting Help and Asking Questions
 
 See :ref:`getting_help`.
 
+For paid support and development options, please see the
+:ref:`Enterprise Support Agreements and Contract Development <getting_help.paid_support>`
+section of the documentation.
+
 Changelog
 ---------
 
@@ -125,11 +129,10 @@ Contents
    Python Usage <python_usage>
    Required IAM Permissions <iam_policy>
    Supported Limits <limits>
+   Getting Help <getting_help>
    Development <development>
    Internals <internals>
    API <modules>
-   Getting Help <getting_help>
-
 
 Indices and tables
 ==================
