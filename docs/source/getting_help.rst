@@ -4,6 +4,15 @@ Getting Help
 =============
 
 
+.. _getting_help.paid_support:
+
+Enterprise Support Agreements and Contract Development
+-------------------------------------------------------
+
+For Commercial or Enterprise support agreements for awslimitchecker,
+or for paid as-needed feature development or bug fixes, please contact Jason
+Antman at jason@jasonantman.com.
+
 .. _getting_help.reporting_bugs_and_questions:
 
 Reporting Bugs and Asking Questions
