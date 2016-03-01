@@ -3,24 +3,46 @@ sudo: false
 cache:
   directories:
   - "$HOME/.pip-cache/"
-env:
-- TOXENV=py26-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py27-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py32-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py33-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py26-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py27-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py32-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py33-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=py34-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=pypy-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=pypy3-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-- TOXENV=integration
-- TOXENV=integration3
+matrix:
+  include:
+    - python: "2.6"
+      env: TOXENV=py26-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "2.7"
+      env: TOXENV=py27-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.2"
+      env: TOXENV=py32-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.3"
+      env: TOXENV=py33-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.4"
+      env: TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.5"
+      env: TOXENV=py35-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "pypy"
+      env: TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "pypy3"
+      env: TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "2.6"
+      env: TOXENV=py26-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "2.7"
+      env: TOXENV=py27-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.2"
+      env: TOXENV=py32-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.3"
+      env: TOXENV=py33-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.4"
+      env: TOXENV=py34-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "3.5"
+      env: TOXENV=py35-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "pypy"
+      env: TOXENV=pypy-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "pypy3"
+      env: TOXENV=pypy3-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "2.7"
+      env: TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+    - python: "2.7"
+      env: TOXENV=integration
+    - python: "3.4"
+      env: TOXENV=integration3
 install:
 - virtualenv --version; test $TOXENV = "py32-unit" -o $TOXENV = "py32-versioncheck" -o $TOXENV = "pypy3-unit" -o $TOXENV = "pypy3-versioncheck" && pip install --upgrade virtualenv==13.1.2 || /bin/true
 - git config --global user.email "travisci@jasonantman.com"
