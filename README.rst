@@ -156,7 +156,7 @@ Please see the `Development <http://awslimitchecker.readthedocs.org/en/latest/de
 and `Getting Help <http://awslimitchecker.readthedocs.org/en/latest/getting_help.html>`_ documentation for more information.
 
 For paid support and development options, please see the
-`Enterprise Support Agreements and Contract Development <getting_help.paid_support>_`
+`Enterprise Support Agreements and Contract Development <http://awslimitchecker.readthedocs.org/en/latest/getting_help.html#getting-help-paid-support>`_
 section of the documentation.
 
 Changelog
