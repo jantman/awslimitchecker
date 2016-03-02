@@ -203,13 +203,13 @@ class TrustedAdvisor(Connectable):
         """
         logger.debug("Updating TA limits on all services")
         for svc_name in sorted(ta_results.keys()):
-            limits = ta_results[svc_name]
+            svc_results = ta_results[svc_name]
             if svc_name not in services:
                 logger.info("TrustedAdvisor returned check results for "
                             "unknown service '%s'", svc_name)
                 continue
             service = services[svc_name]
-            for lim_name in sorted(limits.keys()):
+            for lim_name in sorted(svc_results.keys()):
                 try:
                     # @TODO - if we have ANY MORE special cases, we need a
                     # better way of handling this - maybe with a mapping
@@ -220,10 +220,10 @@ class TrustedAdvisor(Connectable):
                         # include EC2, we don't want to set it.
                         if 'EC2' in services:
                             services['EC2']._set_ta_limit(
-                                lim_name, limits[lim_name]
+                                lim_name, svc_results[lim_name]
                             )
                     else:
-                        service._set_ta_limit(lim_name, limits[lim_name])
+                        service._set_ta_limit(lim_name, svc_results[lim_name])
                 except ValueError:
                     logger.info("TrustedAdvisor returned check results for "
                                 "unknown limit '%s' (service %s)",
