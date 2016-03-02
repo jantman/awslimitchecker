@@ -55,11 +55,15 @@ class TrustedAdvisor(Connectable):
     service_name = 'TrustedAdvisor'
     api_name = 'support'
 
-    def __init__(self, account_id=None, account_role=None, region=None,
-                 external_id=None, mfa_serial_number=None, mfa_token=None):
+    def __init__(self, all_services, account_id=None, account_role=None,
+                 region=None, external_id=None, mfa_serial_number=None,
+                 mfa_token=None):
         """
         Class to contain all TrustedAdvisor-related logic.
 
+        :param all_services: :py:class:`~.checker.AwsLimitChecker` ``services``
+          dictionary.
+        :type all_services: dict
         :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
           latest/gr/acct-identifiers.html>`_
           (12-digit string, currently numeric) for the account to connect to
@@ -92,6 +96,7 @@ class TrustedAdvisor(Connectable):
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
+        self.all_services = all_services
 
     def update_limits(self, services):
         """

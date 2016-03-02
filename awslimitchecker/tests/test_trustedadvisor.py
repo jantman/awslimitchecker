@@ -65,7 +65,7 @@ class Test_TrustedAdvisor(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor()
+        self.cls = TrustedAdvisor({})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -76,7 +76,7 @@ class Test_TrustedAdvisor(object):
         }
 
     def test_init(self):
-        cls = TrustedAdvisor()
+        cls = TrustedAdvisor({})
         assert cls.conn is None
         assert cls.account_id is None
         assert cls.account_role is None
@@ -85,9 +85,12 @@ class Test_TrustedAdvisor(object):
         assert cls.external_id is None
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
+        assert cls.all_services == {}
 
     def test_init_sts(self):
-        cls = TrustedAdvisor(account_id='aid', account_role='role', region='r')
+        cls = TrustedAdvisor(
+            {'foo': 'bar'}, account_id='aid', account_role='role', region='r'
+        )
         assert cls.conn is None
         assert cls.account_id == 'aid'
         assert cls.account_role == 'role'
@@ -96,10 +99,13 @@ class Test_TrustedAdvisor(object):
         assert cls.external_id is None
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
+        assert cls.all_services == {'foo': 'bar'}
 
     def test_init_sts_external_id(self):
-        cls = TrustedAdvisor(account_id='aid', account_role='role', region='r',
-                             external_id='myeid')
+        cls = TrustedAdvisor(
+            {}, account_id='aid', account_role='role', region='r',
+            external_id='myeid'
+        )
         assert cls.conn is None
         assert cls.account_id == 'aid'
         assert cls.account_role == 'role'

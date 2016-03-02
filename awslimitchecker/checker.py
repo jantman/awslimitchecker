@@ -122,19 +122,20 @@ class AwsLimitChecker(object):
         self.mfa_token = mfa_token
         self.region = region
         self.services = {}
-        self.ta = TrustedAdvisor(
-            account_id=account_id,
-            account_role=account_role,
-            region=region,
-            external_id=external_id,
-            mfa_serial_number=mfa_serial_number,
-            mfa_token=mfa_token
-        )
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
                                        account_id, account_role, region,
                                        external_id, mfa_serial_number,
                                        mfa_token)
+        self.ta = TrustedAdvisor(
+            self.services,
+            account_id=account_id,
+            account_role=account_role,
+            region=region,
+            external_id=external_id,
+            mfa_serial_number=mfa_serial_number,
+            mfa_token=mfa_token,
+        )
 
     def get_version(self):
         """
