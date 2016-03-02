@@ -63,14 +63,13 @@ When :py:class:`~awslimitchecker.checker.AwsLimitChecker` initializes
 :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`, it passes in the
 ``self.services`` dictionary of all services and limits. At initialization time,
 :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor` iterates all services
-and limits, looking for limits with ``ta_service_name`` and ``ta_limit_name``
-attributes that are not None. If they are found, they are used to populate a
-dictionary (``svc_limit_mapping``) that maps the TrustedAdvisor service and
-limit names to :py:class:`~.AwsLimit` instances to update. Any limits which have
-these attributes set are updated from the TrustedAdvisor check matching them,
-instead of the one matching the name of the service and limit. Otherwise, as
-long as the service and limit name strings match between awslimitchecker and the
-Trusted Advisor API response, the limits will be automatically found and updated.
+and limits, and builds a new dictionary mapping the limit objects by the return
+values of their :py:meth:`~awslimitchecker.limit.AwsLimit.ta_service_name`
+and :py:meth:`~awslimitchecker.limit.AwsLimit.ta_limit_name` properties. This
+allows limits to override the Trusted Advisor service and limit name that their
+data comes from. In the default case, their service and limit names will be used
+as they are set in the awslimitchecker code, and limits which have matching
+Trusted Advisor data will be automatically populated.
 
 Service API Limit Information
 -----------------------------

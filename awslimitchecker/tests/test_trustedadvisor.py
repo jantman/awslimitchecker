@@ -41,6 +41,7 @@ import sys
 from botocore.exceptions import ClientError
 from awslimitchecker.trustedadvisor import TrustedAdvisor
 from awslimitchecker.services.base import _AwsService
+from awslimitchecker.limit import AwsLimit
 import pytest
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -88,8 +89,11 @@ class Test_TrustedAdvisor(object):
         assert cls.all_services == {}
 
     def test_init_sts(self):
+        mock_svc = Mock(spec_set=_AwsService)
+        mock_svc.get_limits.return_value = {}
         cls = TrustedAdvisor(
-            {'foo': 'bar'}, account_id='aid', account_role='role', region='r'
+            {'foo': mock_svc},
+            account_id='aid', account_role='role', region='r'
         )
         assert cls.conn is None
         assert cls.account_id == 'aid'
@@ -99,7 +103,7 @@ class Test_TrustedAdvisor(object):
         assert cls.external_id is None
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
-        assert cls.all_services == {'foo': 'bar'}
+        assert cls.all_services == {'foo': mock_svc}
 
     def test_init_sts_external_id(self):
         cls = TrustedAdvisor(
@@ -122,11 +126,11 @@ class Test_TrustedAdvisor(object):
                 with patch('%s._update_services' % pb,
                            autospec=True) as mock_update_services:
                     mock_poll.return_value = mock_results
-                    self.cls.update_limits(self.services)
+                    self.cls.update_limits()
         assert mock_connect.mock_calls == [call(self.cls)]
         assert mock_poll.mock_calls == [call(self.cls)]
         assert mock_update_services.mock_calls == [
-            call(self.cls, mock_results, self.services)
+            call(self.cls, mock_results)
         ]
 
     def test_get_limit_check_id(self):
@@ -433,19 +437,21 @@ class Test_TrustedAdvisor(object):
         assert res == {}
 
     def test_update_services(self):
-
-        def se_set(lname, val):
-            if lname == 'blam':
-                raise ValueError("foo")
-
-        mock_autoscale = Mock(spec_set=_AwsService)
-        mock_ec2 = Mock(spec_set=_AwsService)
-        mock_ec2._set_ta_limit.side_effect = se_set
-        mock_vpc = Mock(spec_set=_AwsService)
-        services = {
-            'AutoScaling': mock_autoscale,
-            'EC2': mock_ec2,
-            'VPC': mock_vpc,
+        mock_as_foo = Mock(spec_set=AwsLimit)
+        mock_as_bar = Mock(spec_set=AwsLimit)
+        mock_ec2_baz = Mock(spec_set=AwsLimit)
+        mock_vpc = Mock(spec_set=AwsLimit)
+        ta_services = {
+            'AutoScaling': {
+                'foo': mock_as_foo,
+                'bar': mock_as_bar
+            },
+            'EC2': {
+                'baz': mock_ec2_baz
+            },
+            'VPC': {
+                'VPC Elastic IP addresses (EIPs)': mock_vpc
+            },
         }
         ta_results = {
             'AutoScaling': {
@@ -465,7 +471,8 @@ class Test_TrustedAdvisor(object):
         }
         with patch('awslimitchecker.trustedadvisor'
                    '.logger', autospec=True) as mock_logger:
-            self.cls._update_services(ta_results, services)
+            self.cls.ta_services = ta_services
+            self.cls._update_services(ta_results)
         assert mock_logger.mock_calls == [
             call.debug("Updating TA limits on all services"),
             call.info("TrustedAdvisor returned check results for unknown "
@@ -474,47 +481,64 @@ class Test_TrustedAdvisor(object):
                       "service '%s'", 'OtherService'),
             call.info("Done updating TA limits on all services"),
         ]
-        assert mock_autoscale.mock_calls == [
-            call._set_ta_limit('bar', 40),
-            call._set_ta_limit('foo', 20),
+        assert mock_as_foo.mock_calls == [
+            call._set_ta_limit(20)
         ]
-        assert mock_ec2.mock_calls == [
-            call._set_ta_limit('baz', 5),
-            call._set_ta_limit('blam', 10),
-            call._set_ta_limit('VPC Elastic IP addresses (EIPs)', 11)
+        assert mock_as_bar.mock_calls == [
+            call._set_ta_limit(40)
+        ]
+        assert mock_ec2_baz.mock_calls == [
+            call._set_ta_limit(5)
+        ]
+        assert mock_vpc.mock_calls == [
+            call._set_ta_limit(11)
         ]
 
-    def test_update_services_no_ec2(self):
-
-        mock_autoscale = Mock(spec_set=_AwsService)
-        mock_vpc = Mock(spec_set=_AwsService)
-        services = {
-            'AutoScaling': mock_autoscale,
-            'VPC': mock_vpc,
+    def test_make_ta_service_dict(self):
+        mock_ec2 = Mock(spec_set=_AwsService)
+        mock_el1 = Mock(spec_set=AwsLimit)
+        type(mock_el1).name = 'el1'
+        type(mock_el1).ta_service_name = 'EC2'
+        type(mock_el1).ta_limit_name = 'el1'
+        mock_el2 = Mock(spec_set=AwsLimit)
+        type(mock_el2).name = 'el2'
+        type(mock_el2).ta_service_name = 'Foo'
+        type(mock_el2).ta_limit_name = 'el2'
+        mock_ec2.get_limits.return_value = {
+            'mock_el1': mock_el1,
+            'mock_el2': mock_el2
         }
-        ta_results = {
-            'AutoScaling': {
-                'foo': 20,
-                'bar': 40,
-            },
+
+        mock_vpc = Mock(spec_set=_AwsService)
+        mock_vl1 = Mock(spec_set=AwsLimit)
+        type(mock_vl1).name = 'vl1'
+        type(mock_vl1).ta_service_name = 'VPC'
+        type(mock_vl1).ta_limit_name = 'other name'
+        mock_vl2 = Mock(spec_set=AwsLimit)
+        type(mock_vl2).name = 'vl2'
+        type(mock_vl2).ta_service_name = 'Foo'
+        type(mock_vl2).ta_limit_name = 'other limit'
+        mock_vpc.get_limits.return_value = {
+            'mock_vl1': mock_vl1,
+            'mock_vl2': mock_vl2
+        }
+
+        svcs = {
+            'EC2': mock_ec2,
+            'VPC': mock_vpc
+        }
+
+        expected = {
             'EC2': {
-                'baz': 5,
+                'el1': mock_el1
             },
             'VPC': {
-                'VPC Elastic IP addresses (EIPs)': 11,
+                'other name': mock_vl1
+            },
+            'Foo': {
+                'el2': mock_el2,
+                'other limit': mock_vl2
             }
         }
-        with patch('awslimitchecker.trustedadvisor'
-                   '.logger', autospec=True) as mock_logger:
-            self.cls._update_services(ta_results, services)
-        assert mock_logger.mock_calls == [
-            call.debug("Updating TA limits on all services"),
-            call.info("TrustedAdvisor returned check results for unknown "
-                      "service '%s'", 'EC2'),
-            call.info("Done updating TA limits on all services"),
-        ]
-        assert mock_autoscale.mock_calls == [
-            call._set_ta_limit('bar', 40),
-            call._set_ta_limit('foo', 20),
-        ]
-        assert mock_vpc.mock_calls == []
+        self.cls.all_services = svcs
+        assert self.cls._make_ta_service_dict() == expected

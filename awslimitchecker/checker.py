@@ -176,7 +176,7 @@ class AwsLimitChecker(object):
         if service is not None:
             to_get = {service: self.services[service]}
         if use_ta:
-            self.ta.update_limits(to_get)
+            self.ta.update_limits()
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
@@ -212,7 +212,7 @@ class AwsLimitChecker(object):
         if service is not None:
             to_get = {service: self.services[service]}
         if use_ta:
-            self.ta.update_limits(to_get)
+            self.ta.update_limits()
         for cls in to_get.values():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
@@ -410,7 +410,7 @@ class AwsLimitChecker(object):
         if service is not None:
             to_get = {service: self.services[service]}
         if use_ta:
-            self.ta.update_limits(to_get)
+            self.ta.update_limits()
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()

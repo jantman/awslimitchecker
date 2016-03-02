@@ -117,9 +117,9 @@ include 'NextToken' or another pagination marker, should be called through
 
 In cases where the AWS service API has a different name than what is reported
 by Trusted Advisor, or legacy cases where Trusted Advisor support is retroactively
-added to a limit already in awslimitchecker, you must set the :py:class:`~.AwsLimit`
-instance's ``ta_service_name`` and ``ta_limit_name`` attributes to the strings
-used by Trusted Advisor.
+added to a limit already in awslimitchecker, you must pass the
+``ta_service_name`` and ``ta_limit_name`` parameters to the :py:class:`~.AwsLimit`
+constructor, specifying the string values that are returned by Trusted Advisor.
 
 .. _development.adding_services:
 

@@ -454,6 +454,8 @@ class Test_Ec2Service(object):
             'VPC security groups per elastic network interface',
         ]
         assert sorted(limits.keys()) == sorted(expected)
+        assert limits[
+                   'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
 
     def test_update_limits_from_api(self):
         data = fixtures.test_update_limits_from_api

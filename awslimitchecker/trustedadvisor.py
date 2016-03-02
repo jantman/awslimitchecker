@@ -97,8 +97,9 @@ class TrustedAdvisor(Connectable):
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
         self.all_services = all_services
+        self.ta_services = self._make_ta_service_dict()
 
-    def update_limits(self, services):
+    def update_limits(self):
         """
         Poll 'Service Limits' check results from Trusted Advisor, if possible.
         Iterate over all :py:class:`~.AwsLimit` objects for the given services
@@ -110,7 +111,7 @@ class TrustedAdvisor(Connectable):
         """
         self.connect()
         ta_results = self._poll()
-        self._update_services(ta_results, services)
+        self._update_services(ta_results)
 
     def _poll(self):
         """
@@ -195,7 +196,7 @@ class TrustedAdvisor(Connectable):
                      "name 'Service Limits'.")
         return (None, None)
 
-    def _update_services(self, ta_results, services):
+    def _update_services(self, ta_results):
         """
         Given a dict of TrustedAdvisor check results from :py:meth:`~._poll`
         and a dict of Service objects passed in to :py:meth:`~.update_limits`,
@@ -209,29 +210,34 @@ class TrustedAdvisor(Connectable):
         logger.debug("Updating TA limits on all services")
         for svc_name in sorted(ta_results.keys()):
             svc_results = ta_results[svc_name]
-            if svc_name not in services:
+            if svc_name not in self.ta_services:
                 logger.info("TrustedAdvisor returned check results for "
                             "unknown service '%s'", svc_name)
                 continue
-            service = services[svc_name]
-            for lim_name in sorted(svc_results.keys()):
-                try:
-                    # @TODO - if we have ANY MORE special cases, we need a
-                    # better way of handling this - maybe with a mapping
-                    if svc_name == 'VPC' and lim_name == 'VPC Elastic IP ' \
-                       'addresses (EIPs)':
-                        # this limit belongs under EC2, but if we're only
-                        # checking a specific list of services that doesn't
-                        # include EC2, we don't want to set it.
-                        if 'EC2' in services:
-                            services['EC2']._set_ta_limit(
-                                lim_name, svc_results[lim_name]
-                            )
-                    else:
-                        service._set_ta_limit(lim_name, svc_results[lim_name])
-                except ValueError:
+            svc_limits = self.ta_services[svc_name]
+            for lim_name in sorted(svc_results):
+                if lim_name not in svc_limits:
                     logger.info("TrustedAdvisor returned check results for "
                                 "unknown limit '%s' (service %s)",
                                 lim_name,
                                 svc_name)
+                    continue
+                svc_limits[lim_name]._set_ta_limit(svc_results[lim_name])
         logger.info("Done updating TA limits on all services")
+
+    def _make_ta_service_dict(self):
+        """
+        Build our service and limits dict. This is laid out identical to
+        ``self.all_services``, but keys limits by their ``ta_service_name``
+        and ``ta_limit_name`` properties.
+
+        :return: dict of TA service names to TA limit names to AwsLimit objects.
+        """
+        res = {}
+        for svc_name in self.all_services:
+            svc_obj = self.all_services[svc_name]
+            for lim_name, lim in svc_obj.get_limits().items():
+                if lim.ta_service_name not in res:
+                    res[lim.ta_service_name] = {}
+                res[lim.ta_service_name][lim.ta_limit_name] = lim
+        return res
