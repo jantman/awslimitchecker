@@ -260,7 +260,8 @@ class _Ec2Service(_AwsService):
                 self.warning_threshold,
                 self.critical_threshold,
                 limit_type='On-Demand instances',
-                limit_subtype=i_type
+                limit_subtype=i_type,
+                ta_limit_name='On-Demand instances - %s' % i_type
             )
         # limit for ALL running On-Demand instances
         key = 'Running On-Demand EC2 instances'

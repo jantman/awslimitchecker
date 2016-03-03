@@ -140,6 +140,12 @@ class Test_Ec2Service(object):
         assert all_ec2.limit_type == 'On-Demand instances'
         assert all_ec2.limit_subtype is None
         assert 'Running On-Demand m4.4xlarge instances' in limits
+        for lname, lim in limits.items():
+            assert lim.limit_type == 'On-Demand instances'
+            itype = lim.limit_subtype
+            if itype is not None:
+                assert lname == 'Running On-Demand %s instances' % itype
+                assert lim.ta_limit_name == 'On-Demand instances - %s' % itype
 
     def test_find_usage(self):
         with patch.multiple(
