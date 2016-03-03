@@ -46,7 +46,7 @@ When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is initialized, it als
 ``use_ta == True`` (the default), :py:meth:`~.TrustedAdvisor.update_limits` is called on the TrustedAdvisor
 instance.
 
-:py:meth:`~.TrustedAdvisor.update_limits` polls Trusted Advisor data is from the Support API via
+:py:meth:`~.TrustedAdvisor.update_limits` polls Trusted Advisor data from the Support API via
 :py:meth:`~.TrustedAdvisor._poll`; this will retrieve the limits for all "flaggedResources" items in the
 ``Service Limits`` Trusted Advisor check result for the current AWS account. It then calls
 :py:meth:`~.TrustedAdvisor._update_services`, passing in the Trusted Advisor check results and the
@@ -59,10 +59,17 @@ in the TA result and attempts to call the ``Service``'s :py:meth:`~._AwsService.
 If a matching Service is not found, or if ``_set_ta_limit`` raises a ValueError (matching Limit not found
 for that Service), an error is logged.
 
-Using this methodology, no additional code is needed to support new/additional Trusted Advisor limit checks;
-*so long as* the Service and Limit name strings match between the Trusted Advisor API response and their
-corresponding :py:class:`~._AwsService` and :py:class:`~.AwsLimit` instances, the TA limits will be automatically
-added to the corresponding ``AwsLimit``.
+When :py:class:`~awslimitchecker.checker.AwsLimitChecker` initializes
+:py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`, it passes in the
+``self.services`` dictionary of all services and limits. At initialization time,
+:py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor` iterates all services
+and limits, and builds a new dictionary mapping the limit objects by the return
+values of their :py:meth:`~awslimitchecker.limit.AwsLimit.ta_service_name`
+and :py:meth:`~awslimitchecker.limit.AwsLimit.ta_limit_name` properties. This
+allows limits to override the Trusted Advisor service and limit name that their
+data comes from. In the default case, their service and limit names will be used
+as they are set in the awslimitchecker code, and limits which have matching
+Trusted Advisor data will be automatically populated.
 
 Service API Limit Information
 -----------------------------

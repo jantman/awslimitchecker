@@ -100,7 +100,9 @@ include 'NextToken' or another pagination marker, should be called through
 :py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
-   Service class's :py:meth:`~._AwsService.get_limits` method.
+   Service class's :py:meth:`~._AwsService.get_limits` method. If Trusted Advisor
+   returns data for this limit, be sure the service and limit names match those
+   returned by Trusted Advisor.
 2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method
    called by that, in the case of large or complex services), get the usage information
    via ``self.conn`` and/or ``self.resource_conn`` and pass it to the appropriate AwsLimit object via its
@@ -112,6 +114,12 @@ include 'NextToken' or another pagination marker, should be called through
    :py:meth:`~.AwsLimit._set_api_limit` method. This should be done in the Service
    class's ``_update_limits_from_api()`` method.
 4. Ensure complete test coverage for the above.
+
+In cases where the AWS service API has a different name than what is reported
+by Trusted Advisor, or legacy cases where Trusted Advisor support is retroactively
+added to a limit already in awslimitchecker, you must pass the
+``ta_service_name`` and ``ta_limit_name`` parameters to the :py:class:`~.AwsLimit`
+constructor, specifying the string values that are returned by Trusted Advisor.
 
 .. _development.adding_services:
 

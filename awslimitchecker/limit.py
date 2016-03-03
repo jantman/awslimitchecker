@@ -54,7 +54,8 @@ class AwsLimit(object):
 
     def __init__(self, name, service, default_limit,
                  def_warning_threshold, def_critical_threshold,
-                 limit_type=None, limit_subtype=None):
+                 limit_type=None, limit_subtype=None,
+                 ta_service_name=None, ta_limit_name=None):
         """
         Describes one specific AWS service limit, as well as its
         current utilization, default limit, thresholds, and any
@@ -65,7 +66,7 @@ class AwsLimit(object):
         :type name: string
         :param service: the :py:class:`~._AwsService` class that
           this limit is for
-        :type service_name: :py:class:`~._AwsService`
+        :type service: :py:class:`~._AwsService`
         :param default_limit: the default value of this limit for new accounts
         :type default_limit: int
         :param def_warning_threshold: the default warning threshold, as an
@@ -80,6 +81,13 @@ class AwsLimit(object):
           such as "AWS::EC2::Instance" or "AWS::RDS::DBSubnetGroup".
         :param limit_subtype: resource sub-type for this limit, if applicable,
           such as "t2.micro" or "SecurityGroup"
+        :type limit_subtype: str
+        :param ta_service_name: The service name returned by Trusted Advisor
+          for this limit, if different from the name of ``service``
+        :type ta_service_name: str
+        :param ta_limit_name: The limit name returned by Trusted Advisor for
+          this limit, if different from ``name``.
+        :type ta_limit_name: str
         :raises: ValueError
         """
         if def_warning_threshold >= def_critical_threshold:
@@ -103,6 +111,8 @@ class AwsLimit(object):
         self.crit_count = None
         self._warnings = []
         self._criticals = []
+        self._ta_service_name = ta_service_name
+        self._ta_limit_name = ta_limit_name
 
     def set_limit_override(self, limit_value, override_ta=True):
         """
@@ -378,6 +388,34 @@ class AwsLimit(object):
         :rtype: list
         """
         return self._criticals
+
+    @property
+    def ta_service_name(self):
+        """
+        Return the effective Trusted Advisor service name that this limit's
+        data will have. This should be ``self._ta_service_name`` if set,
+        otherwise the name of ``self.service``.
+
+        :return: Trusted Advisor service data name
+        :rtype: str
+        """
+        if self._ta_service_name is not None:
+            return self._ta_service_name
+        return self.service.service_name
+
+    @property
+    def ta_limit_name(self):
+        """
+        Return the effective Trusted Advisor limit name that this limit's
+        data will have. This should be ``self._ta_limit_name`` if set,
+        otherwise ``self.name``.
+
+        :return: Trusted Advisor limit data name
+        :rtype: str
+        """
+        if self._ta_limit_name is not None:
+            return self._ta_limit_name
+        return self.name
 
 
 class AwsLimitUsage(object):
