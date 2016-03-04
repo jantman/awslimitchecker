@@ -3,16 +3,38 @@
 Development
 ===========
 
+Any and all contributions to awslimitchecker are welcome. Guidelines for submitting
+code contributions in the form of pull requests on `GitHub <https://github.com/jantman/awslimitchecker>`_
+can be found below. For guidelines on submitting bug reports or feature requests,
+please see the :ref:`Getting Help <getting_help>` documentation.
+For any contributions that don't fall into the above categories, please open an issue
+for further assistance.
+
 .. _development.pull_requests:
 
 Pull Requests
 -------------
+
+.. NOTE: be sure to update .github/PULL_REQUEST_TEMPLATE.md when changing this
 
 Please cut all pull requests against the "develop" branch. I'll do my best to merge them as
 quickly as possible. If they pass all unit tests and have 100% coverage, it'll certainly be
 easier. I work on this project only in my personal time, so I can't always get things merged
 as quickly as I'd like. That being said, I'm committed to doing my best, and please call me
 out on it if you feel like I'm not.
+
+.. _development.pull_request_guidelines:
+
+Pull Request Guidelines
++++++++++++++++++++++++
+
+* Code should conform to the :ref:`Guidelines <development.guidelines>` below.
+* If you have difficulty writing tests for the code, feel free to ask for help or
+  submit the PR without tests. This will increase the amount of time it takes to
+  get merged, but I'd rather write tests for your code than write all the code myself.
+* If you make changes to the ``versioncheck`` code, be sure to locally run the
+  ``-versioncheck`` tox tests.
+* You've rebuilt the documentation using ``tox -e docs``
 
 .. _development.installing:
 
@@ -41,14 +63,16 @@ To setup awslimitchecker for development:
 4. Check out a new git branch. If you're working on a GitHub issue you opened, your
    branch should be called "issues/N" where N is the issue number.
 
-
 .. _development.guidelines:
 
 Guidelines
 ----------
 
+.. NOTE: be sure to update .github/PULL_REQUEST_TEMPLATE.md when changing this
+
 * pep8 compliant with some exceptions (see pytest.ini)
 * 100% test coverage with pytest (with valid tests)
+* Complete, correctly-formatted documentation for all classes, functions and methods.
 * Connections to the AWS services should only be made by the class's
   :py:meth:`~awslimitchecker.connectable.Connectable.connect` and
   :py:meth:`~awslimitchecker.connectable.Connectable.connect_resource` methods,
@@ -76,7 +100,9 @@ include 'NextToken' or another pagination marker, should be called through
 :py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
-   Service class's :py:meth:`~._AwsService.get_limits` method.
+   Service class's :py:meth:`~._AwsService.get_limits` method. If Trusted Advisor
+   returns data for this limit, be sure the service and limit names match those
+   returned by Trusted Advisor.
 2. In the Service class's :py:meth:`~._AwsService.find_usage` method (or a method
    called by that, in the case of large or complex services), get the usage information
    via ``self.conn`` and/or ``self.resource_conn`` and pass it to the appropriate AwsLimit object via its
@@ -88,6 +114,12 @@ include 'NextToken' or another pagination marker, should be called through
    :py:meth:`~.AwsLimit._set_api_limit` method. This should be done in the Service
    class's ``_update_limits_from_api()`` method.
 4. Ensure complete test coverage for the above.
+
+In cases where the AWS service API has a different name than what is reported
+by Trusted Advisor, or legacy cases where Trusted Advisor support is retroactively
+added to a limit already in awslimitchecker, you must pass the
+``ta_service_name`` and ``ta_limit_name`` parameters to the :py:class:`~.AwsLimit`
+constructor, specifying the string values that are returned by Trusted Advisor.
 
 .. _development.adding_services:
 
@@ -235,6 +267,8 @@ work needed. See the guidelines below for information.
 Handling Issues and PRs
 -----------------------
 
+.. NOTE: be sure to update .github/PULL_REQUEST_TEMPLATE.md when changing this
+
 All PRs and new work should be based off of the ``develop`` branch.
 
 PRs can be merged if they look good, and ``CHANGES.rst`` updated after the merge.
@@ -269,11 +303,11 @@ Release Checklist
 8. Confirm that README.rst renders correctly on GitHub.
 9. Upload package to testpypi, confirm that README.rst renders correctly.
 
-   * Make sure your ~/.pypirc file is correct
+   * Make sure your ~/.pypirc file is correct (a repo called ``test`` for https://testpypi.python.org/pypi).
    * ``rm -Rf dist``
    * ``python setup.py register -r https://testpypi.python.org/pypi``
    * ``python setup.py sdist bdist_wheel``
-   * ``twine upload -r https://testpypi.python.org/pypi dist/*``
+   * ``twine upload -r test dist/*``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
 10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.

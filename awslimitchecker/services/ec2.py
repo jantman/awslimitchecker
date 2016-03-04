@@ -243,6 +243,8 @@ class _Ec2Service(_AwsService):
             'i2.8xlarge': (2, 20, 0),
             'd2.4xlarge': (10, 20, 5),
             'd2.8xlarge': (5, 20, 5),
+            'm4.4xlarge': (10, 20, 5),
+            'm4.10xlarge': (5, 20, 5)
         }
         limits = {}
         for i_type in self._instance_types():
@@ -258,7 +260,8 @@ class _Ec2Service(_AwsService):
                 self.warning_threshold,
                 self.critical_threshold,
                 limit_type='On-Demand instances',
-                limit_subtype=i_type
+                limit_subtype=i_type,
+                ta_limit_name='On-Demand instances - %s' % i_type
             )
         # limit for ALL running On-Demand instances
         key = 'Running On-Demand EC2 instances'
@@ -358,6 +361,7 @@ class _Ec2Service(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
             limit_subtype='AWS::EC2::VPC',
+            ta_service_name='VPC'  # TA shows this as VPC not EC2
         )
         # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
         # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
@@ -413,6 +417,7 @@ class _Ec2Service(_AwsService):
         :rtype: list
         """
         GENERAL_TYPES = [
+            't2.nano',
             't2.micro',
             't2.small',
             't2.medium',
@@ -425,7 +430,7 @@ class _Ec2Service(_AwsService):
             'm4.xlarge',
             'm4.2xlarge',
             'm4.4xlarge',
-            'm4.8xlarge',
+            'm4.10xlarge'
         ]
 
         PREV_GENERAL_TYPES = [

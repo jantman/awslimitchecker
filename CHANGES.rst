@@ -4,6 +4,16 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+
+0.3.1 (2016-03-04)
+------------------
+
+* `#117 <https://github.com/jantman/awslimitchecker/issues/117>`_ fix Python 3.5 TravisCI tests and re-enable automatic testing for 3.5.
+* `#116 <https://github.com/jantman/awslimitchecker/issues/116>`_ add t2.nano EC2 instance type; fix typo - "m4.8xlarge" should have been "m4.10xlarge"; update default limits for m4.(4|10)xlarge
+* `#134 <https://github.com/jantman/awslimitchecker/issues/134>`_ Minor update to project description in docs and setup.py; use only _VERSION (not git) when building in RTD; include short description in docs HTML title; set meta description on docs index.rst.
+* `#128 <https://github.com/jantman/awslimitchecker/issues/128>`_ Update Development and Getting Help documentation; add GitHub CONTRIBUTING.md file with link back to docs, as well as Issue and PR templates.
+* `#131 <https://github.com/jantman/awslimitchecker/issues/131>`_ Refactor TrustedAdvisor interaction with limits for special naming cases (limits where the TrustedAdvisor service or limit name doesn't match that of the awslimitchecker limit); enable newly-available TrustedAdvisor data for some EC2 on-demand instance usage.
+
 0.3.0 (2016-02-18)
 ------------------
 

@@ -122,19 +122,20 @@ class AwsLimitChecker(object):
         self.mfa_token = mfa_token
         self.region = region
         self.services = {}
-        self.ta = TrustedAdvisor(
-            account_id=account_id,
-            account_role=account_role,
-            region=region,
-            external_id=external_id,
-            mfa_serial_number=mfa_serial_number,
-            mfa_token=mfa_token
-        )
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
                                        account_id, account_role, region,
                                        external_id, mfa_serial_number,
                                        mfa_token)
+        self.ta = TrustedAdvisor(
+            self.services,
+            account_id=account_id,
+            account_role=account_role,
+            region=region,
+            external_id=external_id,
+            mfa_serial_number=mfa_serial_number,
+            mfa_token=mfa_token,
+        )
 
     def get_version(self):
         """
@@ -175,7 +176,7 @@ class AwsLimitChecker(object):
         if service is not None:
             to_get = {service: self.services[service]}
         if use_ta:
-            self.ta.update_limits(to_get)
+            self.ta.update_limits()
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
@@ -211,7 +212,7 @@ class AwsLimitChecker(object):
         if service is not None:
             to_get = {service: self.services[service]}
         if use_ta:
-            self.ta.update_limits(to_get)
+            self.ta.update_limits()
         for cls in to_get.values():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
@@ -409,7 +410,7 @@ class AwsLimitChecker(object):
         if service is not None:
             to_get = {service: self.services[service]}
         if use_ta:
-            self.ta.update_limits(to_get)
+            self.ta.update_limits()
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()

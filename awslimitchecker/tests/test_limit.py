@@ -60,6 +60,7 @@ class TestAwsLimit(object):
 
     def setup(self):
         self.mock_svc = Mock(spec_set=_AwsService)
+        type(self.mock_svc).service_name = 'mysname'
 
     def test_init(self):
         limit = AwsLimit(
@@ -80,6 +81,32 @@ class TestAwsLimit(object):
         assert limit.api_limit is None
         assert limit.def_warning_threshold == 7
         assert limit.def_critical_threshold == 11
+        assert limit._ta_service_name is None
+        assert limit._ta_limit_name is None
+
+    def test_init_ta_names(self):
+        limit = AwsLimit(
+            'limitname',
+            self.mock_svc,
+            3,
+            7,
+            11,
+            ta_service_name='foo',
+            ta_limit_name='bar'
+        )
+        assert limit.name == 'limitname'
+        assert limit.service == self.mock_svc
+        assert limit.default_limit == 3
+        assert limit.limit_type is None
+        assert limit.limit_subtype is None
+        assert limit.limit_override is None
+        assert limit.override_ta is True
+        assert limit.ta_limit is None
+        assert limit.api_limit is None
+        assert limit.def_warning_threshold == 7
+        assert limit.def_critical_threshold == 11
+        assert limit._ta_service_name == 'foo'
+        assert limit._ta_limit_name == 'bar'
 
     def test_init_valueerror(self):
         with pytest.raises(ValueError) as excinfo:
@@ -521,6 +548,26 @@ class TestAwsLimit(object):
         assert limit.warn_count == 2
         assert limit.crit_percent == 3
         assert limit.crit_count == 4
+
+    def test_ta_service_name_default(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
+        assert limit.ta_service_name == 'mysname'
+
+    def test_ta_service_name_overridden(self):
+        limit = AwsLimit(
+            'limitname', self.mock_svc, 100, 1, 2, ta_service_name='foo'
+        )
+        assert limit.ta_service_name == 'foo'
+
+    def test_ta_limit_name_default(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
+        assert limit.ta_limit_name == 'limitname'
+
+    def test_ta_limit_name_overridden(self):
+        limit = AwsLimit(
+            'limitname', self.mock_svc, 100, 1, 2, ta_limit_name='foo'
+        )
+        assert limit.ta_limit_name == 'foo'
 
 
 class TestAwsLimitUsage(object):

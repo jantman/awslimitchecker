@@ -72,7 +72,7 @@ class Test_Ec2Service(object):
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
-        assert len(types) == 53
+        assert len(types) == 54
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -121,7 +121,7 @@ class Test_Ec2Service(object):
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
-        assert len(limits) == 54
+        assert len(limits) == 55
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
@@ -140,6 +140,12 @@ class Test_Ec2Service(object):
         assert all_ec2.limit_type == 'On-Demand instances'
         assert all_ec2.limit_subtype is None
         assert 'Running On-Demand m4.4xlarge instances' in limits
+        for lname, lim in limits.items():
+            assert lim.limit_type == 'On-Demand instances'
+            itype = lim.limit_subtype
+            if itype is not None:
+                assert lname == 'Running On-Demand %s instances' % itype
+                assert lim.ta_limit_name == 'On-Demand instances - %s' % itype
 
     def test_find_usage(self):
         with patch.multiple(
@@ -454,6 +460,8 @@ class Test_Ec2Service(object):
             'VPC security groups per elastic network interface',
         ]
         assert sorted(limits.keys()) == sorted(expected)
+        assert limits[
+                   'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
 
     def test_update_limits_from_api(self):
         data = fixtures.test_update_limits_from_api

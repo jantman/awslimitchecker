@@ -1,7 +1,5 @@
-.. awslimitchecker documentation master file, created by
-   sphinx-quickstart on Sat Jun  6 16:12:56 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. meta::
+   :description: A script and python module to check your AWS service limits and usage, and warn when usage approaches limits.
 
 awslimitchecker
 ================
@@ -62,7 +60,7 @@ Develop:
    :target: https://readthedocs.org/projects/awslimitchecker/?badge=develop
    :alt: sphinx documentation for develop branch
 
-A script and python module to check your AWS service limits and usage using `boto <http://docs.pythonboto.org/en/latest/>`_.
+A script and python module to check your AWS service limits and usage, and warn when usage approaches limits.
 
 Users building out scalable services in Amazon AWS often run into AWS' `service limits <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html>`_ -
 often at the least convenient time (i.e. mid-deploy or when autoscaling fails). Amazon's `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
@@ -111,6 +109,10 @@ Getting Help and Asking Questions
 
 See :ref:`getting_help`.
 
+For paid support and development options, please see the
+:ref:`Enterprise Support Agreements and Contract Development <getting_help.paid_support>`
+section of the documentation.
+
 Changelog
 ---------
 
@@ -127,11 +129,10 @@ Contents
    Python Usage <python_usage>
    Required IAM Permissions <iam_policy>
    Supported Limits <limits>
+   Getting Help <getting_help>
    Development <development>
    Internals <internals>
    API <modules>
-   Getting Help <getting_help>
-
 
 Indices and tables
 ==================

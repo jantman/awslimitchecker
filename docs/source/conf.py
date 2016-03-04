@@ -14,9 +14,10 @@
 
 import sys
 import os
+import re
 # to let sphinx find the actual source...
 sys.path.insert(0, os.path.abspath("../.."))
-from awslimitchecker.version import _get_version_info
+from awslimitchecker.version import _get_version_info, _VERSION
 import sphinx.environment
 from docutils.utils import get_source_line
 
@@ -24,6 +25,16 @@ from docutils.utils import get_source_line
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+
+is_rtd = os.environ.get('READTHEDOCS', None) != 'True'
+readthedocs_version = os.environ.get('READTHEDOCS_VERSION', '')
+
+rtd_version = _get_version_info().version_str
+
+if (readthedocs_version in ['stable', 'latest', 'master'] or
+    re.match(r'^\d+\.\d+\.\d+', readthedocs_version)):
+    # this is a tag or stable/latest/master; show the actual version
+    rtd_version = _VERSION
 
 # -- General configuration ------------------------------------------------
 
@@ -57,7 +68,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'awslimitchecker'
-copyright = u'2015, Jason Antman'
+copyright = u'2015, 2016 Jason Antman'
 author = u'Jason Antman'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -65,7 +76,7 @@ author = u'Jason Antman'
 # built documents.
 #
 # The short X.Y version.
-version = _get_version_info().version_str
+version = rtd_version
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -116,7 +127,7 @@ todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 
-if os.environ.get('READTHEDOCS', None) != 'True':
+if is_rtd:
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [
@@ -131,7 +142,7 @@ html_theme_options = {
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'awslimitchecker v{v}'.format(v=version)
+html_title = 'v{v} - check and report on AWS service usage and limits'.format(v=version)
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

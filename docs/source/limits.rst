@@ -46,6 +46,54 @@ updated from Trusted Advisor:
 
   * Elastic IP addresses (EIPs)
 
+  * Running On-Demand c1.medium instances
+
+  * Running On-Demand c3.2xlarge instances
+
+  * Running On-Demand c3.4xlarge instances
+
+  * Running On-Demand c3.large instances
+
+  * Running On-Demand c3.xlarge instances
+
+  * Running On-Demand c4.2xlarge instances
+
+  * Running On-Demand c4.large instances
+
+  * Running On-Demand i2.2xlarge instances
+
+  * Running On-Demand m1.medium instances
+
+  * Running On-Demand m1.small instances
+
+  * Running On-Demand m3.2xlarge instances
+
+  * Running On-Demand m3.large instances
+
+  * Running On-Demand m3.medium instances
+
+  * Running On-Demand m3.xlarge instances
+
+  * Running On-Demand m4.4xlarge instances
+
+  * Running On-Demand m4.large instances
+
+  * Running On-Demand m4.xlarge instances
+
+  * Running On-Demand r3.2xlarge instances
+
+  * Running On-Demand r3.4xlarge instances
+
+  * Running On-Demand r3.large instances
+
+  * Running On-Demand t1.micro instances
+
+  * Running On-Demand t2.medium instances
+
+  * Running On-Demand t2.micro instances
+
+  * Running On-Demand t2.small instances
+
   * VPC Elastic IP addresses (EIPs)
 
 * ELB
@@ -145,17 +193,17 @@ Limit                                                          Default
 Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`           5  
 Rules per VPC security group                                   50 
 Running On-Demand EC2 instances :sup:`(API)`                   20 
-Running On-Demand c1.medium instances                          20 
+Running On-Demand c1.medium instances :sup:`(TA)`              20 
 Running On-Demand c1.xlarge instances                          20 
-Running On-Demand c3.2xlarge instances                         20 
-Running On-Demand c3.4xlarge instances                         20 
+Running On-Demand c3.2xlarge instances :sup:`(TA)`             20 
+Running On-Demand c3.4xlarge instances :sup:`(TA)`             20 
 Running On-Demand c3.8xlarge instances                         20 
-Running On-Demand c3.large instances                           20 
-Running On-Demand c3.xlarge instances                          20 
-Running On-Demand c4.2xlarge instances                         20 
+Running On-Demand c3.large instances :sup:`(TA)`               20 
+Running On-Demand c3.xlarge instances :sup:`(TA)`              20 
+Running On-Demand c4.2xlarge instances :sup:`(TA)`             20 
 Running On-Demand c4.4xlarge instances                         10 
 Running On-Demand c4.8xlarge instances                         5  
-Running On-Demand c4.large instances                           20 
+Running On-Demand c4.large instances :sup:`(TA)`               20 
 Running On-Demand c4.xlarge instances                          20 
 Running On-Demand cc2.8xlarge instances                        20 
 Running On-Demand cg1.4xlarge instances                        2  
@@ -168,36 +216,37 @@ Running On-Demand g2.2xlarge instances                         5
 Running On-Demand g2.8xlarge instances                         2  
 Running On-Demand hi1.4xlarge instances                        2  
 Running On-Demand hs1.8xlarge instances                        2  
-Running On-Demand i2.2xlarge instances                         8  
+Running On-Demand i2.2xlarge instances :sup:`(TA)`             8  
 Running On-Demand i2.4xlarge instances                         4  
 Running On-Demand i2.8xlarge instances                         2  
 Running On-Demand i2.xlarge instances                          8  
 Running On-Demand m1.large instances                           20 
-Running On-Demand m1.medium instances                          20 
-Running On-Demand m1.small instances                           20 
+Running On-Demand m1.medium instances :sup:`(TA)`              20 
+Running On-Demand m1.small instances :sup:`(TA)`               20 
 Running On-Demand m1.xlarge instances                          20 
 Running On-Demand m2.2xlarge instances                         20 
 Running On-Demand m2.4xlarge instances                         20 
 Running On-Demand m2.xlarge instances                          20 
-Running On-Demand m3.2xlarge instances                         20 
-Running On-Demand m3.large instances                           20 
-Running On-Demand m3.medium instances                          20 
-Running On-Demand m3.xlarge instances                          20 
+Running On-Demand m3.2xlarge instances :sup:`(TA)`             20 
+Running On-Demand m3.large instances :sup:`(TA)`               20 
+Running On-Demand m3.medium instances :sup:`(TA)`              20 
+Running On-Demand m3.xlarge instances :sup:`(TA)`              20 
+Running On-Demand m4.10xlarge instances                        5  
 Running On-Demand m4.2xlarge instances                         20 
-Running On-Demand m4.4xlarge instances                         20 
-Running On-Demand m4.8xlarge instances                         20 
-Running On-Demand m4.large instances                           20 
-Running On-Demand m4.xlarge instances                          20 
-Running On-Demand r3.2xlarge instances                         20 
-Running On-Demand r3.4xlarge instances                         10 
+Running On-Demand m4.4xlarge instances :sup:`(TA)`             10 
+Running On-Demand m4.large instances :sup:`(TA)`               20 
+Running On-Demand m4.xlarge instances :sup:`(TA)`              20 
+Running On-Demand r3.2xlarge instances :sup:`(TA)`             20 
+Running On-Demand r3.4xlarge instances :sup:`(TA)`             10 
 Running On-Demand r3.8xlarge instances                         5  
-Running On-Demand r3.large instances                           20 
+Running On-Demand r3.large instances :sup:`(TA)`               20 
 Running On-Demand r3.xlarge instances                          20 
-Running On-Demand t1.micro instances                           20 
+Running On-Demand t1.micro instances :sup:`(TA)`               20 
 Running On-Demand t2.large instances                           20 
-Running On-Demand t2.medium instances                          20 
-Running On-Demand t2.micro instances                           20 
-Running On-Demand t2.small instances                           20 
+Running On-Demand t2.medium instances :sup:`(TA)`              20 
+Running On-Demand t2.micro instances :sup:`(TA)`               20 
+Running On-Demand t2.nano instances                            20 
+Running On-Demand t2.small instances :sup:`(TA)`               20 
 Security groups per VPC                                        100
 VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5  
 VPC security groups per elastic network interface :sup:`(API)` 5  
