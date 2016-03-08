@@ -113,11 +113,6 @@ For paid support and development options, please see the
 :ref:`Enterprise Support Agreements and Contract Development <getting_help.paid_support>`
 section of the documentation.
 
-Changelog
----------
-
-See `https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst <https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst>`_
-
 Contents
 =========
 
@@ -133,6 +128,7 @@ Contents
    Development <development>
    Internals <internals>
    API <modules>
+   Changelog <changes>
 
 Indices and tables
 ==================

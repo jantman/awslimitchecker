@@ -4,6 +4,8 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* `#150 <https://github.com/jantman/awslimitchecker/issues/150>`_ add CHANGES.rst to Sphinx docs
+
 0.3.2 (2016-03-11)
 ------------------
 
