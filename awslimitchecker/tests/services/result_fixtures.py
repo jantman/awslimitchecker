@@ -41,6 +41,7 @@ import sys
 from datetime import datetime
 import boto3
 from boto3.utils import ServiceContext
+from dateutil.tz import tzutc
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -1004,6 +1005,200 @@ class RDS(object):
             },
         ],
     })
+
+    test_update_limits_from_api = {
+        'AccountQuotas': [
+            {
+                'Max': 200,
+                'AccountQuotaName': 'DBInstances',
+                'Used': 124
+            },
+            {
+                'Max': 200,
+                'AccountQuotaName': 'ReservedDBInstances',
+                'Used': 96},
+            {
+                'Max': 100000,
+                'AccountQuotaName': 'AllocatedStorage',
+                'Used': 8320
+            },
+            {
+                'Max': 25,
+                'AccountQuotaName': 'DBSecurityGroups',
+                'Used': 15
+            },
+            {
+                'Max': 20,
+                'AccountQuotaName': 'AuthorizationsPerDBSecurityGroup',
+                'Used': 5
+            },
+            {
+                'Max': 50,
+                'AccountQuotaName': 'DBParameterGroups',
+                'Used': 39
+            },
+            {
+                'Max': 150,
+                'AccountQuotaName': 'ManualSnapshots',
+                'Used': 76
+            },
+            {
+                'Max': 20,
+                'AccountQuotaName': 'EventSubscriptions',
+                'Used': 1
+            },
+            {
+                'Max': 200,
+                'AccountQuotaName': 'DBSubnetGroups',
+                'Used': 89
+            },
+            {
+                'Max': 20,
+                'AccountQuotaName': 'OptionGroups',
+                'Used': 0
+            },
+            {
+                'Max': 20,
+                'AccountQuotaName': 'SubnetsPerDBSubnetGroup',
+                'Used': 14
+            },
+            {
+                'Max': 5,
+                'AccountQuotaName': 'ReadReplicasPerMaster',
+                'Used': 0
+            },
+            {
+                'Max': 40,
+                'AccountQuotaName': 'DBClusters',
+                'Used': 3
+            },
+            {
+                'Max': 50,
+                'AccountQuotaName': 'DBClusterParameterGroups',
+                'Used': 0
+            }
+        ],
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '95729212-e5ab-11e5-8250-91a417accabb'
+        }
+    }
+
+    test_find_usage_clusters = {
+        'DBClusters': [
+            {
+                'AllocatedStorage': 1,
+                'AvailabilityZones': ['us-east-1c', 'us-east-1d', 'us-east-1e'],
+                'BackupRetentionPeriod': 1,
+                'DBClusterIdentifier': 'foo',
+                'DBClusterMembers': [
+                    {
+                        'DBClusterParameterGroupStatus': 'in-sync',
+                        'DBInstanceIdentifier': 'foo',
+                        'IsClusterWriter': True
+                    },
+                    {
+                        'DBClusterParameterGroupStatus': 'in-sync',
+                        'DBInstanceIdentifier': 'foo-replica',
+                        'IsClusterWriter': False
+                    }
+                ],
+                'DBClusterParameterGroup': 'default.aurora5.6',
+                'DBSubnetGroup': 'foo-subnet-group',
+                'DatabaseName': 'foo',
+                'EarliestRestorableTime': datetime(
+                    2016, 3, 9, 3, 21, 32, 789000, tzinfo=tzutc()
+                ),
+                'Endpoint': 'foo.us-east-1.rds.amazonaws.com',
+                'Engine': 'aurora',
+                'EngineVersion': '5.6.10a',
+                'LatestRestorableTime': datetime(
+                    2016, 3, 10, 23, 50, 52, 156000, tzinfo=tzutc()
+                ),
+                'MasterUsername': 'foomaster',
+                'Port': 3306,
+                'PreferredBackupWindow': '03:20-03:50',
+                'PreferredMaintenanceWindow': 'sun:06:45-sun:07:15',
+                'Status': 'available',
+                'StorageEncrypted': False,
+                'VpcSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'VpcSecurityGroupId': 'sg-705e9e15'
+                    }
+                ]
+            },
+            {
+                'AllocatedStorage': 1,
+                'AvailabilityZones': ['us-east-1b', 'us-east-1c', 'us-east-1e'],
+                'BackupRetentionPeriod': 1,
+                'DBClusterIdentifier': 'bar-db',
+                'DBClusterMembers': [
+                    {
+                        'DBClusterParameterGroupStatus': 'in-sync',
+                        'DBInstanceIdentifier': 'bar-db02',
+                        'IsClusterWriter': True
+                    },
+                    {
+                        'DBClusterParameterGroupStatus': 'in-sync',
+                        'DBInstanceIdentifier': 'bar-db01',
+                        'IsClusterWriter': False
+                    }
+                ],
+                'DBClusterParameterGroup': 'default.aurora5.6',
+                'DBSubnetGroup': 'bar-db',
+                'EarliestRestorableTime': datetime(
+                    2016, 3, 9, 3, 1, 24, 936000, tzinfo=tzutc()
+                ),
+                'Endpoint': 'bar.us-east-1.rds.amazonaws.com',
+                'Engine': 'aurora',
+                'EngineVersion': '5.6.10a',
+                'LatestRestorableTime': datetime(
+                    2016, 3, 10, 23, 50, 31, 500000, tzinfo=tzutc()
+                ),
+                'MasterUsername': 'bar',
+                'Port': 3306,
+                'PreferredBackupWindow': '03:00-04:00',
+                'PreferredMaintenanceWindow': 'fri:04:00-fri:05:00',
+                'Status': 'available',
+                'StorageEncrypted': False,
+                'VpcSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'VpcSecurityGroupId': 'sg-fb351a82'
+                    }
+                ]
+            }
+        ],
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': 'xxxxxxxxxxxxx'
+        }
+    }
+
+    test_find_usage_cluster_param_groups = {
+        'DBClusterParameterGroups': [
+            {
+                'DBClusterParameterGroupName': 'default.aurora5.6',
+                'DBParameterGroupFamily': 'aurora5.6',
+                'Description': 'Default cluster parameter group for aurora5.6'
+            },
+            {
+                'DBClusterParameterGroupName': 'mygroup',
+                'DBParameterGroupFamily': 'aurora5',
+                'Description': 'my other group'
+            },
+            {
+                'DBClusterParameterGroupName': 'default.aurora5',
+                'DBParameterGroupFamily': 'aurora5',
+                'Description': 'Default cluster parameter group for aurora5'
+            }
+        ],
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '8ac3376d-e71f-11e5-b90b-6d8b9a79b973'
+        }
+    }
 
 
 class ELB(object):

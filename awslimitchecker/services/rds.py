@@ -42,6 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,8 @@ class _RDSService(_AwsService):
         self._find_usage_event_subscriptions()
         self._find_usage_security_groups()
         self._find_usage_reserved_instances()
+        self._find_usage_clusters()
+        self._find_usage_cluster_param_groups()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -210,6 +213,54 @@ class _RDSService(_AwsService):
             aws_type='AWS::RDS::DBSecurityGroup',
         )
 
+    def _find_usage_clusters(self):
+        """find usage for DB Clusters"""
+        self.limits['DB Clusters']._add_current_usage(
+            len(
+                paginate_dict(
+                    self.conn.describe_db_clusters,
+                    alc_marker_path=['Marker'],
+                    alc_data_path=['DBClusters'],
+                    alc_marker_param='Marker'
+                )['DBClusters']
+            ),
+            aws_type='AWS::RDS::DBCluster',
+        )
+
+    def _find_usage_cluster_param_groups(self):
+        """find usage for DB Cluster Parameter Groups"""
+        params = paginate_dict(
+            self.conn.describe_db_cluster_parameter_groups,
+            alc_marker_path=['Marker'],
+            alc_data_path=['DBClusterParameterGroups'],
+            alc_marker_param='Marker'
+        )['DBClusterParameterGroups']
+        count = sum(
+            self._is_custom_cluster_param_group(x)
+            for x in params
+        )
+        self.limits['DB Cluster Parameter Groups']._add_current_usage(
+            count,
+            aws_type='AWS::RDS::DBClusterParameterGroup',
+        )
+
+    def _is_custom_cluster_param_group(self, data):
+        """
+        Return True if the specified DBClusterParameterGroup is a custom
+        (non-default) group, otherwise return False.
+
+        :param data: DBClusterParameterGroup
+        :type data: dict
+        :return: bool
+        """
+        family = data['DBParameterGroupFamily']
+        def_name = 'default.%s' % family
+        def_desc = 'Default cluster parameter group for %s' % family
+        if (data['DBClusterParameterGroupName'] == def_name and
+            data['Description'] == def_desc):
+            return False
+        return True
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -327,8 +378,38 @@ class _RDSService(_AwsService):
             limit_type='AWS::RDS::DBSecurityGroup',
             limit_subtype='AWS::RDS::DBSecurityGroupIngress',
         )
+        limits['DB Clusters'] = AwsLimit(
+            'DB Clusters',
+            self,
+            40,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::RDS::DBCluster',
+        )
+        limits['DB Cluster Parameter Groups'] = AwsLimit(
+            'DB Cluster Parameter Groups',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::RDS::DBClusterParameterGroup',
+        )
         self.limits = limits
         return limits
+
+    def _update_limits_from_apiNO(self):
+        """
+        Query EC2's DescribeAccountAttributes API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
+        self.connect()
+        logger.info("Querying RDS DescribeAccountAttributes for limits")
+        lims = self.conn.describe_account_attributes()
+        raise NotImplementedError()
+        #self.limits['Auto Scaling groups']._set_api_limit(
+        #    lims['MaxNumberOfAutoScalingGroups'])
+        #self.limits['Launch configurations']._set_api_limit(
+        #    lims['MaxNumberOfLaunchConfigurations'])
 
     def required_iam_permissions(self):
         """

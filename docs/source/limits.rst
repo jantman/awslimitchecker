@@ -58,7 +58,7 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.2xlarge instances
 
-  * Running On-Demand c4.large instances
+  * Running On-Demand c4.xlarge instances
 
   * Running On-Demand i2.2xlarge instances
 
@@ -203,8 +203,8 @@ Running On-Demand c3.xlarge instances :sup:`(TA)`              20
 Running On-Demand c4.2xlarge instances :sup:`(TA)`             20 
 Running On-Demand c4.4xlarge instances                         10 
 Running On-Demand c4.8xlarge instances                         5  
-Running On-Demand c4.large instances :sup:`(TA)`               20 
-Running On-Demand c4.xlarge instances                          20 
+Running On-Demand c4.large instances                           20 
+Running On-Demand c4.xlarge instances :sup:`(TA)`              20 
 Running On-Demand cc2.8xlarge instances                        20 
 Running On-Demand cg1.4xlarge instances                        2  
 Running On-Demand cr1.8xlarge instances                        2  
@@ -282,6 +282,8 @@ RDS
 ======================================== ======
 Limit                                    Default
 ======================================== ======
+DB Cluster Parameter Groups              50    
+DB Clusters                              40    
 DB instances :sup:`(TA)`                 40    
 DB parameter groups :sup:`(TA)`          50    
 DB security groups :sup:`(TA)`           25    

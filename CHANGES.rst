@@ -5,6 +5,7 @@ Pre-release (develop branch)
 ----------------------------
 
 * `#150 <https://github.com/jantman/awslimitchecker/issues/150>`_ add CHANGES.rst to Sphinx docs
+* `#85 <https://github.com/jantman/awslimitchecker/issues/85>`_ add support for RDS 'DB Clusters' and 'DB Cluster Parameter Groups' limits
 
 0.3.2 (2016-03-11)
 ------------------

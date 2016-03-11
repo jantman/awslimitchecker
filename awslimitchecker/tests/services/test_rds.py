@@ -85,6 +85,8 @@ class Test_RDSService(object):
             'Option Groups',
             'Event Subscriptions',
             'Read replicas per master',
+            'DB Clusters',
+            'DB Cluster Parameter Groups'
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -113,6 +115,8 @@ class Test_RDSService(object):
                     _find_usage_event_subscriptions=DEFAULT,
                     _find_usage_security_groups=DEFAULT,
                     _find_usage_reserved_instances=DEFAULT,
+                    _find_usage_clusters=DEFAULT,
+                    _find_usage_cluster_param_groups=DEFAULT,
             ) as mocks:
                 cls = _RDSService(21, 43)
                 cls.conn = mock_conn
@@ -394,3 +398,66 @@ class Test_RDSService(object):
         assert len(usage) == 1
         assert usage[0].get_value() == 2
         assert usage[0].aws_type == 'AWS::RDS::DBInstance'
+
+    def test_find_usage_clusters(self):
+        response = result_fixtures.RDS.test_find_usage_clusters
+
+        mock_conn = Mock()
+        cls = _RDSService(21, 43)
+        cls.conn = mock_conn
+        with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
+            mock_paginate.return_value = response
+            cls._find_usage_clusters()
+        assert len(cls.limits['DB Clusters'].get_current_usage()) == 1
+        assert cls.limits['DB Clusters'
+                          ''].get_current_usage()[0].get_value() == 2
+        assert mock_conn.mock_calls == []
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_db_clusters,
+                alc_marker_path=['Marker'],
+                alc_data_path=['DBClusters'],
+                alc_marker_param='Marker'
+            )
+        ]
+
+    def test_find_usage_cluster_param_groups(self):
+        response = result_fixtures.RDS.test_find_usage_cluster_param_groups
+
+        mock_conn = Mock()
+        cls = _RDSService(21, 43)
+        cls.conn = mock_conn
+        with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
+            mock_paginate.return_value = response
+            cls._find_usage_cluster_param_groups()
+        assert len(cls.limits['DB Cluster Parameter Groups'
+                              ''].get_current_usage()) == 1
+        assert cls.limits['DB Cluster Parameter Groups'
+                          ''].get_current_usage()[0].get_value() == 1
+        assert mock_conn.mock_calls == []
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_db_cluster_parameter_groups,
+                alc_marker_path=['Marker'],
+                alc_data_path=['DBClusterParameterGroups'],
+                alc_marker_param='Marker'
+            )
+        ]
+
+    def DONOTtest_update_limits_from_api(self):
+        limits = result_fixtures.RDS.test_update_limits_from_api
+
+        mock_conn = Mock()
+
+        mock_conn.describe_account_attrubites.return_value = limits
+        with patch('%s.connect' % self.pb) as mock_connect:
+            cls = _RDSService(21, 43)
+            cls.conn = mock_conn
+            cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == [
+            call.describe_account_attributes()
+        ]
+        raise NotImplementedError()
+        assert cls.limits['Auto Scaling groups'].api_limit == 11
+        assert cls.limits['Launch configurations'].api_limit == 22
