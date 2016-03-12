@@ -42,7 +42,6 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -82,256 +81,54 @@ class _RDSService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_instances()
-        self._find_usage_snapshots()
-        self._find_usage_param_groups()
         self._find_usage_subnet_groups()
-        self._find_usage_option_groups()
-        self._find_usage_event_subscriptions()
         self._find_usage_security_groups()
-        self._find_usage_reserved_instances()
-        self._find_usage_clusters()
-        self._find_usage_cluster_param_groups()
+        # RDS API also provides usage information
+        self._update_limits_from_api()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
     def _find_usage_instances(self):
         """find usage for DB Instances and related limits"""
-        count = 0
-        allocated_gb = 0
-
         paginator = self.conn.get_paginator('describe_db_instances')
         for page in paginator.paginate():
             for instance in page['DBInstances']:
-                count += 1
-                allocated_gb += instance['AllocatedStorage']
                 self.limits['Read replicas per master']._add_current_usage(
                     len(instance['ReadReplicaDBInstanceIdentifiers']),
                     aws_type='AWS::RDS::DBInstance',
                     resource_id=instance['DBInstanceIdentifier']
                 )
 
-        self.limits['DB instances']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBInstance'
-        )
-
-        self.limits['Storage quota (GB)']._add_current_usage(
-            allocated_gb,
-            aws_type='AWS::RDS::DBInstance'
-        )
-
-    def _find_usage_reserved_instances(self):
-        """find usage for reserved instances"""
-        count = 0
-
-        paginator = self.conn.get_paginator('describe_reserved_db_instances')
-        for page in paginator.paginate():
-            for inst in page['ReservedDBInstances']:
-                if inst['State'] != 'active':
-                    continue
-                count += inst['DBInstanceCount']
-        self.limits['Reserved Instances']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBInstance'
-        )
-
-    def _find_usage_snapshots(self):
-        """find usage for (manual) DB snapshots"""
-        count = 0
-
-        paginator = self.conn.get_paginator('describe_db_snapshots')
-        for page in paginator.paginate():
-            for snap in page['DBSnapshots']:
-                if snap['SnapshotType'] == 'manual':
-                    count += 1
-        self.limits['DB snapshots per user']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBSnapshot'
-        )
-
-    def _find_usage_param_groups(self):
-        """find usage for parameter groups"""
-        count = 0
-
-        paginator = self.conn.get_paginator('describe_db_parameter_groups')
-        for page in paginator.paginate():
-            for group in page['DBParameterGroups']:
-                count += self._is_custom_param_group(group)
-        self.limits['DB parameter groups']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBParameterGroup'
-        )
-
-    def _is_custom_param_group(self, data):
-        """
-        Return True if the specified DBParameterGroup is a custom
-        (non-default) group, otherwise return False.
-
-        :param data: DBParameterGroup
-        :type data: dict
-        :return: bool
-        """
-        family = data['DBParameterGroupFamily']
-        def_name = 'default.%s' % family
-        def_desc = 'Default parameter group for %s' % family
-        if (
-                data['DBParameterGroupName'] == def_name and
-                data['Description'] == def_desc
-        ):
-            return False
-        return True
-
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
-        count = 0
-
         paginator = self.conn.get_paginator('describe_db_subnet_groups')
         for page in paginator.paginate():
             for group in page['DBSubnetGroups']:
-                count += 1
                 self.limits['Subnets per Subnet Group']._add_current_usage(
                     len(group['Subnets']),
                     aws_type='AWS::RDS::DBSubnetGroup',
                     resource_id=group["DBSubnetGroupName"],
                 )
-        self.limits['Subnet Groups']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBSubnetGroup',
-        )
-
-    def _find_usage_option_groups(self):
-        """find usage for option groups"""
-        count = 0
-
-        paginator = self.conn.get_paginator('describe_option_groups')
-        for page in paginator.paginate():
-            for group in page['OptionGroupsList']:
-                count += self._is_custom_option_group(group)
-        self.limits['Option Groups']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBOptionGroup',
-        )
-
-    def _is_custom_option_group(self, data):
-        """
-        Return True if the specified DBOptionGroup is a custom
-        (non-default) group, otherwise return False.
-
-        :param data: DBOptionGroup
-        :type data: dict
-        :return: bool
-        """
-        engine = data['EngineName']
-        ver = data['MajorEngineVersion']
-        ver_dash = ver.replace('.', '-')
-        def_name = 'default:%s-%s' % (engine, ver_dash)
-        def_desc = 'Default option group for %s %s' % (engine, ver)
-        if (
-                data['OptionGroupName'] == def_name and
-                data['OptionGroupDescription'] == def_desc
-        ):
-            logger.debug("DBOptionGroup is NOT custom (default): %s",
-                         data['OptionGroupName'])
-            return False
-        logger.debug("DBOptionGroup is custom: %s", data['OptionGroupName'])
-        return True
-
-    def _find_usage_event_subscriptions(self):
-        """find usage for event subscriptions"""
-        count = 0
-
-        paginator = self.conn.get_paginator('describe_event_subscriptions')
-        for page in paginator.paginate():
-            for group in page['EventSubscriptionsList']:
-                count += 1
-        self.limits['Event Subscriptions']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::EventSubscription',
-        )
 
     def _find_usage_security_groups(self):
         """find usage for security groups"""
         vpc_count = 0
-        classic_count = 0
 
         paginator = self.conn.get_paginator('describe_db_security_groups')
         for page in paginator.paginate():
             for group in page['DBSecurityGroups']:
                 if 'VpcId' in group and group['VpcId'] is not None:
                     vpc_count += 1
-                elif (
-                    len(group["EC2SecurityGroups"]) + len(group["IPRanges"]) > 0
-                ):
-                    classic_count += 1
-                else:
-                    logger.info('DBSecurityGroup %s appears to have no '
-                                'authorizations and is not being counted.',
-                                group['DBSecurityGroupName'])
                 self.limits['Max auths per security group']._add_current_usage(
                     len(group["EC2SecurityGroups"]) + len(group["IPRanges"]),
                     aws_type='AWS::RDS::DBSecurityGroup',
                     resource_id=group['DBSecurityGroupName']
                 )
 
-        self.limits['DB security groups']._add_current_usage(
-            classic_count,
-            aws_type='AWS::RDS::DBSecurityGroup',
-        )
-
         self.limits['VPC Security Groups']._add_current_usage(
             vpc_count,
             aws_type='AWS::RDS::DBSecurityGroup',
         )
-
-    def _find_usage_clusters(self):
-        """find usage for DB Clusters"""
-        self.limits['DB Clusters']._add_current_usage(
-            len(
-                paginate_dict(
-                    self.conn.describe_db_clusters,
-                    alc_marker_path=['Marker'],
-                    alc_data_path=['DBClusters'],
-                    alc_marker_param='Marker'
-                )['DBClusters']
-            ),
-            aws_type='AWS::RDS::DBCluster',
-        )
-
-    def _find_usage_cluster_param_groups(self):
-        """find usage for DB Cluster Parameter Groups"""
-        params = paginate_dict(
-            self.conn.describe_db_cluster_parameter_groups,
-            alc_marker_path=['Marker'],
-            alc_data_path=['DBClusterParameterGroups'],
-            alc_marker_param='Marker'
-        )['DBClusterParameterGroups']
-        count = sum(
-            self._is_custom_cluster_param_group(x)
-            for x in params
-        )
-        self.limits['DB Cluster Parameter Groups']._add_current_usage(
-            count,
-            aws_type='AWS::RDS::DBClusterParameterGroup',
-        )
-
-    def _is_custom_cluster_param_group(self, data):
-        """
-        Return True if the specified DBClusterParameterGroup is a custom
-        (non-default) group, otherwise return False.
-
-        :param data: DBClusterParameterGroup
-        :type data: dict
-        :return: bool
-        """
-        family = data['DBParameterGroupFamily']
-        def_name = 'default.%s' % family
-        def_desc = 'Default cluster parameter group for %s' % family
-        if (
-                data['DBClusterParameterGroupName'] == def_name and
-                data['Description'] == def_desc
-        ):
-            return False
-        return True
 
     def get_limits(self):
         """
@@ -487,6 +284,8 @@ class _RDSService(_AwsService):
                 continue
             lname = self.API_NAME_TO_LIMIT[lim['AccountQuotaName']]
             self.limits[lname]._set_api_limit(lim['Max'])
+            if len(self.limits[lname].get_current_usage()) < 1:
+                self.limits[lname]._add_current_usage(lim['Used'])
         logger.debug('Done setting limits from API.')
 
     def required_iam_permissions(self):

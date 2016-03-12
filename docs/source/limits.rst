@@ -149,6 +149,36 @@ precedence than anything other than explicit limit overrides:
 
   * VPC security groups per elastic network interface
 
+* RDS
+
+  * DB Cluster Parameter Groups
+
+  * DB Clusters
+
+  * DB instances
+
+  * DB parameter groups
+
+  * DB security groups
+
+  * DB snapshots per user
+
+  * Event Subscriptions
+
+  * Max auths per security group
+
+  * Option Groups
+
+  * Read replicas per master
+
+  * Reserved Instances
+
+  * Storage quota (GB)
+
+  * Subnet Groups
+
+  * Subnets per Subnet Group
+
 
 
 .. _limits.checks:
@@ -279,25 +309,25 @@ Subnet Groups     50
 RDS
 ++++
 
-======================================== ======
-Limit                                    Default
-======================================== ======
-DB Cluster Parameter Groups              50    
-DB Clusters                              40    
-DB instances :sup:`(TA)`                 40    
-DB parameter groups :sup:`(TA)`          50    
-DB security groups :sup:`(TA)`           25    
-DB snapshots per user :sup:`(TA)`        50    
-Event Subscriptions                      20    
-Max auths per security group :sup:`(TA)` 20    
-Option Groups                            20    
-Read replicas per master                 5     
-Reserved Instances                       40    
-Storage quota (GB) :sup:`(TA)`           100000
-Subnet Groups                            20    
-Subnets per Subnet Group                 20    
-VPC Security Groups                      5     
-======================================== ======
+===================================================== ======
+Limit                                                 Default
+===================================================== ======
+DB Cluster Parameter Groups :sup:`(API)`              50    
+DB Clusters :sup:`(API)`                              40    
+DB instances :sup:`(TA)` :sup:`(API)`                 40    
+DB parameter groups :sup:`(TA)` :sup:`(API)`          50    
+DB security groups :sup:`(TA)` :sup:`(API)`           25    
+DB snapshots per user :sup:`(TA)` :sup:`(API)`        50    
+Event Subscriptions :sup:`(API)`                      20    
+Max auths per security group :sup:`(TA)` :sup:`(API)` 20    
+Option Groups :sup:`(API)`                            20    
+Read replicas per master :sup:`(API)`                 5     
+Reserved Instances :sup:`(API)`                       40    
+Storage quota (GB) :sup:`(TA)` :sup:`(API)`           100000
+Subnet Groups :sup:`(API)`                            20    
+Subnets per Subnet Group :sup:`(API)`                 20    
+VPC Security Groups                                   5     
+===================================================== ======
 
 VPC
 ++++

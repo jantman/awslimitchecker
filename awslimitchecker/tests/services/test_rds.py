@@ -108,15 +108,9 @@ class Test_RDSService(object):
             with patch.multiple(
                     self.pb,
                     _find_usage_instances=DEFAULT,
-                    _find_usage_snapshots=DEFAULT,
-                    _find_usage_param_groups=DEFAULT,
                     _find_usage_subnet_groups=DEFAULT,
-                    _find_usage_option_groups=DEFAULT,
-                    _find_usage_event_subscriptions=DEFAULT,
                     _find_usage_security_groups=DEFAULT,
-                    _find_usage_reserved_instances=DEFAULT,
-                    _find_usage_clusters=DEFAULT,
-                    _find_usage_cluster_param_groups=DEFAULT,
+                    _update_limits_from_api=DEFAULT,
             ) as mocks:
                 cls = _RDSService(21, 43)
                 cls.conn = mock_conn
@@ -126,7 +120,9 @@ class Test_RDSService(object):
         assert cls._have_usage is True
         for x in [
                 '_find_usage_instances',
-                '_find_usage_snapshots',
+                '_find_usage_subnet_groups',
+                '_find_usage_security_groups',
+                '_update_limits_from_api',
         ]:
             assert mocks[x].mock_calls == [call()]
 
@@ -164,16 +160,6 @@ class Test_RDSService(object):
             call.paginate()
         ]
 
-        usage = sorted(cls.limits['DB instances'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 2
-        assert usage[0].aws_type == 'AWS::RDS::DBInstance'
-
-        usage = sorted(cls.limits['Storage quota (GB)'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 250
-        assert usage[0].aws_type == 'AWS::RDS::DBInstance'
-
         usage = sorted(
             cls.limits['Read replicas per master'].get_current_usage()
         )
@@ -182,58 +168,6 @@ class Test_RDSService(object):
         assert usage[0].resource_id == 'foo'
         assert usage[1].get_value() == 2
         assert usage[1].resource_id == 'baz'
-
-    def test_find_usage_snapshots(self):
-        response = result_fixtures.RDS.test_find_usage_snapshots
-
-        mock_conn = Mock()
-        mock_paginator = Mock()
-        mock_paginator.paginate.return_value = response
-        mock_conn.get_paginator.return_value = mock_paginator
-
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-
-        cls._find_usage_snapshots()
-
-        assert mock_conn.mock_calls == [
-            call.get_paginator('describe_db_snapshots'),
-            call.get_paginator().paginate()
-        ]
-        assert mock_paginator.mock_calls == [
-            call.paginate()
-        ]
-
-        usage = sorted(cls.limits['DB snapshots per user'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 1
-        assert usage[0].aws_type == 'AWS::RDS::DBSnapshot'
-
-    def test_find_usage_param_groups(self):
-        data = result_fixtures.RDS.test_find_usage_param_groups
-
-        mock_conn = Mock()
-        mock_paginator = Mock()
-        mock_paginator.paginate.return_value = data
-        mock_conn.get_paginator.return_value = mock_paginator
-
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-
-        cls._find_usage_param_groups()
-
-        assert mock_conn.mock_calls == [
-            call.get_paginator('describe_db_parameter_groups'),
-            call.get_paginator().paginate()
-        ]
-        assert mock_paginator.mock_calls == [
-            call.paginate()
-        ]
-
-        usage = sorted(cls.limits['DB parameter groups'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 1
-        assert usage[0].aws_type == 'AWS::RDS::DBParameterGroup'
 
     def test_find_usage_subnet_groups(self):
         data = result_fixtures.RDS.test_find_usage_subnet_groups
@@ -256,10 +190,6 @@ class Test_RDSService(object):
             call.paginate()
         ]
 
-        usage = sorted(cls.limits['Subnet Groups'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 3
-        assert usage[0].aws_type == 'AWS::RDS::DBSubnetGroup'
         usage = sorted(
             cls.limits['Subnets per Subnet Group'].get_current_usage()
         )
@@ -273,58 +203,6 @@ class Test_RDSService(object):
         assert usage[2].get_value() == 3
         assert usage[2].aws_type == 'AWS::RDS::DBSubnetGroup'
         assert usage[2].resource_id == "default"
-
-    def test_find_usage_option_groups(self):
-        data = result_fixtures.RDS.test_find_usage_option_groups
-
-        mock_conn = Mock()
-        mock_paginator = Mock()
-        mock_paginator.paginate.return_value = data
-        mock_conn.get_paginator.return_value = mock_paginator
-
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-
-        cls._find_usage_option_groups()
-
-        assert mock_conn.mock_calls == [
-            call.get_paginator('describe_option_groups'),
-            call.get_paginator().paginate()
-        ]
-        assert mock_paginator.mock_calls == [
-            call.paginate()
-        ]
-
-        usage = sorted(cls.limits['Option Groups'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 3
-        assert usage[0].aws_type == 'AWS::RDS::DBOptionGroup'
-
-    def test_find_usage_event_subscriptions(self):
-        data = result_fixtures.RDS.test_find_usage_event_subscriptions
-
-        mock_conn = Mock()
-        mock_paginator = Mock()
-        mock_paginator.paginate.return_value = data
-        mock_conn.get_paginator.return_value = mock_paginator
-
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-
-        cls._find_usage_event_subscriptions()
-
-        assert mock_conn.mock_calls == [
-            call.get_paginator('describe_event_subscriptions'),
-            call.get_paginator().paginate()
-        ]
-        assert mock_paginator.mock_calls == [
-            call.paginate()
-        ]
-
-        usage = sorted(cls.limits['Event Subscriptions'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 2
-        assert usage[0].aws_type == 'AWS::RDS::EventSubscription'
 
     def test_find_usage_security_groups(self):
         data = result_fixtures.RDS.test_find_usage_security_groups
@@ -346,11 +224,6 @@ class Test_RDSService(object):
         assert mock_paginator.mock_calls == [
             call.paginate()
         ]
-
-        usage = sorted(cls.limits['DB security groups'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 2
-        assert usage[0].aws_type == 'AWS::RDS::DBSecurityGroup'
 
         usage = sorted(cls.limits['VPC Security Groups'].get_current_usage())
         assert len(usage) == 1
@@ -376,77 +249,6 @@ class Test_RDSService(object):
         assert usage[4].resource_id == 'SecurityGroup2'
         assert usage[4].aws_type == 'AWS::RDS::DBSecurityGroup'
 
-    def test_find_usage_reserved_instances(self):
-        data = result_fixtures.RDS.test_find_usage_reserved_instances
-
-        mock_conn = Mock()
-        mock_paginator = Mock()
-        mock_paginator.paginate.return_value = data
-        mock_conn.get_paginator.return_value = mock_paginator
-
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-
-        cls._find_usage_reserved_instances()
-
-        assert mock_conn.mock_calls == [
-            call.get_paginator('describe_reserved_db_instances'),
-            call.get_paginator().paginate()
-        ]
-        assert mock_paginator.mock_calls == [
-            call.paginate()
-        ]
-
-        usage = sorted(cls.limits['Reserved Instances'].get_current_usage())
-        assert len(usage) == 1
-        assert usage[0].get_value() == 135
-        assert usage[0].aws_type == 'AWS::RDS::DBInstance'
-
-    def test_find_usage_clusters(self):
-        response = result_fixtures.RDS.test_find_usage_clusters
-
-        mock_conn = Mock()
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-        with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
-            mock_paginate.return_value = response
-            cls._find_usage_clusters()
-        assert len(cls.limits['DB Clusters'].get_current_usage()) == 1
-        assert cls.limits['DB Clusters'
-                          ''].get_current_usage()[0].get_value() == 2
-        assert mock_conn.mock_calls == []
-        assert mock_paginate.mock_calls == [
-            call(
-                mock_conn.describe_db_clusters,
-                alc_marker_path=['Marker'],
-                alc_data_path=['DBClusters'],
-                alc_marker_param='Marker'
-            )
-        ]
-
-    def test_find_usage_cluster_param_groups(self):
-        response = result_fixtures.RDS.test_find_usage_cluster_param_groups
-
-        mock_conn = Mock()
-        cls = _RDSService(21, 43)
-        cls.conn = mock_conn
-        with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
-            mock_paginate.return_value = response
-            cls._find_usage_cluster_param_groups()
-        assert len(cls.limits['DB Cluster Parameter Groups'
-                              ''].get_current_usage()) == 1
-        assert cls.limits['DB Cluster Parameter Groups'
-                          ''].get_current_usage()[0].get_value() == 1
-        assert mock_conn.mock_calls == []
-        assert mock_paginate.mock_calls == [
-            call(
-                mock_conn.describe_db_cluster_parameter_groups,
-                alc_marker_path=['Marker'],
-                alc_data_path=['DBClusterParameterGroups'],
-                alc_marker_param='Marker'
-            )
-        ]
-
     def test_update_limits_from_api(self):
         response = result_fixtures.RDS.test_update_limits_from_api
 
@@ -456,6 +258,16 @@ class Test_RDSService(object):
             with patch('%s.connect' % self.pb) as mock_connect:
                 cls = _RDSService(21, 43)
                 cls.conn = mock_conn
+                # limits that we still calculate usage for
+                cls.limits['Max auths per security group']._add_current_usage(1)
+                cls.limits['Subnets per Subnet Group']._add_current_usage(1)
+                cls.limits['Read replicas per master']._add_current_usage(1)
+                usage_auths = cls.limits[
+                    'Max auths per security group'].get_current_usage()
+                usage_subnets = cls.limits[
+                    'Subnets per Subnet Group'].get_current_usage()
+                usage_replicas = cls.limits[
+                    'Read replicas per master'].get_current_usage()
                 cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == [
@@ -470,17 +282,59 @@ class Test_RDSService(object):
             ),
             call.debug('Done setting limits from API.')
         ]
-        assert cls.limits['DB instances'].api_limit == 200
-        assert cls.limits['Reserved Instances'].api_limit == 201
-        assert cls.limits['Storage quota (GB)'].api_limit == 100000
-        assert cls.limits['DB security groups'].api_limit == 25
-        assert cls.limits['Max auths per security group'].api_limit == 20
-        assert cls.limits['DB parameter groups'].api_limit == 50
-        assert cls.limits['DB snapshots per user'].api_limit == 150
-        assert cls.limits['Event Subscriptions'].api_limit == 21
-        assert cls.limits['Subnet Groups'].api_limit == 202
-        assert cls.limits['Option Groups'].api_limit == 22
-        assert cls.limits['Subnets per Subnet Group'].api_limit == 23
-        assert cls.limits['Read replicas per master'].api_limit == 5
-        assert cls.limits['DB Clusters'].api_limit == 40
-        assert cls.limits['DB Cluster Parameter Groups'].api_limit == 51
+
+        lim = cls.limits['DB instances']
+        assert lim.api_limit == 200
+        assert lim.get_current_usage()[0].get_value() == 124
+
+        lim = cls.limits['Reserved Instances']
+        assert lim.api_limit == 201
+        assert lim.get_current_usage()[0].get_value() == 96
+
+        lim = cls.limits['Storage quota (GB)']
+        assert lim.api_limit == 100000
+        assert lim.get_current_usage()[0].get_value() == 8320
+
+        lim = cls.limits['DB security groups']
+        assert lim.api_limit == 25
+        assert lim.get_current_usage()[0].get_value() == 15
+
+        lim = cls.limits['Max auths per security group']
+        assert lim.api_limit == 20
+        assert lim.get_current_usage() == usage_auths
+
+        lim = cls.limits['DB parameter groups']
+        assert lim.api_limit == 50
+        assert lim.get_current_usage()[0].get_value() == 39
+
+        lim = cls.limits['DB snapshots per user']
+        assert lim.api_limit == 150
+        assert lim.get_current_usage()[0].get_value() == 76
+
+        lim = cls.limits['Event Subscriptions']
+        assert lim.api_limit == 21
+        assert lim.get_current_usage()[0].get_value() == 1
+
+        lim = cls.limits['Subnet Groups']
+        assert lim.api_limit == 202
+        assert lim.get_current_usage()[0].get_value() == 89
+
+        lim = cls.limits['Option Groups']
+        assert lim.api_limit == 22
+        assert lim.get_current_usage()[0].get_value() == 2
+
+        lim = cls.limits['Subnets per Subnet Group']
+        assert lim.api_limit == 23
+        assert lim.get_current_usage() == usage_subnets
+
+        lim = cls.limits['Read replicas per master']
+        assert lim.api_limit == 5
+        assert lim.get_current_usage() == usage_replicas
+
+        lim = cls.limits['DB Clusters']
+        assert lim.api_limit == 40
+        assert lim.get_current_usage()[0].get_value() == 3
+
+        lim = cls.limits['DB Cluster Parameter Groups']
+        assert lim.api_limit == 51
+        assert lim.get_current_usage()[0].get_value() == 6

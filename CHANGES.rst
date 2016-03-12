@@ -5,7 +5,11 @@ Pre-release (develop branch)
 ----------------------------
 
 * `#150 <https://github.com/jantman/awslimitchecker/issues/150>`_ add CHANGES.rst to Sphinx docs
-* `#85 <https://github.com/jantman/awslimitchecker/issues/85>`_ add support for RDS 'DB Clusters' and 'DB Cluster Parameter Groups' limits
+* `#85 <https://github.com/jantman/awslimitchecker/issues/85>`_ and `#154 <https://github.com/jantman/awslimitchecker/issues/154>`_
+
+    * add support for RDS 'DB Clusters' and 'DB Cluster Parameter Groups' limits
+    * use API to retrieve RDS limits
+    * switch RDS from calculating usage to using the DescribeAccountAttributes usage information, for all limits other than those which are per-resource and need resource IDs (Max auths per security group, Read replicas per master, Subnets per Subnet Group)
 
 0.3.2 (2016-03-11)
 ------------------
