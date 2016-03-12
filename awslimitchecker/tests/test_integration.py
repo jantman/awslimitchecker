@@ -246,7 +246,7 @@ class TestIntegration(object):
         checker_args = {'region': REGION}
         for sname in _services:
             eu = False
-            if sname in ['RDS', 'VPC', 'EC2', 'ElastiCache', 'EBS']:
+            if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS']:
                 eu = True
             yield "%s limits" % sname, self.verify_limits, checker_args, \
                   creds, sname, True, False
