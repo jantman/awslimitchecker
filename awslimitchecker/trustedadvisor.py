@@ -98,6 +98,7 @@ class TrustedAdvisor(Connectable):
         self.mfa_token = mfa_token
         self.all_services = all_services
         self.ta_services = self._make_ta_service_dict()
+        self.limits_updated = False
 
     def update_limits(self):
         """
@@ -109,9 +110,13 @@ class TrustedAdvisor(Connectable):
           :py:class:`~._AwsService` objects
         :type services: dict
         """
+        if self.limits_updated:
+            logger.debug('Already polled TA; skipping update')
+            return
         self.connect()
         ta_results = self._poll()
         self._update_services(ta_results)
+        self.limits_updated = True
 
     def _poll(self):
         """

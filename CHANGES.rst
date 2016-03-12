@@ -11,6 +11,7 @@ Pre-release (develop branch)
     * use API to retrieve RDS limits
     * switch RDS from calculating usage to using the DescribeAccountAttributes usage information, for all limits other than those which are per-resource and need resource IDs (Max auths per security group, Read replicas per master, Subnets per Subnet Group)
     * awslimitchecker now **requires an additional IAM permission**, ``rds:DescribeAccountAttributes``
+* `#157 <https://github.com/jantman/awslimitchecker/issues/157>`_ fix for TrustedAdvisor polling multiple times - have TA set an instance variable flag when it updates services after a poll, and skip further polls and updates if the flag is set. Also add an integration test to confirm this.
 
 0.3.2 (2016-03-11)
 ------------------
