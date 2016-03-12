@@ -1,5 +1,5 @@
 """
-awslimitchecker/tests/services/test_XXnewserviceXX.py
+awslimitchecker/tests/services/test_iam.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.XXnewserviceXX import _XXNewServiceXXService
+from awslimitchecker.services.iam import _IamService
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -52,27 +52,33 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-pbm = 'awslimitchecker.services.XXnewserviceXX'  # module patch base
-pb = '%s._XXNewServiceXXService' % pbm  # class patch pase
+pbm = 'awslimitchecker.services.iam'  # module patch base
+pb = '%s._IamService' % pbm  # class patch pase
 
-class Test_XXNewServiceXXService(object):
+
+class Test_IamService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _XXNewServiceXXService(21, 43)
-        assert cls.service_name == 'XXNewServiceXX'
-        assert cls.api_name == 'XXnewserviceXX'
+        cls = _IamService(21, 43)
+        assert cls.service_name == 'IAM'
+        assert cls.api_name == 'iam'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _IamService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            # TODO fill in limits here
-            'SomeLimitNameHere',
+            'Groups',
+            'Users',
+            'Roles',
+            'Instance profiles',
+            'Server certificates',
+            'Policies',
+            'Policy Versions In Use',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -82,28 +88,66 @@ class Test_XXNewServiceXXService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _IamService(21, 43)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
 
     def test_find_usage(self):
-        # put boto3 responses in response_fixtures.py, then do something like:
-        # response = result_fixtures.EBS.test_find_usage_ebs
-        mock_conn = Mock()
-        mock_conn.some_method.return_value =  # some logical return value
-        with patch('%s.connect' % pb) as mock_connect:
-            cls = _XXNewServiceXXService(21, 43)
-            cls.conn = mock_conn
+        with patch('%s._update_limits_from_api' % pb) as mock_update:
+            cls = _IamService(21, 43)
             assert cls._have_usage is False
             cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
+        assert mock_update.mock_calls == [call()]
         assert cls._have_usage is True
-        assert mock_conn.mock_calls == [call.some_method()]
-        # TODO - assert about usage
 
     def test_required_iam_permissions(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _IamService(21, 43)
         assert cls.required_iam_permissions() == [
-            # TODO - permissions here
+            'iam:GetAccountSummary'
         ]
+
+    def test_update_limits_from_api(self):
+        mock_summary = Mock(
+            summary_map=result_fixtures.IAM.test_update_limits_from_api
+        )
+        mock_conn = Mock()
+        mock_conn.AccountSummary.return_value = mock_summary
+        with patch('%s.logger' % pbm) as mock_logger:
+            with patch('%s.connect_resource' % pb) as mock_connect:
+                cls = _IamService(21, 43)
+                cls.resource_conn = mock_conn
+                cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == [call.AccountSummary()]
+
+        assert call.debug('Ignoring IAM AccountSummary attribute: %s',
+                          'GroupsPerUserQuota') in mock_logger.mock_calls
+
+        lim = cls.limits['Groups']
+        assert lim.api_limit == 100
+        assert lim.get_current_usage()[0].get_value() == 25
+
+        lim = cls.limits['Users']
+        assert lim.api_limit == 5000
+        assert lim.get_current_usage()[0].get_value() == 152
+
+        lim = cls.limits['Roles']
+        assert lim.api_limit == 501
+        assert lim.get_current_usage()[0].get_value() == 375
+
+        lim = cls.limits['Instance profiles']
+        assert lim.api_limit == 500
+        assert lim.get_current_usage()[0].get_value() == 394
+
+        lim = cls.limits['Server certificates']
+        assert lim.api_limit == 101
+        assert lim.get_current_usage()[0].get_value() == 55
+
+        lim = cls.limits['Policies']
+        assert lim.api_limit == 1000
+        assert lim.get_current_usage()[0].get_value() == 17
+
+        lim = cls.limits['Policy Versions In Use']
+        assert lim.api_limit == 10000
+        assert lim.get_current_usage()[0].get_value() == 53

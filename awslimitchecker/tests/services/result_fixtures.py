@@ -1464,3 +1464,41 @@ class EC2(object):
             }
         ]
     }
+
+
+class IAM(object):
+
+    test_update_limits_from_api = {
+        'AccessKeysPerUserQuota': 2,
+        'AccountAccessKeysPresent': 1,
+        'AccountMFAEnabled': 0,
+        'AccountSigningCertificatesPresent': 3,
+        'AssumeRolePolicySizeQuota': 2048,
+        'AttachedPoliciesPerGroupQuota': 11,
+        'AttachedPoliciesPerRoleQuota': 12,
+        'AttachedPoliciesPerUserQuota': 13,
+        'GroupPolicySizeQuota': 5120,
+        'Groups': 25,
+        'GroupsPerUserQuota': 14,
+        'GroupsQuota': 100,
+        'InstanceProfiles': 394,
+        'InstanceProfilesQuota': 500,
+        'MFADevices': 4,
+        'MFADevicesInUse': 5,
+        'Policies': 17,
+        'PoliciesQuota': 1000,
+        'PolicySizeQuota': 5120,
+        'PolicyVersionsInUse': 53,
+        'PolicyVersionsInUseQuota': 10000,
+        'Providers': 6,
+        'RolePolicySizeQuota': 10240,
+        'Roles': 375,
+        'RolesQuota': 501,
+        'ServerCertificates': 55,
+        'ServerCertificatesQuota': 101,
+        'SigningCertificatesPerUserQuota': 7,
+        'UserPolicySizeQuota': 2048,
+        'Users': 152,
+        'UsersQuota': 5000,
+        'VersionsPerPolicyQuota': 8
+    }
