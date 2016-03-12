@@ -298,6 +298,7 @@ class _RDSService(_AwsService):
         :rtype: list
         """
         return [
+            "rds:DescribeAccountAttributes",
             "rds:DescribeDBInstances",
             "rds:DescribeDBParameterGroups",
             "rds:DescribeDBSecurityGroups",

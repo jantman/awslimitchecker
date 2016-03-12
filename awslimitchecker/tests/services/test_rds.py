@@ -129,6 +129,7 @@ class Test_RDSService(object):
     def test_required_iam_permissions(self):
         cls = _RDSService(21, 43)
         assert cls.required_iam_permissions() == [
+            "rds:DescribeAccountAttributes",
             "rds:DescribeDBInstances",
             "rds:DescribeDBParameterGroups",
             "rds:DescribeDBSecurityGroups",

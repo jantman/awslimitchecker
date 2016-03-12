@@ -10,6 +10,7 @@ Pre-release (develop branch)
     * add support for RDS 'DB Clusters' and 'DB Cluster Parameter Groups' limits
     * use API to retrieve RDS limits
     * switch RDS from calculating usage to using the DescribeAccountAttributes usage information, for all limits other than those which are per-resource and need resource IDs (Max auths per security group, Read replicas per master, Subnets per Subnet Group)
+    * awslimitchecker now **requires an additional IAM permission**, ``rds:DescribeAccountAttributes``
 
 0.3.2 (2016-03-11)
 ------------------
