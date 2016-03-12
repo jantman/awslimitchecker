@@ -613,103 +613,6 @@ class RDS(object):
         ]
     })
 
-    test_find_usage_snapshots = []
-    # first result page
-    test_find_usage_snapshots.append({
-        "DBSnapshots": [
-            {
-                "AllocatedStorage": 100,
-                "AvailabilityZone": "us-east-1a",
-                "DBInstanceIdentifier": "foo-db",
-                "DBSnapshotIdentifier": "foo-db-final-snapshot",
-                "Engine": "postgres",
-                "EngineVersion": "9.3.3",
-                "InstanceCreateTime": 1408035263.101,
-                "Iops": 1000,
-                "LicenseModel": "postgresql-license",
-                "MasterUsername": "dbfoouser",
-                "OptionGroupName": "default:postgres-9-3",
-                "PercentProgress": 100,
-                "Port": 5432,
-                "SnapshotCreateTime": 1408454469.536,
-                "SnapshotType": "manual",
-                "SourceRegion": None,
-                "Status": "available",
-                "VpcId": None
-            },
-            {
-                "AllocatedStorage": 50,
-                "AvailabilityZone": "us-east-1d",
-                "DBInstanceIdentifier": "bd1t3lf90p3lqdx",
-                "DBSnapshotIdentifier":
-                    "rds:bd1t3lf90p3lqdx-2015-06-29-07-02",
-                "Engine": "mysql",
-                "EngineVersion": "5.6.22",
-                "InstanceCreateTime": 1429910904.366,
-                "Iops": None,
-                "LicenseModel": "general-public-license",
-                "MasterUsername": "dbuser3",
-                "OptionGroupName": "default:mysql-5-6",
-                "PercentProgress": 100,
-                "Port": 3306,
-                "SnapshotCreateTime": 1435561349.441,
-                "SnapshotType": "automated",
-                "SourceRegion": None,
-                "Status": "available",
-                "VpcId": "vpc-1ee8937b"
-            },
-        ],
-        'NextToken': 'string'
-    })
-    test_find_usage_snapshots.append({
-        'DBSnapshots': [
-            {
-                "AllocatedStorage": 25,
-                "AvailabilityZone": "us-east-1d",
-                "DBInstanceIdentifier": "md1e8qwtegkjdgy",
-                "DBSnapshotIdentifier":
-                    "rds:md1e8qwtegkjdgy-2015-06-29-07-06",
-                "Engine": "postgres",
-                "EngineVersion": "9.3.6",
-                "InstanceCreateTime": 1433883813.314,
-                "Iops": None,
-                "LicenseModel": "postgresql-license",
-                "MasterUsername": "dbuser4",
-                "OptionGroupName": "default:postgres-9-3",
-                "PercentProgress": 100,
-                "Port": 5432,
-                "SnapshotCreateTime": 1435561593.669,
-                "SnapshotType": "automated",
-                "SourceRegion": None,
-                "Status": "available",
-                "VpcId": "vpc-1ee8937b"
-            },
-        ],
-    })
-
-    test_find_usage_param_groups = []
-    test_find_usage_param_groups.append({
-        "DBParameterGroups": [
-            {
-                "DBParameterGroupFamily": "mysql5.6",
-                "DBParameterGroupName": "default.mysql5.6",
-                "Description":
-                    "Default parameter group for mysql5.6"
-            },
-        ],
-        'NextToken': 'string'
-    })
-    test_find_usage_param_groups.append({
-        'DBParameterGroups': [
-            {
-                "DBParameterGroupFamily": "postgres9.3",
-                "DBParameterGroupName": "default.postgres9.3",
-                "Description":
-                    "Default parameter group for postgres9.3"
-            }
-        ]
-    })
-
     test_find_usage_subnet_groups = []
     test_find_usage_subnet_groups.append({
         "DBSubnetGroups": [
@@ -798,78 +701,6 @@ class RDS(object):
         ],
     })
 
-    test_find_usage_option_groups = []
-    test_find_usage_option_groups.append({
-        "OptionGroupsList": [
-            {
-                "AllowsVpcAndNonVpcInstanceMemberships": True,
-                "EngineName": "mysql",
-                "MajorEngineVersion": "5.6",
-                "OptionGroupDescription":
-                    "Default option group for mysql 5.6",
-                "OptionGroupName": "default:mysql-5-6",
-                "Options": [],
-                "VpcId": None
-            },
-        ],
-        'NextToken': 'string'
-    })
-    test_find_usage_option_groups.append({
-        'OptionGroupsList': [
-            {
-                "AllowsVpcAndNonVpcInstanceMemberships": True,
-                "EngineName": "postgres",
-                "MajorEngineVersion": "9.3",
-                "OptionGroupDescription":
-                    "Default option group for postgres 9.3",
-                "OptionGroupName": "default:postgres-9-3",
-                "Options": [],
-                "VpcId": None
-            }
-        ]
-    })
-
-    test_find_usage_event_subscriptions = []
-    test_find_usage_event_subscriptions.append({
-        "EventSubscriptionsList": [
-            {
-                'CustomerAwsId': 'string',
-                'CustSubscriptionId': 'string',
-                'SnsTopicArn': 'string',
-                'Status': 'string',
-                'SubscriptionCreationTime': 'string',
-                'SourceType': 'string',
-                'SourceIdsList': [
-                    'string',
-                ],
-                'EventCategoriesList': [
-                    'string',
-                ],
-                'Enabled': True
-            }
-        ],
-        "NextToken": 'string'
-    })
-    test_find_usage_event_subscriptions.append({
-        "EventSubscriptionsList": [
-            {
-                'CustomerAwsId': 'string',
-                'CustSubscriptionId': 'string',
-                'SnsTopicArn': 'string',
-                'Status': 'string',
-                'SubscriptionCreationTime': 'string',
-                'SourceType': 'string',
-                'SourceIdsList': [
-                    'string',
-                ],
-                'EventCategoriesList': [
-                    'string',
-                ],
-                'Enabled': False
-            }
-        ]
-    })
-
     test_find_usage_security_groups = []
     test_find_usage_security_groups.append({
         "DBSecurityGroups": [
@@ -886,6 +717,15 @@ class RDS(object):
                         "Status": "authorized"
                     }
                 ],
+                "IPRanges": [],
+                "OwnerId": "123456789012",
+                "VpcId": None
+            },
+            {
+                "DBSecurityGroupDescription": "empty",
+                "DBSecurityGroupName":
+                    "MyEmptySecurityGroup",
+                "EC2SecurityGroups": [],
                 "IPRanges": [],
                 "OwnerId": "123456789012",
                 "VpcId": None
@@ -952,58 +792,88 @@ class RDS(object):
         ],
     })
 
-    test_find_usage_reserved_instances = []
-    test_find_usage_reserved_instances.append({
-        'ReservedDBInstances': [
+    test_update_limits_from_api = {
+        'AccountQuotas': [
             {
-                'ReservedDBInstanceId': 'string',
-                'ReservedDBInstancesOfferingId': 'string',
-                'DBInstanceClass': 'string',
-                'StartTime': datetime(2015, 1, 1),
-                'Duration': 123,
-                'FixedPrice': 123.0,
-                'UsagePrice': 123.0,
-                'CurrencyCode': 'string',
-                'DBInstanceCount': 123,
-                'ProductDescription': 'string',
-                'OfferingType': 'string',
-                'MultiAZ': False,
-                'State': 'string',
-                'RecurringCharges': [
-                    {
-                        'RecurringChargeAmount': 123.0,
-                        'RecurringChargeFrequency': 'string'
-                    },
-                ]
+                'Max': 200,
+                'AccountQuotaName': 'DBInstances',
+                'Used': 124
             },
-        ],
-        'NextToken': 'string'
-    })
-    test_find_usage_reserved_instances.append({
-        'ReservedDBInstances': [
             {
-                'ReservedDBInstanceId': 'string',
-                'ReservedDBInstancesOfferingId': 'string',
-                'DBInstanceClass': 'string',
-                'StartTime': datetime(2015, 1, 1),
-                'Duration': 123,
-                'FixedPrice': 123.0,
-                'UsagePrice': 123.0,
-                'CurrencyCode': 'string',
-                'DBInstanceCount': 123,
-                'ProductDescription': 'string',
-                'OfferingType': 'string',
-                'MultiAZ': True,
-                'State': 'string',
-                'RecurringCharges': [
-                    {
-                        'RecurringChargeAmount': 123.0,
-                        'RecurringChargeFrequency': 'string'
-                    },
-                ]
+                'Max': 201,
+                'AccountQuotaName': 'ReservedDBInstances',
+                'Used': 96},
+            {
+                'Max': 100000,
+                'AccountQuotaName': 'AllocatedStorage',
+                'Used': 8320
             },
+            {
+                'Max': 25,
+                'AccountQuotaName': 'DBSecurityGroups',
+                'Used': 15
+            },
+            {
+                'Max': 20,
+                'AccountQuotaName': 'AuthorizationsPerDBSecurityGroup',
+                'Used': 5
+            },
+            {
+                'Max': 50,
+                'AccountQuotaName': 'DBParameterGroups',
+                'Used': 39
+            },
+            {
+                'Max': 150,
+                'AccountQuotaName': 'ManualSnapshots',
+                'Used': 76
+            },
+            {
+                'Max': 21,
+                'AccountQuotaName': 'EventSubscriptions',
+                'Used': 1
+            },
+            {
+                'Max': 202,
+                'AccountQuotaName': 'DBSubnetGroups',
+                'Used': 89
+            },
+            {
+                'Max': 22,
+                'AccountQuotaName': 'OptionGroups',
+                'Used': 2
+            },
+            {
+                'Max': 23,
+                'AccountQuotaName': 'SubnetsPerDBSubnetGroup',
+                'Used': 14
+            },
+            {
+                'Max': 5,
+                'AccountQuotaName': 'ReadReplicasPerMaster',
+                'Used': 4
+            },
+            {
+                'Max': 40,
+                'AccountQuotaName': 'DBClusters',
+                'Used': 3
+            },
+            {
+                'Max': 51,
+                'AccountQuotaName': 'DBClusterParameterGroups',
+                'Used': 6
+            },
+            {
+                'Max': 98,
+                'AccountQuotaName': 'Foo',
+                'Used': 99
+            }
         ],
-    })
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '95729212-e5ab-11e5-8250-91a417accabb'
+        }
+    }
 
 
 class ELB(object):
@@ -1593,4 +1463,42 @@ class EC2(object):
                 ]
             }
         ]
+    }
+
+
+class IAM(object):
+
+    test_update_limits_from_api = {
+        'AccessKeysPerUserQuota': 2,
+        'AccountAccessKeysPresent': 1,
+        'AccountMFAEnabled': 0,
+        'AccountSigningCertificatesPresent': 3,
+        'AssumeRolePolicySizeQuota': 2048,
+        'AttachedPoliciesPerGroupQuota': 11,
+        'AttachedPoliciesPerRoleQuota': 12,
+        'AttachedPoliciesPerUserQuota': 13,
+        'GroupPolicySizeQuota': 5120,
+        'Groups': 25,
+        'GroupsPerUserQuota': 14,
+        'GroupsQuota': 100,
+        'InstanceProfiles': 394,
+        'InstanceProfilesQuota': 500,
+        'MFADevices': 4,
+        'MFADevicesInUse': 5,
+        'Policies': 17,
+        'PoliciesQuota': 1000,
+        'PolicySizeQuota': 5120,
+        'PolicyVersionsInUse': 53,
+        'PolicyVersionsInUseQuota': 10000,
+        'Providers': 6,
+        'RolePolicySizeQuota': 10240,
+        'Roles': 375,
+        'RolesQuota': 501,
+        'ServerCertificates': 55,
+        'ServerCertificatesQuota': 101,
+        'SigningCertificatesPerUserQuota': 7,
+        'UserPolicySizeQuota': 2048,
+        'Users': 152,
+        'UsersQuota': 5000,
+        'VersionsPerPolicyQuota': 8
     }

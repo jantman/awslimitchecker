@@ -58,7 +58,7 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.2xlarge instances
 
-  * Running On-Demand c4.large instances
+  * Running On-Demand c4.xlarge instances
 
   * Running On-Demand i2.2xlarge instances
 
@@ -99,6 +99,18 @@ updated from Trusted Advisor:
 * ELB
 
   * Active load balancers
+
+* IAM
+
+  * Groups
+
+  * Instance profiles
+
+  * Roles
+
+  * Server certificates
+
+  * Users
 
 * RDS
 
@@ -148,6 +160,52 @@ precedence than anything other than explicit limit overrides:
   * VPC Elastic IP addresses (EIPs)
 
   * VPC security groups per elastic network interface
+
+* IAM
+
+  * Groups
+
+  * Instance profiles
+
+  * Policies
+
+  * Policy Versions In Use
+
+  * Roles
+
+  * Server certificates
+
+  * Users
+
+* RDS
+
+  * DB Cluster Parameter Groups
+
+  * DB Clusters
+
+  * DB instances
+
+  * DB parameter groups
+
+  * DB security groups
+
+  * DB snapshots per user
+
+  * Event Subscriptions
+
+  * Max auths per security group
+
+  * Option Groups
+
+  * Read replicas per master
+
+  * Reserved Instances
+
+  * Storage quota (GB)
+
+  * Subnet Groups
+
+  * Subnets per Subnet Group
 
 
 
@@ -203,8 +261,8 @@ Running On-Demand c3.xlarge instances :sup:`(TA)`              20
 Running On-Demand c4.2xlarge instances :sup:`(TA)`             20 
 Running On-Demand c4.4xlarge instances                         10 
 Running On-Demand c4.8xlarge instances                         5  
-Running On-Demand c4.large instances :sup:`(TA)`               20 
-Running On-Demand c4.xlarge instances                          20 
+Running On-Demand c4.large instances                           20 
+Running On-Demand c4.xlarge instances :sup:`(TA)`              20 
 Running On-Demand cc2.8xlarge instances                        20 
 Running On-Demand cg1.4xlarge instances                        2  
 Running On-Demand cr1.8xlarge instances                        2  
@@ -276,26 +334,43 @@ Security Groups   50
 Subnet Groups     50
 ================= ==
 
+IAM
+++++
+
+============================================ =====
+Limit                                        Default
+============================================ =====
+Groups :sup:`(TA)` :sup:`(API)`              100  
+Instance profiles :sup:`(TA)` :sup:`(API)`   100  
+Policies :sup:`(API)`                        1000 
+Policy Versions In Use :sup:`(API)`          10000
+Roles :sup:`(TA)` :sup:`(API)`               250  
+Server certificates :sup:`(TA)` :sup:`(API)` 20   
+Users :sup:`(TA)` :sup:`(API)`               5000 
+============================================ =====
+
 RDS
 ++++
 
-======================================== ======
-Limit                                    Default
-======================================== ======
-DB instances :sup:`(TA)`                 40    
-DB parameter groups :sup:`(TA)`          50    
-DB security groups :sup:`(TA)`           25    
-DB snapshots per user :sup:`(TA)`        50    
-Event Subscriptions                      20    
-Max auths per security group :sup:`(TA)` 20    
-Option Groups                            20    
-Read replicas per master                 5     
-Reserved Instances                       40    
-Storage quota (GB) :sup:`(TA)`           100000
-Subnet Groups                            20    
-Subnets per Subnet Group                 20    
-VPC Security Groups                      5     
-======================================== ======
+===================================================== ======
+Limit                                                 Default
+===================================================== ======
+DB Cluster Parameter Groups :sup:`(API)`              50    
+DB Clusters :sup:`(API)`                              40    
+DB instances :sup:`(TA)` :sup:`(API)`                 40    
+DB parameter groups :sup:`(TA)` :sup:`(API)`          50    
+DB security groups :sup:`(TA)` :sup:`(API)`           25    
+DB snapshots per user :sup:`(TA)` :sup:`(API)`        50    
+Event Subscriptions :sup:`(API)`                      20    
+Max auths per security group :sup:`(TA)` :sup:`(API)` 20    
+Option Groups :sup:`(API)`                            20    
+Read replicas per master :sup:`(API)`                 5     
+Reserved Instances :sup:`(API)`                       40    
+Storage quota (GB) :sup:`(TA)` :sup:`(API)`           100000
+Subnet Groups :sup:`(API)`                            20    
+Subnets per Subnet Group :sup:`(API)`                 20    
+VPC Security Groups                                   5     
+===================================================== ======
 
 VPC
 ++++
