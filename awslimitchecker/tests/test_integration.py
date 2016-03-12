@@ -160,6 +160,9 @@ class TestIntegration(object):
         records = logs.unexpected_logs()
         assert len(records) == 0, "awslimitchecker emitted unexpected log " \
             "messages at WARN or higher: \n%s" % "\n".join(records)
+        polls = logs.num_ta_polls
+        assert polls == 1, "awslimitchecker should have polled Trusted " \
+            "Advisor once, but polled %s times" % polls
 
     @pytest.mark.integration
     def verify_usage(self, checker_args, creds, service_name, expect_usage):
