@@ -697,6 +697,12 @@ class RDS(object):
                 "Description":
                     "Default parameter group for mysql5.6"
             },
+            {
+                "DBParameterGroupFamily": "mysql5.6",
+                "DBParameterGroupName": "my_mysql5.6",
+                "Description":
+                    "My custom parameter group for mysql5.6"
+            },
         ],
         'NextToken': 'string'
     })
@@ -803,14 +809,54 @@ class RDS(object):
     test_find_usage_option_groups.append({
         "OptionGroupsList": [
             {
-                "AllowsVpcAndNonVpcInstanceMemberships": True,
-                "EngineName": "mysql",
-                "MajorEngineVersion": "5.6",
-                "OptionGroupDescription":
-                    "Default option group for mysql 5.6",
-                "OptionGroupName": "default:mysql-5-6",
-                "Options": [],
-                "VpcId": None
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'aurora',
+                'MajorEngineVersion': '5.6',
+                'OptionGroupDescription': 'Default option group for aurora 5.6',
+                'OptionGroupName': 'default:aurora-5-6',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'mariadb',
+                'MajorEngineVersion': '10.0',
+                'OptionGroupDescription':
+                    'Default option group for mariadb 10.0',
+                'OptionGroupName': 'default:mariadb-10-0',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'mysql',
+                'MajorEngineVersion': '5.1',
+                'OptionGroupDescription': 'Default option group for mysql 5.1',
+                'OptionGroupName': 'default:mysql-5-1',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'mysql',
+                'MajorEngineVersion': '5.5',
+                'OptionGroupDescription': 'Default option group for mysql 5.5',
+                'OptionGroupName': 'default:mysql-5-5',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'mysql',
+                'MajorEngineVersion': '5.6',
+                'OptionGroupDescription': 'Default option group for mysql 5.6',
+                'OptionGroupName': 'default:mysql-5-6',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'mariadb',
+                'MajorEngineVersion': '10.0',
+                'OptionGroupDescription':
+                    'Custom option group for mariadb 10.0',
+                'OptionGroupName': 'my_mariadb-10-0',
+                'Options': []
             },
         ],
         'NextToken': 'string'
@@ -818,15 +864,67 @@ class RDS(object):
     test_find_usage_option_groups.append({
         'OptionGroupsList': [
             {
-                "AllowsVpcAndNonVpcInstanceMemberships": True,
-                "EngineName": "postgres",
-                "MajorEngineVersion": "9.3",
-                "OptionGroupDescription":
-                    "Default option group for postgres 9.3",
-                "OptionGroupName": "default:postgres-9-3",
-                "Options": [],
-                "VpcId": None
-            }
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'mysql',
+                'MajorEngineVersion': '5.7',
+                'OptionGroupDescription': 'Default option group for mysql 5.7',
+                'OptionGroupName': 'default:mysql-5-7',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'oracle-se',
+                'MajorEngineVersion': '11.2',
+                'OptionGroupDescription':
+                    'Default option group for oracle-se 11.2',
+                'OptionGroupName': 'default:oracle-se-11-2',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'oracle-se1',
+                'MajorEngineVersion': '11.2',
+                'OptionGroupDescription':
+                    'Default option group for oracle-se1 11.2',
+                'OptionGroupName': 'default:oracle-se1-11-2',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'postgres',
+                'MajorEngineVersion': '9.3',
+                'OptionGroupDescription':
+                    'Default option group for postgres 9.3',
+                'OptionGroupName': 'default:postgres-9-3',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'postgres',
+                'MajorEngineVersion': '9.4',
+                'OptionGroupDescription':
+                    'Default option group for postgres 9.4',
+                'OptionGroupName': 'default:postgres-9-4',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'oracle-se1',
+                'MajorEngineVersion': '11.2',
+                'OptionGroupDescription':
+                    'Custom option group for oracle-se1 11.2',
+                'OptionGroupName': 'my_oracle-se1-11-2',
+                'Options': []
+            },
+            {
+                'AllowsVpcAndNonVpcInstanceMemberships': True,
+                'EngineName': 'postgres',
+                'MajorEngineVersion': '9.4',
+                'OptionGroupDescription':
+                    'Custom option group for postgres 9.4',
+                'OptionGroupName': 'my_postgres-9-4',
+                'Options': []
+            },
         ]
     })
 

@@ -154,11 +154,30 @@ class _RDSService(_AwsService):
         paginator = self.conn.get_paginator('describe_db_parameter_groups')
         for page in paginator.paginate():
             for group in page['DBParameterGroups']:
-                count += 1
+                count += self._is_custom_param_group(group)
         self.limits['DB parameter groups']._add_current_usage(
             count,
             aws_type='AWS::RDS::DBParameterGroup'
         )
+
+    def _is_custom_param_group(self, data):
+        """
+        Return True if the specified DBParameterGroup is a custom
+        (non-default) group, otherwise return False.
+
+        :param data: DBParameterGroup
+        :type data: dict
+        :return: bool
+        """
+        family = data['DBParameterGroupFamily']
+        def_name = 'default.%s' % family
+        def_desc = 'Default parameter group for %s' % family
+        if (
+                data['DBParameterGroupName'] == def_name and
+                data['Description'] == def_desc
+        ):
+            return False
+        return True
 
     def _find_usage_subnet_groups(self):
         """find usage for subnet groups"""
@@ -185,11 +204,35 @@ class _RDSService(_AwsService):
         paginator = self.conn.get_paginator('describe_option_groups')
         for page in paginator.paginate():
             for group in page['OptionGroupsList']:
-                count += 1
+                count += self._is_custom_option_group(group)
         self.limits['Option Groups']._add_current_usage(
             count,
             aws_type='AWS::RDS::DBOptionGroup',
         )
+
+    def _is_custom_option_group(self, data):
+        """
+        Return True if the specified DBOptionGroup is a custom
+        (non-default) group, otherwise return False.
+
+        :param data: DBOptionGroup
+        :type data: dict
+        :return: bool
+        """
+        engine = data['EngineName']
+        ver = data['MajorEngineVersion']
+        ver_dash = ver.replace('.', '-')
+        def_name = 'default:%s-%s' % (engine, ver_dash)
+        def_desc = 'Default option group for %s %s' % (engine, ver)
+        if (
+                data['OptionGroupName'] == def_name and
+                data['OptionGroupDescription'] == def_desc
+        ):
+            logger.debug("DBOptionGroup is NOT custom (default): %s",
+                         data['OptionGroupName'])
+            return False
+        logger.debug("DBOptionGroup is custom: %s", data['OptionGroupName'])
+        return True
 
     def _find_usage_event_subscriptions(self):
         """find usage for event subscriptions"""

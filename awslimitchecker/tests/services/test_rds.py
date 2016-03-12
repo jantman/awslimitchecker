@@ -232,7 +232,7 @@ class Test_RDSService(object):
 
         usage = sorted(cls.limits['DB parameter groups'].get_current_usage())
         assert len(usage) == 1
-        assert usage[0].get_value() == 2
+        assert usage[0].get_value() == 1
         assert usage[0].aws_type == 'AWS::RDS::DBParameterGroup'
 
     def test_find_usage_subnet_groups(self):
@@ -297,7 +297,7 @@ class Test_RDSService(object):
 
         usage = sorted(cls.limits['Option Groups'].get_current_usage())
         assert len(usage) == 1
-        assert usage[0].get_value() == 2
+        assert usage[0].get_value() == 3
         assert usage[0].aws_type == 'AWS::RDS::DBOptionGroup'
 
     def test_find_usage_event_subscriptions(self):
