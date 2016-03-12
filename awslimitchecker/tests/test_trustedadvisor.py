@@ -310,6 +310,19 @@ class Test_TrustedAdvisor(object):
                             'Green'
                         ]
                     },
+                    {
+                        'status': u'ok',
+                        'resourceId': 'resid4',
+                        'isSuppressed': False,
+                        'metadata': [
+                            '-',
+                            'IAM',
+                            'Users',
+                            '5000',
+                            '152',
+                            'Green'
+                        ]
+                    },
                 ]
             }
         }
@@ -386,6 +399,19 @@ class Test_TrustedAdvisor(object):
                             'Auto Scaling groups',
                             '40',
                             '10',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': u'ok',
+                        'resourceId': 'resid4',
+                        'isSuppressed': False,
+                        'metadata': [
+                            '-',
+                            'IAM',
+                            'Users',
+                            '5000',
+                            '152',
                             'Green'
                         ]
                     },
