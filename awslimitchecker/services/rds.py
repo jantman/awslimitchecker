@@ -127,7 +127,9 @@ class _RDSService(_AwsService):
         paginator = self.conn.get_paginator('describe_reserved_db_instances')
         for page in paginator.paginate():
             for inst in page['ReservedDBInstances']:
-                count += 1
+                if inst['State'] != 'active':
+                    continue
+                count += inst['DBInstanceCount']
         self.limits['Reserved Instances']._add_current_usage(
             count,
             aws_type='AWS::RDS::DBInstance'

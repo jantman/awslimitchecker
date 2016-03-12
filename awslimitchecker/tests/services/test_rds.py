@@ -399,7 +399,7 @@ class Test_RDSService(object):
 
         usage = sorted(cls.limits['Reserved Instances'].get_current_usage())
         assert len(usage) == 1
-        assert usage[0].get_value() == 2
+        assert usage[0].get_value() == 135
         assert usage[0].aws_type == 'AWS::RDS::DBInstance'
 
     def test_find_usage_clusters(self):

@@ -1076,7 +1076,28 @@ class RDS(object):
                 'ProductDescription': 'string',
                 'OfferingType': 'string',
                 'MultiAZ': False,
-                'State': 'string',
+                'State': 'active',
+                'RecurringCharges': [
+                    {
+                        'RecurringChargeAmount': 123.0,
+                        'RecurringChargeFrequency': 'string'
+                    },
+                ]
+            },
+            {
+                'ReservedDBInstanceId': 'string2',
+                'ReservedDBInstancesOfferingId': 'string',
+                'DBInstanceClass': 'string',
+                'StartTime': datetime(2015, 1, 1),
+                'Duration': 123,
+                'FixedPrice': 123.0,
+                'UsagePrice': 123.0,
+                'CurrencyCode': 'string',
+                'DBInstanceCount': 123,
+                'ProductDescription': 'string',
+                'OfferingType': 'string',
+                'MultiAZ': False,
+                'State': 'retired',
                 'RecurringCharges': [
                     {
                         'RecurringChargeAmount': 123.0,
@@ -1090,7 +1111,7 @@ class RDS(object):
     test_find_usage_reserved_instances.append({
         'ReservedDBInstances': [
             {
-                'ReservedDBInstanceId': 'string',
+                'ReservedDBInstanceId': 'string3',
                 'ReservedDBInstancesOfferingId': 'string',
                 'DBInstanceClass': 'string',
                 'StartTime': datetime(2015, 1, 1),
@@ -1098,11 +1119,11 @@ class RDS(object):
                 'FixedPrice': 123.0,
                 'UsagePrice': 123.0,
                 'CurrencyCode': 'string',
-                'DBInstanceCount': 123,
+                'DBInstanceCount': 12,
                 'ProductDescription': 'string',
                 'OfferingType': 'string',
                 'MultiAZ': True,
-                'State': 'string',
+                'State': 'active',
                 'RecurringCharges': [
                     {
                         'RecurringChargeAmount': 123.0,
