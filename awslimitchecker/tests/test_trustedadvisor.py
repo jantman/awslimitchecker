@@ -311,7 +311,7 @@ class Test_TrustedAdvisor(object):
                         ]
                     },
                     {
-                        'status': u'ok',
+                        'status': 'ok',
                         'resourceId': 'resid4',
                         'isSuppressed': False,
                         'metadata': [
@@ -406,7 +406,7 @@ class Test_TrustedAdvisor(object):
                         ]
                     },
                     {
-                        'status': u'ok',
+                        'status': 'ok',
                         'resourceId': 'resid4',
                         'isSuppressed': False,
                         'metadata': [
