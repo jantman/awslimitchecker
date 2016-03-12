@@ -444,12 +444,11 @@ class Test_RDSService(object):
             )
         ]
 
-    def DONOTtest_update_limits_from_api(self):
-        limits = result_fixtures.RDS.test_update_limits_from_api
+    def test_update_limits_from_api(self):
+        response = result_fixtures.RDS.test_update_limits_from_api
 
         mock_conn = Mock()
-
-        mock_conn.describe_account_attrubites.return_value = limits
+        mock_conn.describe_account_attributes.return_value = response
         with patch('%s.connect' % self.pb) as mock_connect:
             cls = _RDSService(21, 43)
             cls.conn = mock_conn
@@ -458,6 +457,17 @@ class Test_RDSService(object):
         assert mock_conn.mock_calls == [
             call.describe_account_attributes()
         ]
-        raise NotImplementedError()
-        assert cls.limits['Auto Scaling groups'].api_limit == 11
-        assert cls.limits['Launch configurations'].api_limit == 22
+        assert cls.limits['DB instances'].api_limit == 200
+        assert cls.limits['Reserved Instances'].api_limit == 201
+        assert cls.limits['Storage quota (GB)'].api_limit == 100000
+        assert cls.limits['DB security groups'].api_limit == 25
+        assert cls.limits['Max auths per security group'].api_limit == 20
+        assert cls.limits['DB parameter groups'].api_limit == 50
+        assert cls.limits['DB snapshots per user'].api_limit == 150
+        assert cls.limits['Event Subscriptions'].api_limit == 21
+        assert cls.limits['Subnet Groups'].api_limit == 202
+        assert cls.limits['Option Groups'].api_limit == 22
+        assert cls.limits['Subnets per Subnet Group'].api_limit == 23
+        assert cls.limits['Read replicas per master'].api_limit == 5
+        assert cls.limits['DB Clusters'].api_limit == 40
+        assert cls.limits['DB Cluster Parameter Groups'].api_limit == 51

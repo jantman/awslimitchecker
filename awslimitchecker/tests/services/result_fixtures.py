@@ -1014,7 +1014,7 @@ class RDS(object):
                 'Used': 124
             },
             {
-                'Max': 200,
+                'Max': 201,
                 'AccountQuotaName': 'ReservedDBInstances',
                 'Used': 96},
             {
@@ -1043,29 +1043,29 @@ class RDS(object):
                 'Used': 76
             },
             {
-                'Max': 20,
+                'Max': 21,
                 'AccountQuotaName': 'EventSubscriptions',
                 'Used': 1
             },
             {
-                'Max': 200,
+                'Max': 202,
                 'AccountQuotaName': 'DBSubnetGroups',
                 'Used': 89
             },
             {
-                'Max': 20,
+                'Max': 22,
                 'AccountQuotaName': 'OptionGroups',
-                'Used': 0
+                'Used': 2
             },
             {
-                'Max': 20,
+                'Max': 23,
                 'AccountQuotaName': 'SubnetsPerDBSubnetGroup',
                 'Used': 14
             },
             {
                 'Max': 5,
                 'AccountQuotaName': 'ReadReplicasPerMaster',
-                'Used': 0
+                'Used': 4
             },
             {
                 'Max': 40,
@@ -1073,9 +1073,9 @@ class RDS(object):
                 'Used': 3
             },
             {
-                'Max': 50,
+                'Max': 51,
                 'AccountQuotaName': 'DBClusterParameterGroups',
-                'Used': 0
+                'Used': 6
             }
         ],
         'ResponseMetadata': {

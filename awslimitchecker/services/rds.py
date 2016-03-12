@@ -52,6 +52,25 @@ class _RDSService(_AwsService):
     service_name = 'RDS'
     api_name = 'rds'
 
+    # Mapping of RDS DescribeAccountAttributes action AccountQuotaName string
+    # to our Limit name
+    API_NAME_TO_LIMIT = {
+        'DBInstances': 'DB instances',
+        'ReservedDBInstances': 'Reserved Instances',
+        'AllocatedStorage': 'Storage quota (GB)',
+        'DBSecurityGroups': 'DB security groups',
+        'AuthorizationsPerDBSecurityGroup': 'Max auths per security group',
+        'DBParameterGroups': 'DB parameter groups',
+        'ManualSnapshots': 'DB snapshots per user',
+        'EventSubscriptions': 'Event Subscriptions',
+        'DBSubnetGroups': 'Subnet Groups',
+        'OptionGroups': 'Option Groups',
+        'SubnetsPerDBSubnetGroup': 'Subnets per Subnet Group',
+        'ReadReplicasPerMaster': 'Read replicas per master',
+        'DBClusters': 'DB Clusters',
+        'DBClusterParameterGroups': 'DB Cluster Parameter Groups',
+    }
+
     def find_usage(self):
         """
         Determine the current usage for each limit of this service,
@@ -256,8 +275,10 @@ class _RDSService(_AwsService):
         family = data['DBParameterGroupFamily']
         def_name = 'default.%s' % family
         def_desc = 'Default cluster parameter group for %s' % family
-        if (data['DBClusterParameterGroupName'] == def_name and
-            data['Description'] == def_desc):
+        if (
+                data['DBClusterParameterGroupName'] == def_name and
+                data['Description'] == def_desc
+        ):
             return False
         return True
 
@@ -397,19 +418,25 @@ class _RDSService(_AwsService):
         self.limits = limits
         return limits
 
-    def _update_limits_from_apiNO(self):
+    def _update_limits_from_api(self):
         """
-        Query EC2's DescribeAccountAttributes API action, and update limits
+        Query RDS's DescribeAccountAttributes API action, and update limits
         with the quotas returned. Updates ``self.limits``.
+
+        We ignore the usage information from the API,
         """
         self.connect()
         logger.info("Querying RDS DescribeAccountAttributes for limits")
-        lims = self.conn.describe_account_attributes()
-        raise NotImplementedError()
-        #self.limits['Auto Scaling groups']._set_api_limit(
-        #    lims['MaxNumberOfAutoScalingGroups'])
-        #self.limits['Launch configurations']._set_api_limit(
-        #    lims['MaxNumberOfLaunchConfigurations'])
+        lims = self.conn.describe_account_attributes()['AccountQuotas']
+        for lim in lims:
+            if lim['AccountQuotaName'] not in self.API_NAME_TO_LIMIT:
+                logger.info('RDS DescribeAccountAttributes returned unknown'
+                            'limit: %s (max: %s; used: %s)',
+                            lim['AccountQuotaName'], lim['Max'], lim['Used'])
+                continue
+            lname = self.API_NAME_TO_LIMIT[lim['AccountQuotaName']]
+            self.limits[lname]._set_api_limit(lim['Max'])
+        logger.debug('Done setting limits from API.')
 
     def required_iam_permissions(self):
         """
