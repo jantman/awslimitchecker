@@ -359,19 +359,22 @@ class Test_RDSService(object):
 
         usage = sorted(cls.limits[
                            'Max auths per security group'].get_current_usage())
-        assert len(usage) == 4
+        assert len(usage) == 5
         assert usage[0].get_value() == 0
-        assert usage[0].resource_id == 'default:vpc-a926c2cc'
+        assert usage[0].resource_id == 'MyEmptySecurityGroup'
         assert usage[0].aws_type == 'AWS::RDS::DBSecurityGroup'
-        assert usage[1].get_value() == 1
-        assert usage[1].resource_id == 'SecurityGroup1'
+        assert usage[1].get_value() == 0
+        assert usage[1].resource_id == 'default:vpc-a926c2cc'
         assert usage[1].aws_type == 'AWS::RDS::DBSecurityGroup'
-        assert usage[2].get_value() == 2
-        assert usage[2].resource_id == 'alctest'
+        assert usage[2].get_value() == 1
+        assert usage[2].resource_id == 'SecurityGroup1'
         assert usage[2].aws_type == 'AWS::RDS::DBSecurityGroup'
-        assert usage[3].get_value() == 3
-        assert usage[3].resource_id == 'SecurityGroup2'
+        assert usage[3].get_value() == 2
+        assert usage[3].resource_id == 'alctest'
         assert usage[3].aws_type == 'AWS::RDS::DBSecurityGroup'
+        assert usage[4].get_value() == 3
+        assert usage[4].resource_id == 'SecurityGroup2'
+        assert usage[4].aws_type == 'AWS::RDS::DBSecurityGroup'
 
     def test_find_usage_reserved_instances(self):
         data = result_fixtures.RDS.test_find_usage_reserved_instances

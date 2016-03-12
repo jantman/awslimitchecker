@@ -990,6 +990,15 @@ class RDS(object):
                 "VpcId": None
             },
             {
+                "DBSecurityGroupDescription": "empty",
+                "DBSecurityGroupName":
+                    "MyEmptySecurityGroup",
+                "EC2SecurityGroups": [],
+                "IPRanges": [],
+                "OwnerId": "123456789012",
+                "VpcId": None
+            },
+            {
                 "DBSecurityGroupDescription":
                     "default:vpc-a926c2cc",
                 "DBSecurityGroupName": "default:vpc-a926c2cc",

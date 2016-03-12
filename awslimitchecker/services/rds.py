@@ -255,10 +255,16 @@ class _RDSService(_AwsService):
         paginator = self.conn.get_paginator('describe_db_security_groups')
         for page in paginator.paginate():
             for group in page['DBSecurityGroups']:
-                if 'VpcId' not in group or group['VpcId'] is None:
+                if 'VpcId' in group and group['VpcId'] is not None:
+                    vpc_count += 1
+                elif (
+                    len(group["EC2SecurityGroups"]) + len(group["IPRanges"]) > 0
+                ):
                     classic_count += 1
                 else:
-                    vpc_count += 1
+                    logger.info('DBSecurityGroup %s appears to have no '
+                                'authorizations and is not being counted.',
+                                group['DBSecurityGroupName'])
                 self.limits['Max auths per security group']._add_current_usage(
                     len(group["EC2SecurityGroups"]) + len(group["IPRanges"]),
                     aws_type='AWS::RDS::DBSecurityGroup',
