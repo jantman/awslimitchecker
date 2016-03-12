@@ -149,7 +149,7 @@ class TrustedAdvisor(Connectable):
                      check_id, check_datetime)
         res = {}
         for check in checks['result']['flaggedResources']:
-            if check['region'] != region:
+            if 'region' in check and check['region'] != region:
                 continue
             data = dict(zip(metadata, check['metadata']))
             if data['Service'] not in res:

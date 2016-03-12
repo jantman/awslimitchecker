@@ -350,6 +350,9 @@ class Test_TrustedAdvisor(object):
             'AutoScaling': {
                 'Launch configurations': 20,
                 'Auto Scaling groups': 40,
+            },
+            'IAM': {
+                'Users': 5000
             }
         }
 
@@ -441,6 +444,9 @@ class Test_TrustedAdvisor(object):
         assert res == {
             'AutoScaling': {
                 'Auto Scaling groups': 20,
+            },
+            'IAM': {
+                'Users': 5000
             }
         }
 
