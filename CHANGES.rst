@@ -4,6 +4,10 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.3.2 (2016-03-11)
+------------------
+
+* `#155 <https://github.com/jantman/awslimitchecker/issues/155>`_ Bug fix for uncaught KeyError on accounts with Trusted Advisor (business-level support and above). This was caused by an undocumented change released by AWS between Thu, 10 Mar 2016 07:00:00 GMT and Fri, 11 Mar 2016 07:00:00 GMT, where five new IAM-related checks were introduced that lack the ``region`` data field (which the `TrustedAdvisorResourceDetail API docs <https://docs.aws.amazon.com/awssupport/latest/APIReference/API_TrustedAdvisorResourceDetail.html>`_ still list as a required field).
 
 0.3.1 (2016-03-04)
 ------------------
