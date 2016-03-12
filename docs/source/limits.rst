@@ -100,6 +100,18 @@ updated from Trusted Advisor:
 
   * Active load balancers
 
+* IAM
+
+  * Groups
+
+  * Instance profiles
+
+  * Roles
+
+  * Server certificates
+
+  * Users
+
 * RDS
 
   * DB instances
@@ -148,6 +160,22 @@ precedence than anything other than explicit limit overrides:
   * VPC Elastic IP addresses (EIPs)
 
   * VPC security groups per elastic network interface
+
+* IAM
+
+  * Groups
+
+  * Instance profiles
+
+  * Policies
+
+  * Policy Versions In Use
+
+  * Roles
+
+  * Server certificates
+
+  * Users
 
 * RDS
 
@@ -305,6 +333,21 @@ Parameter Groups  20
 Security Groups   50
 Subnet Groups     50
 ================= ==
+
+IAM
+++++
+
+============================================ =====
+Limit                                        Default
+============================================ =====
+Groups :sup:`(TA)` :sup:`(API)`              100  
+Instance profiles :sup:`(TA)` :sup:`(API)`   100  
+Policies :sup:`(API)`                        1000 
+Policy Versions In Use :sup:`(API)`          10000
+Roles :sup:`(TA)` :sup:`(API)`               250  
+Server certificates :sup:`(TA)` :sup:`(API)` 20   
+Users :sup:`(TA)` :sup:`(API)`               5000 
+============================================ =====
 
 RDS
 ++++

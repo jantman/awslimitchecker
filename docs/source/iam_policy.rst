@@ -45,6 +45,8 @@ permissions required for it to function correctly:
             "elasticache:DescribeCacheSecurityGroups", 
             "elasticache:DescribeCacheSubnetGroups", 
             "elasticloadbalancing:DescribeLoadBalancers", 
+            "iam:GetAccountSummary", 
+            "rds:DescribeAccountAttributes", 
             "rds:DescribeDBInstances", 
             "rds:DescribeDBParameterGroups", 
             "rds:DescribeDBSecurityGroups", 
