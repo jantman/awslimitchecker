@@ -1076,6 +1076,11 @@ class RDS(object):
                 'Max': 51,
                 'AccountQuotaName': 'DBClusterParameterGroups',
                 'Used': 6
+            },
+            {
+                'Max': 98,
+                'AccountQuotaName': 'Foo',
+                'Used': 99
             }
         ],
         'ResponseMetadata': {

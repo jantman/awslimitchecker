@@ -449,13 +449,23 @@ class Test_RDSService(object):
 
         mock_conn = Mock()
         mock_conn.describe_account_attributes.return_value = response
-        with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _RDSService(21, 43)
-            cls.conn = mock_conn
-            cls._update_limits_from_api()
+        with patch('%s.logger' % self.pbm) as mock_logger:
+            with patch('%s.connect' % self.pb) as mock_connect:
+                cls = _RDSService(21, 43)
+                cls.conn = mock_conn
+                cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == [
             call.describe_account_attributes()
+        ]
+        assert mock_logger.mock_calls == [
+            call.info('Querying RDS DescribeAccountAttributes for limits'),
+            call.info(
+                'RDS DescribeAccountAttributes returned unknown'
+                'limit: %s (max: %s; used: %s)',
+                'Foo', 98, 99
+            ),
+            call.debug('Done setting limits from API.')
         ]
         assert cls.limits['DB instances'].api_limit == 200
         assert cls.limits['Reserved Instances'].api_limit == 201
