@@ -160,6 +160,9 @@ class TestIntegration(object):
         records = logs.unexpected_logs()
         assert len(records) == 0, "awslimitchecker emitted unexpected log " \
             "messages at WARN or higher: \n%s" % "\n".join(records)
+        polls = logs.num_ta_polls
+        assert polls == 1, "awslimitchecker should have polled Trusted " \
+            "Advisor once, but polled %s times" % polls
 
     @pytest.mark.integration
     def verify_usage(self, checker_args, creds, service_name, expect_usage):
@@ -246,7 +249,7 @@ class TestIntegration(object):
         checker_args = {'region': REGION}
         for sname in _services:
             eu = False
-            if sname in ['RDS', 'VPC', 'EC2', 'ElastiCache', 'EBS']:
+            if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS']:
                 eu = True
             yield "%s limits" % sname, self.verify_limits, checker_args, \
                   creds, sname, True, False
