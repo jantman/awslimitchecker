@@ -13,6 +13,7 @@ Submodules
 
    awslimitchecker.services.autoscaling
    awslimitchecker.services.base
+   awslimitchecker.services.cloudformation
    awslimitchecker.services.ebs
    awslimitchecker.services.ec2
    awslimitchecker.services.elasticache
