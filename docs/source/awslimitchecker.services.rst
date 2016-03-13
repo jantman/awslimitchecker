@@ -20,5 +20,6 @@ Submodules
    awslimitchecker.services.iam
    awslimitchecker.services.rds
    awslimitchecker.services.s3
+   awslimitchecker.services.ses
    awslimitchecker.services.vpc
 

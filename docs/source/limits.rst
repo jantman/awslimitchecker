@@ -126,6 +126,10 @@ updated from Trusted Advisor:
 
   * Storage quota (GB)
 
+* SES
+
+  * Daily sending quota
+
 * VPC
 
   * Internet gateways
@@ -206,6 +210,10 @@ precedence than anything other than explicit limit overrides:
   * Subnet Groups
 
   * Subnets per Subnet Group
+
+* SES
+
+  * Daily sending quota
 
 
 
@@ -380,6 +388,15 @@ Limit   Default
 ======= ===
 Buckets 100
 ======= ===
+
+SES
+++++
+
+============================================ ===
+Limit                                        Default
+============================================ ===
+Daily sending quota :sup:`(TA)` :sup:`(API)` 200
+============================================ ===
 
 VPC
 ++++

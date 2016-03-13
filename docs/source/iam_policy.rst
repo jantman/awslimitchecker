@@ -56,6 +56,7 @@ permissions required for it to function correctly:
             "rds:DescribeOptionGroups", 
             "rds:DescribeReservedDBInstances", 
             "s3:ListAllMyBuckets", 
+            "ses:GetSendQuota", 
             "support:*", 
             "trustedadvisor:Describe*"
           ], 
