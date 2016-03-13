@@ -55,6 +55,7 @@ else:
 pbm = 'awslimitchecker.services.XXnewserviceXX'  # module patch base
 pb = '%s._XXNewServiceXXService' % pbm  # class patch pase
 
+
 class Test_XXNewServiceXXService(object):
 
     def test_init(self):
