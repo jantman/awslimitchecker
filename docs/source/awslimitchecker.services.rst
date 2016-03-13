@@ -19,5 +19,6 @@ Submodules
    awslimitchecker.services.elb
    awslimitchecker.services.iam
    awslimitchecker.services.rds
+   awslimitchecker.services.s3
    awslimitchecker.services.vpc
 

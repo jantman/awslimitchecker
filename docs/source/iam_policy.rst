@@ -55,6 +55,7 @@ permissions required for it to function correctly:
             "rds:DescribeEventSubscriptions", 
             "rds:DescribeOptionGroups", 
             "rds:DescribeReservedDBInstances", 
+            "s3:ListAllMyBuckets", 
             "support:*", 
             "trustedadvisor:Describe*"
           ], 

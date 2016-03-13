@@ -105,7 +105,9 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    EC2
    ELB
    ElastiCache
+   IAM
    RDS
+   S3
    VPC
 
 
@@ -190,14 +192,14 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        373
-   AutoScaling/Launch configurations                      442
-   EBS/Active snapshots                                   12941
-   EBS/Active volumes                                     3047
-   EBS/General Purpose (SSD) volume storage (GiB)         34330
+   AutoScaling/Auto Scaling groups                        392
+   AutoScaling/Launch configurations                      464
+   EBS/Active snapshots                                   13234
+   EBS/Active volumes                                     1418
+   EBS/General Purpose (SSD) volume storage (GiB)         39608
    (...)
    VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=26 (vpc-ae7bc5cb=1, vpc-1e5 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=32 (vpc-1e5e3c7b=1, vpc-ae7 (...)
    VPC/VPCs                                               9
 
 
@@ -261,15 +263,13 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EBS/Active snapshots                                   (limit 16000) WARNING: 12941
-   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 34
-   EC2/Running On-Demand t2.medium instances              (limit 20) CRITICAL: 67
-   EC2/Running On-Demand t2.small instances               (limit 20) CRITICAL: 21
-   EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=913
-   (...)
-   RDS/DB parameter groups                                (limit 50) WARNING: 44
-   RDS/Reserved Instances                                 (limit 40) WARNING: 32
-   RDS/Subnet Groups                                      (limit 20) CRITICAL: 90
+   EBS/Active snapshots                                   (limit 16000) WARNING: 13234
+   EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=778
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-b26a07fc=5, eni-27515 (...)
+   ElastiCache/Clusters                                   (limit 50) WARNING: 42
+   ElastiCache/Nodes                                      (limit 50) WARNING: 42
+   RDS/DB parameter groups                                (limit 50) WARNING: 40
+   S3/Buckets                                             (limit 100) CRITICAL: 152
 
 
 
@@ -281,12 +281,9 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Running On-Demand m3.medium instances              (limit 20) CRITICAL: 34
-   EC2/Running On-Demand t2.medium instances              (limit 20) CRITICAL: 67
-   EC2/Running On-Demand t2.small instances               (limit 20) CRITICAL: 21
-   EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=912
-   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-2751546e=5
-   RDS/Subnet Groups                                      (limit 20) CRITICAL: 90
+   EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=778
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-b26a07fc=5, eni-ab0ce (...)
+   S3/Buckets                                             (limit 100) CRITICAL: 152
 
 
 
