@@ -108,6 +108,7 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    IAM
    RDS
    S3
+   SES
    VPC
 
 
@@ -194,12 +195,12 @@ using their IDs).
    (venv)$ awslimitchecker -u
    AutoScaling/Auto Scaling groups                        392
    AutoScaling/Launch configurations                      464
-   EBS/Active snapshots                                   13234
+   EBS/Active snapshots                                   13235
    EBS/Active volumes                                     1418
    EBS/General Purpose (SSD) volume storage (GiB)         39608
    (...)
    VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=32 (vpc-1e5e3c7b=1, vpc-ae7 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=32 (vpc-ae7bc5cb=1, vpc-1e5 (...)
    VPC/VPCs                                               9
 
 
@@ -263,9 +264,9 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EBS/Active snapshots                                   (limit 16000) WARNING: 13234
+   EBS/Active snapshots                                   (limit 16000) WARNING: 13235
    EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=778
-   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-b26a07fc=5, eni-27515 (...)
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-2751546e=5, eni-b26a0 (...)
    ElastiCache/Clusters                                   (limit 50) WARNING: 42
    ElastiCache/Nodes                                      (limit 50) WARNING: 42
    RDS/DB parameter groups                                (limit 50) WARNING: 40
@@ -282,7 +283,7 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
    EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=778
-   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-b26a07fc=5, eni-ab0ce (...)
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-2751546e=5, eni-b26a0 (...)
    S3/Buckets                                             (limit 100) CRITICAL: 152
 
 
