@@ -372,6 +372,15 @@ Subnets per Subnet Group :sup:`(API)`                 20
 VPC Security Groups                                   5     
 ===================================================== ======
 
+S3
++++
+
+======= ===
+Limit   Default
+======= ===
+Buckets 100
+======= ===
+
 VPC
 ++++
 

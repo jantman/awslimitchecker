@@ -46,6 +46,7 @@ from awslimitchecker.services.elb import _ElbService
 from awslimitchecker.services.elasticache import _ElastiCacheService
 from awslimitchecker.services.rds import _RDSService
 from awslimitchecker.services.iam import _IamService
+from awslimitchecker.services.s3 import _S3Service
 
 # dynamically generate the service name to class dict
 _services = {}

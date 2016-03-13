@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Add a new service to awslimitchecker')
     parser.add_argument('service_name', type=str, help='The name of the AWS service, in CamelCase')
     args = parser.parse_args()
-    name_re = r'^[A-Za-z_]+$'
+    name_re = r'^[A-Za-z_]+'
     if not re.match(name_re, args.service_name):
         sys.stderr.write('ERROR: service_name must match {r}\n'.format(r=name_re))
         raise SystemExit(1)
