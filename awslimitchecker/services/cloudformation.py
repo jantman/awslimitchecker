@@ -125,5 +125,5 @@ class _CloudformationService(_AwsService):
         """
         return [
             'cloudformation:DescribeAccountLimits',
-            'cloudformation:ListStacks'
+            'cloudformation:DescribeStacks'
         ]

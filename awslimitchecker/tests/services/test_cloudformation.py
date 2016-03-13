@@ -154,5 +154,5 @@ class Test_CloudformationService(object):
         cls = _CloudformationService(21, 43)
         assert cls.required_iam_permissions() == [
             'cloudformation:DescribeAccountLimits',
-            'cloudformation:ListStacks'
+            'cloudformation:DescribeStacks'
         ]
