@@ -21,6 +21,8 @@ permissions required for it to function correctly:
             "autoscaling:DescribeAccountLimits", 
             "autoscaling:DescribeAutoScalingGroups", 
             "autoscaling:DescribeLaunchConfigurations", 
+            "cloudformation:DescribeAccountLimits", 
+            "cloudformation:ListStacks", 
             "ec2:DescribeAccountAttributes", 
             "ec2:DescribeAddresses", 
             "ec2:DescribeInstances", 

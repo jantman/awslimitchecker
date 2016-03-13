@@ -155,6 +155,10 @@ precedence than anything other than explicit limit overrides:
 
   * Launch configurations
 
+* CloudFormation
+
+  * Stacks
+
 * EC2
 
   * Elastic IP addresses (EIPs)
@@ -235,6 +239,15 @@ Limit                                          Default
 Auto Scaling groups :sup:`(TA)` :sup:`(API)`   20 
 Launch configurations :sup:`(TA)` :sup:`(API)` 100
 ============================================== ===
+
+CloudFormation
++++++++++++++++
+
+=================== ===
+Limit               Default
+=================== ===
+Stacks :sup:`(API)` 200
+=================== ===
 
 EBS
 ++++
