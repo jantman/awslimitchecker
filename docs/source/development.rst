@@ -291,8 +291,8 @@ Release Checklist
 
 1. Open an issue for the release; cut a branch off ``develop`` for that issue.
 2. Build docs (``tox -e docs``) and ensure they're current; commit any changes.
-3. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker.versioncheck``,
-   manually run the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
+3. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``,
+   manually run ALL of the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
 4. Ensure that test coverage is no less than the last release (ideally, 100%).
 5. Create or update an actual IAM user with the policy from ``awslimitchecker --iam-policy``;
    run the command line wrapper and ensure that the policy works and contains all needed permissions.
