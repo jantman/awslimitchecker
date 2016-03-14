@@ -17,10 +17,6 @@ matrix:
       env: TOXENV=py34-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
     - python: "3.5"
       env: TOXENV=py35-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-    - python: "pypy"
-      env: TOXENV=pypy-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-    - python: "pypy3"
-      env: TOXENV=pypy3-unit PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
     - python: "2.6"
       env: TOXENV=py26-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
     - python: "2.7"
@@ -33,10 +29,6 @@ matrix:
       env: TOXENV=py34-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
     - python: "3.5"
       env: TOXENV=py35-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-    - python: "pypy"
-      env: TOXENV=pypy-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-    - python: "pypy3"
-      env: TOXENV=pypy3-versioncheck PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
     - python: "2.7"
       env: TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
     - python: "2.7"
