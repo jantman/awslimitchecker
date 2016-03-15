@@ -4,6 +4,9 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.4.0 (2016-03-14)
+------------------
+
 This release requires the following new IAM permissions to function:
 
 * ``rds:DescribeAccountAttributes``
