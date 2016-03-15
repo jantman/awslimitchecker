@@ -1,5 +1,5 @@
 """
-awslimitchecker/tests/services/test_XXnewserviceXX.py
+awslimitchecker/tests/services/test_ses.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -38,8 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.XXnewserviceXX import _XXNewServiceXXService
+from awslimitchecker.services.ses import _SesService
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -52,59 +51,80 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-pbm = 'awslimitchecker.services.XXnewserviceXX'  # module patch base
-pb = '%s._XXNewServiceXXService' % pbm  # class patch pase
+pbm = 'awslimitchecker.services.ses'  # module patch base
+pb = '%s._SesService' % pbm  # class patch pase
 
 
-class Test_XXNewServiceXXService(object):
+class Test_SesService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _XXNewServiceXXService(21, 43)
-        assert cls.service_name == 'XXNewServiceXX'
-        assert cls.api_name == 'XXnewserviceXX'
+        cls = _SesService(21, 43)
+        assert cls.service_name == 'SES'
+        assert cls.api_name == 'ses'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _SesService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            # TODO fill in limits here
-            'SomeLimitNameHere',
+            'Daily sending quota',
         ])
-        for name, limit in res.items():
-            assert limit.service == cls
-            assert limit.def_warning_threshold == 21
-            assert limit.def_critical_threshold == 43
+        limit = cls.limits['Daily sending quota']
+        assert limit.service == cls
+        assert limit.def_warning_threshold == 21
+        assert limit.def_critical_threshold == 43
+        assert limit.default_limit == 200
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _SesService(21, 43)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
 
     def test_find_usage(self):
-        # put boto3 responses in response_fixtures.py, then do something like:
-        # response = result_fixtures.EBS.test_find_usage_ebs
         mock_conn = Mock()
-        mock_conn.some_method.return_value =  # some logical return value
+        mock_conn.get_send_quota.return_value = {
+            'Max24HourSend': 123.0,
+            'MaxSendRate': 12.0,
+            'SentLast24Hours': 122.0
+        }
+
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _XXNewServiceXXService(21, 43)
+            cls = _SesService(21, 43)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        assert mock_conn.mock_calls == [call.some_method()]
-        # TODO - assert about usage
+        assert mock_conn.mock_calls == [call.get_send_quota()]
+        assert len(cls.limits['Daily sending quota'].get_current_usage()) == 1
+        assert cls.limits['Daily sending quota'].get_current_usage()[
+                   0].get_value() == 122.0
+
+    def test_update_limits_from_api(self):
+        mock_conn = Mock()
+        mock_conn.get_send_quota.return_value = {
+            'Max24HourSend': 123.0,
+            'MaxSendRate': 12.0,
+            'SentLast24Hours': 122.0
+        }
+
+        with patch('%s.connect' % pb) as mock_connect:
+            cls = _SesService(21, 43)
+            cls.conn = mock_conn
+            cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == [call.get_send_quota()]
+        assert cls.limits['Daily sending quota'].api_limit == 123.0
 
     def test_required_iam_permissions(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _SesService(21, 43)
         assert cls.required_iam_permissions() == [
-            # TODO - permissions here
+            'ses:GetSendQuota'
         ]

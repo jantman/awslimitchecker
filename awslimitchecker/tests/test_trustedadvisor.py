@@ -87,6 +87,7 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
         assert cls.all_services == {}
+        assert cls.limits_updated is False
 
     def test_init_sts(self):
         mock_svc = Mock(spec_set=_AwsService)
@@ -104,6 +105,7 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
         assert cls.all_services == {'foo': mock_svc}
+        assert cls.limits_updated is False
 
     def test_init_sts_external_id(self):
         cls = TrustedAdvisor(
@@ -118,6 +120,7 @@ class Test_TrustedAdvisor(object):
         assert cls.external_id == 'myeid'
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
+        assert cls.limits_updated is False
 
     def test_update_limits(self):
         mock_results = Mock()
@@ -131,6 +134,23 @@ class Test_TrustedAdvisor(object):
         assert mock_poll.mock_calls == [call(self.cls)]
         assert mock_update_services.mock_calls == [
             call(self.cls, mock_results)
+        ]
+
+    def test_update_limits_again(self):
+        mock_results = Mock()
+        self.cls.limits_updated = True
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            with patch('%s._poll' % pb, autospec=True) as mock_poll:
+                with patch('%s._update_services' % pb,
+                           autospec=True) as mock_update_services:
+                    with patch('%s.logger' % pbm) as mock_logger:
+                        mock_poll.return_value = mock_results
+                        self.cls.update_limits()
+        assert mock_connect.mock_calls == []
+        assert mock_poll.mock_calls == []
+        assert mock_update_services.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.debug('Already polled TA; skipping update')
         ]
 
     def test_get_limit_check_id(self):

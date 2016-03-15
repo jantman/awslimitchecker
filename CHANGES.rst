@@ -4,6 +4,34 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.4.0 (2016-03-14)
+------------------
+
+This release requires the following new IAM permissions to function:
+
+* ``rds:DescribeAccountAttributes``
+* ``iam:GetAccountSummary``
+* ``s3:ListAllMyBuckets``
+* ``ses:GetSendQuota``
+* ``cloudformation:DescribeAccountLimits``
+* ``cloudformation:DescribeStacks``
+
+Issues addressed:
+
+* `#150 <https://github.com/jantman/awslimitchecker/issues/150>`_ add CHANGES.rst to Sphinx docs
+* `#85 <https://github.com/jantman/awslimitchecker/issues/85>`_ and `#154 <https://github.com/jantman/awslimitchecker/issues/154>`_
+
+    * add support for RDS 'DB Clusters' and 'DB Cluster Parameter Groups' limits
+    * use API to retrieve RDS limits
+    * switch RDS from calculating usage to using the DescribeAccountAttributes usage information, for all limits other than those which are per-resource and need resource IDs (Max auths per security group, Read replicas per master, Subnets per Subnet Group)
+    * awslimitchecker now **requires an additional IAM permission**, ``rds:DescribeAccountAttributes``
+* `#157 <https://github.com/jantman/awslimitchecker/issues/157>`_ fix for TrustedAdvisor polling multiple times - have TA set an instance variable flag when it updates services after a poll, and skip further polls and updates if the flag is set. Also add an integration test to confirm this.
+* `#50 <https://github.com/jantman/awslimitchecker/issues/50>`_ Add support for IAM service with a subset of its limits (Groups, Instance Profiles, Policies, Policy Versions In Use, Roles, Server Certificates, Users), using both limits and usage information from the `GetAccountSummary <http://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountSummary.html>`_ API action. This **requires an additional IAM permission**, ``iam:GetAccountSummary``.
+* `#48 <https://github.com/jantman/awslimitchecker/issues/48>`_ Add support for S3 Buckets limit. This **requires an additional IAM permission**, ``s3:ListAllMyBuckets``.
+* `#71 <https://github.com/jantman/awslimitchecker/issues/71>`_ Add support for SES service (daily sending limit). This **requires an additional IAM permission**, ``ses:GetSendQuota``.
+* `#69 <https://github.com/jantman/awslimitchecker/issues/69>`_ Add support for CloudFormation service Stacks limit. This **requires additional IAM permissions**, ``cloudformation:DescribeAccountLimits`` and ``cloudformation:DescribeStacks``.
+* `#166 <https://github.com/jantman/awslimitchecker/issues/166>`_ Speed up TravisCI tests by dropping testing for PyPy and PyPy3, and only running the -versioncheck tests for two python interpreters instead of 8.
+
 0.3.2 (2016-03-11)
 ------------------
 
@@ -55,7 +83,7 @@ Pre-release (develop branch)
 * Attempt at fixing `#47 <https://github.com/jantman/awslimitchecker/issues/47>`_ where versioncheck acceptance tests fail under TravisCI, when testing master after a tagged release (when there's a tag for the current commit)
 * Fix `#73 <https://github.com/jantman/awslimitchecker/issues/73>`_ versioncheck.py reports incorrect information when package is installed in a virtualenv inside a git repository
 * Fix `#87 <https://github.com/jantman/awslimitchecker/issues/87>`_ run coverage in all unit test Tox environments, not a dedicated env
-* Fix `#75 <https://github.com/jantman/awslimitchecker/issues/75>`_ re-enable py26 Travis builds now that `pytest-dev/pytest#1035 <https://github.com/pytest-dev/pytest/issues/1035`_ is fixed (pytest >= 2.8.3)
+* Fix `#75 <https://github.com/jantman/awslimitchecker/issues/75>`_ re-enable py26 Travis builds now that `pytest-dev/pytest#1035 <https://github.com/pytest-dev/pytest/issues/1035>`_ is fixed (pytest >= 2.8.3)
 * Fix `#13 <https://github.com/jantman/awslimitchecker/issues/13>`_ re-enable Sphinx documentation linkcheck
 * Fix `#40 <https://github.com/jantman/awslimitchecker/issues/40>`_ add support for pagination of API responses (to get all results) and handle pagination for all current services
 * Fix `#88 <https://github.com/jantman/awslimitchecker/issues/88>`_ add support for API-derived limits. This is a change to the public API for ``awslimitchecker.limit.AwsLimit`` and the CLI output.

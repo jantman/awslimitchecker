@@ -142,6 +142,20 @@ class LogRecordHelper(object):
             ))
         return res
 
+    @property
+    def num_ta_polls(self):
+        """
+        Return the number of times Trusted Advisor polled.
+
+        :return: number of times Trusted Advisor polled
+        :rtype: int
+        """
+        count = 0
+        for r in self.records:
+            if 'Beginning TrustedAdvisor poll' in r.msg:
+                count += 1
+        return count
+
 
 def sample_limits():
     limits = {

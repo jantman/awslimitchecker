@@ -1,5 +1,5 @@
 """
-awslimitchecker/tests/services/test_XXnewserviceXX.py
+awslimitchecker/tests/services/test_cloudformation.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -38,8 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.XXnewserviceXX import _XXNewServiceXXService
+from awslimitchecker.services.cloudformation import _CloudformationService
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -52,59 +51,108 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-pbm = 'awslimitchecker.services.XXnewserviceXX'  # module patch base
-pb = '%s._XXNewServiceXXService' % pbm  # class patch pase
+pbm = 'awslimitchecker.services.cloudformation'  # module patch base
+pb = '%s._CloudformationService' % pbm  # class patch pase
 
 
-class Test_XXNewServiceXXService(object):
+class Test_CloudformationService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _XXNewServiceXXService(21, 43)
-        assert cls.service_name == 'XXNewServiceXX'
-        assert cls.api_name == 'XXnewserviceXX'
+        cls = _CloudformationService(21, 43)
+        assert cls.service_name == 'CloudFormation'
+        assert cls.api_name == 'cloudformation'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _CloudformationService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            # TODO fill in limits here
-            'SomeLimitNameHere',
+            'Stacks',
         ])
-        for name, limit in res.items():
-            assert limit.service == cls
-            assert limit.def_warning_threshold == 21
-            assert limit.def_critical_threshold == 43
+        limit = cls.limits['Stacks']
+        assert limit.service == cls
+        assert limit.def_warning_threshold == 21
+        assert limit.def_critical_threshold == 43
+        assert limit.default_limit == 200
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _CloudformationService(21, 43)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
 
     def test_find_usage(self):
-        # put boto3 responses in response_fixtures.py, then do something like:
-        # response = result_fixtures.EBS.test_find_usage_ebs
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = [
+            {
+                'Stacks': [
+                    {'StackStatus': 'CREATE_IN_PROGRESS'},
+                    {'StackStatus': 'DELETE_COMPLETE'},
+                    {'StackStatus': 'DELETE_IN_PROGRESS'},
+                    {'StackStatus': 'CREATE_FAILED'},
+                ]
+            },
+            {
+                'Stacks': [
+                    {'StackStatus': 'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS'},
+                    {'StackStatus': 'ROLLBACK_COMPLETE'},
+                    {'StackStatus': 'DELETE_FAILED'},
+                ]
+            },
+        ]
         mock_conn = Mock()
-        mock_conn.some_method.return_value =  # some logical return value
+        mock_conn.get_paginator.return_value = mock_paginator
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _XXNewServiceXXService(21, 43)
+            cls = _CloudformationService(21, 43)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        assert mock_conn.mock_calls == [call.some_method()]
-        # TODO - assert about usage
+        assert mock_conn.mock_calls == [
+            call.get_paginator('describe_stacks'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [call.paginate()]
+        assert len(cls.limits['Stacks'].get_current_usage()) == 1
+        assert cls.limits['Stacks'].get_current_usage()[0].get_value() == 6
+
+    def test_update_limits_from_api(self):
+        mock_conn = Mock()
+        mock_conn.describe_account_limits.return_value = {
+            'AccountLimits': [
+                {
+                    'Name': 'StackLimit',
+                    'Value': 400
+                },
+                {
+                    'Name': 'Foo',
+                    'Value': 1
+                }
+            ],
+            'ResponseMetadata': {
+                'HTTPStatusCode': 200,
+                'RequestId': 'cf0140c4'
+            }
+        }
+
+        with patch('%s.connect' % pb) as mock_connect:
+            cls = _CloudformationService(21, 43)
+            cls.conn = mock_conn
+            cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == [call.describe_account_limits()]
+        assert cls.limits['Stacks'].api_limit == 400
 
     def test_required_iam_permissions(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _CloudformationService(21, 43)
         assert cls.required_iam_permissions() == [
-            # TODO - permissions here
+            'cloudformation:DescribeAccountLimits',
+            'cloudformation:DescribeStacks'
         ]
