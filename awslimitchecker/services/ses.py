@@ -42,6 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from botocore.exceptions import EndpointConnectionError
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +59,14 @@ class _SesService(_AwsService):
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service %s", self.service_name)
-        self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        resp = self.conn.get_send_quota()
+        try:
+            self.connect()
+            resp = self.conn.get_send_quota()
+        except EndpointConnectionError as ex:
+            logger.warn('Skipping SES: %s', str(ex))
+            return
         self.limits['Daily sending quota']._add_current_usage(
             resp['SentLast24Hours']
         )
@@ -95,8 +100,12 @@ class _SesService(_AwsService):
         Call the service's API action to retrieve limit/quota information, and
         update AwsLimit objects in ``self.limits`` with this information.
         """
-        self.connect()
-        resp = self.conn.get_send_quota()
+        try:
+            self.connect()
+            resp = self.conn.get_send_quota()
+        except EndpointConnectionError as ex:
+            logger.warn('Skipping SES: %s', str(ex))
+            return
         self.limits['Daily sending quota']._set_api_limit(resp['Max24HourSend'])
 
     def required_iam_permissions(self):

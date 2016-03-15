@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from awslimitchecker.services.ses import _SesService
+from botocore.exceptions import EndpointConnectionError
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -107,6 +108,31 @@ class Test_SesService(object):
         assert cls.limits['Daily sending quota'].get_current_usage()[
                    0].get_value() == 122.0
 
+    def test_find_usage_invalid_region(self):
+        def se_get():
+            raise EndpointConnectionError(endpoint_url='myurl')
+
+        mock_conn = Mock()
+        mock_conn.get_send_quota.side_effect = se_get
+
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.logger' % pbm) as mock_logger:
+                cls = _SesService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert mock_connect.mock_calls == [call()]
+        assert cls._have_usage is False
+        assert mock_logger.mock_calls == [
+            call.debug('Checking usage for service %s', 'SES'),
+            call.warn(
+                'Skipping SES: %s',
+                'Could not connect to the endpoint URL: "myurl"'
+            )
+        ]
+        assert mock_conn.mock_calls == [call.get_send_quota()]
+        assert len(cls.limits['Daily sending quota'].get_current_usage()) == 0
+
     def test_update_limits_from_api(self):
         mock_conn = Mock()
         mock_conn.get_send_quota.return_value = {
@@ -122,6 +148,28 @@ class Test_SesService(object):
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == [call.get_send_quota()]
         assert cls.limits['Daily sending quota'].api_limit == 123.0
+
+    def test_update_limits_from_api_invalid_region(self):
+        def se_get():
+            raise EndpointConnectionError(endpoint_url='myurl')
+
+        mock_conn = Mock()
+        mock_conn.get_send_quota.side_effect = se_get
+
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.logger' % pbm) as mock_logger:
+                cls = _SesService(21, 43)
+                cls.conn = mock_conn
+                cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == [call.get_send_quota()]
+        assert mock_logger.mock_calls == [
+            call.warn(
+                'Skipping SES: %s',
+                'Could not connect to the endpoint URL: "myurl"'
+            )
+        ]
+        assert cls.limits['Daily sending quota'].api_limit is None
 
     def test_required_iam_permissions(self):
         cls = _SesService(21, 43)
