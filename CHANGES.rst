@@ -4,6 +4,11 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.4.1 (2016-03-15)
+------------------
+
+* `#170 <https://github.com/jantman/awslimitchecker/issues/170>`_ Critical bug fix in implementation of `#71 <https://github.com/jantman/awslimitchecker/issues/71>`_ - SES only supports three regions (us-east-1, us-west-2, eu-west-1) and causes an unhandled connection error if used in another region.
+
 0.4.0 (2016-03-14)
 ------------------
 
