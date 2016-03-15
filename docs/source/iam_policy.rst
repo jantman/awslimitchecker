@@ -22,7 +22,7 @@ permissions required for it to function correctly:
             "autoscaling:DescribeAutoScalingGroups", 
             "autoscaling:DescribeLaunchConfigurations", 
             "cloudformation:DescribeAccountLimits", 
-            "cloudformation:ListStacks", 
+            "cloudformation:DescribeStacks", 
             "ec2:DescribeAccountAttributes", 
             "ec2:DescribeAddresses", 
             "ec2:DescribeInstances", 
