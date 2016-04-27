@@ -4,6 +4,13 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+This release requires the following new IAM permissions to function:
+
+* ``elasticbeanstalk:DescribeApplications``
+* ``elasticbeanstalk:DescribeApplicationVersions``
+* ``elasticbeanstalk:DescribeEnvironments``
+
+* `#70 <https://github.com/jantman/awslimitchecker/issues/70>`_ Add support for ElasicBeanstalk service.
 * `#177 <https://github.com/jantman/awslimitchecker/issues/177>`_ Integration tests weren't being properly skipped for PRs.
 
 0.4.1 (2016-03-15)
