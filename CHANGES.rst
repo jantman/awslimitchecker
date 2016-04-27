@@ -4,6 +4,8 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+* `#177 <https://github.com/jantman/awslimitchecker/issues/177>`_ Integration tests weren't being properly skipped for PRs.
+
 0.4.1 (2016-03-15)
 ------------------
 
