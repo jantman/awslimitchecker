@@ -249,6 +249,16 @@ class TestIntegration(object):
 
     @pytest.mark.integration
     @skip_if_pr
+    def test_other_region_all_services(self):
+        """Test running alc with all services enabled in sa-east-1"""
+        creds = self.normal_creds()
+        checker_args = {'region': 'sa-east-1'}
+        yield "limits", self.verify_limits, checker_args, \
+              creds, None, True, True
+        yield "usage", self.verify_usage, checker_args, creds, None, False
+
+    @pytest.mark.integration
+    @skip_if_pr
     def test_default_creds_each_service(self):
         """test running one service at a time for all services"""
         creds = self.normal_creds()
