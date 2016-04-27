@@ -17,6 +17,7 @@ Submodules
    awslimitchecker.services.ebs
    awslimitchecker.services.ec2
    awslimitchecker.services.elasticache
+   awslimitchecker.services.elasticbeanstalk
    awslimitchecker.services.elb
    awslimitchecker.services.iam
    awslimitchecker.services.rds
