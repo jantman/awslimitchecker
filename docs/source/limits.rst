@@ -46,8 +46,6 @@ updated from Trusted Advisor:
 
   * Elastic IP addresses (EIPs)
 
-  * Running On-Demand c1.medium instances
-
   * Running On-Demand c3.2xlarge instances
 
   * Running On-Demand c3.4xlarge instances
@@ -57,6 +55,8 @@ updated from Trusted Advisor:
   * Running On-Demand c3.xlarge instances
 
   * Running On-Demand c4.2xlarge instances
+
+  * Running On-Demand c4.large instances
 
   * Running On-Demand c4.xlarge instances
 
@@ -87,6 +87,8 @@ updated from Trusted Advisor:
   * Running On-Demand r3.large instances
 
   * Running On-Demand t1.micro instances
+
+  * Running On-Demand t2.large instances
 
   * Running On-Demand t2.medium instances
 
@@ -123,6 +125,8 @@ updated from Trusted Advisor:
   * DB snapshots per user
 
   * Max auths per security group
+
+  * Read replicas per master
 
   * Storage quota (GB)
 
@@ -272,7 +276,7 @@ Limit                                                          Default
 Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`           5  
 Rules per VPC security group                                   50 
 Running On-Demand EC2 instances :sup:`(API)`                   20 
-Running On-Demand c1.medium instances :sup:`(TA)`              20 
+Running On-Demand c1.medium instances                          20 
 Running On-Demand c1.xlarge instances                          20 
 Running On-Demand c3.2xlarge instances :sup:`(TA)`             20 
 Running On-Demand c3.4xlarge instances :sup:`(TA)`             20 
@@ -282,7 +286,7 @@ Running On-Demand c3.xlarge instances :sup:`(TA)`              20
 Running On-Demand c4.2xlarge instances :sup:`(TA)`             20 
 Running On-Demand c4.4xlarge instances                         10 
 Running On-Demand c4.8xlarge instances                         5  
-Running On-Demand c4.large instances                           20 
+Running On-Demand c4.large instances :sup:`(TA)`               20 
 Running On-Demand c4.xlarge instances :sup:`(TA)`              20 
 Running On-Demand cc2.8xlarge instances                        20 
 Running On-Demand cg1.4xlarge instances                        2  
@@ -321,7 +325,7 @@ Running On-Demand r3.8xlarge instances                         5
 Running On-Demand r3.large instances :sup:`(TA)`               20 
 Running On-Demand r3.xlarge instances                          20 
 Running On-Demand t1.micro instances :sup:`(TA)`               20 
-Running On-Demand t2.large instances                           20 
+Running On-Demand t2.large instances :sup:`(TA)`               20 
 Running On-Demand t2.medium instances :sup:`(TA)`              20 
 Running On-Demand t2.micro instances :sup:`(TA)`               20 
 Running On-Demand t2.nano instances                            20 
@@ -355,6 +359,17 @@ Security Groups   50
 Subnet Groups     50
 ================= ==
 
+ElasticBeanstalk
++++++++++++++++++
+
+==================== ===
+Limit                Default
+==================== ===
+Application versions 500
+Applications         25 
+Environments         200
+==================== ===
+
 IAM
 ++++
 
@@ -385,7 +400,7 @@ DB snapshots per user :sup:`(TA)` :sup:`(API)`        50
 Event Subscriptions :sup:`(API)`                      20    
 Max auths per security group :sup:`(TA)` :sup:`(API)` 20    
 Option Groups :sup:`(API)`                            20    
-Read replicas per master :sup:`(API)`                 5     
+Read replicas per master :sup:`(TA)` :sup:`(API)`     5     
 Reserved Instances :sup:`(API)`                       40    
 Storage quota (GB) :sup:`(TA)` :sup:`(API)`           100000
 Subnet Groups :sup:`(API)`                            20    
