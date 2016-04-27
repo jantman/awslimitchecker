@@ -64,6 +64,7 @@ skip_if_pr = pytest.mark.skipif(
     reason='Not running integration tests for pull request'
 )
 
+
 @pytest.mark.integration
 @skip_if_pr
 class TestIntegration(object):
