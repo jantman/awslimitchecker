@@ -59,12 +59,13 @@ if python_implementation() == 'CPython':
 REGION = 'us-west-2'
 MFA_CODE = None
 
-
-@pytest.mark.integration
-@pytest.mark.skipif(
+skip_if_pr = pytest.mark.skipif(
     os.environ.get('TRAVIS_PULL_REQUEST', None) != 'false',
     reason='Not running integration tests for pull request'
 )
+
+@pytest.mark.integration
+@skip_if_pr
 class TestIntegration(object):
     """
     !!!!!!IMPORTANT NOTE!!!!!!!
@@ -87,6 +88,7 @@ class TestIntegration(object):
         # capture the AWS-related env vars
 
     @pytest.mark.integration
+    @skip_if_pr
     def verify_limits(self, checker_args, creds, service_name, use_ta,
                       expect_api_source):
         """
@@ -165,6 +167,7 @@ class TestIntegration(object):
             "Advisor once, but polled %s times" % polls
 
     @pytest.mark.integration
+    @skip_if_pr
     def verify_usage(self, checker_args, creds, service_name, expect_usage):
         """
         This essentially replicates what's done when awslimitchecker is called
@@ -234,6 +237,7 @@ class TestIntegration(object):
             "messages at WARN or higher: \n%s" % "\n".join(records)
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_default_creds_all_services(self):
         """Test running alc with all services enabled"""
         creds = self.normal_creds()
@@ -243,6 +247,7 @@ class TestIntegration(object):
         yield "usage", self.verify_usage, checker_args, creds, None, True
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_default_creds_each_service(self):
         """test running one service at a time for all services"""
         creds = self.normal_creds()
@@ -267,6 +272,7 @@ class TestIntegration(object):
     ###########################################################################
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts(self):
         """test normal STS role"""
         creds = self.sts_creds()
@@ -280,6 +286,7 @@ class TestIntegration(object):
         yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts_external_id(self):
         """test STS role with external ID"""
         creds = self.sts_creds()
@@ -294,6 +301,7 @@ class TestIntegration(object):
         yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts_mfa(self):
         """test STS role with MFA"""
         creds = self.sts_mfa_creds()
@@ -309,6 +317,7 @@ class TestIntegration(object):
         yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts_mfa_external_id(self):
         """test STS role with MFA"""
         creds = self.sts_mfa_creds()
