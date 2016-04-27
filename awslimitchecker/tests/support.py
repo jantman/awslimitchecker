@@ -113,12 +113,16 @@ class LogRecordHelper(object):
             )
         return res
 
-    def unexpected_logs(self):
+    def unexpected_logs(self, allow_endpoint_error=False):
         """
         Return a list of strings representing awslimitchecker log messages
         in this object's log records, that shouldn't be encountered in normal
         operation.
 
+        :param allow_endpoint_error: if true, will ignore any WARN messages
+          containing 'Could not connect to the endpoint URL:' in their first
+          argument
+        :type allow_endpoint_error: bool
         :return: list of strings representing log records
         """
         res = []
@@ -129,6 +133,10 @@ class LogRecordHelper(object):
             if (r.levelno == logging.WARN and r.module == 'trustedadvisor' and
                     r.funcName == '_get_limit_check_id' and r.msg == msg and
                     r.args == args):
+                continue
+            if (allow_endpoint_error and r.levelno == logging.WARN and
+                    len(r.args) > 0 and
+                    'Could not connect to the endpoint URL:' in r.args[0]):
                 continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,

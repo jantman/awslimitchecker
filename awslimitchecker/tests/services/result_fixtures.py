@@ -876,6 +876,176 @@ class RDS(object):
     }
 
 
+class ElasticBeanstalk(object):
+
+    test_find_usage_applications = {
+        'Applications': [
+            {
+                'ApplicationName': 'application-1',
+                'Description': 'description-1',
+                'DateCreated': datetime(2015, 1, 1),
+                'DateUpdated': datetime(2015, 1, 1),
+                'Versions': [
+                    'version-1',
+                    'version-2'
+                ],
+                'ConfigurationTemplates': [
+                     'config-1',
+                     'config-2'
+                ]
+            },
+            {
+                'ApplicationName': 'application-2',
+                'Description': 'description-2',
+                'DateCreated': datetime(2015, 1, 2),
+                'DateUpdated': datetime(2015, 1, 2),
+                'Versions': [
+                    'version-1',
+                    'version-2'
+                ],
+                'ConfigurationTemplates': [
+                     'config-1',
+                     'config-2'
+                ]
+            }
+        ]
+    }
+
+    test_find_usage_application_versions = {
+        'ApplicationVersions': [
+            {
+                'ApplicationName': 'application-1',
+                'Description': 'description-1',
+                'DateCreated': datetime(2015, 1, 1),
+                'DateUpdated': datetime(2015, 1, 1),
+                'SourceBundle': {
+                    'S3Bucket': 's3-bucket',
+                    'S3Key': 's3-key'
+                },
+                'VersionLabel': 'version-2'
+            },
+            {
+                'ApplicationName': 'application-1',
+                'Description': 'description-1',
+                'DateCreated': datetime(2015, 1, 1),
+                'DateUpdated': datetime(2015, 1, 1),
+                'SourceBundle': {
+                    'S3Bucket': 's3-bucket',
+                    'S3Key': 's3-key'
+                },
+                'VersionLabel': 'version-1'
+            },
+            {
+                'ApplicationName': 'application-2',
+                'Description': 'description-1',
+                'DateCreated': datetime(2015, 1, 2),
+                'DateUpdated': datetime(2015, 1, 2),
+                'SourceBundle': {
+                    'S3Bucket': 's3-bucket',
+                    'S3Key': 's3-key'
+                },
+                'VersionLabel': 'version-2'
+            },
+            {
+                'ApplicationName': 'application-2',
+                'Description': 'description-1',
+                'DateCreated': datetime(2015, 1, 2),
+                'DateUpdated': datetime(2015, 1, 2),
+                'SourceBundle': {
+                    'S3Bucket': 's3-bucket',
+                    'S3Key': 's3-key'
+                },
+                'VersionLabel': 'version-1'
+            }
+        ]
+    }
+
+    test_find_usage_environments = {
+        'Environments': [
+            {
+                'EnvironmentName': 'application-environment-1',
+                'EnvironmentId': 'environment-id-1',
+                'ApplicationName': 'application-1',
+                'VersionLabel': 'version-2',
+                'SolutionStackName': 'solution-stack',
+                'TemplateName': 'template-name',
+                'Description': 'description-1',
+                'EndpointURL': 'application-1.region.elasticbeanstalk.com',
+                'CNAME': 'application-1.elasticbeanstalk.com',
+                'DateCreated': datetime(2015, 1, 1),
+                'DateUpdated': datetime(2015, 1, 1),
+                'Status': 'Ready',
+                'AbortableOperationInProgress': False,
+                'Health': 'Green',
+                'HealthStatus': 'Ok',
+                'Resources': {
+                    'LoadBalancer': {
+                        'LoadBalancerName': 'load-balancer-1',
+                        'Domain': 'domain',
+                        'Listeners': [
+                            {
+                                'Protocol': 'http',
+                                'Port': 80
+                            }
+                        ]
+                    }
+                },
+                'Tier': {
+                    'Name': 'tier-1',
+                    'Type': 'tier-type',
+                    'Version': 'tier-version'
+                },
+                'EnvironmentLinks': [
+                    {
+                        'LinkName': 'link-name',
+                        'EnvironmentName': 'environment-name'
+                    }
+                ]
+            },
+            {
+                'EnvironmentName': 'application-environment-2',
+                'EnvironmentId': 'environment-id-2',
+                'ApplicationName': 'application-2',
+                'VersionLabel': 'version-2',
+                'SolutionStackName': 'solution-stack',
+                'TemplateName': 'template-name',
+                'Description': 'description-2',
+                'EndpointURL': 'application-2.region.elasticbeanstalk.com',
+                'CNAME': 'application-2.elasticbeanstalk.com',
+                'DateCreated': datetime(2015, 1, 2),
+                'DateUpdated': datetime(2015, 1, 2),
+                'Status': 'Ready',
+                'AbortableOperationInProgress': False,
+                'Health': 'Green',
+                'HealthStatus': 'Ok',
+                'Resources': {
+                    'LoadBalancer': {
+                        'LoadBalancerName': 'load-balancer-2',
+                        'Domain': 'domain',
+                        'Listeners': [
+                            {
+                                'Protocol': 'http',
+                                'Port': 80
+                            }
+                        ]
+                    }
+                },
+                'Tier': {
+                    'Name': 'tier-2',
+                    'Type': 'tier-type',
+                    'Version': 'tier-version'
+                },
+                'EnvironmentLinks': [
+                    {
+                        'LinkName': 'link-name',
+                        'EnvironmentName': 'environment-name'
+                    }
+                ]
+            }
+        ]
+    }
+
+
 class ELB(object):
 
     test_find_usage = {

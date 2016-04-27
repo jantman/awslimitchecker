@@ -59,12 +59,14 @@ if python_implementation() == 'CPython':
 REGION = 'us-west-2'
 MFA_CODE = None
 
-
-@pytest.mark.integration
-@pytest.mark.skipif(
+skip_if_pr = pytest.mark.skipif(
     os.environ.get('TRAVIS_PULL_REQUEST', None) != 'false',
     reason='Not running integration tests for pull request'
 )
+
+
+@pytest.mark.integration
+@skip_if_pr
 class TestIntegration(object):
     """
     !!!!!!IMPORTANT NOTE!!!!!!!
@@ -87,8 +89,9 @@ class TestIntegration(object):
         # capture the AWS-related env vars
 
     @pytest.mark.integration
+    @skip_if_pr
     def verify_limits(self, checker_args, creds, service_name, use_ta,
-                      expect_api_source):
+                      expect_api_source, allow_endpoint_error):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-l``. This replicates some of the internal
@@ -117,6 +120,9 @@ class TestIntegration(object):
         :param expect_api_source: whether or not to expect a limit with an
           API source
         :type expect_api_source: bool
+        :param allow_endpoint_error: passed on to
+          :py:meth:`~.support.LogRecordHelper.unexpected_logs`
+        :type allow_endpoint_error: bool
         """
         # clear the Connectable credentials
         Connectable.credentials = None
@@ -157,7 +163,9 @@ class TestIntegration(object):
             assert have_api_source is True
         # ensure we didn't log anything at WARN or above, except possibly
         # a TrustedAdvisor subscription required message
-        records = logs.unexpected_logs()
+        records = logs.unexpected_logs(
+            allow_endpoint_error=allow_endpoint_error
+        )
         assert len(records) == 0, "awslimitchecker emitted unexpected log " \
             "messages at WARN or higher: \n%s" % "\n".join(records)
         polls = logs.num_ta_polls
@@ -165,7 +173,9 @@ class TestIntegration(object):
             "Advisor once, but polled %s times" % polls
 
     @pytest.mark.integration
-    def verify_usage(self, checker_args, creds, service_name, expect_usage):
+    @skip_if_pr
+    def verify_usage(self, checker_args, creds, service_name, expect_usage,
+                     allow_endpoint_error):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-u``. This replicates some of the internal
@@ -191,6 +201,9 @@ class TestIntegration(object):
         :type service_name: str
         :param expect_usage: whether or not to expect non-zero usage
         :type expect_usage: bool
+        :param allow_endpoint_error: passed on to
+          :py:meth:`~.support.LogRecordHelper.unexpected_logs`
+        :type allow_endpoint_error: bool
         """
         # clear the Connectable credentials
         Connectable.credentials = None
@@ -229,20 +242,34 @@ class TestIntegration(object):
             assert have_usage is True
         # ensure we didn't log anything at WARN or above, except possibly
         # a TrustedAdvisor subscription required message
-        records = logs.unexpected_logs()
+        records = logs.unexpected_logs(
+            allow_endpoint_error=allow_endpoint_error
+        )
         assert len(records) == 0, "awslimitchecker emitted unexpected log " \
             "messages at WARN or higher: \n%s" % "\n".join(records)
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_default_creds_all_services(self):
         """Test running alc with all services enabled"""
         creds = self.normal_creds()
         checker_args = {'region': REGION}
         yield "limits", self.verify_limits, checker_args, \
-              creds, None, True, True
-        yield "usage", self.verify_usage, checker_args, creds, None, True
+              creds, None, True, True, False
+        yield "usage", self.verify_usage, checker_args, creds, None, True, False
 
     @pytest.mark.integration
+    @skip_if_pr
+    def test_other_region_all_services(self):
+        """Test running alc with all services enabled in sa-east-1"""
+        creds = self.normal_creds()
+        checker_args = {'region': 'sa-east-1'}
+        yield "limits", self.verify_limits, checker_args, \
+              creds, None, True, True, True
+        yield "usage", self.verify_usage, checker_args, creds, None, False, True
+
+    @pytest.mark.integration
+    @skip_if_pr
     def test_default_creds_each_service(self):
         """test running one service at a time for all services"""
         creds = self.normal_creds()
@@ -252,9 +279,9 @@ class TestIntegration(object):
             if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS', 'IAM']:
                 eu = True
             yield "%s limits" % sname, self.verify_limits, checker_args, \
-                  creds, sname, True, False
+                  creds, sname, True, False, False
             yield "%s usage" % sname, self.verify_usage, checker_args, \
-                  creds, sname, eu
+                  creds, sname, eu, False
 
     ###########################################################################
     # STS tests
@@ -267,6 +294,7 @@ class TestIntegration(object):
     ###########################################################################
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts(self):
         """test normal STS role"""
         creds = self.sts_creds()
@@ -276,10 +304,12 @@ class TestIntegration(object):
             'region': REGION,
         }
         yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
+              'VPC', True, False, False
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
+            True, False
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts_external_id(self):
         """test STS role with external ID"""
         creds = self.sts_creds()
@@ -290,10 +320,12 @@ class TestIntegration(object):
             'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
         }
         yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
+              'VPC', True, False, False
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
+            True, False
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts_mfa(self):
         """test STS role with MFA"""
         creds = self.sts_mfa_creds()
@@ -305,10 +337,12 @@ class TestIntegration(object):
             'mfa_token': 'foo'  # will be replaced in the method
         }
         yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
+              'VPC', True, False, False
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
+            True, False
 
     @pytest.mark.integration
+    @skip_if_pr
     def test_sts_mfa_external_id(self):
         """test STS role with MFA"""
         creds = self.sts_mfa_creds()
@@ -321,8 +355,9 @@ class TestIntegration(object):
             'mfa_token': 'foo'  # will be replaced in the method
         }
         yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', True
+              'VPC', True, False, False
+        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
+            True, False
 
     def normal_creds(self):
         return (

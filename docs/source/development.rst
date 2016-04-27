@@ -28,6 +28,12 @@ out on it if you feel like I'm not.
 Pull Request Guidelines
 +++++++++++++++++++++++
 
+* All pull requests should be made against the ``develop`` branch, NOT master.
+* If you have not contributed to the project before, all pull requests must include
+  a statement that your contribution is being made under the same license as the
+  awslimitchecker project (or any subsequent version of that license if adopted by
+  awslimitchecker), may perpetually be included in and distributed with awslimitchecker,
+  and that you have the legal power to agree to these terms.
 * Code should conform to the :ref:`Guidelines <development.guidelines>` below.
 * If you have difficulty writing tests for the code, feel free to ask for help or
   submit the PR without tests. This will increase the amount of time it takes to
