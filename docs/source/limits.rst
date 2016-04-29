@@ -330,7 +330,7 @@ Running On-Demand t2.medium instances :sup:`(TA)`              20
 Running On-Demand t2.micro instances :sup:`(TA)`               20 
 Running On-Demand t2.nano instances                            20 
 Running On-Demand t2.small instances :sup:`(TA)`               20 
-Security groups per VPC                                        100
+Security groups per VPC                                        500
 VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5  
 VPC security groups per elastic network interface :sup:`(API)` 5  
 ============================================================== ===
