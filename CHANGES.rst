@@ -4,6 +4,11 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.4.3 (2016-05-08)
+------------------
+
+* `PR #184 <https://github.com/jantman/awslimitchecker/pull/184>`_ Fix default VPC/Security groups per VPC limit from 100 to 500, per `VPC limits documentation <http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html#vpc-limits-security-groups>`_ (this limit was increased at some point recently). Thanks to `Travis Thieman <https://github.com/thieman>`_ for this contribution.
+
 0.4.2 (2016-04-27)
 ------------------
 
