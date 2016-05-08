@@ -263,7 +263,7 @@ threshold only, and another has crossed the critical threshold):
 
    (venv)$ awslimitchecker --no-color
    EBS/Active snapshots                                   (limit 16000) WARNING: 13858
-   EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=958
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=958
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-2751546e=5 WARNING: e (...)
    ElastiCache/Clusters                                   (limit 50) WARNING: 44
    ElastiCache/Nodes                                      (limit 50) WARNING: 44
@@ -283,7 +283,7 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 100) CRITICAL: vpc-c89074a9=958
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=958
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-2751546e=5
    ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 2474
    ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 107
