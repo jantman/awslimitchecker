@@ -69,8 +69,7 @@ class AwsLimitChecker(object):
           threshold.
         :type critical_threshold: int
         :param profile_name: `Profile Name <http://docs.aws.amazon.com/IAM/
-          latest/UserGuide/id_roles.
-          html>`
+          latest/UserGuide/id_roles.html>`_
           The name of a profile to use. If not given, then the default profile
           is used.
         :type profile_name: str
