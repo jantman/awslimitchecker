@@ -123,7 +123,6 @@ class Connectable(object):
             return
         kwargs = self._boto3_connection_kwargs
         self.conn = boto3.client(self.api_name, **kwargs)
-
         logger.info("Connected to %s in region %s", self.api_name,
                     self.conn._client_config.region_name)
 
