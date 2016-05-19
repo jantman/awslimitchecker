@@ -49,8 +49,9 @@ logger = logging.getLogger(__name__)
 class AwsLimitChecker(object):
 
     def __init__(self, warning_threshold=80, critical_threshold=99,
-                 account_id=None, account_role=None, region=None,
-                 external_id=None, mfa_serial_number=None, mfa_token=None):
+                 profile_name=None, account_id=None, account_role=None,
+                 region=None, external_id=None, mfa_serial_number=None,
+                 mfa_token=None):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -67,6 +68,12 @@ class AwsLimitChecker(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
+        :param profile_name: `Profile Name <http://docs.aws.amazon.com/IAM/
+          latest/UserGuide/id_roles.
+          html>`
+          The name of a profile to use. If not given, then the default profile
+          is used.
+        :type profile_name: str
         :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
           latest/gr/acct-identifiers.html>`_
           (12-digit string, currently numeric) for the account to connect to
@@ -115,6 +122,7 @@ class AwsLimitChecker(object):
         )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
+        self.profile_name = profile_name
         self.account_id = account_id
         self.account_role = account_role
         self.external_id = external_id
@@ -124,11 +132,12 @@ class AwsLimitChecker(object):
         self.services = {}
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold, critical_threshold,
-                                       account_id, account_role, region,
-                                       external_id, mfa_serial_number,
+                                       profile_name, account_id, account_role,
+                                       region, external_id, mfa_serial_number,
                                        mfa_token)
         self.ta = TrustedAdvisor(
             self.services,
+            profile_name=profile_name,
             account_id=account_id,
             account_role=account_role,
             region=region,

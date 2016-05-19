@@ -50,9 +50,10 @@ class _AwsService(Connectable):
     service_name = 'baseclass'
     api_name = 'baseclass'
 
-    def __init__(self, warning_threshold, critical_threshold, account_id=None,
-                 account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None):
+    def __init__(self, warning_threshold, critical_threshold,
+                 profile_name=None, account_id=None, account_role=None,
+                 region=None, external_id=None, mfa_serial_number=None,
+                 mfa_token=None):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -70,6 +71,12 @@ class _AwsService(Connectable):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
+        :param profile_name: `Profile Name <http://docs.aws.amazon.com/IAM/
+          latest/UserGuide/id_roles.
+          html>`
+          The name of a profile to use. If not given, then the default profile
+          is used.
+        :type profile_name: str
         :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
           latest/gr/acct-identifiers.html>`_
           (12-digit string, currently numeric) for the account to connect to
@@ -95,6 +102,7 @@ class _AwsService(Connectable):
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
+        self.profile_name = profile_name
         self.account_id = account_id
         self.account_role = account_role
         self.region = region

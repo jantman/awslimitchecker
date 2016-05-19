@@ -133,6 +133,10 @@ class Runner(object):
                        type=int, default=99,
                        help='default critical threshold (percentage of '
                        'limit); default: 99')
+        p.add_argument('-P', '--profile-name', action='store',
+                       type=str, default=None,
+                       help='AWS CLI profile name to source credentials from'
+                       ' for access to the destination account')
         p.add_argument('-A', '--sts-account-id', action='store',
                        type=str, default=None,
                        help='for use with STS, the Account ID of the '
@@ -311,6 +315,7 @@ class Runner(object):
         self.checker = AwsLimitChecker(
             warning_threshold=args.warning_threshold,
             critical_threshold=args.critical_threshold,
+            profile_name=args.profile_name,
             account_id=args.sts_account_id,
             account_role=args.sts_account_role,
             region=args.region,
