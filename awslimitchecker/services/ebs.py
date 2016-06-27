@@ -74,6 +74,8 @@ class _EbsService(_AwsService):
         piops_gb = 0
         gp_gb = 0
         mag_gb = 0
+        st_gb = 0
+        sc_gb = 0
         logger.debug("Getting usage for EBS volumes")
         results = paginate_dict(
             self.conn.describe_volumes,
@@ -90,6 +92,10 @@ class _EbsService(_AwsService):
                 gp_gb += vol['Size']
             elif vol['VolumeType'] == 'standard':
                 mag_gb += vol['Size']
+            elif vol['VolumeType'] == 'st1':
+                st_gb += vol['Size']
+            elif vol['VolumeType'] == 'sc1':
+                sc_gb += vol['Size']
             else:
                 logger.error(
                     "ERROR - unknown volume type '%s' for volume %s;"
@@ -115,6 +121,17 @@ class _EbsService(_AwsService):
                         mag_gb,
                         aws_type='AWS::EC2::Volume'
                     )
+        self.limits['Throughput Optimized (HDD) volume storage '
+                    '(GiB)']._add_current_usage(
+                        st_gb,
+                        aws_type='AWS::EC2::Volume'
+                    )
+        self.limits['Cold (HDD) volume storage '
+                    '(GiB)']._add_current_usage(
+                        sc_gb,
+                        aws_type='AWS::EC2::Volume'
+                    )
+
         self.limits['Active volumes']._add_current_usage(
             vols,
             aws_type='AWS::EC2::Volume'
@@ -194,6 +211,24 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
+        )
+        limits['Throughput Optimized (HDD) volume storage (GiB)'] = AwsLimit(
+            'Throughput Optimized (HDD) volume storage (GiB)',
+            self,
+            20480,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='st1',
+        )
+        limits['Cold (HDD) volume storage (GiB)'] = AwsLimit(
+            'Cold (HDD) volume storage (GiB)',
+            self,
+            20480,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='sc1',
         )
         limits['Active snapshots'] = AwsLimit(
             'Active snapshots',
