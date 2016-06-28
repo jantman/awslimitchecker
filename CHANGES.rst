@@ -4,6 +4,11 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.4.4 (2016-06-27)
+------------------
+
+* `PR #190 <https://github.com/jantman/awslimitchecker/pull/19>`_ / `#189 <https://github.com/jantman/awslimitchecker/issues/189>`_ - Add support for EBS st1 and sc1 volume types (adds "EBS/Throughput Optimized (HDD) volume storage (GiB)" and "EBS/Cold (HDD) volume storage (GiB)" limits).
+
 0.4.3 (2016-05-08)
 ------------------
 
