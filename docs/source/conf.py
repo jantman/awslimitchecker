@@ -291,7 +291,7 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'https://docs.python.org/': None,
+    'https://docs.python.org/2/': None,
     'boto': ('http://boto.readthedocs.org/en/latest/', None),
     'boto3': ('http://boto3.readthedocs.org/en/latest/', None)
 }
@@ -318,7 +318,7 @@ def remove_module_docstring(app, what, name, obj, options, lines):
         del lines[:]
 
 # ignore non-local image warnings
-def _warn_node(self, msg, node):
+def _warn_node(self, msg, node, **kwargs):
     if not msg.startswith('nonlocal image URI found:'):
         self._warnfunc(msg, '%s:%s' % get_source_line(node))
 

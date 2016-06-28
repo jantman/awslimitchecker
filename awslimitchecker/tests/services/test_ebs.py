@@ -83,7 +83,7 @@ class Test_EbsService(object):
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
             assert limits[x].service == cls
-        assert len(limits) == 6
+        assert len(limits) == 8
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
@@ -100,6 +100,14 @@ class Test_EbsService(object):
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
         assert mag_tb.default_limit == 20480
+        st_tb = limits['Throughput Optimized (HDD) volume storage (GiB)']
+        assert st_tb.limit_type == 'AWS::EC2::Volume'
+        assert st_tb.limit_subtype == 'st1'
+        assert st_tb.default_limit == 20480
+        sc_tb = limits['Cold (HDD) volume storage (GiB)']
+        assert sc_tb.limit_type == 'AWS::EC2::Volume'
+        assert sc_tb.limit_subtype == 'sc1'
+        assert sc_tb.default_limit == 20480
         act_snaps = limits['Active snapshots']
         assert act_snaps.limit_type == 'AWS::EC2::VolumeSnapshot'
         act_vols = limits['Active volumes']
@@ -152,9 +160,18 @@ class Test_EbsService(object):
                               '(GiB)'].get_current_usage()) == 1
         assert cls.limits['Magnetic volume storage '
                           '(GiB)'].get_current_usage()[0].get_value() == 508
+        assert len(cls.limits['Throughput Optimized (HDD) volume storage '
+                              '(GiB)'].get_current_usage()) == 1
+        assert cls.limits['Throughput Optimized (HDD) volume storage '
+                          '(GiB)'].get_current_usage()[0].get_value() == 500
+        assert len(cls.limits['Cold (HDD) volume storage '
+                              '(GiB)'].get_current_usage()) == 1
+        assert cls.limits['Cold (HDD) volume storage '
+                          '(GiB)'].get_current_usage()[0].get_value() == 1000
+
         assert len(cls.limits['Active volumes'].get_current_usage()) == 1
         assert cls.limits['Active volumes'
-                          ''].get_current_usage()[0].get_value() == 7
+                          ''].get_current_usage()[0].get_value() == 9
         assert mock_conn.mock_calls == []
         assert mock_paginate.mock_calls == [
             call(

@@ -173,6 +173,20 @@ class EBS(object):
                 'VolumeId': 'vol-7',
                 'VolumeType': 'othertype',
             },
+            # 500G ST1
+            {
+                'VolumeId': 'vol-8',
+                'Size': 500,
+                'VolumeType': 'st1',
+                'Iops': None,
+            },
+            # 1000G SC1
+            {
+                'VolumeId': 'vol-9',
+                'Size': 1000,
+                'VolumeType': 'sc1',
+                'Iops': None,
+            },
         ]
     }
 
