@@ -11,7 +11,7 @@ Command Line Usage
 
 awslimitchecker ships with a command line script for use outside of
 Python environments. ``awslimitchecker`` is installed as a
-`setuptools entry point <https://pythonhosted.org/setuptools/setuptools.html#automatic-script-creation>`_,
+`setuptools entry point <https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation>`_,
 and will be available wherever you install the package (if you install
 in a virtual environment as recommended, it will be in the venv's ``bin/`` directory).
 
