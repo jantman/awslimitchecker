@@ -161,13 +161,13 @@ class Test_EbsService(object):
         assert cls.limits['Magnetic volume storage '
                           '(GiB)'].get_current_usage()[0].get_value() == 508
         assert len(cls.limits['Throughput Optimized (HDD) volume storage '
-                            '(GiB)'].get_current_usage()) == 1
+                              '(GiB)'].get_current_usage()) == 1
         assert cls.limits['Throughput Optimized (HDD) volume storage '
-                            '(GiB)'].get_current_usage()[0].get_value() == 500
+                          '(GiB)'].get_current_usage()[0].get_value() == 500
         assert len(cls.limits['Cold (HDD) volume storage '
-                    '(GiB)'].get_current_usage()) == 1
+                              '(GiB)'].get_current_usage()) == 1
         assert cls.limits['Cold (HDD) volume storage '
-                    '(GiB)'].get_current_usage()[0].get_value() == 1000
+                          '(GiB)'].get_current_usage()[0].get_value() == 1000
 
         assert len(cls.limits['Active volumes'].get_current_usage()) == 1
         assert cls.limits['Active volumes'
