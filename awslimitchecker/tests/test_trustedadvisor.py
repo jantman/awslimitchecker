@@ -304,6 +304,34 @@ class Test_TrustedAdvisor(object):
                     },
                     {
                         'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'EC2',
+                            'On-Demand instances - t2.micro',
+                            'Unlimited',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'EC2',
+                            'On-Demand instances - t2.small',
+                            'error',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
                         'resourceId': 'resid2',
                         'isSuppressed': False,
                         'region': 'us-east-1',
@@ -370,6 +398,9 @@ class Test_TrustedAdvisor(object):
             'AutoScaling': {
                 'Launch configurations': 20,
                 'Auto Scaling groups': 40,
+            },
+            'EC2': {
+                'On-Demand instances - t2.micro': 'Unlimited'
             },
             'IAM': {
                 'Users': 5000
@@ -492,6 +523,7 @@ class Test_TrustedAdvisor(object):
         mock_as_foo = Mock(spec_set=AwsLimit)
         mock_as_bar = Mock(spec_set=AwsLimit)
         mock_ec2_baz = Mock(spec_set=AwsLimit)
+        mock_ec2_blarg = Mock(spec_set=AwsLimit)
         mock_vpc = Mock(spec_set=AwsLimit)
         ta_services = {
             'AutoScaling': {
@@ -499,7 +531,8 @@ class Test_TrustedAdvisor(object):
                 'bar': mock_as_bar
             },
             'EC2': {
-                'baz': mock_ec2_baz
+                'baz': mock_ec2_baz,
+                'blarg': mock_ec2_blarg
             },
             'VPC': {
                 'VPC Elastic IP addresses (EIPs)': mock_vpc
@@ -513,6 +546,7 @@ class Test_TrustedAdvisor(object):
             'EC2': {
                 'baz': 5,
                 'blam': 10,
+                'blarg': 'Unlimited',
             },
             'OtherService': {
                 'blarg': 1,
@@ -541,6 +575,9 @@ class Test_TrustedAdvisor(object):
         ]
         assert mock_ec2_baz.mock_calls == [
             call._set_ta_limit(5)
+        ]
+        assert mock_ec2_blarg.mock_calls == [
+            call._set_ta_unlimited()
         ]
         assert mock_vpc.mock_calls == [
             call._set_ta_limit(11)

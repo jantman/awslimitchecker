@@ -101,6 +101,7 @@ class AwsLimit(object):
         self.limit_override = None
         self.override_ta = True
         self.ta_limit = None
+        self.ta_unlimited = False
         self.api_limit = None
         self._current_usage = []
         self.def_warning_threshold = def_warning_threshold
@@ -141,6 +142,15 @@ class AwsLimit(object):
         """
         self.ta_limit = limit_value
 
+    def _set_ta_unlimited(self):
+        """
+        Set state to indicate that TrustedAdvisor reports this limit as
+        having no maximum (unlimited).
+
+        This method should only be called by :py:class:`~.TrustedAdvisor`.
+        """
+        self.ta_unlimited = True
+
     def _set_api_limit(self, limit_value):
         """
         Set the value for the limit as reported by the service's API.
@@ -170,12 +180,12 @@ class AwsLimit(object):
         """
         if self.limit_override is not None and (
                 self.override_ta is True or
-                self.ta_limit is None
+                (self.ta_limit is None and self.ta_unlimited is False)
         ):
             return SOURCE_OVERRIDE
         if self.api_limit is not None:
             return SOURCE_API
-        if self.ta_limit is not None:
+        if self.ta_limit is not None or self.ta_unlimited is True:
             return SOURCE_TA
         return SOURCE_DEFAULT
 
@@ -183,10 +193,11 @@ class AwsLimit(object):
         """
         Returns the effective limit value for this Limit,
         taking into account limit overrides and Trusted
-        Advisor data.
+        Advisor data. None is returned for limits that are
+        explicitly unlimited.
 
         :returns: effective limit value
-        :rtype: int
+        :rtype: int or None
         """
         limit_type = self.get_limit_source()
         if limit_type == SOURCE_OVERRIDE:
@@ -194,6 +205,8 @@ class AwsLimit(object):
         elif limit_type == SOURCE_API:
             return self.api_limit
         elif limit_type == SOURCE_TA:
+            if self.ta_unlimited is True:
+                return None
             return self.ta_limit
         return self.default_limit
 
@@ -349,8 +362,11 @@ class AwsLimit(object):
         :returns: False if any thresholds were crossed, True otherwise
         :rtype: bool
         """
-        (warn_int, warn_pct, crit_int, crit_pct) = self._get_thresholds()
         limit = self.get_limit()
+        if limit is None:
+            # our limit is explicitly unlimited
+            return True
+        (warn_int, warn_pct, crit_int, crit_pct) = self._get_thresholds()
         all_ok = True
         for u in self._current_usage:
             usage = u.get_value()
