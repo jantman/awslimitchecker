@@ -4,6 +4,13 @@ Changelog
 Pre-release (develop branch)
 ----------------------------
 
+0.5.0 (2016-07-06)
+------------------
+
+This release includes a change to ``awslimitchecker``'s Python API. `awslimitchecker.limit.AwsLimit.get_limit <https://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.limit.html#awslimitchecker.limit.AwsLimit.get_limit>` can now return either an ``int`` or ``None``, as TrustedAdvisor now lists some service limits as being explicitly "unlimited".
+
+* `#195 <https://github.com/jantman/awslimitchecker/issues/195>`_ - Handle TrustedAdvisor explicitly reporting some limits as "unlimited". This introduces the concept of unlimited limits, where the effective limit is ``None``.
+
 0.4.4 (2016-06-27)
 ------------------
 

@@ -78,6 +78,7 @@ class TestAwsLimit(object):
         assert limit.limit_override is None
         assert limit.override_ta is True
         assert limit.ta_limit is None
+        assert limit.ta_unlimited is False
         assert limit.api_limit is None
         assert limit.def_warning_threshold == 7
         assert limit.def_critical_threshold == 11
@@ -181,6 +182,20 @@ class TestAwsLimit(object):
         assert limit.ta_limit is None
         limit._set_ta_limit(10)
         assert limit.ta_limit == 10
+
+    def test_set_ta_unlimited(self):
+        limit = AwsLimit(
+            'limitname',
+            self.mock_svc,
+            3,
+            1,
+            2
+        )
+        assert limit.ta_limit is None
+        assert limit.ta_unlimited is False
+        limit._set_ta_unlimited()
+        assert limit.ta_limit is None
+        assert limit.ta_unlimited is True
 
     def test_set_api_limit(self):
         limit = AwsLimit(
@@ -295,6 +310,12 @@ class TestAwsLimit(object):
         limit._set_ta_limit(40)
         assert limit.get_limit() == 40
 
+    def test_get_limit_ta_unlimited(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit.set_limit_override(55, override_ta=False)
+        limit._set_ta_unlimited()
+        assert limit.get_limit() is None
+
     def test_get_limit_api(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
@@ -345,6 +366,11 @@ class TestAwsLimit(object):
         limit._set_ta_limit(40)
         assert limit.get_limit_source() == SOURCE_TA
 
+    def test_get_limit_source_ta_unlimited(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_ta_unlimited()
+        assert limit.get_limit_source() == SOURCE_TA
+
     def test_get_limit_source_api(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
@@ -386,6 +412,26 @@ class TestAwsLimit(object):
         assert limit._warnings == []
         assert limit._criticals == []
         assert mock_get_thresh.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call()]
+
+    def test_check_thresholds_ta_unlimited(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 2, resource_id='foo2bar')
+        limit._current_usage = [u1, u2, u3]
+        limit._set_ta_unlimited()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (None, 40, None, 80)
+                mock_get_limit.return_value = None
+                res = limit.check_thresholds()
+        assert res is True
+        assert limit._warnings == []
+        assert limit._criticals == []
+        assert mock_get_thresh.mock_calls == []
         assert mock_get_limit.mock_calls == [call()]
 
     def test_check_thresholds_pct_warn(self):

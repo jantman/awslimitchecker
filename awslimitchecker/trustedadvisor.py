@@ -159,7 +159,20 @@ class TrustedAdvisor(Connectable):
             data = dict(zip(metadata, check['metadata']))
             if data['Service'] not in res:
                 res[data['Service']] = {}
-            res[data['Service']][data['Limit Name']] = int(data['Limit Amount'])
+            try:
+                val = int(data['Limit Amount'])
+            except ValueError:
+                val = data['Limit Amount']
+                if val != 'Unlimited':
+                    logger.error('TrustedAdvisor returned unknown Limit '
+                                 'Amount %s for %s - %s', val, data['Service'],
+                                 data['Limit Name'])
+                    continue
+                else:
+                    logger.debug('TrustedAdvisor setting explicit "Unlimited" '
+                                 'limit for %s - %s', data['Service'],
+                                 data['Limit Name'])
+            res[data['Service']][data['Limit Name']] = val
         logger.info("Finished TrustedAdvisor poll")
         return res
 
@@ -227,7 +240,11 @@ class TrustedAdvisor(Connectable):
                                 lim_name,
                                 svc_name)
                     continue
-                svc_limits[lim_name]._set_ta_limit(svc_results[lim_name])
+                val = svc_results[lim_name]
+                if val == 'Unlimited':
+                    svc_limits[lim_name]._set_ta_unlimited()
+                else:
+                    svc_limits[lim_name]._set_ta_limit(val)
         logger.info("Done updating TA limits on all services")
 
     def _make_ta_service_dict(self):
