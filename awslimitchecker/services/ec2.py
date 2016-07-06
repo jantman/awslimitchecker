@@ -68,6 +68,8 @@ class _Ec2Service(_AwsService):
         self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
+        self._find_usage_spot_instances()
+        self._find_usage_spot_fleets()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -109,6 +111,14 @@ class _Ec2Service(_AwsService):
             total_instances,
             aws_type='AWS::EC2::Instance'
         )
+
+    def _find_usage_spot_instances(self):
+        """calculate spot instance request usage and update Limits"""
+        pass
+
+    def _find_usage_spot_fleets(self):
+        """calculate spot fleet request usage and update Limits"""
+        pass
 
     def _get_reserved_instance_count(self):
         """
@@ -186,6 +196,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits.update(self._get_limits_instances())
         limits.update(self._get_limits_networking())
+        limits.update(self._get_limits_spot())
         self.limits = limits
         return self.limits
 
@@ -272,6 +283,57 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='On-Demand instances',
+        )
+        return limits
+
+    def _get_limits_spot(self):
+        """
+        Return a dict of limits for spot requests only.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
+        limits = {}
+        limits['Max spot instance requests per region'] = AwsLimit(
+            'Max spot instance requests per region',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='Spot instance requests'
+        )
+
+        limits['Max spot fleets per region'] = AwsLimit(
+            'Max spot fleets per region',
+            self,
+            1000,
+            self.warning_threshold,
+            self.critical_threshold,
+        )
+
+        limits['Max launch specifications per spot fleet'] = AwsLimit(
+            'Max launch specifications per spot fleet',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+        )
+
+        limits['Max target capacity per spot fleet'] = AwsLimit(
+            'Max target capacity per spot fleet',
+            self,
+            3000,
+            self.warning_threshold,
+            self.critical_threshold
+        )
+
+        limits['Max target capacity for all spot fleets in region'] = AwsLimit(
+            'Max target capacity for all spot fleets in region',
+            self,
+            5000,
+            self.warning_threshold,
+            self.critical_threshold
         )
         return limits
 

@@ -88,15 +88,19 @@ class Test_Ec2Service(object):
         cls.limits = {}
         with patch('%s._get_limits_instances' % self.pb) as mock_instances:
             with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
-                mock_instances.return_value = {'ec2lname': 'ec2lval'}
-                mock_vpc.return_value = {'vpck': 'vpcv'}
-                res = cls.get_limits()
+                with patch('%s._get_limits_spot' % self.pb) as mock_spot:
+                    mock_instances.return_value = {'ec2lname': 'ec2lval'}
+                    mock_vpc.return_value = {'vpck': 'vpcv'}
+                    mock_spot.return_value = {'spotk': 'spotv'}
+                    res = cls.get_limits()
         assert res == {
             'ec2lname': 'ec2lval',
+            'spotk': 'spotv',
             'vpck': 'vpcv',
         }
         assert mock_instances.mock_calls == [call()]
         assert mock_vpc.mock_calls == [call()]
+        assert mock_spot.mock_calls == [call()]
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
@@ -104,10 +108,12 @@ class Test_Ec2Service(object):
         cls.limits = {'foo': 'bar'}
         with patch('%s._get_limits_instances' % self.pb) as mock_instances:
             with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
-                res = cls.get_limits()
+                with patch('%s._get_limits_spot' % self.pb) as mock_spot:
+                    res = cls.get_limits()
         assert res == {'foo': 'bar'}
         assert mock_instances.mock_calls == []
         assert mock_vpc.mock_calls == []
+        assert mock_spot.mock_calls == []
 
     def test_get_limits_all(self):
         """test some things all limits should conform to"""
@@ -155,13 +161,15 @@ class Test_Ec2Service(object):
                 _find_usage_networking_sgs=DEFAULT,
                 _find_usage_networking_eips=DEFAULT,
                 _find_usage_networking_eni_sg=DEFAULT,
+                _find_usage_spot_instances=DEFAULT,
+                _find_usage_spot_fleets=DEFAULT,
                 autospec=True,
         ) as mocks:
             cls = _Ec2Service(21, 43)
             assert cls._have_usage is False
             cls.find_usage()
         assert cls._have_usage is True
-        assert len(mocks) == 5
+        assert len(mocks) == 7
         for m in mocks:
             assert mocks[m].mock_calls == [call(cls)]
 
@@ -462,6 +470,18 @@ class Test_Ec2Service(object):
         assert sorted(limits.keys()) == sorted(expected)
         assert limits[
                    'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
+
+    def test_get_limits_spot(self):
+        cls = _Ec2Service(21, 43)
+        limits = cls._get_limits_spot()
+        expected = [
+            'Max spot instance requests per region',
+            'Max spot fleets per region',
+            'Max launch specifications per spot fleet',
+            'Max target capacity per spot fleet',
+            'Max target capacity for all spot fleets in region'
+        ]
+        assert sorted(limits.keys()) == sorted(expected)
 
     def test_update_limits_from_api(self):
         data = fixtures.test_update_limits_from_api
