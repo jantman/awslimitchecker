@@ -196,8 +196,7 @@ class AwsLimit(object):
         Advisor data. None is returned for limits that are
         explicitly unlimited.
 
-        :returns: effective limit value
-        :rtype: int or None
+        :returns: effective limit value, ``int`` or ``None``
         """
         limit_type = self.get_limit_source()
         if limit_type == SOURCE_OVERRIDE:
