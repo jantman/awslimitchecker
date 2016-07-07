@@ -476,12 +476,100 @@ class Test_Ec2Service(object):
         limits = cls._get_limits_spot()
         expected = [
             'Max spot instance requests per region',
-            'Max spot fleets per region',
+            'Max active spot fleets per region',
             'Max launch specifications per spot fleet',
             'Max target capacity per spot fleet',
             'Max target capacity for all spot fleets in region'
         ]
         assert sorted(limits.keys()) == sorted(expected)
+
+    def test_find_usage_spot_instances(self):
+        data = fixtures.test_find_usage_spot_instances
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_spot_instance_requests.return_value = data
+        cls = _Ec2Service(21, 43)
+        cls.resource_conn = mock_conn
+        cls.conn = mock_client_conn
+        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+            cls._find_usage_spot_instances()
+        assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_spot_instance_requests()
+        ]
+        lim = cls.limits['Max spot instance requests per region']
+        usage = lim.get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 2
+        assert mock_logger.mock_calls == [
+            call.debug('Getting spot instance request usage'),
+            call.debug('NOT counting spot instance request %s state=%s',
+                       'reqID1', 'closed'),
+            call.debug('Counting spot instance request %s state=%s',
+                       'reqID2', 'active'),
+            call.debug('Counting spot instance request %s state=%s',
+                       'reqID3', 'open'),
+            call.debug('NOT counting spot instance request %s state=%s',
+                       'reqID4', 'failed')
+        ]
+
+    def test_find_usage_spot_fleets(self):
+        data = fixtures.test_find_usage_spot_fleets
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_spot_fleet_requests.return_value = data
+        cls = _Ec2Service(21, 43)
+        cls.resource_conn = mock_conn
+        cls.conn = mock_client_conn
+        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+            cls._find_usage_spot_fleets()
+        assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_spot_fleet_requests()
+        ]
+
+        total = cls.limits['Max active spot fleets per '
+                           'region'].get_current_usage()
+        assert len(total) == 1
+        assert total[0].get_value() == 2
+
+        totalcap = cls.limits['Max target capacity for all spot fleets '
+                              'in region'].get_current_usage()
+        assert len(totalcap) == 1
+        assert totalcap[0].get_value() == 44
+
+        cap_per_fleet = cls.limits['Max target capacity per spot '
+                                   'fleet'].get_current_usage()
+        assert len(cap_per_fleet) == 2
+        assert cap_per_fleet[0].get_value() == 11
+        assert cap_per_fleet[0].resource_id == 'req2'
+        assert cap_per_fleet[1].get_value() == 33
+        assert cap_per_fleet[1].resource_id == 'req4'
+
+        launch_specs = cls.limits['Max launch specifications '
+                                  'per spot fleet'].get_current_usage()
+        assert len(launch_specs) == 2
+        assert launch_specs[0].get_value() == 3
+        assert launch_specs[0].resource_id == 'req2'
+        assert launch_specs[1].get_value() == 1
+        assert launch_specs[1].resource_id == 'req4'
+
+        assert mock_logger.mock_calls == [
+            call.debug('Getting spot fleet request usage'),
+            call.error('Error: describe_spot_fleet_requests() response '
+                       'includes pagination token, but pagination not '
+                       'configured in awslimitchecker.'),
+            call.debug('Skipping spot fleet request %s in state %s', 'req1',
+                       'failed'),
+            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
+                       'req2', 11, 3),
+            call.debug('Skipping spot fleet request %s in state %s',
+                       'req3', 'modifying'),
+            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
+                       'req4', 33, 1),
+            call.debug('Total active spot fleets: %d; total target capacity '
+                       'for all spot fleets: %d', 2, 44)
+        ]
 
     def test_update_limits_from_api(self):
         data = fixtures.test_update_limits_from_api
