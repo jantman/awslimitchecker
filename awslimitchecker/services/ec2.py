@@ -127,7 +127,9 @@ class _Ec2Service(_AwsService):
                 logger.debug('NOT counting spot instance request %s state=%s',
                              req['SpotInstanceRequestId'], req['State'])
         logger.debug('Setting "Max spot instance requests per region" limit '
-                     'current usage to: %d', count)
+                     '(%s) current usage to: %d',
+                     self.limits['Max spot instance requests per region'],
+                     count)
         self.limits['Max spot instance requests per region']._add_current_usage(
             count,
             aws_type='AWS::EC2::SpotInstanceRequest'
