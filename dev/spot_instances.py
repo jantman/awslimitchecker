@@ -5,9 +5,7 @@ awslimitchecker/dev/spot_instances.py
 Test script to create spot instance or fleet requests that will
 (hopefully) never run before being canceled.
 
-NOTE:
-This script will deploy the instance into the first available subnet it finds,
- in the first VPC it finds.
+Note this uses an IAM role called "" as the IamFleetRole.
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -52,6 +50,8 @@ import logging
 from datetime import datetime, timedelta
 import uuid
 from pprint import pformat
+from tzlocal import get_localzone
+from pytz import utc
 
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(level=logging.WARNING, format=FORMAT)
@@ -135,6 +135,82 @@ class SpotInstanceTest:
             )
             logger.info('Result: %s', pformat(res))
 
+    def list_fleet(self, i_type, az):
+        """
+        list existing fleet requests
+        """
+        res = self.conn.describe_spot_fleet_requests()
+        logger.warning('Found %d spot fleet requests',
+                       len(res['SpotFleetRequestConfigs']))
+        for req in res['SpotFleetRequestConfigs']:
+            print('{state} {id} - {cap} @ {price} ({f} fulfilled) '
+                  '- {itype} - {vfrom} to {vuntil}'.format(
+                state=req['SpotFleetRequestState'],
+                id=req['SpotFleetRequestId'],
+                cap=req['SpotFleetRequestConfig']['TargetCapacity'],
+                price=req['SpotFleetRequestConfig']['SpotPrice'],
+                itype=req['SpotFleetRequestConfig']['LaunchSpecifications'][0]['InstanceType'],
+                f=req['SpotFleetRequestConfig']['FulfilledCapacity'],
+                vfrom=req['SpotFleetRequestConfig']['ValidFrom'],
+                vuntil=req['SpotFleetRequestConfig']['ValidUntil']
+            ))
+        price = self.get_current_price(i_type, az)
+        print("\n")
+        print('Current %s spot price: %s' % (i_type, price))
+
+    def create_fleet(self, i_type, az, target_capacity, role):
+        """create a spot instance request"""
+        market_price = self.get_current_price(i_type, az)
+        bid_price = market_price * 0.25
+        logger.warning('Current market price: %s; setting bid price to: %s',
+                       market_price, bid_price)
+        now_utc = datetime.now(get_localzone()).astimezone(utc)
+        valid_from = now_utc + timedelta(days=14)
+        valid_to = valid_from + timedelta(seconds=1)
+        args = {
+            'SpotFleetRequestConfig': {
+                'SpotPrice': '%s' % bid_price,
+                'ClientToken': str(uuid.uuid4()),
+                'TargetCapacity': target_capacity,
+                'ValidFrom': valid_from.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'ValidUntil': valid_to.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'TerminateInstancesWithExpiration': True,
+                'ExcessCapacityTerminationPolicy': 'default',
+                'AllocationStrategy': 'lowestPrice',
+                'IamFleetRole': role,
+                'LaunchSpecifications': [
+                    {
+                        'ImageId': 'ami-d2c924b2',  # Centos 7 HVM, us-west-2
+                        'InstanceType': i_type,
+                        'Placement': {
+                            'AvailabilityZone': az
+                        }
+                    }
+                ]
+            }
+        }
+        logger.info('Requesting spot fleet: %s', pformat(args))
+        res = self.conn.request_spot_fleet(**args)
+        logger.info('Result: %s', pformat(res))
+
+    def cancel_fleet(self):
+        """cancel ALL spot fleet requests"""
+        res = self.conn.describe_spot_fleet_requests()
+        logger.warning('Found %d spot fleet requests',
+                       len(res['SpotFleetRequestConfigs']))
+        for req in res['SpotFleetRequestConfigs']:
+            state = req['SpotFleetRequestState']
+            _id = req['SpotFleetRequestId']
+            if state not in ['submitted', 'active']:
+                logger.debug('Skipping request %s in state %s', _id, state)
+                continue
+            logger.info('Canceling request %s in state %s', _id, state)
+            res = self.conn.cancel_spot_fleet_requests(
+                SpotFleetRequestIds=[_id],
+                TerminateInstances=True
+            )
+            logger.info('Result: %s', pformat(res))
+
     def get_current_price(self, i_type, az):
         """get the current spot instance price"""
         now = datetime.now()
@@ -175,8 +251,11 @@ def parse_args(argv):
     p.add_argument('-a', '--az', action='store', dest='az', type=str,
                    default='us-west-2b',
                    help='Availability Zone (default: us-west-2b)')
-    p.add_argument('-k', '--key-name', action='store', type=str, dest='key',
-                   default='phoenix-jantman', help='keypair name')
+    p.add_argument('-f', '--fleet-size', action='store', type=int, dest='fleet',
+                   default=None,
+                   help='instead of instance, create fleet of this size')
+    p.add_argument('-r', '--fleet-role', action='store', type=str,
+                   dest='role', help='Spot Fleet IAM role ARN')
     p.add_argument('ACTION', action='store', default='list',
                    choices=['list', 'create', 'cancel'],
                    help='Action - "list" spot instance requests, "create" '
@@ -193,9 +272,18 @@ if __name__ == "__main__":
     elif args.verbose > 0:
         logger.setLevel(logging.INFO)
     script = SpotInstanceTest()
-    if args.ACTION == 'create':
-        script.create(args.instance_type, args.az)
-    elif args.ACTION == 'cancel':
-        script.cancel()
+    if args.fleet is not None:
+        if args.ACTION == 'create':
+            script.create_fleet(args.instance_type, args.az, args.fleet,
+                                args.role)
+        elif args.ACTION == 'cancel':
+            script.cancel_fleet()
+        else:
+            script.list_fleet(args.instance_type, args.az)
     else:
-        script.list(args.instance_type, args.az)
+        if args.ACTION == 'create':
+            script.create(args.instance_type, args.az)
+        elif args.ACTION == 'cancel':
+            script.cancel()
+        else:
+            script.list(args.instance_type, args.az)
