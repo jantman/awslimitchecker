@@ -20,8 +20,8 @@ awslimitchecker
    :alt: GitHub Open Issues
    :target: https://github.com/jantman/awslimitchecker/issues
 
-.. image:: https://badge.waffle.io/jantman/webhook2lambda2sqs.png?label=ready&title=Ready
-   :target: https://waffle.io/jantman/webhook2lambda2sqs
+.. image:: https://badge.waffle.io/jantman/awslimitchecker.png?label=ready&title=Ready
+   :target: https://waffle.io/jantman/awslimitchecker
    :alt: 'Stories in Ready - waffle.io'
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
