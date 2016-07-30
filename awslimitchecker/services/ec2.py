@@ -122,9 +122,8 @@ class _Ec2Service(_AwsService):
             # "Your Spot request has been submitted for review, and is pending evaluation."
             if req['State'] in ['open', 'active']:
                 count += 1
-                logger.debug('Counting spot instance request %s state=%s; '
-                             'spot instance count is now %s',
-                             req['SpotInstanceRequestId'], req['State'], count)
+                logger.debug('Counting spot instance request %s state=%s',
+                             req['SpotInstanceRequestId'], req['State'])
             else:
                 logger.debug('NOT counting spot instance request %s state=%s',
                              req['SpotInstanceRequestId'], req['State'])

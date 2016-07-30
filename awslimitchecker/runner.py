@@ -212,13 +212,6 @@ class Runner(object):
             for lim in sorted(limits[svc].keys()):
                 data["{s}/{l}".format(s=svc, l=lim)] = '{v}'.format(
                     v=limits[svc][lim].get_current_usage_str())
-                if lim == 'Max spot instance requests per region':
-                    logger.debug(
-                        '"Max spot instance requests per region" limit (%s): '
-                        '%s', limits[svc][lim], vars(limits[svc][lim]))
-                    for u in limits[svc][lim].get_current_usage():
-                        logger.debug("spot requests current usage %s - %s",
-                                     u, vars(u))
         print(dict2cols(data))
 
     def color_output(self, s, color):
