@@ -334,7 +334,7 @@ class Test_Ec2Service(object):
 
     def test_required_iam_permissions(self):
         cls = _Ec2Service(21, 43)
-        assert len(cls.required_iam_permissions()) == 13
+        assert len(cls.required_iam_permissions()) == 19
         assert cls.required_iam_permissions() == [
             "ec2:DescribeAccountAttributes",
             "ec2:DescribeAddresses",
@@ -346,6 +346,12 @@ class Test_Ec2Service(object):
             "ec2:DescribeRouteTables",
             "ec2:DescribeSecurityGroups",
             "ec2:DescribeSnapshots",
+            "ec2:DescribeSpotDatafeedSubscription",
+            "ec2:DescribeSpotFleetInstances",
+            "ec2:DescribeSpotFleetRequestHistory",
+            "ec2:DescribeSpotFleetRequests",
+            "ec2:DescribeSpotInstanceRequests",
+            "ec2:DescribeSpotPriceHistory",
             "ec2:DescribeSubnets",
             "ec2:DescribeVolumes",
             "ec2:DescribeVpcs",
