@@ -118,6 +118,8 @@ class _Ec2Service(_AwsService):
         res = self.conn.describe_spot_instance_requests()
         count = 0
         for req in res['SpotInstanceRequests']:
+            # @TODO should we count "pending-evaluation" Status Code?
+            # "Your Spot request has been submitted for review, and is pending evaluation."
             if req['State'] in ['open', 'active']:
                 count += 1
                 logger.debug('Counting spot instance request %s state=%s; '
