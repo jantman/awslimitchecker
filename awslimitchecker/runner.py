@@ -203,8 +203,10 @@ class Runner(object):
         print(json.dumps(policy, sort_keys=True, indent=2))
 
     def show_usage(self):
-        self.checker.find_usage(service=self.service_name)
-        limits = self.checker.get_limits(service=self.service_name)
+        self.checker.find_usage(
+            service=self.service_name, use_ta=(not self.skip_ta))
+        limits = self.checker.get_limits(
+            service=self.service_name, use_ta=(not self.skip_ta))
         data = {}
         for svc in sorted(limits.keys()):
             for lim in sorted(limits[svc].keys()):
