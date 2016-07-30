@@ -309,7 +309,8 @@ linkcheck_ignore = [
     r'https?://www\.virtualenv\.org.*',
     r'https?://.*\.readthedocs\.org.*',
     r'https?://codecov\.io.*',
-    r'https?://.*readthedocs\.org.*'
+    r'https?://.*readthedocs\.org.*',
+    r'https?://waffle\.io.*'
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734

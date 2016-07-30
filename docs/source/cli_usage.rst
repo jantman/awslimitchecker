@@ -146,15 +146,15 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling groups                        200 (API)
-   AutoScaling/Launch configurations                      200 (API)
-   CloudFormation/Stacks                                  200 (API)
-   EBS/Active snapshots                                   10000 (TA)
-   EBS/Active volumes                                     5000 (TA)
+   AutoScaling/Auto Scaling groups                        650 (API)
+   AutoScaling/Launch configurations                      1000 (API)
+   CloudFormation/Stacks                                  1000 (API)
+   EBS/Active snapshots                                   20000 (TA)
+   EBS/Active volumes                                     6500 (TA)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
-   VPC/VPCs                                               5 (TA)
+   VPC/VPCs                                               1000 (TA)
 
 
 
@@ -167,9 +167,9 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   AutoScaling/Auto Scaling groups                        200 (API)
-   AutoScaling/Launch configurations                      200 (API)
-   CloudFormation/Stacks                                  200 (API)
+   AutoScaling/Auto Scaling groups                        650 (API)
+   AutoScaling/Launch configurations                      1000 (API)
+   CloudFormation/Stacks                                  1000 (API)
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
    (...)
@@ -193,15 +193,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        0
-   AutoScaling/Launch configurations                      2
-   CloudFormation/Stacks                                  7
-   EBS/Active snapshots                                   0
-   EBS/Active volumes                                     3
+   AutoScaling/Auto Scaling groups                        458
+   AutoScaling/Launch configurations                      549
+   CloudFormation/Stacks                                  772
+   EBS/Active snapshots                                   15269
+   EBS/Active volumes                                     4702
    (...)
-   VPC/Rules per network ACL                              max: acl-43a80626=4 (acl-43a80626=4, acl-4da8 (...)
-   VPC/Subnets per VPC                                    vpc-54f65931=6
-   VPC/VPCs                                               1
+   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=37 (vpc-e2edf486=1, vpc-7bc (...)
+   VPC/VPCs                                               12
 
 
 
@@ -224,13 +224,13 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    (venv)$ awslimitchecker -L "AutoScaling/Auto Scaling groups"=321 --limit="AutoScaling/Launch configurations"=456 -l
    AutoScaling/Auto Scaling groups                        321
    AutoScaling/Launch configurations                      456
-   CloudFormation/Stacks                                  200 (API)
-   EBS/Active snapshots                                   10000 (TA)
-   EBS/Active volumes                                     5000 (TA)
+   CloudFormation/Stacks                                  1000 (API)
+   EBS/Active snapshots                                   20000 (TA)
+   EBS/Active volumes                                     6500 (TA)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
-   VPC/VPCs                                               5 (TA)
+   VPC/VPCs                                               1000 (TA)
 
 
 
@@ -262,7 +262,16 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   S3/Buckets  (limit 100) CRITICAL: 104
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=974
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-c2d513fb=5 WARNING: e (...)
+   ElastiCache/Clusters                                   (limit 50) WARNING: 44
+   ElastiCache/Nodes                                      (limit 50) WARNING: 44
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 1634
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 131
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 353
+   RDS/DB instances                                       (limit 240) WARNING: 197
+   RDS/DB parameter groups                                (limit 100) WARNING: 80
+   S3/Buckets                                             (limit 100) CRITICAL: 225
 
 
 
@@ -274,7 +283,12 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   S3/Buckets  (limit 100) CRITICAL: 104
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=974
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-c2d513fb=5
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 1634
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 131
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 353
+   S3/Buckets                                             (limit 100) CRITICAL: 225
 
 
 
