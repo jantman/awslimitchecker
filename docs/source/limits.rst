@@ -270,6 +270,7 @@ Throughput Optimized (HDD) volume storage (GiB)        20480
 EC2
 ++++
 
+
 **Note on Spot Instances:** spot instance
 support in awslimitchecker is experimental and not thoroughly used
 outside of testing. Be advised that spot instances are _not_ counted
