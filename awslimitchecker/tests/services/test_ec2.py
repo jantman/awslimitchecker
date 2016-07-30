@@ -510,7 +510,9 @@ class Test_Ec2Service(object):
             call.debug('Counting spot instance request %s state=%s',
                        'reqID3', 'open'),
             call.debug('NOT counting spot instance request %s state=%s',
-                       'reqID4', 'failed')
+                       'reqID4', 'failed'),
+            call.debug('Setting "Max spot instance requests per region" '
+                       'limit (%s) current usage to: %d', lim, 2)
         ]
 
     def test_find_usage_spot_fleets(self):
