@@ -134,6 +134,10 @@ class LogRecordHelper(object):
                     r.funcName == '_get_limit_check_id' and r.msg == msg and
                     r.args == args):
                 continue
+            if (r.levelno == logging.WARN and r.module == 'ec2' and
+                r.funcName == '_find_usage_spot_instances' and
+                'spot instance support is experimental' in r.msg):
+                continue
             if (allow_endpoint_error and r.levelno == logging.WARN and
                     len(r.args) > 0 and
                     'Could not connect to the endpoint URL:' in r.args[0]):
