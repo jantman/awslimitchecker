@@ -115,6 +115,10 @@ class _Ec2Service(_AwsService):
     def _find_usage_spot_instances(self):
         """calculate spot instance request usage and update Limits"""
         logger.debug('Getting spot instance request usage')
+        logger.warning("EC2 spot instance support is experimental and results "
+                       "may not me accurate in all cases. Please see the notes "
+                       "at: <http://awslimitchecker.readthedocs.io/en/latest"
+                       "/limits.html#ec2>")
         res = self.conn.describe_spot_instance_requests()
         count = 0
         for req in res['SpotInstanceRequests']:
@@ -222,9 +226,8 @@ class _Ec2Service(_AwsService):
         logger.debug("Getting usage for on-demand instances")
         for inst in self.resource_conn.instances.all():
             if inst.spot_instance_request_id:
-                logger.warning("Spot instance found (%s); awslimitchecker "
-                               "does not yet support spot "
-                               "instances.", inst.id)
+                logger.info("Spot instance found (%s); skipping from "
+                            "Running On-Demand Instances count", inst.id)
                 continue
             if inst.state['Name'] in ['stopped', 'terminated']:
                 logger.debug("Ignoring instance %s in state %s", inst.id,

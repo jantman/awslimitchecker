@@ -503,6 +503,10 @@ class Test_Ec2Service(object):
         assert usage[0].get_value() == 2
         assert mock_logger.mock_calls == [
             call.debug('Getting spot instance request usage'),
+            call.warning('EC2 spot instance support is experimental and '
+                         'results may not me accurate in all cases. Please '
+                         'see the notes at: <http://awslimitchecker'
+                         '.readthedocs.io/en/latest/limits.html#ec2>'),
             call.debug('NOT counting spot instance request %s state=%s',
                        'reqID1', 'closed'),
             call.debug('Counting spot instance request %s state=%s',
