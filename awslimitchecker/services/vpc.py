@@ -143,10 +143,11 @@ class _VpcService(_AwsService):
     def _find_usage_nat_gateways(self):
         """find usage for NAT Gateways"""
         # NAT gateways
-        count = 0
-        paginator = self.conn.get_paginator('describe_nat_gateways')
-        for page in paginator.paginate():
-            count += len(page['NatGateways'])
+        nat_gws = self.conn.describe_nat_gateways()
+        count = len(nat_gws['NatGateways'])
+        while nat_gws.get('NextToken'):
+            nat_gws = self.conn.describe_nat_gateways(NextToken=nat_gws['NextToken'])
+            count += len(nat_gws['NatGateways'])
         self.limits['NAT gateways']._add_current_usage(
             count,
             aws_type='AWS::EC2::NatGateway',

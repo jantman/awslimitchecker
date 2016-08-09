@@ -240,9 +240,7 @@ class Test_VpcService(object):
         response = result_fixtures.VPC.test_find_usage_nat_gateways
 
         mock_conn = Mock()
-        mock_paginator = Mock()
-        mock_paginator.paginate.return_value = response
-        mock_conn.get_paginator.return_value = mock_paginator
+        mock_conn.describe_nat_gateways.return_value = response
 
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
@@ -253,11 +251,7 @@ class Test_VpcService(object):
         assert cls.limits['NAT gateways'].get_current_usage()[
                    0].get_value() == 1
         assert mock_conn.mock_calls == [
-            call.get_paginator('describe_nat_gateways'),
-            call.get_paginator().paginate()
-        ]
-        assert mock_paginator.mock_calls == [
-            call.paginate()
+            call.describe_nat_gateways(),
         ]
 
     def test_required_iam_permissions(self):

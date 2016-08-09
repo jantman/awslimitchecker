@@ -426,7 +426,7 @@ class VPC(object):
         ]
     }
 
-    test_find_usage_nat_gateways = [{
+    test_find_usage_nat_gateways = {
         'NatGateways': [
             {
                 'VpcId': 'vpc-123',
@@ -436,7 +436,8 @@ class VPC(object):
                 'State': 'available',
             },
         ],
-    }]
+        'NextToken': None,
+    }
 
 
 class RDS(object):
