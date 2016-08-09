@@ -43,6 +43,7 @@ from collections import defaultdict
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -143,13 +144,15 @@ class _VpcService(_AwsService):
     def _find_usage_nat_gateways(self):
         """find usage for NAT Gateways"""
         # NAT gateways
-        nat_gws = self.conn.describe_nat_gateways()
-        count = len(nat_gws['NatGateways'])
-        while nat_gws.get('NextToken'):
-            nat_gws = self.conn.describe_nat_gateways(NextToken=nat_gws['NextToken'])
-            count += len(nat_gws['NatGateways'])
         self.limits['NAT gateways']._add_current_usage(
-            count,
+            len(
+                paginate_dict(
+                    self.conn.describe_nat_gateways,
+                    alc_marker_path=['NextToken'],
+                    alc_data_path=['NatGateways'],
+                    alc_marker_param='NextToken'
+                )['NatGateways']
+            ),
             aws_type='AWS::EC2::NatGateway',
         )
 
