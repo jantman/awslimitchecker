@@ -12,10 +12,12 @@ This release requires the following new IAM permissions to function:
 * ``ec2:DescribeSpotFleetRequests``
 * ``ec2:DescribeSpotInstanceRequests``
 * ``ec2:DescribeSpotPriceHistory``
+* ``ec2:DescribeNatGateways``
 
 These can also be summarized as ``ec2:DescribeSpot*``.
 
 * `#51 <https://github.com/jantman/awslimitchecker/issues/51>`_ - Add experimental support for Spot Instance and Spot Fleet limits (only the ones explicitly documented by AWS). This is currently experimental, as the documentation is not terribly clear or detailed, and the author doesn't have access to any accounts that make use of spot instances. This will be kept experimental until multiple users validate it. For more information, see `the EC2 limit documentation <http://awslimitchecker.readthedocs.io/en/latest/limits.html#ec2>`_.
+* `PR #204 <https://github.com/jantman/awslimitchecker/pull/204>`_ contributed by `hltbra <https://github.com/hltbra>`_ to add support for VPC NAT Gateways limit.
 * Add README and Docs link to waffle.io board.
 * Fix bug where ``--skip-ta`` command line flag was ignored in :py:meth:`~.Runner.show_usage` (when running with ``-u`` / ``--show-usage`` action).
 
