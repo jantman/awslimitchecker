@@ -426,6 +426,19 @@ class VPC(object):
         ]
     }
 
+    test_find_usage_nat_gateways = {
+        'NatGateways': [
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet-123',
+                'NatGatewayId': 'nat-123',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+        ],
+        'NextToken': None,
+    }
+
 
 class RDS(object):
     test_find_usage_instances = []
