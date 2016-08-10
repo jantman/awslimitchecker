@@ -193,15 +193,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        458
-   AutoScaling/Launch configurations                      549
-   CloudFormation/Stacks                                  772
-   EBS/Active snapshots                                   15269
-   EBS/Active volumes                                     4702
+   AutoScaling/Auto Scaling groups                        492
+   AutoScaling/Launch configurations                      581
+   CloudFormation/Stacks                                  812
+   EBS/Active snapshots                                   15548
+   EBS/Active volumes                                     4937
    (...)
-   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=37 (vpc-e2edf486=1, vpc-7bc (...)
-   VPC/VPCs                                               12
+   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-e93a (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=37 (vpc-ae7bc5cb=1, vpc-1e5 (...)
+   VPC/VPCs                                               13
 
 
 
@@ -262,16 +262,15 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=974
+   CloudFormation/Stacks                                  (limit 1000) WARNING: 812
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=983
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-c2d513fb=5 WARNING: e (...)
+   ELB/Active load balancers                              (limit 600) WARNING: 493
    ElastiCache/Clusters                                   (limit 50) WARNING: 44
-   ElastiCache/Nodes                                      (limit 50) WARNING: 44
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 1634
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 131
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 353
-   RDS/DB instances                                       (limit 240) WARNING: 197
-   RDS/DB parameter groups                                (limit 100) WARNING: 80
-   S3/Buckets                                             (limit 100) CRITICAL: 225
+   (...)
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 382
+   S3/Buckets                                             (limit 100) CRITICAL: 224
+   VPC/NAT gateways                                       (limit 5) CRITICAL: 8
 
 
 
@@ -283,12 +282,13 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=974
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=983
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-c2d513fb=5
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 1634
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 131
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 353
-   S3/Buckets                                             (limit 100) CRITICAL: 225
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 1761
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 133
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 382
+   S3/Buckets                                             (limit 100) CRITICAL: 224
+   VPC/NAT gateways                                       (limit 5) CRITICAL: 8
 
 
 
