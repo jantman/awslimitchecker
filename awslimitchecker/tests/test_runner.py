@@ -475,8 +475,8 @@ class TestAwsLimitCheckerRunner(object):
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
         assert mock_checker.mock_calls == [
-            call.find_usage(service=None),
-            call.get_limits(service=None)
+            call.find_usage(service=None, use_ta=True),
+            call.get_limits(service=None, use_ta=True)
         ]
         assert mock_d2c.mock_calls == [
             call({
@@ -495,14 +495,15 @@ class TestAwsLimitCheckerRunner(object):
         mock_checker.get_limits.return_value = limits
         self.cls.checker = mock_checker
         self.cls.service_name = 'SvcFoo'
+        self.cls.skip_ta = True
         with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
             mock_d2c.return_value = 'd2cval'
             self.cls.show_usage()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
         assert mock_checker.mock_calls == [
-            call.find_usage(service='SvcFoo'),
-            call.get_limits(service='SvcFoo')
+            call.find_usage(service='SvcFoo', use_ta=False),
+            call.get_limits(service='SvcFoo', use_ta=False)
         ]
         assert mock_d2c.mock_calls == [
             call({

@@ -134,9 +134,17 @@ class LogRecordHelper(object):
                     r.funcName == '_get_limit_check_id' and r.msg == msg and
                     r.args == args):
                 continue
+            if (r.levelno == logging.WARN and r.module == 'ec2' and
+                    r.funcName == '_find_usage_spot_instances' and
+                    'spot instance support is experimental' in r.msg):
+                continue
             if (allow_endpoint_error and r.levelno == logging.WARN and
                     len(r.args) > 0 and
                     'Could not connect to the endpoint URL:' in r.args[0]):
+                continue
+            if (r.levelno == logging.ERROR and r.module == 'vpc' and
+                    r.funcName == '_find_usage_nat_gateways' and
+                    'perhaps NAT service does not exist in this regi' in r.msg):
                 continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,

@@ -221,7 +221,7 @@ branches. You can run them manually from your local machine using:
 
 These tests simply run ``awslimitchecker``'s CLI script for both usage and limits, for all services and each service individually. Note that this covers a very small amount of the code, as the account that I use for integration tests has virtually no resources in it.
 
-If integration tests fail, check the required IAM permissions. The IAM user that I use for Travis integration tests has a manually-maintained IAM policy.
+If integration tests fail, check the required IAM permissions. The IAM user for Travis integration tests is configured via Terraform, which must be re-run after policy changes.
 
 .. _development.docs:
 
@@ -297,11 +297,12 @@ Release Checklist
 
 1. Open an issue for the release; cut a branch off ``develop`` for that issue.
 2. Build docs (``tox -e localdocs``) and ensure they're current; commit any changes.
-3. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``,
+3. Run ``dev/terraform.py`` in the awslimitchecker source directory to update the
+   integration test user's IAM policy with what is actually being reported by the
+   current code.
+4. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``,
    manually run ALL of the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
-4. Ensure that test coverage is no less than the last release (ideally, 100%).
-5. Create or update an actual IAM user with the policy from ``awslimitchecker --iam-policy``;
-   run the command line wrapper and ensure that the policy works and contains all needed permissions.
+5. Ensure that test coverage is no less than the last release (ideally, 100%).
 6. Build docs for the branch (locally) and ensure they look correct.
 7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst.
    Ensure that there are CHANGES.rst entries for all major changes since the last release. Mention the issue

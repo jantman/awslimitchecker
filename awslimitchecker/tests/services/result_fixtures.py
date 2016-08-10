@@ -426,6 +426,19 @@ class VPC(object):
         ]
     }
 
+    test_find_usage_nat_gateways = {
+        'NatGateways': [
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet-123',
+                'NatGatewayId': 'nat-123',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+        ],
+        'NextToken': None,
+    }
+
 
 class RDS(object):
     test_find_usage_instances = []
@@ -1647,6 +1660,267 @@ class EC2(object):
                 ]
             }
         ]
+    }
+
+    test_find_usage_spot_instances = {
+        'SpotInstanceRequests': [
+            {
+                'SpotInstanceRequestId': 'reqID1',
+                'SpotPrice': 'string',
+                'Type': 'one-time',
+                'State': 'closed',
+                'Fault': {
+                    'Code': 'string',
+                    'Message': 'string'
+                },
+                'Status': {
+                    'Code': 'string',
+                    'UpdateTime': datetime(2015, 1, 1),
+                    'Message': 'string'
+                },
+                'ValidFrom': datetime(2015, 1, 1),
+                'ValidUntil': datetime(2015, 1, 1),
+                'LaunchGroup': 'string',
+                'AvailabilityZoneGroup': 'string',
+                'LaunchSpecification': {
+                    'ImageId': 'string',
+                    'KeyName': 'string',
+                    'SecurityGroups': [
+                        {
+                            'GroupName': 'string',
+                            'GroupId': 'string'
+                        },
+                    ],
+                    'UserData': 'string',
+                    'AddressingType': 'string',
+                    'InstanceType': 't1.micro',
+                    'Placement': {
+                        'AvailabilityZone': 'string',
+                        'GroupName': 'string'
+                    },
+                    'KernelId': 'string',
+                    'RamdiskId': 'string',
+                    'BlockDeviceMappings': [
+                        {
+                            'VirtualName': 'string',
+                            'DeviceName': 'string',
+                            'Ebs': {
+                                'SnapshotId': 'string',
+                                'VolumeSize': 123,
+                                'DeleteOnTermination': True,
+                                'VolumeType': 'standard',
+                                'Iops': 123,
+                                'Encrypted': True
+                            },
+                            'NoDevice': 'string'
+                        },
+                    ],
+                    'SubnetId': 'string',
+                    'NetworkInterfaces': [
+                        {
+                            'NetworkInterfaceId': 'string',
+                            'DeviceIndex': 123,
+                            'SubnetId': 'string',
+                            'Description': 'string',
+                            'PrivateIpAddress': 'string',
+                            'Groups': [
+                                'string',
+                            ],
+                            'DeleteOnTermination': True,
+                            'PrivateIpAddresses': [
+                                {
+                                    'PrivateIpAddress': 'string',
+                                    'Primary': True
+                                },
+                            ],
+                            'SecondaryPrivateIpAddressCount': 123,
+                            'AssociatePublicIpAddress': True
+                        },
+                    ],
+                    'IamInstanceProfile': {
+                        'Arn': 'string',
+                        'Name': 'string'
+                    },
+                    'EbsOptimized': True,
+                    'Monitoring': {
+                        'Enabled': True
+                    }
+                },
+                'InstanceId': 'string',
+                'CreateTime': datetime(2015, 1, 1),
+                'ProductDescription': 'Linux/UNIX (Amazon VPC)',
+                'BlockDurationMinutes': 123,
+                'ActualBlockHourlyPrice': 'string',
+                'Tags': [
+                    {
+                        'Key': 'string',
+                        'Value': 'string'
+                    },
+                ],
+                'LaunchedAvailabilityZone': 'string'
+            },
+            {
+                'SpotInstanceRequestId': 'reqID2',
+                'Type': 'persistent',
+                'State': 'active',
+            },
+            {
+                'SpotInstanceRequestId': 'reqID3',
+                'Type': 'persistent',
+                'State': 'open',
+            },
+            {
+                'SpotInstanceRequestId': 'reqID4',
+                'Type': 'persistent',
+                'State': 'failed',
+            },
+        ]
+    }
+
+    test_find_usage_spot_fleets = {
+        'SpotFleetRequestConfigs': [
+            {
+                'SpotFleetRequestId': 'req1',
+                'SpotFleetRequestState': 'failed',
+                'SpotFleetRequestConfig': {
+                    'ClientToken': 'string',
+                    'SpotPrice': 'string',
+                    'TargetCapacity': 456,
+                    'ValidFrom': datetime(2015, 1, 1),
+                    'ValidUntil': datetime(2015, 1, 1),
+                    'TerminateInstancesWithExpiration': True,
+                    'IamFleetRole': 'string',
+                    'LaunchSpecifications': [
+                        {
+                            'ImageId': 'string',
+                            'KeyName': 'string',
+                            'SecurityGroups': [
+                                {
+                                    'GroupName': 'string',
+                                    'GroupId': 'string'
+                                },
+                            ],
+                            'UserData': 'string',
+                            'AddressingType': 'string',
+                            'InstanceType': 't1.micro',
+                            'Placement': {
+                                'AvailabilityZone': 'string',
+                                'GroupName': 'string'
+                            },
+                            'KernelId': 'string',
+                            'RamdiskId': 'string',
+                            'BlockDeviceMappings': [
+                                {
+                                    'VirtualName': 'string',
+                                    'DeviceName': 'string',
+                                    'Ebs': {
+                                        'SnapshotId': 'string',
+                                        'VolumeSize': 123,
+                                        'DeleteOnTermination': True,
+                                        'VolumeType': 'standard',
+                                        'Iops': 123,
+                                        'Encrypted': True
+                                    },
+                                    'NoDevice': 'string'
+                                },
+                            ],
+                            'Monitoring': {
+                                'Enabled': True
+                            },
+                            'SubnetId': 'string',
+                            'NetworkInterfaces': [
+                                {
+                                    'NetworkInterfaceId': 'string',
+                                    'DeviceIndex': 123,
+                                    'SubnetId': 'string',
+                                    'Description': 'string',
+                                    'PrivateIpAddress': 'string',
+                                    'Groups': [
+                                        'string',
+                                    ],
+                                    'DeleteOnTermination': True,
+                                    'PrivateIpAddresses': [
+                                        {
+                                            'PrivateIpAddress': 'string',
+                                            'Primary': True
+                                        },
+                                    ],
+                                    'SecondaryPrivateIpAddressCount': 123,
+                                    'AssociatePublicIpAddress': True
+                                },
+                            ],
+                            'IamInstanceProfile': {
+                                'Arn': 'string',
+                                'Name': 'string'
+                            },
+                            'EbsOptimized': True,
+                            'WeightedCapacity': 123.0,
+                            'SpotPrice': 'string'
+                        },
+                    ],
+                    'ExcessCapacityTerminationPolicy': 'default',
+                    'AllocationStrategy': 'lowestPrice',
+                    'FulfilledCapacity': 123.0,
+                    'Type': 'request'
+                },
+                'CreateTime': datetime(2015, 1, 1)
+            },
+            {
+                'SpotFleetRequestId': 'req2',
+                'SpotFleetRequestState': 'active',
+                'SpotFleetRequestConfig': {
+                    'TargetCapacity': 11,
+                    'LaunchSpecifications': [
+                        {
+                            'ImageId': 'string',
+                        },
+                        {
+                            'ImageId': 'string',
+                        },
+                        {
+                            'ImageId': 'string',
+                        },
+                    ],
+                    'Type': 'request'
+                },
+            },
+            {
+                'SpotFleetRequestId': 'req3',
+                'SpotFleetRequestState': 'modifying',
+                'SpotFleetRequestConfig': {
+                    'TargetCapacity': 22,
+                    'LaunchSpecifications': [
+                        {
+                            'ImageId': 'string',
+                        },
+                        {
+                            'ImageId': 'string',
+                        },
+                        {
+                            'ImageId': 'string',
+                        },
+                        {
+                            'ImageId': 'string',
+                        },
+                    ],
+                    'Type': 'request'
+                },
+            },
+            {
+                'SpotFleetRequestId': 'req4',
+                'SpotFleetRequestState': 'active',
+                'SpotFleetRequestConfig': {
+                    'TargetCapacity': 33,
+                    'LaunchSpecifications': [
+                        {
+                            'ImageId': 'string',
+                        },
+                    ],
+                    'Type': 'request'
+                },
+            },
+        ],
+        'NextToken': 'string'
     }
 
 

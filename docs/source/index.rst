@@ -20,6 +20,10 @@ awslimitchecker
    :alt: GitHub Open Issues
    :target: https://github.com/jantman/awslimitchecker/issues
 
+.. image:: https://badge.waffle.io/jantman/awslimitchecker.png?label=ready&title=Ready
+   :target: https://waffle.io/jantman/awslimitchecker
+   :alt: 'Stories in Ready - waffle.io'
+
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
@@ -70,13 +74,12 @@ usage of AWS resources and compares it to limits (hard-coded AWS defaults that y
 Advisor where available), notifying you when you are approaching or at your limits.
 
 Status
--------
+------
 
-This project has just undergone a relatively major refactor to migrate from
-`boto <http://docs.pythonboto.org/en/latest/>`_ to `boto3 <http://boto3.readthedocs.org/>`_,
-along with a refactor of much of the connection and usage gathering code. Until
-it's been running in production for a while, please consider this to be "beta"
-and make every effort to manually confirm the results for your environment.
+It's gotten a bunch of downloads on PyPi (when the download counters used to work). As far as I know,
+it's stable and in use by some pretty large organizations.
+
+Development status is being tracked on a board at waffle.io: https://waffle.io/jantman/webhook2lambda2sqs
 
 What It Does
 ------------
