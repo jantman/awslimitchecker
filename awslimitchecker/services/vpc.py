@@ -257,6 +257,7 @@ class _VpcService(_AwsService):
         :rtype: list
         """
         return [
+            'ec2:DescribeNatGateways',
             'ec2:DescribeNetworkAcls',
             'ec2:DescribeRouteTables',
             'ec2:DescribeSubnets',

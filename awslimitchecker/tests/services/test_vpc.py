@@ -257,6 +257,7 @@ class Test_VpcService(object):
     def test_required_iam_permissions(self):
         cls = _VpcService(21, 43)
         assert cls.required_iam_permissions() == [
+            'ec2:DescribeNatGateways',
             'ec2:DescribeNetworkAcls',
             'ec2:DescribeRouteTables',
             'ec2:DescribeSubnets',
