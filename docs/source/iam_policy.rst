@@ -27,6 +27,7 @@ permissions required for it to function correctly:
             "ec2:DescribeAddresses", 
             "ec2:DescribeInstances", 
             "ec2:DescribeInternetGateways", 
+            "ec2:DescribeNatGateways", 
             "ec2:DescribeNetworkAcls", 
             "ec2:DescribeNetworkAcls", 
             "ec2:DescribeNetworkInterfaces", 

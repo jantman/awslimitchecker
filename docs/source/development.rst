@@ -221,7 +221,7 @@ branches. You can run them manually from your local machine using:
 
 These tests simply run ``awslimitchecker``'s CLI script for both usage and limits, for all services and each service individually. Note that this covers a very small amount of the code, as the account that I use for integration tests has virtually no resources in it.
 
-If integration tests fail, check the required IAM permissions. The IAM user that I use for Travis integration tests has a manually-maintained IAM policy.
+If integration tests fail, check the required IAM permissions. The IAM user for Travis integration tests is configured via Terraform, which must be re-run after policy changes.
 
 .. _development.docs:
 

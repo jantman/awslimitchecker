@@ -54,13 +54,7 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.2xlarge instances
 
-  * Running On-Demand c4.large instances
-
-  * Running On-Demand c4.xlarge instances
-
   * Running On-Demand m1.medium instances
-
-  * Running On-Demand m1.small instances
 
   * Running On-Demand m3.2xlarge instances
 
@@ -135,8 +129,6 @@ updated from Trusted Advisor:
 * VPC
 
   * Internet gateways
-
-  * NAT gateways
 
   * VPCs
 
@@ -304,8 +296,8 @@ Running On-Demand c3.xlarge instances :sup:`(TA)`              20
 Running On-Demand c4.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand c4.4xlarge instances                         10  
 Running On-Demand c4.8xlarge instances                         5   
-Running On-Demand c4.large instances :sup:`(TA)`               20  
-Running On-Demand c4.xlarge instances :sup:`(TA)`              20  
+Running On-Demand c4.large instances                           20  
+Running On-Demand c4.xlarge instances                          20  
 Running On-Demand cc2.8xlarge instances                        20  
 Running On-Demand cg1.4xlarge instances                        2   
 Running On-Demand cr1.8xlarge instances                        2   
@@ -323,7 +315,7 @@ Running On-Demand i2.8xlarge instances                         2
 Running On-Demand i2.xlarge instances                          8   
 Running On-Demand m1.large instances                           20  
 Running On-Demand m1.medium instances :sup:`(TA)`              20  
-Running On-Demand m1.small instances :sup:`(TA)`               20  
+Running On-Demand m1.small instances                           20  
 Running On-Demand m1.xlarge instances                          20  
 Running On-Demand m2.2xlarge instances                         20  
 Running On-Demand m2.4xlarge instances                         20  
@@ -452,7 +444,7 @@ Limit                         Default
 ============================= ===
 Entries per route table       50 
 Internet gateways :sup:`(TA)` 5  
-NAT gateways                  5
+NAT gateways                  5  
 Network ACLs per VPC          200
 Route tables per VPC          200
 Rules per network ACL         20 
