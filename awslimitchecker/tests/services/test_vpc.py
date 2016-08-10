@@ -41,6 +41,8 @@ import sys
 from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.vpc import _VpcService
 
+from botocore.exceptions import ClientError
+
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
 if (
@@ -252,6 +254,30 @@ class Test_VpcService(object):
                    0].get_value() == 1
         assert mock_conn.mock_calls == [
             call.describe_nat_gateways(),
+        ]
+
+    def test_find_usage_nat_gateways_exception(self):
+
+        def se_exc(*args, **kwargs):
+            raise ClientError({'Error': {}}, 'opname')
+
+        mock_conn = Mock()
+        mock_conn.describe_nat_gateways.side_effect = se_exc
+
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+
+        with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
+            cls._find_usage_nat_gateways()
+
+        assert len(cls.limits['NAT gateways'].get_current_usage()) == 0
+        assert mock_conn.mock_calls == [
+            call.describe_nat_gateways(),
+        ]
+        assert mock_logger.mock_calls == [
+            call.error('Caught exception when trying to list NAT Gateways; '
+                       'perhaps NAT service does not exist in this region?',
+                       exc_info=1)
         ]
 
     def test_required_iam_permissions(self):
