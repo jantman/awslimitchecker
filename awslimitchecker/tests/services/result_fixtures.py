@@ -1960,3 +1960,38 @@ class IAM(object):
         'UsersQuota': 5000,
         'VersionsPerPolicyQuota': 8
     }
+
+
+class Firehose(object):
+
+    test_list_delivery_streams = [
+        {
+            'DeliveryStreamNames': [
+                'first-page-stream1',
+                'first-page-stream2',
+                'first-page-stream3',
+                'first-page-stream4',
+                'first-page-stream5',
+                'first-page-stream6',
+                'first-page-stream7',
+                'first-page-stream8',
+                'first-page-stream9',
+                'first-page-stream10',
+            ],
+            'HasMoreDeliveryStreams': True,
+            'ResponseMetadata': {
+                'HTTPStatusCode': 200,
+                'RequestId': '1aaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+            }
+        },
+        {
+            'DeliveryStreamNames': [
+                'second-page-stream11',
+            ],
+            'HasMoreDeliveryStreams': False,
+            'ResponseMetadata': {
+                'HTTPStatusCode': 200,
+                'RequestId': '2aaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+            }
+        }
+    ]
