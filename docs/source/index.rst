@@ -79,7 +79,7 @@ Status
 It's gotten a bunch of downloads on PyPi (when the download counters used to work). As far as I know,
 it's stable and in use by some pretty large organizations.
 
-Development status is being tracked on a board at waffle.io: https://waffle.io/jantman/webhook2lambda2sqs
+Development status is being tracked on a board at waffle.io: https://waffle.io/jantman/awslimitchecker
 
 What It Does
 ------------
