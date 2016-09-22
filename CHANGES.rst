@@ -23,6 +23,8 @@ This release requires the following new IAM permissions to function:
 * Fix bug where ``--skip-ta`` command line flag was ignored in :py:meth:`~.Runner.show_usage` (when running with ``-u`` / ``--show-usage`` action).
 * Add link to `waffle.io Kanban board <https://waffle.io/jantman/awslimitchecker>`_
 * `#202 <https://github.com/jantman/awslimitchecker/issues/202>`_ - Adds management of integration test IAM policy via Terraform.
+* `#211 <https://github.com/jantman/awslimitchecker/issues/211>`_ - Add working download stats to README and docs
+* Fix broken landscape.io badges in README and docs
 
 0.5.0 (2016-07-06)
 ------------------
