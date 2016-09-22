@@ -34,7 +34,7 @@ Master:
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for master branch
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
+.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg?style=flat
    :target: https://landscape.io/github/jantman/awslimitchecker/master
    :alt: Code Health
 
@@ -52,7 +52,7 @@ Develop:
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for develop branch
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg
+.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg?style=flat
    :target: https://landscape.io/github/jantman/awslimitchecker/develop
    :alt: Code Health
 
