@@ -25,6 +25,7 @@ This release requires the following new IAM permissions to function:
 * `#202 <https://github.com/jantman/awslimitchecker/issues/202>`_ - Adds management of integration test IAM policy via Terraform.
 * `#211 <https://github.com/jantman/awslimitchecker/issues/211>`_ - Add working download stats to README and docs
 * Fix broken landscape.io badges in README and docs
+* `#194 <https://github.com/jantman/awslimitchecker/issues/194>`_ - On Limits page of docs, clarify that Running On-Demand Instances does not include Reserved Instances.
 
 0.5.0 (2016-07-06)
 ------------------

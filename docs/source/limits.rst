@@ -54,6 +54,8 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.2xlarge instances
 
+  * Running On-Demand c4.large instances
+
   * Running On-Demand m1.medium instances
 
   * Running On-Demand m3.2xlarge instances
@@ -63,6 +65,8 @@ updated from Trusted Advisor:
   * Running On-Demand m3.medium instances
 
   * Running On-Demand m3.xlarge instances
+
+  * Running On-Demand m4.2xlarge instances
 
   * Running On-Demand m4.4xlarge instances
 
@@ -275,6 +279,16 @@ spot instance or fleet usage or limits, please
 `open an issue on GitHub <https://github.com/jantman/awslimitchecker
 /issues/new>`_
 
+
+**Note on On-Demand vs Reserved Instances:** The EC2 limits for
+"Running On-Demand" EC2 Instances apply only to On-Demand instances,
+not Reserved Instances. If you list all EC2 instances that are
+running in the Console or API, you'll get back instances of all types
+(On-Demand, Reserved, etc.). The value that awslimitchecker reports
+for Running On-Demand Instances current usage will *not* match the
+number of instances you see in the Console or API.
+
+
 ============================================================== ====
 Limit                                                          Default
 ============================================================== ====
@@ -296,7 +310,7 @@ Running On-Demand c3.xlarge instances :sup:`(TA)`              20
 Running On-Demand c4.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand c4.4xlarge instances                         10  
 Running On-Demand c4.8xlarge instances                         5   
-Running On-Demand c4.large instances                           20  
+Running On-Demand c4.large instances :sup:`(TA)`               20  
 Running On-Demand c4.xlarge instances                          20  
 Running On-Demand cc2.8xlarge instances                        20  
 Running On-Demand cg1.4xlarge instances                        2   
@@ -325,7 +339,7 @@ Running On-Demand m3.large instances :sup:`(TA)`               20
 Running On-Demand m3.medium instances :sup:`(TA)`              20  
 Running On-Demand m3.xlarge instances :sup:`(TA)`              20  
 Running On-Demand m4.10xlarge instances                        5   
-Running On-Demand m4.2xlarge instances                         20  
+Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand m4.large instances :sup:`(TA)`               20  
 Running On-Demand m4.xlarge instances :sup:`(TA)`              20  

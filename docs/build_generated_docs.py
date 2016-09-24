@@ -115,6 +115,15 @@ def build_limits(checker):
             spot instance or fleet usage or limits, please
             `open an issue on GitHub <https://github.com/jantman/awslimitchecker
             /issues/new>`_""") + "\n"
+            limit_info += "\n" + dedent("""
+            **Note on On-Demand vs Reserved Instances:** The EC2 limits for
+            "Running On-Demand" EC2 Instances apply only to On-Demand instances,
+            not Reserved Instances. If you list all EC2 instances that are
+            running in the Console or API, you'll get back instances of all types
+            (On-Demand, Reserved, etc.). The value that awslimitchecker reports
+            for Running On-Demand Instances current usage will *not* match the
+            number of instances you see in the Console or API.
+            """) + "\n"
         limit_info += "\n"
         # build a dict of the limits
         slimits = {}
