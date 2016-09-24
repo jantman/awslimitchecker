@@ -26,6 +26,11 @@ This release requires the following new IAM permissions to function:
 * `#211 <https://github.com/jantman/awslimitchecker/issues/211>`_ - Add working download stats to README and docs
 * Fix broken landscape.io badges in README and docs
 * `#194 <https://github.com/jantman/awslimitchecker/issues/194>`_ - On Limits page of docs, clarify that Running On-Demand Instances does not include Reserved Instances.
+* Multiple ``tox.ini`` changes:
+
+  * simplify integration and unit/versioncheck testenv blocks using factors and reuse
+  * py26 testenv was completely unused, and py26-unit was running and working with mock==2.0.0
+  * use pytest<3.0.0 in py32 envs
 
 0.5.0 (2016-07-06)
 ------------------
