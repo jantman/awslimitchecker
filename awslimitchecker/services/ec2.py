@@ -68,6 +68,8 @@ class _Ec2Service(_AwsService):
         self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
+        self._find_usage_spot_instances()
+        self._find_usage_spot_fleets()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -108,6 +110,76 @@ class _Ec2Service(_AwsService):
         self.limits[key]._add_current_usage(
             total_instances,
             aws_type='AWS::EC2::Instance'
+        )
+
+    def _find_usage_spot_instances(self):
+        """calculate spot instance request usage and update Limits"""
+        logger.debug('Getting spot instance request usage')
+        logger.warning("EC2 spot instance support is experimental and results "
+                       "may not me accurate in all cases. Please see the notes "
+                       "at: <http://awslimitchecker.readthedocs.io/en/latest"
+                       "/limits.html#ec2>")
+        res = self.conn.describe_spot_instance_requests()
+        count = 0
+        for req in res['SpotInstanceRequests']:
+            if req['State'] in ['open', 'active']:
+                count += 1
+                logger.debug('Counting spot instance request %s state=%s',
+                             req['SpotInstanceRequestId'], req['State'])
+            else:
+                logger.debug('NOT counting spot instance request %s state=%s',
+                             req['SpotInstanceRequestId'], req['State'])
+        logger.debug('Setting "Max spot instance requests per region" limit '
+                     '(%s) current usage to: %d',
+                     self.limits['Max spot instance requests per region'],
+                     count)
+        self.limits['Max spot instance requests per region']._add_current_usage(
+            count,
+            aws_type='AWS::EC2::SpotInstanceRequest'
+        )
+
+    def _find_usage_spot_fleets(self):
+        """calculate spot fleet request usage and update Limits"""
+        logger.debug('Getting spot fleet request usage')
+        res = self.conn.describe_spot_fleet_requests()
+        if 'NextToken' in res:
+            logger.error('Error: describe_spot_fleet_requests() response '
+                         'includes pagination token, but pagination not '
+                         'configured in awslimitchecker.')
+        # @TODO: assumption: 'Max target capacity for all spot fleets in region'
+        # only counts active fleets (not submitted)
+        active_fleets = 0
+        total_target_cap = 0
+        lim_cap_per_fleet = self.limits['Max target capacity per spot fleet']
+        lim_launch_specs = self.limits[
+            'Max launch specifications per spot fleet']
+        for fleet in res['SpotFleetRequestConfigs']:
+            _id = fleet['SpotFleetRequestId']
+            if fleet['SpotFleetRequestState'] != 'active':
+                logger.debug('Skipping spot fleet request %s in state %s',
+                             _id, fleet['SpotFleetRequestState'])
+                continue
+            active_fleets += 1
+            cap = fleet['SpotFleetRequestConfig']['TargetCapacity']
+            launch_specs = len(
+                fleet['SpotFleetRequestConfig']['LaunchSpecifications'])
+            total_target_cap += cap
+            logger.debug('Active fleet %s: target capacity=%s, %d launch specs',
+                         _id, cap,
+                         launch_specs)
+            lim_cap_per_fleet._add_current_usage(
+                cap, resource_id=_id, aws_type='AWS::EC2::SpotFleetRequest')
+            lim_launch_specs._add_current_usage(
+                launch_specs, resource_id=_id,
+                aws_type='AWS::EC2::SpotFleetRequest')
+        logger.debug('Total active spot fleets: %d; total target capacity '
+                     'for all spot fleets: %d', active_fleets, total_target_cap)
+        self.limits['Max active spot fleets per region']._add_current_usage(
+            active_fleets, aws_type='AWS::EC2::SpotFleetRequest'
+        )
+        self.limits['Max target capacity for all spot '
+                    'fleets in region']._add_current_usage(
+            total_target_cap, aws_type='AWS::EC2::SpotFleetRequest'
         )
 
     def _get_reserved_instance_count(self):
@@ -154,9 +226,8 @@ class _Ec2Service(_AwsService):
         logger.debug("Getting usage for on-demand instances")
         for inst in self.resource_conn.instances.all():
             if inst.spot_instance_request_id:
-                logger.warning("Spot instance found (%s); awslimitchecker "
-                               "does not yet support spot "
-                               "instances.", inst.id)
+                logger.info("Spot instance found (%s); skipping from "
+                            "Running On-Demand Instances count", inst.id)
                 continue
             if inst.state['Name'] in ['stopped', 'terminated']:
                 logger.debug("Ignoring instance %s in state %s", inst.id,
@@ -186,6 +257,7 @@ class _Ec2Service(_AwsService):
         limits = {}
         limits.update(self._get_limits_instances())
         limits.update(self._get_limits_networking())
+        limits.update(self._get_limits_spot())
         self.limits = limits
         return self.limits
 
@@ -272,6 +344,57 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='On-Demand instances',
+        )
+        return limits
+
+    def _get_limits_spot(self):
+        """
+        Return a dict of limits for spot requests only.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
+        limits = {}
+        limits['Max spot instance requests per region'] = AwsLimit(
+            'Max spot instance requests per region',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='Spot instance requests'
+        )
+
+        limits['Max active spot fleets per region'] = AwsLimit(
+            'Max active spot fleets per region',
+            self,
+            1000,
+            self.warning_threshold,
+            self.critical_threshold,
+        )
+
+        limits['Max launch specifications per spot fleet'] = AwsLimit(
+            'Max launch specifications per spot fleet',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+        )
+
+        limits['Max target capacity per spot fleet'] = AwsLimit(
+            'Max target capacity per spot fleet',
+            self,
+            3000,
+            self.warning_threshold,
+            self.critical_threshold
+        )
+
+        limits['Max target capacity for all spot fleets in region'] = AwsLimit(
+            'Max target capacity for all spot fleets in region',
+            self,
+            5000,
+            self.warning_threshold,
+            self.critical_threshold
         )
         return limits
 
@@ -404,6 +527,12 @@ class _Ec2Service(_AwsService):
             "ec2:DescribeRouteTables",
             "ec2:DescribeSecurityGroups",
             "ec2:DescribeSnapshots",
+            "ec2:DescribeSpotDatafeedSubscription",
+            "ec2:DescribeSpotFleetInstances",
+            "ec2:DescribeSpotFleetRequestHistory",
+            "ec2:DescribeSpotFleetRequests",
+            "ec2:DescribeSpotInstanceRequests",
+            "ec2:DescribeSpotPriceHistory",
             "ec2:DescribeSubnets",
             "ec2:DescribeVolumes",
             "ec2:DescribeVpcs",

@@ -62,3 +62,6 @@ bin/
 include/
 
 .idea/
+
+dev/.terraform
+dev/iam_policy.json

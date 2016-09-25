@@ -1,8 +1,38 @@
 Changelog
 =========
 
-Pre-release (develop branch)
-----------------------------
+0.5.1 (2016-09-25)
+------------------
+
+This release requires the following new IAM permissions to function:
+
+* ``ec2:DescribeSpot*`` or more specifically:
+
+  * ``ec2:DescribeSpotDatafeedSubscription``
+  * ``ec2:DescribeSpotFleetInstances``
+  * ``ec2:DescribeSpotFleetRequestHistory``
+  * ``ec2:DescribeSpotFleetRequests``
+  * ``ec2:DescribeSpotInstanceRequests``
+  * ``ec2:DescribeSpotPriceHistory``
+
+* ``ec2:DescribeNatGateways``
+
+* `#51 <https://github.com/jantman/awslimitchecker/issues/51>`_ / PR `#201 <https://github.com/jantman/awslimitchecker/pull/201>`_ - Add experimental support for Spot Instance and Spot Fleet limits (only the ones explicitly documented by AWS). This is currently experimental, as the documentation is not terribly clear or detailed, and the author doesn't have access to any accounts that make use of spot instances. This will be kept experimental until multiple users validate it. For more information, see `the EC2 limit documentation <http://awslimitchecker.readthedocs.io/en/latest/limits.html#ec2>`_.
+* `PR #204 <https://github.com/jantman/awslimitchecker/pull/204>`_ contributed by `hltbra <https://github.com/hltbra>`_ to add support for VPC NAT Gateways limit.
+* Add README and Docs link to waffle.io board.
+* Fix bug where ``--skip-ta`` command line flag was ignored in :py:meth:`~.Runner.show_usage` (when running with ``-u`` / ``--show-usage`` action).
+* Add link to `waffle.io Kanban board <https://waffle.io/jantman/awslimitchecker>`_
+* `#202 <https://github.com/jantman/awslimitchecker/issues/202>`_ - Adds management of integration test IAM policy via Terraform.
+* `#211 <https://github.com/jantman/awslimitchecker/issues/211>`_ - Add working download stats to README and docs
+* Fix broken landscape.io badges in README and docs
+* `#194 <https://github.com/jantman/awslimitchecker/issues/194>`_ - On Limits page of docs, clarify that Running On-Demand Instances does not include Reserved Instances.
+* Multiple ``tox.ini`` changes:
+
+  * simplify integration and unit/versioncheck testenv blocks using factors and reuse
+  * py26 testenv was completely unused, and py26-unit was running and working with mock==2.0.0
+  * use pytest<3.0.0 in py32 envs
+
+* `#208 <https://github.com/jantman/awslimitchecker/issues/208>`_ - fix KeyError when ``timestamp`` key is missing from TrustedAdvisor check result dict
 
 0.5.0 (2016-07-06)
 ------------------

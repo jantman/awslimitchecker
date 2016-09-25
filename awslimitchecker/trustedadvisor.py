@@ -149,7 +149,10 @@ class TrustedAdvisor(Connectable):
         checks = self.conn.describe_trusted_advisor_check_result(
             checkId=check_id, language='en'
         )
-        check_datetime = parser.parse(checks['result']['timestamp'])
+        try:
+            check_datetime = parser.parse(checks['result']['timestamp'])
+        except KeyError:
+            check_datetime = 'unknown time (timestamp key missing)'
         logger.debug("Got TrustedAdvisor data for check %s as of %s",
                      check_id, check_datetime)
         res = {}
