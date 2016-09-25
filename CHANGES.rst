@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Pre-release (develop branch)
-----------------------------
+0.5.1 (2016-09-25)
+------------------
 
 This release requires the following new IAM permissions to function:
 
