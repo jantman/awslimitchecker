@@ -32,6 +32,8 @@ This release requires the following new IAM permissions to function:
   * py26 testenv was completely unused, and py26-unit was running and working with mock==2.0.0
   * use pytest<3.0.0 in py32 envs
 
+* `#208 <https://github.com/jantman/awslimitchecker/issues/208>`_ - fix KeyError when ``timestamp`` key is missing from TrustedAdvisor check result dict
+
 0.5.0 (2016-07-06)
 ------------------
 
