@@ -407,6 +407,130 @@ class Test_TrustedAdvisor(object):
             }
         }
 
+    def test_poll_no_timestamp(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        poll_return_val = {
+            'result': {
+                'flaggedResources': [
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-west-2',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '20',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'EC2',
+                            'On-Demand instances - t2.micro',
+                            'Unlimited',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'EC2',
+                            'On-Demand instances - t2.small',
+                            'error',
+                            '2',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid2',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-east-1',
+                            'AutoScaling',
+                            'Launch configurations',
+                            '20',
+                            '18',
+                            'Yellow'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid3',
+                        'isSuppressed': False,
+                        'region': 'us-east-1',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '40',
+                            '10',
+                            'Green'
+                        ]
+                    },
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid4',
+                        'isSuppressed': False,
+                        'metadata': [
+                            '-',
+                            'IAM',
+                            'Users',
+                            '5000',
+                            '152',
+                            'Green'
+                        ]
+                    },
+                ]
+            }
+        }
+        tmp.return_value = poll_return_val
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            mock_id.return_value = (
+                'foo',
+                [
+                    'Region',
+                    'Service',
+                    'Limit Name',
+                    'Limit Amount',
+                    'Current Usage',
+                    'Status'
+                ]
+            )
+            res = self.cls._poll()
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_check_result(
+                checkId='foo', language='en'
+            )
+        ]
+        assert mock_id.mock_calls == [call(self.cls)]
+        assert res == {
+            'AutoScaling': {
+                'Launch configurations': 20,
+                'Auto Scaling groups': 40,
+            },
+            'EC2': {
+                'On-Demand instances - t2.micro': 'Unlimited'
+            },
+            'IAM': {
+                'Users': 5000
+            }
+        }
+
     def test_poll_region(self):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         self.cls.ta_region = 'us-west-2'
