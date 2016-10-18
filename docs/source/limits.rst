@@ -400,7 +400,7 @@ Firehose
 =========================== ===
 Limit                       Default
 =========================== ===
-Delivery streams per region 5
+Delivery streams per region 20
 =========================== ===
 
 IAM
