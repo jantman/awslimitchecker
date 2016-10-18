@@ -40,6 +40,7 @@ Hugo Lopes Tavares <hltbra@gmail.com>
 import sys
 from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.tests.services import result_fixtures
+from botocore.exceptions import EndpointConnectionError
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -47,9 +48,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import Mock
+    from mock import call, patch, Mock
 else:
-    from unittest.mock import Mock
+    from unittest.mock import call, patch, Mock
 
 
 fixtures = result_fixtures.Firehose()
@@ -114,3 +115,17 @@ class Test_FirehoseService(object):
         assert cls.required_iam_permissions() == [
             "firehose:ListDeliveryStreams",
         ]
+
+    def test_find_usage_with_endpoint_connection_error(self):
+        mock_conn = Mock()
+        client_error = EndpointConnectionError(
+            endpoint_url='https://firehose.bad-region.amazonaws.com/')
+        mock_conn.list_delivery_streams.side_effect = client_error
+        cls = _FirehoseService(21, 43)
+        cls.conn = mock_conn
+        with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
+            cls.find_usage()
+        error_msg = (
+            'Caught exception when trying to use Firehose; '
+            'perhaps the Firehose service is not available in this region?')
+        assert call.error(error_msg, exc_info=1) in mock_logger.mock_calls

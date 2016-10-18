@@ -42,6 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from botocore.exceptions import EndpointConnectionError
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,15 @@ class _FirehoseService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        self._find_delivery_streams()
+        try:
+            self._find_delivery_streams()
+        except EndpointConnectionError:
+            logger.error(
+                'Caught exception when trying to use Firehose; '
+                'perhaps the Firehose service is not available in this region?',
+                exc_info=1,
+            )
+
         self._have_usage = True
         logger.debug("Done checking usage.")
 
