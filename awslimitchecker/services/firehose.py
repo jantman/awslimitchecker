@@ -61,7 +61,11 @@ class _FirehoseService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
+        self._find_delivery_streams()
+        self._have_usage = True
+        logger.debug("Done checking usage.")
 
+    def _find_delivery_streams(self):
         streams = self.conn.list_delivery_streams()
         usage = len(streams['DeliveryStreamNames'])
         while streams.get('HasMoreDeliveryStreams'):
@@ -69,15 +73,11 @@ class _FirehoseService(_AwsService):
             streams = self.conn.list_delivery_streams(
                 ExclusiveStartDeliveryStreamName=last_stream_name)
             usage += len(streams['DeliveryStreamNames'])
-
         self.limits['Delivery streams per region']._add_current_usage(
             usage,
             resource_id=self.region,
             aws_type='AWS::KinesisFirehose::DeliveryStream',
         )
-
-        self._have_usage = True
-        logger.debug("Done checking usage.")
 
     def get_limits(self):
         """
