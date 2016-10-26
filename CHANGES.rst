@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.6.0 (unreleased)
+------------------
+
+* `#217 <https://github.com/jantman/awslimitchecker/issues/217>`_ - add support
+  for new/missing EC2 instance types: ``m4.16xlarge``, ``x1.16xlarge``, ``x1.32xlarge``,
+  ``p2.xlarge``, ``p2.8xlarge``, ``p2.16xlarge``.
+
 0.5.1 (2016-09-25)
 ------------------
 
