@@ -200,6 +200,18 @@ class _Ec2Service(_AwsService):
                 logger.debug("Skipping ReservedInstance %s with state %s",
                              x['ReservedInstancesId'], x['State'])
                 continue
+            if 'AvailabilityZone' not in x:
+                # "Regional Benefit" AZ-less reservation; I'm unsure whether
+                # for the purposes of limits, these are counted as On-Demand
+                # or reserved;
+                # see <https://github.com/jantman/awslimitchecker/issues/215>
+                logger.debug("Skipping 'Regional Benefit' ReservedInstance "
+                             "without AZ %s (%d x %s) - see "
+                             "<https://github.com/jantman/awslimitchecker/"
+                             "issues/215> for more information",
+                             x['ReservedInstancesId'], x['InstanceCount'],
+                             x['InstanceType'])
+                continue
             if x['AvailabilityZone'] not in az_to_res:
                 az_to_res[x['AvailabilityZone']] = deepcopy(reservations)
             az_to_res[x['AvailabilityZone']][
