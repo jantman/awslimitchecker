@@ -59,6 +59,7 @@ class ConnectableCredentials(object):
         self.expiration = creds_dict['Credentials']['Expiration']
         self.assumed_role_id = creds_dict['AssumedRoleUser']['AssumedRoleId']
         self.assumed_role_arn = creds_dict['AssumedRoleUser']['Arn']
+        self.account_id = creds_dict['account_id']
 
 
 class Connectable(object):
@@ -93,8 +94,15 @@ class Connectable(object):
                              self.region)
                 Connectable.credentials = self._get_sts_token()
             else:
-                logger.debug("Reusing previous STS credentials for account %s",
-                             self.account_id)
+                if self.account_id == Connectable.credentials.account_id:
+                    logger.debug("Reusing previous STS credentials for account %s",
+                                 self.account_id)
+                else:
+                    logger.debug("Previous STS credentials are for account %s", Connectable.credentials.account_id)
+                    logger.debug("Connecting for account %s role '%s' with STS "
+                                 "(region: %s)", self.account_id, self.account_role,
+                                 self.region)
+                    Connectable.credentials = self._get_sts_token()
             kwargs['aws_access_key_id'] = Connectable.credentials.access_key
             kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
             kwargs['aws_session_token'] = Connectable.credentials.session_token
@@ -167,7 +175,8 @@ class Connectable(object):
         if self.mfa_token is not None:
             assume_kwargs['TokenCode'] = self.mfa_token
         role = sts.assume_role(**assume_kwargs)
+
+        role['account_id'] = self.account_id
+
         creds = ConnectableCredentials(role)
-        logger.debug("Got STS credentials for role; access_key_id=%s",
-                     creds.access_key)
         return creds
