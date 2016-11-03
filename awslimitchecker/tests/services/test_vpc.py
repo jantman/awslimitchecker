@@ -41,6 +41,8 @@ import sys
 from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.vpc import _VpcService
 
+from botocore.exceptions import ClientError
+
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
 if (
@@ -74,6 +76,7 @@ class Test_VpcService(object):
             'Internet gateways',
             'VPCs',
             'Subnets per VPC',
+            'NAT gateways',
             'Network ACLs per VPC',
             'Rules per network ACL',
             'Route tables per VPC',
@@ -102,6 +105,7 @@ class Test_VpcService(object):
                     _find_usage_ACLs=DEFAULT,
                     _find_usage_route_tables=DEFAULT,
                     _find_usage_gateways=DEFAULT,
+                    _find_usage_nat_gateways=DEFAULT,
             ) as mocks:
                 cls = _VpcService(21, 43)
                 cls.conn = mock_conn
@@ -116,6 +120,7 @@ class Test_VpcService(object):
                 '_find_usage_ACLs',
                 '_find_usage_route_tables',
                 '_find_usage_gateways',
+                '_find_usage_nat_gateways',
         ]:
             assert mocks[x].mock_calls == [call()]
 
@@ -233,9 +238,52 @@ class Test_VpcService(object):
             call.describe_internet_gateways()
         ]
 
+    def test_find_usage_nat_gateways(self):
+        response = result_fixtures.VPC.test_find_usage_nat_gateways
+
+        mock_conn = Mock()
+        mock_conn.describe_nat_gateways.return_value = response
+
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+
+        cls._find_usage_nat_gateways()
+
+        assert len(cls.limits['NAT gateways'].get_current_usage()) == 1
+        assert cls.limits['NAT gateways'].get_current_usage()[
+                   0].get_value() == 1
+        assert mock_conn.mock_calls == [
+            call.describe_nat_gateways(),
+        ]
+
+    def test_find_usage_nat_gateways_exception(self):
+
+        def se_exc(*args, **kwargs):
+            raise ClientError({'Error': {}}, 'opname')
+
+        mock_conn = Mock()
+        mock_conn.describe_nat_gateways.side_effect = se_exc
+
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+
+        with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
+            cls._find_usage_nat_gateways()
+
+        assert len(cls.limits['NAT gateways'].get_current_usage()) == 0
+        assert mock_conn.mock_calls == [
+            call.describe_nat_gateways(),
+        ]
+        assert mock_logger.mock_calls == [
+            call.error('Caught exception when trying to list NAT Gateways; '
+                       'perhaps NAT service does not exist in this region?',
+                       exc_info=1)
+        ]
+
     def test_required_iam_permissions(self):
         cls = _VpcService(21, 43)
         assert cls.required_iam_permissions() == [
+            'ec2:DescribeNatGateways',
             'ec2:DescribeNetworkAcls',
             'ec2:DescribeRouteTables',
             'ec2:DescribeSubnets',

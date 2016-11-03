@@ -43,6 +43,8 @@ from collections import defaultdict
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import paginate_dict
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +69,7 @@ class _VpcService(_AwsService):
         self._find_usage_ACLs()
         self._find_usage_route_tables()
         self._find_usage_gateways()
+        self._find_usage_nat_gateways()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -138,6 +141,28 @@ class _VpcService(_AwsService):
             len(gws['InternetGateways']),
             aws_type='AWS::EC2::InternetGateway',
         )
+
+    def _find_usage_nat_gateways(self):
+        """find usage for NAT Gateways"""
+        # currently, some regions (sa-east-1 as one example) don't have NAT
+        # Gateway service; they return an AuthError,
+        # "This request has been administratively disabled."
+        try:
+            self.limits['NAT gateways']._add_current_usage(
+                len(
+                    paginate_dict(
+                        self.conn.describe_nat_gateways,
+                        alc_marker_path=['NextToken'],
+                        alc_data_path=['NatGateways'],
+                        alc_marker_param='NextToken'
+                    )['NatGateways']
+                ),
+                aws_type='AWS::EC2::NatGateway',
+            )
+        except ClientError:
+            logger.error('Caught exception when trying to list NAT Gateways; '
+                         'perhaps NAT service does not exist in this region?',
+                         exc_info=1)
 
     def get_limits(self):
         """
@@ -218,6 +243,15 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::InternetGateway',
         )
+
+        limits['NAT gateways'] = AwsLimit(
+            'NAT gateways',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::NatGateway',
+        )
         self.limits = limits
         return limits
 
@@ -231,6 +265,7 @@ class _VpcService(_AwsService):
         :rtype: list
         """
         return [
+            'ec2:DescribeNatGateways',
             'ec2:DescribeNetworkAcls',
             'ec2:DescribeRouteTables',
             'ec2:DescribeSubnets',

@@ -5,8 +5,8 @@ awslimitchecker
    :target: https://pypi.python.org/pypi/awslimitchecker
    :alt: PyPi package version
 
-.. image:: https://img.shields.io/pypi/dm/awslimitchecker.svg
-   :target: https://pypi.python.org/pypi/awslimitchecker
+.. image:: http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/awslimitchecker/per-month.svg
+   :target: http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/awslimitchecker/index.html
    :alt: PyPi downloads
 
 .. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
@@ -16,6 +16,10 @@ awslimitchecker
 .. image:: https://img.shields.io/github/issues/jantman/awslimitchecker.svg
    :alt: GitHub Open Issues
    :target: https://github.com/jantman/awslimitchecker/issues
+
+.. image:: https://badge.waffle.io/jantman/awslimitchecker.png?label=ready&title=Ready
+   :target: https://waffle.io/jantman/awslimitchecker
+   :alt: 'Stories in Ready - waffle.io'
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
@@ -27,7 +31,7 @@ Master:
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for master branch
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg
+.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg?style=flat
    :target: https://landscape.io/github/jantman/awslimitchecker/master
    :alt: Code Health
 
@@ -45,7 +49,7 @@ Develop:
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for develop branch
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg
+.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg?style=flat
    :target: https://landscape.io/github/jantman/awslimitchecker/develop
    :alt: Code Health
 
@@ -71,11 +75,10 @@ Full project documentation is available at `http://awslimitchecker.readthedocs.o
 Status
 ------
 
-This project has just undergone a relatively major refactor to migrate from
-`boto <http://docs.pythonboto.org/en/latest/>`_ to `boto3 <http://boto3.readthedocs.org/>`_,
-along with a refactor of much of the connection and usage gathering code. Until
-it's been running in production for a while, please consider this to be "beta"
-and make every effort to manually confirm the results for your environment.
+It's gotten a bunch of downloads on PyPi (when the download counters used to work). As far as I know,
+it's stable and in use by some pretty large organizations.
+
+Development status is being tracked on a board at waffle.io: https://waffle.io/jantman/awslimitchecker
 
 What It Does
 ------------
