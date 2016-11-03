@@ -200,6 +200,18 @@ class _Ec2Service(_AwsService):
                 logger.debug("Skipping ReservedInstance %s with state %s",
                              x['ReservedInstancesId'], x['State'])
                 continue
+            if 'AvailabilityZone' not in x:
+                # "Regional Benefit" AZ-less reservation; I'm unsure whether
+                # for the purposes of limits, these are counted as On-Demand
+                # or reserved;
+                # see <https://github.com/jantman/awslimitchecker/issues/215>
+                logger.debug("Skipping 'Regional Benefit' ReservedInstance "
+                             "without AZ %s (%d x %s) - see "
+                             "<https://github.com/jantman/awslimitchecker/"
+                             "issues/215> for more information",
+                             x['ReservedInstancesId'], x['InstanceCount'],
+                             x['InstanceType'])
+                continue
             if x['AvailabilityZone'] not in az_to_res:
                 az_to_res[x['AvailabilityZone']] = deepcopy(reservations)
             az_to_res[x['AvailabilityZone']][
@@ -299,12 +311,18 @@ class _Ec2Service(_AwsService):
         # (On-Demand, Reserved, Spot)
         default_limits = (20, 20, 5)
         special_limits = {
+            'm4.4xlarge': (10, 20, 5),
+            'm4.10xlarge': (5, 20, 5),
+            'm4.16xlarge': (5, 20, 5),
             'c4.4xlarge': (10, 20, 5),
             'c4.8xlarge': (5, 20, 5),
             'cg1.4xlarge': (2, 20, 5),
             'hi1.4xlarge': (2, 20, 5),
             'hs1.8xlarge': (2, 20, 0),
             'cr1.8xlarge': (2, 20, 5),
+            'p2.xlarge': (1, 20, 5),
+            'p2.8xlarge': (1, 20, 5),
+            'p2.16xlarge': (1, 20, 5),
             'g2.2xlarge': (5, 20, 5),
             'g2.8xlarge': (2, 20, 5),
             'r3.4xlarge': (10, 20, 5),
@@ -315,8 +333,6 @@ class _Ec2Service(_AwsService):
             'i2.8xlarge': (2, 20, 0),
             'd2.4xlarge': (10, 20, 5),
             'd2.8xlarge': (5, 20, 5),
-            'm4.4xlarge': (10, 20, 5),
-            'm4.10xlarge': (5, 20, 5)
         }
         limits = {}
         for i_type in self._instance_types():
@@ -559,7 +575,8 @@ class _Ec2Service(_AwsService):
             'm4.xlarge',
             'm4.2xlarge',
             'm4.4xlarge',
-            'm4.10xlarge'
+            'm4.10xlarge',
+            'm4.16xlarge'
         ]
 
         PREV_GENERAL_TYPES = [
@@ -576,6 +593,8 @@ class _Ec2Service(_AwsService):
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'x1.16xlarge',
+            'x1.32xlarge'
         ]
 
         PREV_MEMORY_TYPES = [
@@ -602,6 +621,12 @@ class _Ec2Service(_AwsService):
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge',
+        ]
+
+        ACCELERATED_COMPUTE_TYPES = [
+            'p2.xlarge',
+            'p2.8xlarge',
+            'p2.16xlarge'
         ]
 
         STORAGE_TYPES = [
@@ -639,6 +664,7 @@ class _Ec2Service(_AwsService):
             PREV_MEMORY_TYPES +
             COMPUTE_TYPES +
             PREV_COMPUTE_TYPES +
+            ACCELERATED_COMPUTE_TYPES +
             STORAGE_TYPES +
             PREV_STORAGE_TYPES +
             DENSE_STORAGE_TYPES +
