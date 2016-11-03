@@ -179,4 +179,7 @@ class Connectable(object):
         role['account_id'] = self.account_id
 
         creds = ConnectableCredentials(role)
+
+        logger.debug("Got STS credentials for role; access_key_id=%s",
+                     creds.access_key)
         return creds
