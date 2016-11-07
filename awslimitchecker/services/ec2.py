@@ -78,6 +78,7 @@ class _Ec2Service(_AwsService):
         # update our limits with usage
         inst_usage = self._instance_usage()
         res_usage = self._get_reserved_instance_count()
+        logger.debug('Reserved instance count: %s', res_usage)
         # subtract reservations from instance usage
         ondemand_usage = defaultdict(int)
         for az in inst_usage:
