@@ -258,9 +258,23 @@ class VPC(object):
                     },
                 ]
             },
-            {'VpcId': 'vpc-1'},
-            {'VpcId': 'vpc-2'},
+            {
+                'VpcId': 'vpc-1',
+                'SubnetId': 'subnet2',
+                'AvailabilityZone': 'az3'
+            },
+            {
+                'VpcId': 'vpc-2',
+                'SubnetId': 'subnet3',
+                'AvailabilityZone': 'az2'
+            },
         ]
+    }
+
+    test_find_usage_nat_gateways_subnets = {
+        'string': 'az2',
+        'subnet2': 'az3',
+        'subnet3': 'az2'
     }
 
     test_find_usage_acls = {
