@@ -1569,6 +1569,12 @@ class EC2(object):
                 'InstanceCount': 9,
                 'State': 'active',
             },
+            {
+                'ReservedInstancesId': 'res6',
+                'InstanceType': 'it3',
+                'InstanceCount': 6,
+                'State': 'active',
+            },
         ]
     }
 
