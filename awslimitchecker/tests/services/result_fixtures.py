@@ -258,8 +258,16 @@ class VPC(object):
                     },
                 ]
             },
-            {'VpcId': 'vpc-1'},
-            {'VpcId': 'vpc-2'},
+            {
+                'VpcId': 'vpc-1',
+                'SubnetId': 'subnet2',
+                'AvailabilityZone': 'az3',
+            },
+            {
+                'VpcId': 'vpc-2',
+                'SubnetId': 'subnet3',
+                'AvailabilityZone': 'az2',
+            },
         ]
     }
 
@@ -430,13 +438,40 @@ class VPC(object):
         'NatGateways': [
             {
                 'VpcId': 'vpc-123',
-                'SubnetId': 'subnet-123',
+                'SubnetId': 'subnet2',
+                'NatGatewayId': 'nat-121',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
+                'NatGatewayId': 'nat-122',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
                 'NatGatewayId': 'nat-123',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet4',
+                'NatGatewayId': 'nat-124',
                 'CreateTime': datetime(1970, 1, 1),
                 'State': 'available',
             },
         ],
         'NextToken': None,
+    }
+
+    test_find_usage_nat_gateways_subnets = {
+        'string': 'az2',
+        'subnet2': 'az3',
+        'subnet3': 'az2'
     }
 
 
