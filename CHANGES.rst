@@ -4,17 +4,22 @@ Changelog
 0.6.0 (unreleased)
 ------------------
 
+This release has a breaking change. The ``VPC`` ``NAT gateways`` has been renamed
+to ``NAT Gateways per AZ`` and its ``get_current_usage()`` method will now return
+a list with multiple items. See the changelog entry for #214 below.
+
 * `#217 <https://github.com/jantman/awslimitchecker/issues/217>`_ - add support
   for new/missing EC2 instance types: ``m4.16xlarge``, ``x1.16xlarge``, ``x1.32xlarge``,
   ``p2.xlarge``, ``p2.8xlarge``, ``p2.16xlarge``.
 * `#215 <https://github.com/jantman/awslimitchecker/issues/215>`_ - support
-  "Regional Benefit" Reserved Instances that have no specific AZ set on them (
-  bug fix for a KeyError when calculating EC2 Reserved Instances). It's unclear
-  to me whether, for the purpose of calculating limits, these are subtracted from
-  On-Demand Running Instances or ignored (because they're not actually a specific
-  capacity reservation). For the time being, they'll be ignored (i.e. not subtracted
-  from On-Demand Running Instances) but a debug-level message will be logged
-  for each.
+  "Regional Benefit" Reserved Instances that have no specific AZ set on them. Per
+  AWS, these are exempt from On-Demand Running Instances limits like all other
+  RIs.
+* `#214 <https://github.com/jantman/awslimitchecker/issues/214>`_ - The VPC "NAT gateways"
+  limit incorrectly calculated usage for the entire region, while the limit is
+  actually per-AZ. It also had strange capitalization that confused users. The name
+  has been changed to "NAT Gateways per AZ" and the usage is now correctly calculated
+  per-AZ instead of region-wide.
 
 0.5.1 (2016-09-25)
 ------------------

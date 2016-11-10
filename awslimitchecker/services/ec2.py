@@ -47,6 +47,8 @@ from ..limit import AwsLimit
 
 logger = logging.getLogger(__name__)
 
+RI_NO_AZ = 'xxREGIONAL_BENEFIT-NO_AZxx'
+
 
 class _Ec2Service(_AwsService):
 
@@ -78,6 +80,7 @@ class _Ec2Service(_AwsService):
         # update our limits with usage
         inst_usage = self._instance_usage()
         res_usage = self._get_reserved_instance_count()
+        logger.debug('Reserved instance count: %s', res_usage)
         # subtract reservations from instance usage
         ondemand_usage = defaultdict(int)
         for az in inst_usage:
@@ -96,6 +99,20 @@ class _Ec2Service(_AwsService):
                     # we have unused reservations
                     continue
                 ondemand_usage[i_type] += od
+        # subtract any "Regional Benefit" AZ-less reservations
+        for i_type in ondemand_usage.keys():
+            if RI_NO_AZ in res_usage and i_type in res_usage[RI_NO_AZ]:
+                logger.debug('Subtracting %d AZ-less "Regional Benefit" '
+                             'Reserved Instances from %d running %s instances',
+                             res_usage[RI_NO_AZ][i_type],
+                             ondemand_usage[i_type], i_type)
+                # we have Regional Benefit reservations for this type;
+                # we don't want to show negative usage, even if we're
+                #  over-reserved
+                ondemand_usage[i_type] = max(
+                    ondemand_usage[i_type] - res_usage[RI_NO_AZ][i_type],
+                    0
+                )
         total_instances = 0
         for i_type, usage in ondemand_usage.items():
             key = 'Running On-Demand {t} instances'.format(
@@ -201,17 +218,8 @@ class _Ec2Service(_AwsService):
                              x['ReservedInstancesId'], x['State'])
                 continue
             if 'AvailabilityZone' not in x:
-                # "Regional Benefit" AZ-less reservation; I'm unsure whether
-                # for the purposes of limits, these are counted as On-Demand
-                # or reserved;
-                # see <https://github.com/jantman/awslimitchecker/issues/215>
-                logger.debug("Skipping 'Regional Benefit' ReservedInstance "
-                             "without AZ %s (%d x %s) - see "
-                             "<https://github.com/jantman/awslimitchecker/"
-                             "issues/215> for more information",
-                             x['ReservedInstancesId'], x['InstanceCount'],
-                             x['InstanceType'])
-                continue
+                # "Regional Benefit" AZ-less reservation
+                x['AvailabilityZone'] = RI_NO_AZ
             if x['AvailabilityZone'] not in az_to_res:
                 az_to_res[x['AvailabilityZone']] = deepcopy(reservations)
             az_to_res[x['AvailabilityZone']][
