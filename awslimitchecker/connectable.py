@@ -95,13 +95,14 @@ class Connectable(object):
                 Connectable.credentials = self._get_sts_token()
             else:
                 if self.account_id == Connectable.credentials.account_id:
-                    logger.debug("Reusing previous STS credentials for account %s",
-                                 self.account_id)
+                    logger.debug("Reusing previous STS credentials for "
+                                 "account %s", self.account_id)
                 else:
-                    logger.debug("Previous STS credentials are for account %s", Connectable.credentials.account_id)
+                    logger.debug("Previous STS credentials are for account %s",
+                                 Connectable.credentials.account_id)
                     logger.debug("Connecting for account %s role '%s' with STS "
-                                 "(region: %s)", self.account_id, self.account_role,
-                                 self.region)
+                                 "(region: %s)", self.account_id,
+                                 self.account_role, self.region)
                     Connectable.credentials = self._get_sts_token()
             kwargs['aws_access_key_id'] = Connectable.credentials.access_key
             kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
