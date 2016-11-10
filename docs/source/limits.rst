@@ -464,7 +464,7 @@ Limit                         Default
 ============================= ===
 Entries per route table       50 
 Internet gateways :sup:`(TA)` 5  
-NAT gateways                  5  
+NAT Gateways per AZ           5  
 Network ACLs per VPC          200
 Route tables per VPC          200
 Rules per network ACL         20 

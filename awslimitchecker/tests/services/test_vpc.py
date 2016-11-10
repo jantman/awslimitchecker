@@ -76,7 +76,7 @@ class Test_VpcService(object):
             'Internet gateways',
             'VPCs',
             'Subnets per VPC',
-            'NAT gateways',
+            'NAT Gateways per AZ',
             'Network ACLs per VPC',
             'Rules per network ACL',
             'Route tables per VPC',
@@ -260,9 +260,13 @@ class Test_VpcService(object):
 
         cls._find_usage_nat_gateways(subnets)
 
-        assert len(cls.limits['NAT gateways'].get_current_usage()) == 1
-        assert cls.limits['NAT gateways'].get_current_usage()[
-                   0].get_value() == 1
+        assert len(cls.limits['NAT Gateways per AZ'].get_current_usage()) == 2
+        az2 = cls.limits['NAT Gateways per AZ'].get_current_usage()[0]
+        assert az2.get_value() == 2
+        assert az2.resource_id == 'az2'
+        az3 = cls.limits['NAT Gateways per AZ'].get_current_usage()[1]
+        assert az3.get_value() == 1
+        assert az3.resource_id == 'az3'
         assert mock_conn.mock_calls == [
             call.describe_nat_gateways(),
         ]
@@ -282,7 +286,7 @@ class Test_VpcService(object):
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
             cls._find_usage_nat_gateways(subnets)
 
-        assert len(cls.limits['NAT gateways'].get_current_usage()) == 0
+        assert len(cls.limits['NAT Gateways per AZ'].get_current_usage()) == 0
         assert mock_conn.mock_calls == [
             call.describe_nat_gateways(),
         ]

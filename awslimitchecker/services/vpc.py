@@ -156,17 +156,25 @@ class _VpcService(_AwsService):
         # Gateway service; they return an AuthError,
         # "This request has been administratively disabled."
         try:
-            self.limits['NAT gateways']._add_current_usage(
-                len(
-                    paginate_dict(
-                        self.conn.describe_nat_gateways,
-                        alc_marker_path=['NextToken'],
-                        alc_data_path=['NatGateways'],
-                        alc_marker_param='NextToken'
-                    )['NatGateways']
-                ),
-                aws_type='AWS::EC2::NatGateway',
-            )
+            gws_per_az = defaultdict(int)
+            for gw in paginate_dict(self.conn.describe_nat_gateways,
+                                    alc_marker_path=['NextToken'],
+                                    alc_data_path=['NatGateways'],
+                                    alc_marker_param='NextToken'
+                                    )['NatGateways']:
+                if gw['SubnetId'] not in subnet_to_az:
+                    logger.error('ERROR: NAT Gateway %s in SubnetId %s, but '
+                                 'SubnetId not found in subnet_to_az; Gateway '
+                                 'cannot be counted!', gw['NatGatewayId'],
+                                 gw['SubnetId'])
+                    continue
+                gws_per_az[subnet_to_az[gw['SubnetId']]] += 1
+            for az in sorted(gws_per_az.keys()):
+                self.limits['NAT Gateways per AZ']._add_current_usage(
+                    gws_per_az[az],
+                    resource_id=az,
+                    aws_type='AWS::EC2::NatGateway'
+                )
         except ClientError:
             logger.error('Caught exception when trying to list NAT Gateways; '
                          'perhaps NAT service does not exist in this region?',
@@ -252,8 +260,8 @@ class _VpcService(_AwsService):
             limit_type='AWS::EC2::InternetGateway',
         )
 
-        limits['NAT gateways'] = AwsLimit(
-            'NAT gateways',
+        limits['NAT Gateways per AZ'] = AwsLimit(
+            'NAT Gateways per AZ',
             self,
             5,
             self.warning_threshold,
