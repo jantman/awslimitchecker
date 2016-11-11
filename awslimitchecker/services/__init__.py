@@ -50,6 +50,7 @@ from awslimitchecker.services.iam import _IamService
 from awslimitchecker.services.s3 import _S3Service
 from awslimitchecker.services.ses import _SesService
 from awslimitchecker.services.cloudformation import _CloudformationService
+from awslimitchecker.services.firehose import _FirehoseService
 
 # dynamically generate the service name to class dict
 _services = {}

@@ -400,6 +400,15 @@ Applications         25
 Environments         200
 ==================== ===
 
+Firehose
+++++++++
+
+=========================== ===
+Limit                       Default
+=========================== ===
+Delivery streams per region 20
+=========================== ===
+
 IAM
 ++++
 
