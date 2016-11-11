@@ -26,10 +26,10 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S SERVICE] [-s] [-l] [--list-defaults]
                           [-L LIMIT] [-u] [--iam-policy] [-W WARNING_THRESHOLD]
-                          [-C CRITICAL_THRESHOLD] [-A STS_ACCOUNT_ID]
-                          [-R STS_ACCOUNT_ROLE] [-E EXTERNAL_ID]
-                          [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN] [-r REGION]
-                          [--skip-ta] [--no-color] [-v] [-V]
+                          [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
+                          [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
+                          [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER]
+                          [-T MFA_TOKEN] [-r REGION] [--skip-ta] [--no-color] [-v] [-V]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -59,6 +59,8 @@ use as a Nagios-compatible plugin).
      -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
                            default critical threshold (percentage of limit);
                            default: 99
+     -P PROFILE_NAME, --profile-name PROFILE_NAME
+                           for use with AWS CLI profile name to source credentials for the destination account
      -A STS_ACCOUNT_ID, --sts-account-id STS_ACCOUNT_ID
                            for use with STS, the Account ID of the destination
                            account (account to assume a role in)
@@ -306,10 +308,10 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "autoscaling:DescribeAccountLimits", 
+           "autoscaling:DescribeAccountLimits",
    (...)
        }
-     ], 
+     ],
      "Version": "2012-10-17"
    }
 
