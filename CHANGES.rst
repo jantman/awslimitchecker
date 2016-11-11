@@ -20,6 +20,15 @@ a list with multiple items. See the changelog entry for #214 below.
   actually per-AZ. It also had strange capitalization that confused users. The name
   has been changed to "NAT Gateways per AZ" and the usage is now correctly calculated
   per-AZ instead of region-wide.
+* `#221 <https://github.com/jantman/awslimitchecker/issues/221>`_ /
+  `PR #222 <https://github.com/jantman/awslimitchecker/pull/222>`_ - Fix bug
+  in handling of STS Credentials where they are cached permanently in
+  ``connectable.Connectable.credentials``, and new AwsLimitChecker instances
+  in the same Python process reuse the first set of STS credentials. This is
+  fixed by storing the Account ID as part of
+  ``connectable.ConnectableCredentials`` and getting new STS creds if the cached
+  account ID does not match the current ``account_id`` on the ``Connectable``
+  object.
 
 0.5.1 (2016-09-25)
 ------------------
