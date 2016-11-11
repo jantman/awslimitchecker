@@ -137,6 +137,7 @@ class Test_Connectable(object):
         type(mock_creds).access_key = 'sts_ak'
         type(mock_creds).secret_key = 'sts_sk'
         type(mock_creds).session_token = 'sts_token'
+        type(mock_creds).account_id = '123'
 
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
@@ -146,6 +147,33 @@ class Test_Connectable(object):
         assert mock_get_sts.mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Reusing previous STS credentials for account %s', '123')
+        ]
+        assert res == {
+            'region_name': 'myregion',
+            'aws_access_key_id': 'sts_ak',
+            'aws_secret_access_key': 'sts_sk',
+            'aws_session_token': 'sts_token'
+        }
+
+    def test_boto3_connection_kwargs_sts_again_other_account(self):
+        cls = ConnectableTester(account_id='123', account_role='myrole',
+                                region='myregion')
+        mock_creds = Mock()
+        type(mock_creds).access_key = 'sts_ak'
+        type(mock_creds).secret_key = 'sts_sk'
+        type(mock_creds).session_token = 'sts_token'
+        type(mock_creds).account_id = '456'
+
+        with patch('%s._get_sts_token' % pb) as mock_get_sts:
+            with patch('%s.logger' % pbm) as mock_logger:
+                mock_get_sts.return_value = mock_creds
+                Connectable.credentials = mock_creds
+                res = cls._boto3_connection_kwargs
+        assert mock_get_sts.mock_calls == [call()]
+        assert mock_logger.mock_calls == [
+            call.debug("Previous STS credentials are for account %s; "
+                       "getting new credentials for current account "
+                       "(%s)", '456', '123')
         ]
         assert res == {
             'region_name': 'myregion',

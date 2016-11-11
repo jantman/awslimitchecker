@@ -50,6 +50,9 @@ class ConnectableCredentials(object):
     `boto3.sts.STSConnection.assume_role <https://boto3.readthedocs.org/en/
     latest/reference/services/sts.html#STS.Client.assume_role>`_ just returns
     a dict. This class provides a compatible interface for boto3.
+
+    We also maintain an ``account_id`` attribute that can be set to the
+    account ID, to ensure that credentials are updated when switching accounts.
     """
 
     def __init__(self, creds_dict):
@@ -59,6 +62,7 @@ class ConnectableCredentials(object):
         self.expiration = creds_dict['Credentials']['Expiration']
         self.assumed_role_id = creds_dict['AssumedRoleUser']['AssumedRoleId']
         self.assumed_role_arn = creds_dict['AssumedRoleUser']['Arn']
+        self.account_id = None
 
 
 class Connectable(object):
@@ -93,8 +97,15 @@ class Connectable(object):
                              self.region)
                 Connectable.credentials = self._get_sts_token()
             else:
-                logger.debug("Reusing previous STS credentials for account %s",
-                             self.account_id)
+                if self.account_id == Connectable.credentials.account_id:
+                    logger.debug("Reusing previous STS credentials for "
+                                 "account %s", self.account_id)
+                else:
+                    logger.debug("Previous STS credentials are for account %s; "
+                                 "getting new credentials for current account "
+                                 "(%s)", Connectable.credentials.account_id,
+                                 self.account_id)
+                    Connectable.credentials = self._get_sts_token()
             kwargs['aws_access_key_id'] = Connectable.credentials.access_key
             kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
             kwargs['aws_session_token'] = Connectable.credentials.session_token
@@ -167,7 +178,10 @@ class Connectable(object):
         if self.mfa_token is not None:
             assume_kwargs['TokenCode'] = self.mfa_token
         role = sts.assume_role(**assume_kwargs)
+
         creds = ConnectableCredentials(role)
-        logger.debug("Got STS credentials for role; access_key_id=%s",
-                     creds.access_key)
+        creds.account_id = self.account_id
+
+        logger.debug("Got STS credentials for role; access_key_id=%s "
+                     "(account_id=%s)", creds.access_key, creds.account_id)
         return creds
