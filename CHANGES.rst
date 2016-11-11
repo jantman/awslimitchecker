@@ -8,6 +8,10 @@ This release has a breaking change. The ``VPC`` ``NAT gateways`` has been rename
 to ``NAT Gateways per AZ`` and its ``get_current_usage()`` method will now return
 a list with multiple items. See the changelog entry for #214 below.
 
+This release requires the following new IAM permissions to function:
+
+* ``firehose:ListDeliveryStreams``
+
 * `#217 <https://github.com/jantman/awslimitchecker/issues/217>`_ - add support
   for new/missing EC2 instance types: ``m4.16xlarge``, ``x1.16xlarge``, ``x1.32xlarge``,
   ``p2.xlarge``, ``p2.8xlarge``, ``p2.16xlarge``.
@@ -29,6 +33,8 @@ a list with multiple items. See the changelog entry for #214 below.
   ``connectable.ConnectableCredentials`` and getting new STS creds if the cached
   account ID does not match the current ``account_id`` on the ``Connectable``
   object.
+* `PR #216 <https://github.com/jantman/awslimitchecker/pull/216>`_ - add new
+  "Firehose" service with support for "Delivery streams per region" limit.
 
 0.5.1 (2016-09-25)
 ------------------
