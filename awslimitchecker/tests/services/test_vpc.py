@@ -76,7 +76,7 @@ class Test_VpcService(object):
             'Internet gateways',
             'VPCs',
             'Subnets per VPC',
-            'NAT gateways',
+            'NAT Gateways per AZ',
             'Network ACLs per VPC',
             'Rules per network ACL',
             'Route tables per VPC',
@@ -96,6 +96,10 @@ class Test_VpcService(object):
 
     def test_find_usage(self):
         mock_conn = Mock()
+        sn = {
+            'sn-1': 'az1',
+            'sn-2': 'az2'
+        }
 
         with patch('%s.connect' % self.pb) as mock_connect:
             with patch.multiple(
@@ -107,6 +111,7 @@ class Test_VpcService(object):
                     _find_usage_gateways=DEFAULT,
                     _find_usage_nat_gateways=DEFAULT,
             ) as mocks:
+                mocks['_find_usage_subnets'].return_value = sn
                 cls = _VpcService(21, 43)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
@@ -119,10 +124,10 @@ class Test_VpcService(object):
                 '_find_usage_subnets',
                 '_find_usage_ACLs',
                 '_find_usage_route_tables',
-                '_find_usage_gateways',
-                '_find_usage_nat_gateways',
+                '_find_usage_gateways'
         ]:
             assert mocks[x].mock_calls == [call()]
+        assert mocks['_find_usage_nat_gateways'].mock_calls == [call(sn)]
 
     def test_find_usage_vpcs(self):
         response = result_fixtures.VPC.test_find_usage_vpcs
@@ -149,7 +154,12 @@ class Test_VpcService(object):
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_subnets()
+        res = cls._find_usage_subnets()
+        assert res == {
+            'string': 'string',
+            'subnet2': 'az3',
+            'subnet3': 'az2'
+        }
 
         usage = sorted(cls.limits['Subnets per VPC'].get_current_usage())
         assert len(usage) == 2
@@ -239,6 +249,7 @@ class Test_VpcService(object):
         ]
 
     def test_find_usage_nat_gateways(self):
+        subnets = result_fixtures.VPC.test_find_usage_nat_gateways_subnets
         response = result_fixtures.VPC.test_find_usage_nat_gateways
 
         mock_conn = Mock()
@@ -247,16 +258,21 @@ class Test_VpcService(object):
         cls = _VpcService(21, 43)
         cls.conn = mock_conn
 
-        cls._find_usage_nat_gateways()
+        cls._find_usage_nat_gateways(subnets)
 
-        assert len(cls.limits['NAT gateways'].get_current_usage()) == 1
-        assert cls.limits['NAT gateways'].get_current_usage()[
-                   0].get_value() == 1
+        assert len(cls.limits['NAT Gateways per AZ'].get_current_usage()) == 2
+        az2 = cls.limits['NAT Gateways per AZ'].get_current_usage()[0]
+        assert az2.get_value() == 2
+        assert az2.resource_id == 'az2'
+        az3 = cls.limits['NAT Gateways per AZ'].get_current_usage()[1]
+        assert az3.get_value() == 1
+        assert az3.resource_id == 'az3'
         assert mock_conn.mock_calls == [
             call.describe_nat_gateways(),
         ]
 
     def test_find_usage_nat_gateways_exception(self):
+        subnets = result_fixtures.VPC.test_find_usage_nat_gateways_subnets
 
         def se_exc(*args, **kwargs):
             raise ClientError({'Error': {}}, 'opname')
@@ -268,9 +284,9 @@ class Test_VpcService(object):
         cls.conn = mock_conn
 
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
-            cls._find_usage_nat_gateways()
+            cls._find_usage_nat_gateways(subnets)
 
-        assert len(cls.limits['NAT gateways'].get_current_usage()) == 0
+        assert len(cls.limits['NAT Gateways per AZ'].get_current_usage()) == 0
         assert mock_conn.mock_calls == [
             call.describe_nat_gateways(),
         ]

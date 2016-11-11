@@ -41,6 +41,7 @@ import sys
 from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
+from awslimitchecker.services.ec2 import RI_NO_AZ
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -72,7 +73,7 @@ class Test_Ec2Service(object):
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
-        assert len(types) == 54
+        assert len(types) == 60
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -82,6 +83,9 @@ class Test_Ec2Service(object):
         assert 'hs1.8xlarge' in types
         assert 'cg1.4xlarge' in types
         assert 'm4.4xlarge' in types
+        assert 'p2.16xlarge' in types
+        assert 'm4.16xlarge' in types
+        assert 'x1.32xlarge' in types
 
     def test_get_limits(self):
         cls = _Ec2Service(21, 43)
@@ -127,7 +131,7 @@ class Test_Ec2Service(object):
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
-        assert len(limits) == 55
+        assert len(limits) == 61
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
@@ -141,6 +145,14 @@ class Test_Ec2Service(object):
         assert i2_8xlarge.default_limit == 2
         assert i2_8xlarge.limit_type == 'On-Demand instances'
         assert i2_8xlarge.limit_subtype == 'i2.8xlarge'
+        m4_16xlarge = limits['Running On-Demand m4.16xlarge instances']
+        assert m4_16xlarge.default_limit == 5
+        assert m4_16xlarge.limit_type == 'On-Demand instances'
+        assert m4_16xlarge.limit_subtype == 'm4.16xlarge'
+        p2_16xlarge = limits['Running On-Demand p2.16xlarge instances']
+        assert p2_16xlarge.default_limit == 1
+        assert p2_16xlarge.limit_type == 'On-Demand instances'
+        assert p2_16xlarge.limit_subtype == 'p2.16xlarge'
         all_ec2 = limits['Running On-Demand EC2 instances']
         assert all_ec2.default_limit == 20
         assert all_ec2.limit_type == 'On-Demand instances'
@@ -233,6 +245,10 @@ class Test_Ec2Service(object):
             'az2': {
                 'it2': 98,
             },
+            RI_NO_AZ: {
+                'it2': 9,
+                'it3': 6
+            }
         }
         assert mock_conn.mock_calls == []
         assert mock_client_conn.mock_calls == [
@@ -245,9 +261,11 @@ class Test_Ec2Service(object):
                 't2.micro': 2,
                 'r3.2xlarge': 10,
                 'c4.4xlarge': 3,
+                'c4.large': 2,
             },
             'fooaz': {
                 't2.micro': 32,
+                'c4.large': 2,
             },
             'us-west-1': {
                 't2.micro': 5,
@@ -265,16 +283,22 @@ class Test_Ec2Service(object):
                 't2.micro': 1,
                 'r3.2xlarge': 5,
             },
+            RI_NO_AZ: {
+                't2.micro': 1,
+                'c4.large': 50,
+            }
         }
 
         mock_t2_micro = Mock(spec_set=AwsLimit)
         mock_r3_2xlarge = Mock(spec_set=AwsLimit)
         mock_c4_4xlarge = Mock(spec_set=AwsLimit)
+        mock_c4_large = Mock(spec_set=AwsLimit)
         mock_all_ec2 = Mock(spec_set=AwsLimit)
         limits = {
             'Running On-Demand t2.micro instances': mock_t2_micro,
             'Running On-Demand r3.2xlarge instances': mock_r3_2xlarge,
             'Running On-Demand c4.4xlarge instances': mock_c4_4xlarge,
+            'Running On-Demand c4.large instances': mock_c4_large,
             'Running On-Demand EC2 instances': mock_all_ec2,
         }
 
@@ -290,7 +314,7 @@ class Test_Ec2Service(object):
                 mock_res_inst_count.return_value = ri_count
                 cls._find_usage_instances()
         assert mock_t2_micro.mock_calls == [call._add_current_usage(
-            36,
+            35,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_r3_2xlarge.mock_calls == [call._add_current_usage(
@@ -301,8 +325,12 @@ class Test_Ec2Service(object):
             5,
             aws_type='AWS::EC2::Instance'
         )]
+        assert mock_c4_large.mock_calls == [call._add_current_usage(
+            0,
+            aws_type='AWS::EC2::Instance'
+        )]
         assert mock_all_ec2.mock_calls == [call._add_current_usage(
-            49,
+            48,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_inst_usage.mock_calls == [call(cls)]

@@ -54,9 +54,9 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.2xlarge instances
 
-  * Running On-Demand c4.large instances
+  * Running On-Demand c4.4xlarge instances
 
-  * Running On-Demand m1.medium instances
+  * Running On-Demand c4.large instances
 
   * Running On-Demand m3.2xlarge instances
 
@@ -308,7 +308,7 @@ Running On-Demand c3.8xlarge instances                         20
 Running On-Demand c3.large instances :sup:`(TA)`               20  
 Running On-Demand c3.xlarge instances :sup:`(TA)`              20  
 Running On-Demand c4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand c4.4xlarge instances                         10  
+Running On-Demand c4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand c4.8xlarge instances                         5   
 Running On-Demand c4.large instances :sup:`(TA)`               20  
 Running On-Demand c4.xlarge instances                          20  
@@ -328,7 +328,7 @@ Running On-Demand i2.4xlarge instances                         4
 Running On-Demand i2.8xlarge instances                         2   
 Running On-Demand i2.xlarge instances                          8   
 Running On-Demand m1.large instances                           20  
-Running On-Demand m1.medium instances :sup:`(TA)`              20  
+Running On-Demand m1.medium instances                          20  
 Running On-Demand m1.small instances                           20  
 Running On-Demand m1.xlarge instances                          20  
 Running On-Demand m2.2xlarge instances                         20  
@@ -339,10 +339,14 @@ Running On-Demand m3.large instances :sup:`(TA)`               20
 Running On-Demand m3.medium instances :sup:`(TA)`              20  
 Running On-Demand m3.xlarge instances :sup:`(TA)`              20  
 Running On-Demand m4.10xlarge instances                        5   
+Running On-Demand m4.16xlarge instances                        5   
 Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand m4.large instances :sup:`(TA)`               20  
 Running On-Demand m4.xlarge instances :sup:`(TA)`              20  
+Running On-Demand p2.16xlarge instances                        1   
+Running On-Demand p2.8xlarge instances                         1   
+Running On-Demand p2.xlarge instances                          1   
 Running On-Demand r3.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand r3.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand r3.8xlarge instances                         5   
@@ -354,6 +358,8 @@ Running On-Demand t2.medium instances :sup:`(TA)`              20
 Running On-Demand t2.micro instances :sup:`(TA)`               20  
 Running On-Demand t2.nano instances                            20  
 Running On-Demand t2.small instances :sup:`(TA)`               20  
+Running On-Demand x1.16xlarge instances                        20  
+Running On-Demand x1.32xlarge instances                        20  
 Security groups per VPC                                        500 
 VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5   
 VPC security groups per elastic network interface :sup:`(API)` 5   
@@ -467,7 +473,7 @@ Limit                         Default
 ============================= ===
 Entries per route table       50 
 Internet gateways :sup:`(TA)` 5  
-NAT gateways                  5  
+NAT Gateways per AZ           5  
 Network ACLs per VPC          200
 Route tables per VPC          200
 Rules per network ACL         20 
