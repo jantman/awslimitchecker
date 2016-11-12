@@ -273,7 +273,7 @@ def _check_output(args, stderr=None):
         if p.returncode != 0:
             raise subprocess.CalledProcessError(p.returncode, args)
     else:
-        res = subprocess.check_output(args, stderr=stderr)
+        res = subprocess.check_output(args, stderr=stderr)  # pragma: no cover
         if sys.version_info >= (3, 0):
             res = res.decode(locale.getdefaultlocale()[1])
     return res
