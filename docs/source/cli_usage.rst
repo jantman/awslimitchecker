@@ -26,10 +26,10 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S SERVICE] [-s] [-l] [--list-defaults]
                           [-L LIMIT] [-u] [--iam-policy] [-W WARNING_THRESHOLD]
-                          [-C CRITICAL_THRESHOLD] [-A STS_ACCOUNT_ID]
-                          [-R STS_ACCOUNT_ROLE] [-E EXTERNAL_ID]
-                          [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN] [-r REGION]
-                          [--skip-ta] [--no-color] [-v] [-V]
+                          [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
+                          [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
+                          [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
+                          [-r REGION] [--skip-ta] [--no-color] [-v] [-V]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -59,6 +59,10 @@ use as a Nagios-compatible plugin).
      -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
                            default critical threshold (percentage of limit);
                            default: 99
+     -P PROFILE_NAME, --profile PROFILE_NAME
+                           Name of profile in the AWS cross-sdk credentials file
+                           to use credentials from; similar to the corresponding
+                           awscli option
      -A STS_ACCOUNT_ID, --sts-account-id STS_ACCOUNT_ID
                            for use with STS, the Account ID of the destination
                            account (account to assume a role in)
@@ -288,7 +292,6 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
    ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 133
    ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 382
    S3/Buckets                                             (limit 100) CRITICAL: 224
-   VPC/NAT gateways                                       (limit 5) CRITICAL: 8
 
 
 

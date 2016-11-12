@@ -258,8 +258,16 @@ class VPC(object):
                     },
                 ]
             },
-            {'VpcId': 'vpc-1'},
-            {'VpcId': 'vpc-2'},
+            {
+                'VpcId': 'vpc-1',
+                'SubnetId': 'subnet2',
+                'AvailabilityZone': 'az3',
+            },
+            {
+                'VpcId': 'vpc-2',
+                'SubnetId': 'subnet3',
+                'AvailabilityZone': 'az2',
+            },
         ]
     }
 
@@ -430,13 +438,40 @@ class VPC(object):
         'NatGateways': [
             {
                 'VpcId': 'vpc-123',
-                'SubnetId': 'subnet-123',
+                'SubnetId': 'subnet2',
+                'NatGatewayId': 'nat-121',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
+                'NatGatewayId': 'nat-122',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
                 'NatGatewayId': 'nat-123',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'available',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet4',
+                'NatGatewayId': 'nat-124',
                 'CreateTime': datetime(1970, 1, 1),
                 'State': 'available',
             },
         ],
         'NextToken': None,
+    }
+
+    test_find_usage_nat_gateways_subnets = {
+        'string': 'az2',
+        'subnet2': 'az3',
+        'subnet3': 'az2'
     }
 
 
@@ -1563,6 +1598,18 @@ class EC2(object):
                 'InstanceCount': 98,
                 'State': 'active',
             },
+            {
+                'ReservedInstancesId': 'res5',
+                'InstanceType': 'it2',
+                'InstanceCount': 9,
+                'State': 'active',
+            },
+            {
+                'ReservedInstancesId': 'res6',
+                'InstanceType': 'it3',
+                'InstanceCount': 6,
+                'State': 'active',
+            },
         ]
     }
 
@@ -1919,8 +1966,7 @@ class EC2(object):
                     'Type': 'request'
                 },
             },
-        ],
-        'NextToken': 'string'
+        ]
     }
 
 
@@ -1960,3 +2006,38 @@ class IAM(object):
         'UsersQuota': 5000,
         'VersionsPerPolicyQuota': 8
     }
+
+
+class Firehose(object):
+
+    test_list_delivery_streams = [
+        {
+            'DeliveryStreamNames': [
+                'first-page-stream1',
+                'first-page-stream2',
+                'first-page-stream3',
+                'first-page-stream4',
+                'first-page-stream5',
+                'first-page-stream6',
+                'first-page-stream7',
+                'first-page-stream8',
+                'first-page-stream9',
+                'first-page-stream10',
+            ],
+            'HasMoreDeliveryStreams': True,
+            'ResponseMetadata': {
+                'HTTPStatusCode': 200,
+                'RequestId': '1aaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+            }
+        },
+        {
+            'DeliveryStreamNames': [
+                'second-page-stream11',
+            ],
+            'HasMoreDeliveryStreams': False,
+            'ResponseMetadata': {
+                'HTTPStatusCode': 200,
+                'RequestId': '2aaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+            }
+        }
+    ]

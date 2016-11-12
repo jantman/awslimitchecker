@@ -57,6 +57,7 @@ permissions required for it to function correctly:
             "elasticbeanstalk:DescribeApplications", 
             "elasticbeanstalk:DescribeEnvironments", 
             "elasticloadbalancing:DescribeLoadBalancers", 
+            "firehose:ListDeliveryStreams", 
             "iam:GetAccountSummary", 
             "rds:DescribeAccountAttributes", 
             "rds:DescribeDBInstances", 

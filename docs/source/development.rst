@@ -295,18 +295,19 @@ For issues:
 Release Checklist
 -----------------
 
-1. Open an issue for the release; cut a branch off ``develop`` for that issue.
-2. Build docs (``tox -e localdocs``) and ensure they're current; commit any changes.
+1. Open an issue for the release (the checklist below may help); cut a branch off ``develop`` for that issue.
+2. Build docs locally (``tox -e localdocs``) and ensure they're current; commit any changes.
 3. Run ``dev/terraform.py`` in the awslimitchecker source directory to update the
    integration test user's IAM policy with what is actually being reported by the
    current code.
 4. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``,
    manually run ALL of the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
 5. Ensure that test coverage is no less than the last release (ideally, 100%).
-6. Build docs for the branch (locally) and ensure they look correct.
+6. Build docs for the branch (locally) and ensure they look correct. Commit any changes.
 7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst.
-   Ensure that there are CHANGES.rst entries for all major changes since the last release. Mention the issue
-   in the commit for this, and push to GitHub.
+   Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking
+   changes or new required IAM permissions are explicitly mentioned. Mention the issue in the commit for this,
+   and push to GitHub.
 8. Confirm that README.rst renders correctly on GitHub.
 9. Upload package to testpypi, confirm that README.rst renders correctly.
 
@@ -317,7 +318,7 @@ Release Checklist
    * ``twine upload -r test dist/*``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
-10. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
+10. Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
 11. Tag the release in Git, push tag to GitHub:
 
    * tag the release. for now the message is quite simple: ``git tag -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
@@ -331,3 +332,32 @@ Release Checklist
 14. merge master back into develop
 15. Log in to ReadTheDocs and enable build of the tag.
 16. Blog, tweet, etc. about the new version.
+
+Release Issue Template
+++++++++++++++++++++++
+
+Issue title: ``x.y.z Release``
+
+Issue content:
+
+.. code-block:: none
+
+    * [ ] Cut a branch off ``develop`` for this issue.
+    * [ ] Build docs locally (``tox -e localdocs``) and ensure they're current; commit any changes.
+    * [ ] Run ``dev/terraform.py`` in the awslimitchecker source directory to update the integration test user's IAM policy with what is actually being reported by the current code.
+    * [ ] Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``, manually run ALL of the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
+    * [ ] Ensure that test coverage is no less than the last release (ideally, 100%).
+    * [ ] Build docs for the branch (locally) and ensure they look correct. Commit any changes.
+    * [ ] Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned. Mention the issue in the commit for this, and push to GitHub.
+    * [ ] Confirm that README.rst renders correctly on GitHub.
+    * [ ] Upload package to testpypi, confirm that README.rst renders correctly.
+
+       * Make sure your ~/.pypirc file is correct (a repo called ``test`` for https://testpypi.python.org/pypi).
+       * ``rm -Rf dist``
+       * ``python setup.py register -r https://testpypi.python.org/pypi``
+       * ``python setup.py sdist bdist_wheel``
+       * ``twine upload -r test dist/*``
+       * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
+
+    * [ ] Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
+    * [ ] Continue at [#11 on the Release Checklist](http://awslimitchecker.readthedocs.io/en/develop/development.html#release-checklist).

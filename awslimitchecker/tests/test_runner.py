@@ -157,6 +157,12 @@ class TestAwsLimitCheckerRunner(object):
                                 type=int, default=99,
                                 help='default critical threshold (percentage '
                                 'of limit); default: 99'),
+            call().add_argument('-P', '--profile', action='store',
+                                dest='profile_name', type=str, default=None,
+                                help='Name of profile in the AWS cross-sdk '
+                                     'credentials file to use credentials from;'
+                                     ' similar to the corresponding awscli '
+                                     'option'),
             call().add_argument('-A', '--sts-account-id', action='store',
                                 type=str, default=None,
                                 help='for use with STS, the Account ID of the '
@@ -219,7 +225,8 @@ class TestAwsLimitCheckerRunner(object):
                 region=None,
                 external_id=None,
                 mfa_serial_number=None,
-                mfa_token=None
+                mfa_token=None,
+                profile_name=None
             ),
             call().get_project_url(),
             call().get_version()
@@ -572,7 +579,8 @@ class TestAwsLimitCheckerRunner(object):
                 region='myregion',
                 external_id=None,
                 mfa_serial_number=None,
-                mfa_token=None
+                mfa_token=None,
+                profile_name=None
             )
         ]
         assert self.cls.service_name is None
@@ -607,7 +615,8 @@ class TestAwsLimitCheckerRunner(object):
                 region='myregion',
                 external_id=None,
                 mfa_serial_number=None,
-                mfa_token=None
+                mfa_token=None,
+                profile_name=None
             )
         ]
         assert self.cls.service_name is None
@@ -644,7 +653,8 @@ class TestAwsLimitCheckerRunner(object):
                 region='myregion',
                 external_id='myextid',
                 mfa_serial_number=None,
-                mfa_token=None
+                mfa_token=None,
+                profile_name=None
             )
         ]
         assert self.cls.service_name is None
@@ -692,7 +702,23 @@ class TestAwsLimitCheckerRunner(object):
         assert mock_alc.mock_calls == [
             call(warning_threshold=50, critical_threshold=99, account_id=None,
                  account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None)
+                 mfa_serial_number=None, mfa_token=None, profile_name=None)
+        ]
+
+    def test_entry_warning_profile_name(self):
+        argv = ['awslimitchecker', '-W', '50', '-P', 'myprof']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_alc:
+                with patch('%s.Runner.check_thresholds' % pb,
+                           autospec=True) as mock_ct:
+                    with pytest.raises(SystemExit) as excinfo:
+                        mock_ct.return_value = 8
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 8
+        assert mock_alc.mock_calls == [
+            call(warning_threshold=50, critical_threshold=99, account_id=None,
+                 account_role=None, region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None, profile_name='myprof')
         ]
 
     def test_entry_critical(self):
@@ -708,7 +734,7 @@ class TestAwsLimitCheckerRunner(object):
         assert mock_alc.mock_calls == [
             call(warning_threshold=80, critical_threshold=95, account_id=None,
                  account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None)
+                 mfa_serial_number=None, mfa_token=None, profile_name=None)
         ]
 
     def test_entry_check_thresholds(self):

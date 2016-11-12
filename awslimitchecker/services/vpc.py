@@ -65,11 +65,11 @@ class _VpcService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_vpcs()
-        self._find_usage_subnets()
+        subnet_to_az = self._find_usage_subnets()
         self._find_usage_ACLs()
         self._find_usage_route_tables()
         self._find_usage_gateways()
-        self._find_usage_nat_gateways()
+        self._find_usage_nat_gateways(subnet_to_az)
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -83,17 +83,20 @@ class _VpcService(_AwsService):
         )
 
     def _find_usage_subnets(self):
-        """find usage for Subnets"""
+        """find usage for Subnets; return dict of SubnetId to AZ"""
         # subnets per VPC
+        subnet_to_az = {}
         subnets = defaultdict(int)
         for subnet in self.conn.describe_subnets()['Subnets']:
             subnets[subnet['VpcId']] += 1
+            subnet_to_az[subnet['SubnetId']] = subnet['AvailabilityZone']
         for vpc_id in subnets:
             self.limits['Subnets per VPC']._add_current_usage(
                 subnets[vpc_id],
                 aws_type='AWS::EC2::VPC',
                 resource_id=vpc_id
             )
+        return subnet_to_az
 
     def _find_usage_ACLs(self):
         """find usage for ACLs"""
@@ -142,23 +145,36 @@ class _VpcService(_AwsService):
             aws_type='AWS::EC2::InternetGateway',
         )
 
-    def _find_usage_nat_gateways(self):
-        """find usage for NAT Gateways"""
+    def _find_usage_nat_gateways(self, subnet_to_az):
+        """
+        find usage for NAT Gateways
+
+        :param subnet_to_az: dict mapping subnet ID to AZ
+        :type subnet_to_az: dict
+        """
         # currently, some regions (sa-east-1 as one example) don't have NAT
         # Gateway service; they return an AuthError,
         # "This request has been administratively disabled."
         try:
-            self.limits['NAT gateways']._add_current_usage(
-                len(
-                    paginate_dict(
-                        self.conn.describe_nat_gateways,
-                        alc_marker_path=['NextToken'],
-                        alc_data_path=['NatGateways'],
-                        alc_marker_param='NextToken'
-                    )['NatGateways']
-                ),
-                aws_type='AWS::EC2::NatGateway',
-            )
+            gws_per_az = defaultdict(int)
+            for gw in paginate_dict(self.conn.describe_nat_gateways,
+                                    alc_marker_path=['NextToken'],
+                                    alc_data_path=['NatGateways'],
+                                    alc_marker_param='NextToken'
+                                    )['NatGateways']:
+                if gw['SubnetId'] not in subnet_to_az:
+                    logger.error('ERROR: NAT Gateway %s in SubnetId %s, but '
+                                 'SubnetId not found in subnet_to_az; Gateway '
+                                 'cannot be counted!', gw['NatGatewayId'],
+                                 gw['SubnetId'])
+                    continue
+                gws_per_az[subnet_to_az[gw['SubnetId']]] += 1
+            for az in sorted(gws_per_az.keys()):
+                self.limits['NAT Gateways per AZ']._add_current_usage(
+                    gws_per_az[az],
+                    resource_id=az,
+                    aws_type='AWS::EC2::NatGateway'
+                )
         except ClientError:
             logger.error('Caught exception when trying to list NAT Gateways; '
                          'perhaps NAT service does not exist in this region?',
@@ -244,8 +260,8 @@ class _VpcService(_AwsService):
             limit_type='AWS::EC2::InternetGateway',
         )
 
-        limits['NAT gateways'] = AwsLimit(
-            'NAT gateways',
+        limits['NAT Gateways per AZ'] = AwsLimit(
+            'NAT Gateways per AZ',
             self,
             5,
             self.warning_threshold,
