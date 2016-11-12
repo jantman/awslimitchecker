@@ -68,10 +68,10 @@ class AwsLimitChecker(object):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
-        :param profile_name: `Profile Name <http://docs.aws.amazon.com/IAM/
-          latest/UserGuide/id_roles.html>`_
-          The name of a profile to use. If not given, then the default profile
-          is used.
+        :param profile_name: The name of a profile in the cross-SDK
+        `shared credentials file <https://boto3.readthedocs.io/en/latest/guide/
+        configuration.html#shared-credentials-file>`_ for boto3 to retrieve
+         AWS credentials from.
         :type profile_name: str
         :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
           latest/gr/acct-identifiers.html>`_

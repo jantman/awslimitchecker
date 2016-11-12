@@ -90,14 +90,7 @@ class Connectable(object):
         :rtype: dict
         """
         kwargs = {'region_name': self.region}
-        if self.profile_name is not None:
-            # fetch credentials from cache.
-            session = boto3.Session(profile_name=self.profile_name)
-            credentials = session._session.get_credentials()
-            kwargs['aws_access_key_id'] = credentials.access_key
-            kwargs['aws_secret_access_key'] = credentials.secret_key
-            kwargs['aws_session_token'] = credentials.token
-        elif self.account_id is not None:
+        if self.account_id is not None:
             if Connectable.credentials is None:
                 logger.debug("Connecting for account %s role '%s' with STS "
                              "(region: %s)", self.account_id, self.account_role,
@@ -116,6 +109,13 @@ class Connectable(object):
             kwargs['aws_access_key_id'] = Connectable.credentials.access_key
             kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
             kwargs['aws_session_token'] = Connectable.credentials.session_token
+        elif self.profile_name is not None:
+            # use boto3.Session to get credentials from the named profile
+            session = boto3.Session(profile_name=self.profile_name)
+            credentials = session._session.get_credentials()
+            kwargs['aws_access_key_id'] = credentials.access_key
+            kwargs['aws_secret_access_key'] = credentials.secret_key
+            kwargs['aws_session_token'] = credentials.token
         else:
             logger.debug("Connecting to region %s", self.region)
         return kwargs

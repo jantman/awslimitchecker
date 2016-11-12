@@ -133,10 +133,11 @@ class Runner(object):
                        type=int, default=99,
                        help='default critical threshold (percentage of '
                        'limit); default: 99')
-        p.add_argument('-P', '--profile-name', action='store',
+        p.add_argument('-P', '--profile', action='store',
                        type=str, default=None,
-                       help='AWS CLI profile name to source credentials from'
-                       ' for access to the destination account')
+                       help='Name of profile in the AWS cross-sdk credentials '
+                            'file to use credentials from; similar to the '
+                            'corresponding awscli option')
         p.add_argument('-A', '--sts-account-id', action='store',
                        type=str, default=None,
                        help='for use with STS, the Account ID of the '
