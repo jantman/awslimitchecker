@@ -133,7 +133,7 @@ class Runner(object):
                        type=int, default=99,
                        help='default critical threshold (percentage of '
                        'limit); default: 99')
-        p.add_argument('-P', '--profile', action='store',
+        p.add_argument('-P', '--profile', action='store', dest='profile_name',
                        type=str, default=None,
                        help='Name of profile in the AWS cross-sdk credentials '
                             'file to use credentials from; similar to the '

@@ -62,7 +62,8 @@ class ConnectableTester(Connectable):
     service_name = 'connectable_tester'
 
     def __init__(self, account_id=None, account_role=None, region=None,
-                 external_id=None, mfa_serial_number=None, mfa_token=None):
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None):
         self.account_id = account_id
         self.account_role = account_role
         self.region = region
@@ -71,6 +72,7 @@ class ConnectableTester(Connectable):
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
+        self.profile_name = profile_name
 
 
 class Test_Connectable(object):
