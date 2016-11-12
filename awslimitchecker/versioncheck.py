@@ -46,7 +46,7 @@ import locale
 
 if sys.version_info >= (3, 3):
     from subprocess import DEVNULL
-else:
+else:  # unreachable under 3.4+ - pragma: no cover
     DEVNULL = open(os.devnull, 'wb')
 
 try:
