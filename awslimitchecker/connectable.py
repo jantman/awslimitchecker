@@ -111,6 +111,7 @@ class Connectable(object):
             kwargs['aws_session_token'] = Connectable.credentials.session_token
         elif self.profile_name is not None:
             # use boto3.Session to get credentials from the named profile
+            logger.debug("Using credentials profile: %s", self.profile_name)
             session = boto3.Session(profile_name=self.profile_name)
             credentials = session._session.get_credentials()
             kwargs['aws_access_key_id'] = credentials.access_key
