@@ -62,7 +62,8 @@ class ConnectableTester(Connectable):
     service_name = 'connectable_tester'
 
     def __init__(self, account_id=None, account_role=None, region=None,
-                 external_id=None, mfa_serial_number=None, mfa_token=None):
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None):
         self.account_id = account_id
         self.account_role = account_role
         self.region = region
@@ -71,6 +72,7 @@ class ConnectableTester(Connectable):
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
+        self.profile_name = profile_name
 
 
 class Test_Connectable(object):
@@ -80,14 +82,45 @@ class Test_Connectable(object):
 
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
-                Connectable.credentials = None
-                res = cls._boto3_connection_kwargs
+                with patch('%s.boto3.Session' % pbm) as mock_sess:
+                    Connectable.credentials = None
+                    res = cls._boto3_connection_kwargs
         assert mock_get_sts.mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Connecting to region %s', None)
         ]
+        assert mock_sess.mock_calls == []
         assert res == {
             'region_name': None
+        }
+
+    def test_boto3_connection_kwargs_profile(self):
+        cls = ConnectableTester(profile_name='myprof')
+        m_creds = Mock()
+        type(m_creds).access_key = 'ak'
+        type(m_creds).secret_key = 'sk'
+        type(m_creds).token = 'tkn'
+        mock_session = Mock()
+        m_sess = Mock()
+        m_sess.get_credentials.return_value = m_creds
+        type(mock_session)._session = m_sess
+
+        with patch('%s._get_sts_token' % pb) as mock_get_sts:
+            with patch('%s.logger' % pbm) as mock_logger:
+                with patch('%s.boto3.Session' % pbm) as mock_sess:
+                    Connectable.credentials = None
+                    mock_sess.return_value = mock_session
+                    res = cls._boto3_connection_kwargs
+        assert mock_get_sts.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.debug('Using credentials profile: %s', 'myprof')
+        ]
+        assert mock_sess.mock_calls == [call(profile_name='myprof')]
+        assert res == {
+            'region_name': None,
+            'aws_access_key_id': 'ak',
+            'aws_secret_access_key': 'sk',
+            'aws_session_token': 'tkn'
         }
 
     def test_boto3_connection_kwargs_region(self):
@@ -95,12 +128,14 @@ class Test_Connectable(object):
 
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
-                Connectable.credentials = None
-                res = cls._boto3_connection_kwargs
+                with patch('%s.boto3.Session' % pbm) as mock_sess:
+                    Connectable.credentials = None
+                    res = cls._boto3_connection_kwargs
         assert mock_get_sts.mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Connecting to region %s', 'myregion')
         ]
+        assert mock_sess.mock_calls == []
         assert res == {
             'region_name': 'myregion'
         }
@@ -115,14 +150,16 @@ class Test_Connectable(object):
 
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
-                mock_get_sts.return_value = mock_creds
-                Connectable.credentials = None
-                res = cls._boto3_connection_kwargs
+                with patch('%s.boto3.Session' % pbm) as mock_sess:
+                    mock_get_sts.return_value = mock_creds
+                    Connectable.credentials = None
+                    res = cls._boto3_connection_kwargs
         assert mock_get_sts.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.debug("Connecting for account %s role '%s' with STS "
                        "(region: %s)", '123', 'myrole', 'myregion')
         ]
+        assert mock_sess.mock_calls == []
         assert res == {
             'region_name': 'myregion',
             'aws_access_key_id': 'sts_ak',
@@ -141,13 +178,15 @@ class Test_Connectable(object):
 
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
-                mock_get_sts.return_value = mock_creds
-                Connectable.credentials = mock_creds
-                res = cls._boto3_connection_kwargs
+                with patch('%s.boto3.Session' % pbm) as mock_sess:
+                    mock_get_sts.return_value = mock_creds
+                    Connectable.credentials = mock_creds
+                    res = cls._boto3_connection_kwargs
         assert mock_get_sts.mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Reusing previous STS credentials for account %s', '123')
         ]
+        assert mock_sess.mock_calls == []
         assert res == {
             'region_name': 'myregion',
             'aws_access_key_id': 'sts_ak',
@@ -166,15 +205,17 @@ class Test_Connectable(object):
 
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
-                mock_get_sts.return_value = mock_creds
-                Connectable.credentials = mock_creds
-                res = cls._boto3_connection_kwargs
+                with patch('%s.boto3.Session' % pbm) as mock_sess:
+                    mock_get_sts.return_value = mock_creds
+                    Connectable.credentials = mock_creds
+                    res = cls._boto3_connection_kwargs
         assert mock_get_sts.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.debug("Previous STS credentials are for account %s; "
                        "getting new credentials for current account "
                        "(%s)", '456', '123')
         ]
+        assert mock_sess.mock_calls == []
         assert res == {
             'region_name': 'myregion',
             'aws_access_key_id': 'sts_ak',

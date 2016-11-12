@@ -79,7 +79,10 @@ Credentials
 
 Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
 You must either have your credentials configured in one of boto3's supported config
-files, or set as environment variables. See
+files or set as environment variables. If your credentials are in the cross-SDK
+credentials file (``~/.aws/credentials``) under a named profile section, you can
+use credentials from that profile by specifying the ``-P`` / ``--profile`` command
+lint option. See
 `boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
 and
 `this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_

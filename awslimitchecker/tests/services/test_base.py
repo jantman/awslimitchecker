@@ -132,6 +132,19 @@ class Test_AwsService(object):
         assert cls.account_role == 'myrole'
         assert cls.region == 'myregion'
 
+    def test_init_subclass_profile(self):
+        cls = AwsServiceTester(
+            1,
+            2,
+            profile_name='foo'
+        )
+        assert cls.warning_threshold == 1
+        assert cls.critical_threshold == 2
+        assert cls.limits == {'foo': 'bar'}
+        assert cls.conn is None
+        assert cls._have_usage is False
+        assert cls.profile_name == 'foo'
+
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
         type(mock_limit).default_limit = 5

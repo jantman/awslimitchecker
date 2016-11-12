@@ -35,6 +35,10 @@ This release requires the following new IAM permissions to function:
   object.
 * `PR #216 <https://github.com/jantman/awslimitchecker/pull/216>`_ - add new
   "Firehose" service with support for "Delivery streams per region" limit.
+* `#213 <https://github.com/jantman/awslimitchecker/issues/213>`_ /
+  `PR #188 <https://github.com/jantman/awslimitchecker/pull/188>`_ - support
+  AWS cross-sdk credential file profiles via ``-P`` / ``--profile``, like
+  awscli.
 
 0.5.1 (2016-09-25)
 ------------------

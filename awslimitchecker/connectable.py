@@ -109,6 +109,14 @@ class Connectable(object):
             kwargs['aws_access_key_id'] = Connectable.credentials.access_key
             kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
             kwargs['aws_session_token'] = Connectable.credentials.session_token
+        elif self.profile_name is not None:
+            # use boto3.Session to get credentials from the named profile
+            logger.debug("Using credentials profile: %s", self.profile_name)
+            session = boto3.Session(profile_name=self.profile_name)
+            credentials = session._session.get_credentials()
+            kwargs['aws_access_key_id'] = credentials.access_key
+            kwargs['aws_secret_access_key'] = credentials.secret_key
+            kwargs['aws_session_token'] = credentials.token
         else:
             logger.debug("Connecting to region %s", self.region)
         return kwargs

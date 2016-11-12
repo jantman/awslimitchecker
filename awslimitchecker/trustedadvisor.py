@@ -55,15 +55,20 @@ class TrustedAdvisor(Connectable):
     service_name = 'TrustedAdvisor'
     api_name = 'support'
 
-    def __init__(self, all_services, account_id=None, account_role=None,
-                 region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None):
+    def __init__(self, all_services, profile_name=None, account_id=None,
+                 account_role=None, region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None):
         """
         Class to contain all TrustedAdvisor-related logic.
 
         :param all_services: :py:class:`~.checker.AwsLimitChecker` ``services``
           dictionary.
         :type all_services: dict
+        :param profile_name: The name of a profile in the cross-SDK
+          `shared credentials file <https://boto3.readthedocs.io/en/latest/
+          guide/configuration.html#shared-credentials-file>`_ for boto3 to
+          retrieve AWS credentials from.
+        :type profile_name: str
         :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
           latest/gr/acct-identifiers.html>`_
           (12-digit string, currently numeric) for the account to connect to
@@ -89,6 +94,7 @@ class TrustedAdvisor(Connectable):
         """
         self.conn = None
         self.have_ta = True
+        self.profile_name = profile_name
         self.account_id = account_id
         self.account_role = account_role
         self.region = 'us-east-1'
