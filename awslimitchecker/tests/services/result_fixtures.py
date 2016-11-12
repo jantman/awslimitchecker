@@ -1966,8 +1966,7 @@ class EC2(object):
                     'Type': 'request'
                 },
             },
-        ],
-        'NextToken': 'string'
+        ]
     }
 
 
