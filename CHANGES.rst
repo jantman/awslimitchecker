@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.6.0 (unreleased)
+0.6.0 (2016-11-12)
 ------------------
 
 This release has a breaking change. The ``VPC`` ``NAT gateways`` has been renamed
