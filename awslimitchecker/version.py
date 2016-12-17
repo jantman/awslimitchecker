@@ -37,10 +37,18 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
-from awslimitchecker.versioncheck import AGPLVersionChecker
+import os
+import sys
 
 import logging
 logger = logging.getLogger(__name__)
+
+# GitPython doesn't work at all on py32; throws SyntaxErrors
+if sys.version_info[0:2] != (3, 2):
+    try:
+        from versionfinder import find_version
+    except ImportError:
+        logger.error("Unable to import versionfinder", exc_info=True)
 
 _VERSION = '0.6.0'
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
@@ -105,14 +113,29 @@ def _get_version_info():
     :returns: awslimitchecker version
     :rtype: string
     """
+    if os.environ.get('VERSIONCHECK_DEBUG', '') != 'true':
+        for lname in ['versionfinder', 'pip', 'git']:
+            l = logging.getLogger(lname)
+            l.setLevel(logging.CRITICAL)
+            l.propagate = True
     try:
-        vc = AGPLVersionChecker()
-        vinfo = vc.find_package_version()
+        vinfo = find_version('awslimitchecker')
+        dirty = ''
+        if vinfo.git_is_dirty:
+            dirty = '*'
+        tag = vinfo.git_tag
+        if tag is not None:
+            tag += dirty
+        commit = vinfo.git_commit
+        if commit is not None:
+            if len(commit) > 7:
+                commit = commit[:8]
+            commit += dirty
         return AWSLimitCheckerVersion(
-            vinfo['version'],
-            vinfo['url'],
-            tag=vinfo['tag'],
-            commit=vinfo['commit'],
+            vinfo.version,
+            vinfo.url,
+            tag=tag,
+            commit=commit
         )
     except Exception:
         logger.exception("Error checking installed version; this installation "

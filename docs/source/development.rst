@@ -38,8 +38,6 @@ Pull Request Guidelines
 * If you have difficulty writing tests for the code, feel free to ask for help or
   submit the PR without tests. This will increase the amount of time it takes to
   get merged, but I'd rather write tests for your code than write all the code myself.
-* If you make changes to the ``versioncheck`` code, be sure to locally run the
-  ``-versioncheck`` tox tests.
 * You've rebuilt the documentation using ``tox -e docs``
 
 .. _development.installing:
@@ -300,8 +298,7 @@ Release Checklist
 3. Run ``dev/terraform.py`` in the awslimitchecker source directory to update the
    integration test user's IAM policy with what is actually being reported by the
    current code.
-4. Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``,
-   manually run ALL of the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
+4. Ensure that Travis tests are passing in all environments.
 5. Ensure that test coverage is no less than the last release (ideally, 100%).
 6. Build docs for the branch (locally) and ensure they look correct. Commit any changes.
 7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst.
@@ -345,7 +342,7 @@ Issue content:
     * [ ] Cut a branch off ``develop`` for this issue.
     * [ ] Build docs locally (``tox -e localdocs``) and ensure they're current; commit any changes.
     * [ ] Run ``dev/terraform.py`` in the awslimitchecker source directory to update the integration test user's IAM policy with what is actually being reported by the current code.
-    * [ ] Ensure that Travis tests are passing in all environments. If there were any changes to ``awslimitchecker/versioncheck.py`` or ``awslimitchecker/tests/test_versioncheck.py``, manually run ALL of the ``-versioncheck`` tox environments (these are problematic in Travis and with PRs).
+    * [ ] Ensure that Travis tests are passing in all environments.
     * [ ] Ensure that test coverage is no less than the last release (ideally, 100%).
     * [ ] Build docs for the branch (locally) and ensure they look correct. Commit any changes.
     * [ ] Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned. Mention the issue in the commit for this, and push to GitHub.
