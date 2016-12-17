@@ -39,10 +39,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import awslimitchecker.version as version
 from awslimitchecker.version import AWSLimitCheckerVersion
-from versionfinder.versioninfo import VersionInfo
 
 import re
 import sys
+
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
 if (
@@ -53,6 +53,10 @@ if (
 else:
     from unittest.mock import patch, call
 
+# GitPython doesn't work at all on py32
+if sys.version_info[0:2] != (3, 2):
+    from versionfinder.versioninfo import VersionInfo
+
 
 class TestVersion(object):
 
@@ -60,6 +64,8 @@ class TestVersion(object):
         expected = 'https://github.com/jantman/awslimitchecker'
         assert version._PROJECT_URL == expected
 
+    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
+                        reason='versionfinder doesnt work on py32')
     def test__get_version_info(self):
         with patch('awslimitchecker.version.find_version') as mock_ver:
             mock_ver.return_value = VersionInfo(
