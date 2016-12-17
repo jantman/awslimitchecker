@@ -104,8 +104,7 @@ class TestVersion(object):
                         reason='py32 versionfinder test')
     def test__get_version_info_py32(self):
         with patch('awslimitchecker.version.logger') as mock_logger:
-            with pytest.raises(NameError):
-                version._get_version_info()
+            version._get_version_info()
         assert mock_logger.mock_calls == [
             call.exception('Error checking installed version; this installation'
                            ' may not be in compliance with the AGPLv3 license:')
