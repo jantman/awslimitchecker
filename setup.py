@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from setuptools import setup, find_packages
-from sys import version_info
 from awslimitchecker.version import _VERSION, _PROJECT_URL
 
 with open('README.rst') as file:
@@ -48,6 +47,7 @@ requires = [
     'boto3>=1.2.3',
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.2',
+    'versionfinder==0.1.0'
 ]
 
 classifiers = [

@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import awslimitchecker.version as version
 from awslimitchecker.version import AWSLimitCheckerVersion
-from awslimitchecker.versioncheck import AGPLVersionChecker
+from versionfinder.versioninfo import VersionInfo
 
 import re
 import sys
@@ -61,40 +61,31 @@ class TestVersion(object):
         assert version._PROJECT_URL == expected
 
     def test__get_version_info(self):
-        with patch('awslimitchecker.version.AGPLVersionChecker',
-                   spec_set=AGPLVersionChecker) as mock_checker:
-            mock_checker.return_value.find_package_version.return_value = {
-                'version': version._VERSION,
-                'url': version._PROJECT_URL,
-                'tag': 'foobar',
-                'commit': None,
-            }
+        with patch('awslimitchecker.version.find_version') as mock_ver:
+            mock_ver.return_value = VersionInfo(
+                pip_url=version._PROJECT_URL,
+                pip_version=version._VERSION,
+                git_tag='foobar'
+            )
             v = version._get_version_info()
         assert v.release == version._VERSION
         assert v.url == version._PROJECT_URL
         assert v.tag == 'foobar'
-        assert mock_checker.mock_calls == [
-            call(),
-            call().find_package_version(),
-        ]
+        assert mock_ver.mock_calls == [call('awslimitchecker')]
 
     def test__get_version_info_fallback(self):
         def se(foo):
             raise Exception("foo")
 
-        with patch('awslimitchecker.version.AGPLVersionChecker',
-                   spec_set=AGPLVersionChecker) as mock_checker:
+        with patch('awslimitchecker.version.find_version') as mock_ver:
+            mock_ver.side_effect = se
             with patch('awslimitchecker.version.logger') as mock_logger:
-                mock_checker.return_value.find_package_version.side_effect = se
                 v = version._get_version_info()
         assert v.release == version._VERSION
         assert v.url == version._PROJECT_URL
         assert v.tag is None
         assert v.commit is None
-        assert mock_checker.mock_calls == [
-            call(),
-            call().find_package_version(),
-        ]
+        assert mock_ver.mock_calls == [call('awslimitchecker')]
         assert mock_logger.mock_calls == [
             call.exception('Error checking installed version; this installation'
                            ' may not be in compliance with the AGPLv3 license:')
