@@ -142,6 +142,8 @@ class TestVersion(object):
                            ' may not be in compliance with the AGPLv3 license:')
         ]
 
+    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
+                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_loggers(self):
         mock_loggers = {
             'versionfinder': Mock(),
@@ -174,6 +176,8 @@ class TestVersion(object):
             call.setLevel(CRITICAL)
         ]
 
+    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
+                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_loggers_enabled(self):
         mock_loggers = {
             'versionfinder': Mock(),
