@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.7.0 (unreleased)
+------------------
+
+* `#231 <https://github.com/jantman/awslimitchecker/issues/231>`_ - add support
+  for new f1, r4 and t2.(xlarge|2xlarge) instance types, introduced in November
+  2016.
+
 0.6.0 (2016-11-12)
 ------------------
 
