@@ -80,6 +80,8 @@ class TestVersion(object):
         assert v.tag == 'foobar'
         assert mock_ver.mock_calls == [call('awslimitchecker')]
 
+    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
+                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_fallback(self):
         def se(foo):
             raise Exception("foo")
@@ -93,6 +95,17 @@ class TestVersion(object):
         assert v.tag is None
         assert v.commit is None
         assert mock_ver.mock_calls == [call('awslimitchecker')]
+        assert mock_logger.mock_calls == [
+            call.exception('Error checking installed version; this installation'
+                           ' may not be in compliance with the AGPLv3 license:')
+        ]
+
+    @pytest.mark.skipif(sys.version_info[0:2] != (3, 2),
+                        reason='py32 versionfinder test')
+    def test__get_version_info_py32(self):
+        with patch('awslimitchecker.version.logger') as mock_logger:
+            with pytest.raises(ImportError):
+                version._get_version_info()
         assert mock_logger.mock_calls == [
             call.exception('Error checking installed version; this installation'
                            ' may not be in compliance with the AGPLv3 license:')
