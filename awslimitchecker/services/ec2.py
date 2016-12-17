@@ -575,6 +575,8 @@ class _Ec2Service(_AwsService):
             't2.small',
             't2.medium',
             't2.large',
+            't2.xlarge',
+            't2.2xlarge',
             'm3.medium',
             'm3.large',
             'm3.xlarge',
@@ -601,6 +603,12 @@ class _Ec2Service(_AwsService):
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r4.2xlarge',
+            'r4.4xlarge',
+            'r4.8xlarge',
+            'r4.16xlarge',
             'x1.16xlarge',
             'x1.32xlarge'
         ]
@@ -665,6 +673,14 @@ class _Ec2Service(_AwsService):
             'cg1.4xlarge',
         ]
 
+        FPGA_TYPES = [
+            # note, as of 2016-12-17, these are still in Developer Preview;
+            # there isn't a published instance limit yet, so we'll assume
+            # it's the default...
+            'f1.2xlarge',
+            'f1.16xlarge'
+        ]
+
         return (
             GENERAL_TYPES +
             PREV_GENERAL_TYPES +
@@ -677,5 +693,6 @@ class _Ec2Service(_AwsService):
             PREV_STORAGE_TYPES +
             DENSE_STORAGE_TYPES +
             GPU_TYPES +
-            PREV_GPU_TYPES
+            PREV_GPU_TYPES +
+            FPGA_TYPES
         )
