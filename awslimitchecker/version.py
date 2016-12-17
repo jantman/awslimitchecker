@@ -129,7 +129,7 @@ def _get_version_info():
         commit = vinfo.git_commit
         if commit is not None:
             if len(commit) > 7:
-                commit = commit[:7]
+                commit = commit[:8]
             commit += dirty
         return AWSLimitCheckerVersion(
             vinfo.version,

@@ -43,6 +43,7 @@ from awslimitchecker.version import AWSLimitCheckerVersion
 import re
 import sys
 import pytest
+from logging import CRITICAL
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -50,9 +51,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call
+    from mock import patch, call, Mock
 else:
-    from unittest.mock import patch, call
+    from unittest.mock import patch, call, Mock
 
 # GitPython doesn't work at all on py32
 if sys.version_info[0:2] != (3, 2):
@@ -78,6 +79,37 @@ class TestVersion(object):
         assert v.release == version._VERSION
         assert v.url == version._PROJECT_URL
         assert v.tag == 'foobar'
+        assert mock_ver.mock_calls == [call('awslimitchecker')]
+
+    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
+                        reason='versionfinder doesnt work on py32')
+    def test__get_version_info_dirty_commit(self):
+        with patch('awslimitchecker.version.find_version') as mock_ver:
+            mock_ver.return_value = VersionInfo(
+                pip_url=version._PROJECT_URL,
+                pip_version=version._VERSION,
+                git_commit='1234567',
+                git_is_dirty=True
+            )
+            v = version._get_version_info()
+        assert v.release == version._VERSION
+        assert v.url == version._PROJECT_URL
+        assert v.commit == '1234567*'
+        assert mock_ver.mock_calls == [call('awslimitchecker')]
+
+    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
+                        reason='versionfinder doesnt work on py32')
+    def test__get_version_info_long_commit(self):
+        with patch('awslimitchecker.version.find_version') as mock_ver:
+            mock_ver.return_value = VersionInfo(
+                pip_url=version._PROJECT_URL,
+                pip_version=version._VERSION,
+                git_commit='12345678abcdef'
+            )
+            v = version._get_version_info()
+        assert v.release == version._VERSION
+        assert v.url == version._PROJECT_URL
+        assert v.commit == '12345678'
         assert mock_ver.mock_calls == [call('awslimitchecker')]
 
     @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
@@ -109,6 +141,61 @@ class TestVersion(object):
             call.exception('Error checking installed version; this installation'
                            ' may not be in compliance with the AGPLv3 license:')
         ]
+
+    def test__get_version_info_loggers(self):
+        mock_loggers = {
+            'versionfinder': Mock(),
+            'pip': Mock(),
+            'git': Mock()
+        }
+
+        def se_getLogger(lname):
+            return mock_loggers[lname]
+
+        with patch('awslimitchecker.version.logging.getLogger') as mock_logger:
+            mock_logger.side_effect = se_getLogger
+            with patch.dict(
+                'awslimitchecker.version.os.environ', {}, clear=True
+            ):
+                with patch('awslimitchecker.version.find_version'):
+                    version._get_version_info()
+        assert mock_logger.mock_calls == [
+            call('versionfinder'),
+            call('pip'),
+            call('git')
+        ]
+        assert mock_loggers['versionfinder'].mock_calls == [
+            call.setLevel(CRITICAL)
+        ]
+        assert mock_loggers['pip'].mock_calls == [
+            call.setLevel(CRITICAL)
+        ]
+        assert mock_loggers['git'].mock_calls == [
+            call.setLevel(CRITICAL)
+        ]
+
+    def test__get_version_info_loggers_enabled(self):
+        mock_loggers = {
+            'versionfinder': Mock(),
+            'pip': Mock(),
+            'git': Mock()
+        }
+
+        def se_getLogger(lname):
+            return mock_loggers[lname]
+
+        with patch('awslimitchecker.version.logging.getLogger') as mock_logger:
+            mock_logger.side_effect = se_getLogger
+            with patch.dict(
+                'awslimitchecker.version.os.environ',
+                {'VERSIONCHECK_DEBUG': 'true'}, clear=True
+            ):
+                with patch('awslimitchecker.version.find_version'):
+                    version._get_version_info()
+        assert mock_logger.mock_calls == []
+        assert mock_loggers['versionfinder'].mock_calls == []
+        assert mock_loggers['pip'].mock_calls == []
+        assert mock_loggers['git'].mock_calls == []
 
     def test_is_semver(self):
         # see:
