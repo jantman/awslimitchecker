@@ -4,6 +4,9 @@ Changelog
 0.7.0 (unreleased)
 ------------------
 
+This release deprecates support for Python 3.2. It will be removed in the
+next release.
+
 * `#231 <https://github.com/jantman/awslimitchecker/issues/231>`_ - add support
   for new f1, r4 and t2.(xlarge|2xlarge) instance types, introduced in November
   2016.
@@ -12,6 +15,9 @@ Changelog
 * `#233 <https://github.com/jantman/awslimitchecker/issues/233>`_ - refactor
   tests to replace yield-based tests with parametrize, as yield-based tests are
   deprecated and will be removed in pytest 4.
+* `#235 <https://github.com/jantman/awslimitchecker/issues/235>`_ - Deprecate
+  Python 3.2 support. There don't appear to have been any downloads on py32
+  in the last 6 months, and the effort to support it is too high.
 
 0.6.0 (2016-11-12)
 ------------------

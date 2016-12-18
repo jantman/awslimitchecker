@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+import warnings
 import argparse
 import logging
 import json
@@ -337,26 +338,68 @@ class Runner(object):
 
         if args.list_services:
             self.list_services()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.list_defaults:
             self.list_defaults()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.list_limits:
             self.list_limits()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.iam_policy:
             self.iam_policy()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.show_usage:
             self.show_usage()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         # else check
         res = self.check_thresholds()
+        if sys.version_info[0:2] == (3, 2):
+            warnings.warn("Python 3.2 support will be removed in the "
+                          "next release; see https://github.com/jantman/"
+                          "awslimitchecker/issues/236", DeprecationWarning)
+            logger.warning("Python 3.2 support will be removed in the "
+                           "next release; see https://github.com/jantman/"
+                           "awslimitchecker/issues/236")
         raise SystemExit(res)
 
 
