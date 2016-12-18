@@ -127,7 +127,8 @@ class TestAwsLimitChecker(object):
         assert self.cls.ta == self.mock_ta
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
-        assert self.mock_logger.mock_calls == []
+        if sys.version_info[0:2] != (3, 2):
+            assert self.mock_logger.mock_calls == []
 
     def test_init_AGPL_message(self, capsys):
         # get rid of the class
