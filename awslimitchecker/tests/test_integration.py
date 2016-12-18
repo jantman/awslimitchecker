@@ -48,7 +48,6 @@ import onetimepass as otp
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
-from awslimitchecker.services import _services
 from awslimitchecker.connectable import Connectable
 from awslimitchecker.tests.support import LogRecordHelper
 
@@ -91,7 +90,7 @@ class TestIntegration(object):
     @pytest.mark.integration
     @skip_if_pr
     def test_verify_limits(self, checker_args, creds_type, service_name, use_ta,
-                      expect_api_source, allow_endpoint_error):
+                           expect_api_source, allow_endpoint_error):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-l``. This replicates some of the internal
@@ -184,8 +183,8 @@ class TestIntegration(object):
 
     @pytest.mark.integration
     @skip_if_pr
-    def test_verify_usage(self, checker_args, creds_type, service_name, expect_usage,
-                     allow_endpoint_error):
+    def test_verify_usage(self, checker_args, creds_type, service_name,
+                          expect_usage, allow_endpoint_error):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-u``. This replicates some of the internal

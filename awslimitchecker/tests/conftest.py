@@ -131,7 +131,7 @@ def pytest_configure(config):
 
 def pytest_generate_tests(metafunc):
     if (
-        metafunc.cls.__name__ == 'TestIntegration' and
+        metafunc.cls.__name__ == 'Test_AwsServiceSubclasses' and
         metafunc.function.__name__ == 'test_subclass_init'
     ):
         param_for_service_base_subclass_init(metafunc)
@@ -347,9 +347,6 @@ def param_for_integration_test_verify_limits(metafunc):
         'sts_mfa_external_id'
     ]
     for sname in _services:
-        eu = False
-        if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS', 'IAM']:
-            eu = True
         argvals.append([
             {'region': REGION},
             'normal',
