@@ -51,6 +51,7 @@ import re
 
 from _pytest.terminal import TerminalReporter
 import pytest
+from awslimitchecker.services import _services
 
 
 class OutputSanitizer(object):
@@ -87,6 +88,10 @@ class OutputSanitizer(object):
         line = self.sanitize_line(s)
         self._tw.line(line, **kw)
 
+    def write(self, s, **kw):
+        line = self.sanitize_line(s)
+        self._tw.write(line, **kw)
+
     def sanitize_line(self, line):
         for repl_set in self.replace:
             line = line.replace(repl_set[0], repl_set[1])
@@ -121,3 +126,24 @@ def pytest_configure(config):
     wholenodeid_reporter = WholeNodeIDTerminalReporter(config, sys.stdout)
     config.pluginmanager.unregister(standard_reporter)
     config.pluginmanager.register(wholenodeid_reporter, 'terminalreporter')
+
+
+def pytest_generate_tests(metafunc):
+    if (
+        metafunc.cls.__name__ == 'Test_AwsServiceSubclasses' and
+        metafunc.function.__name__ == 'test_subclass_init'
+    ):
+        param_for_service_base_subclass_init(metafunc)
+
+
+def param_for_service_base_subclass_init(metafunc):
+    classnames = []
+    classes = []
+    for clsname in sorted(_services.keys()):
+        classnames.append(clsname)
+        classes.append([_services[clsname]])
+    metafunc.parametrize(
+        ['cls'],
+        classes,
+        ids=classnames
+    )
