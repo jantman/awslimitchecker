@@ -9,6 +9,9 @@ Changelog
   2016.
 * `#230 <https://github.com/jantman/awslimitchecker/issues/230>`_ - replace the
   built-in ``versioncheck.py`` with `versionfinder <http://versionfinder.readthedocs.io/en/latest/>`_. Remove all of the many versioncheck tests.
+* `#233 <https://github.com/jantman/awslimitchecker/issues/233>`_ - refactor
+  tests to replace yield-based tests with parametrize, as yield-based tests are
+  deprecated and will be removed in pytest 4.
 
 0.6.0 (2016-11-12)
 ------------------
