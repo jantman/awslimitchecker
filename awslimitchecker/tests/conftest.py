@@ -52,6 +52,7 @@ import re
 from _pytest.terminal import TerminalReporter
 import pytest
 from awslimitchecker.services import _services
+from awslimitchecker.tests.test_integration import REGION
 
 
 class OutputSanitizer(object):
@@ -130,10 +131,20 @@ def pytest_configure(config):
 
 def pytest_generate_tests(metafunc):
     if (
-        metafunc.cls.__name__ == 'Test_AwsServiceSubclasses' and
+        metafunc.cls.__name__ == 'TestIntegration' and
         metafunc.function.__name__ == 'test_subclass_init'
     ):
         param_for_service_base_subclass_init(metafunc)
+    if (
+        metafunc.cls.__name__ == 'TestIntegration' and
+        metafunc.function.__name__ == 'test_verify_limits'
+    ):
+        param_for_integration_test_verify_limits(metafunc)
+    if (
+        metafunc.cls.__name__ == 'TestIntegration' and
+        metafunc.function.__name__ == 'test_verify_usage'
+    ):
+        param_for_integration_test_verify_usage(metafunc)
 
 
 def param_for_service_base_subclass_init(metafunc):
@@ -146,4 +157,210 @@ def param_for_service_base_subclass_init(metafunc):
         ['cls'],
         classes,
         ids=classnames
+    )
+
+
+def param_for_integration_test_verify_usage(metafunc):
+    argnames = [
+        'checker_args',
+        'creds_type',
+        'service_name',
+        'expect_usage',
+        'allow_endpoint_error'
+    ]
+    argvals = [
+        [
+            {'region': REGION},
+            'normal',
+            None,
+            True,
+            False
+        ],
+        [
+            {'region': 'sa-east-1'},
+            'normal',
+            None,
+            False,
+            True
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts',
+                'region': REGION,
+            },
+            'sts',
+            'VPC',
+            True,
+            False
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts',
+                'region': REGION,
+                'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
+            },
+            'sts',
+            'VPC',
+            True,
+            False
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts-mfa',
+                'region': REGION,
+                'mfa_token': 'foo'  # will be replaced in the method
+            },
+            'sts_mfa',
+            'VPC',
+            True,
+            False
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts-mfa-extid',
+                'region': REGION,
+                'external_id': os.environ.get('AWS_MFA_EXTERNAL_ID', None),
+                'mfa_token': 'foo'  # will be replaced in the method
+            },
+            'sts_mfa',
+            'VPC',
+            True,
+            False
+        ]
+    ]
+    testnames = [
+        'default_creds_all_services',
+        'other_region_all_services',
+        'sts',
+        'sts_external_id',
+        'sts_mfa',
+        'sts_mfa_external_id'
+    ]
+    for sname in _services:
+        eu = False
+        if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS', 'IAM']:
+            eu = True
+        argvals.append([
+            {'region': REGION},
+            'normal',
+            sname,
+            eu,
+            False
+        ])
+        testnames.append('default_creds_each_service-%s' % sname)
+    metafunc.parametrize(
+        argnames,
+        argvals,
+        ids=testnames
+    )
+
+
+def param_for_integration_test_verify_limits(metafunc):
+    argnames = [
+        'checker_args',
+        'creds_type',
+        'service_name',
+        'use_ta',
+        'expect_api_source',
+        'allow_endpoint_error'
+    ]
+    argvals = [
+        [
+            {'region': REGION},
+            'normal',
+            None,
+            True,
+            True,
+            False
+        ],
+        [
+            {'region': 'sa-east-1'},
+            'normal',
+            None,
+            True,
+            True,
+            True
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts',
+                'region': REGION,
+            },
+            'sts',
+            'VPC',
+            True,
+            False,
+            False
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts',
+                'region': REGION,
+                'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
+            },
+            'sts',
+            'VPC',
+            True,
+            False,
+            False
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts-mfa',
+                'region': REGION,
+                'mfa_token': 'foo'  # will be replaced in the method
+            },
+            'sts_mfa',
+            'VPC',
+            True,
+            False,
+            False
+        ],
+        [
+            {
+                'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
+                'account_role': 'alc-integration-sts-mfa-extid',
+                'region': REGION,
+                'external_id': os.environ.get('AWS_MFA_EXTERNAL_ID', None),
+                'mfa_token': 'foo'  # will be replaced in the method
+            },
+            'sts_mfa',
+            'VPC',
+            True,
+            False,
+            False
+        ]
+    ]
+    testnames = [
+        'default_creds_all_services',
+        'other_region_all_services',
+        'sts',
+        'sts_external_id',
+        'sts_mfa',
+        'sts_mfa_external_id'
+    ]
+    for sname in _services:
+        eu = False
+        if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS', 'IAM']:
+            eu = True
+        argvals.append([
+            {'region': REGION},
+            'normal',
+            sname,
+            True,
+            False,
+            False
+        ])
+        testnames.append('default_creds_each_service-%s' % sname)
+    metafunc.parametrize(
+        argnames,
+        argvals,
+        ids=testnames
     )
