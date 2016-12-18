@@ -107,6 +107,8 @@ Requirements
 Installation
 ------------
 
+See :ref:`getting_started`.
+
 It's recommended that you install into a virtual environment (virtualenv /
 venv). See the `virtualenv usage documentation <http://www.virtualenv.org/en/latest/>`_
 for information on how to create a venv. If you really want to install
