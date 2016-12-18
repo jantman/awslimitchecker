@@ -48,7 +48,6 @@ import onetimepass as otp
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
-from awslimitchecker.services import _services
 from awslimitchecker.connectable import Connectable
 from awslimitchecker.tests.support import LogRecordHelper
 
@@ -90,8 +89,8 @@ class TestIntegration(object):
 
     @pytest.mark.integration
     @skip_if_pr
-    def verify_limits(self, checker_args, creds, service_name, use_ta,
-                      expect_api_source, allow_endpoint_error):
+    def test_verify_limits(self, checker_args, creds_type, service_name, use_ta,
+                           expect_api_source, allow_endpoint_error):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-l``. This replicates some of the internal
@@ -110,8 +109,9 @@ class TestIntegration(object):
         :param checker_args: dict of kwargs to pass to
           :py:class:`awslimitchecker.checker.Checker` constructor
         :type checker_args: dict
-        :param creds: AWS access key ID and secret key
-        :type creds: tuple
+        :param creds_type: Type of credentials to use; 'normal', 'sts', or
+          'sts_mfa'
+        :type creds_type: str
         :param service_name: the Service name to test limits for; if None,
             check for all.
         :type service_name: str
@@ -129,6 +129,15 @@ class TestIntegration(object):
         # destroy boto3's session, so it creates a new one
         boto3.DEFAULT_SESSION = None
         # set the env vars to the creds we want
+        if creds_type == 'normal':
+            creds = self.normal_creds()
+        elif creds_type == 'sts':
+            creds = self.sts_creds()
+        elif creds_type == 'sts_mfa':
+            creds = self.sts_mfa_creds()
+            checker_args['mfa_serial_number'] = creds[2]
+        else:
+            raise RuntimeError("unknown creds type: '%s'" % creds_type)
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
@@ -174,8 +183,8 @@ class TestIntegration(object):
 
     @pytest.mark.integration
     @skip_if_pr
-    def verify_usage(self, checker_args, creds, service_name, expect_usage,
-                     allow_endpoint_error):
+    def test_verify_usage(self, checker_args, creds_type, service_name,
+                          expect_usage, allow_endpoint_error):
         """
         This essentially replicates what's done when awslimitchecker is called
         from the command line with ``-u``. This replicates some of the internal
@@ -194,8 +203,9 @@ class TestIntegration(object):
         :param checker_args: dict of kwargs to pass to
           :py:class:`awslimitchecker.checker.Checker` constructor
         :type checker_args: dict
-        :param creds: AWS access key ID and secret key
-        :type creds: tuple
+        :param creds_type: Type of credentials to use; 'normal', 'sts', or
+          'sts_mfa'
+        :type creds_type: str
         :param service_name: the Service name to test usage for; if None,
             check for all.
         :type service_name: str
@@ -210,6 +220,15 @@ class TestIntegration(object):
         # destroy boto3's session, so it creates a new one
         boto3.DEFAULT_SESSION = None
         # set the env vars to the creds we want
+        if creds_type == 'normal':
+            creds = self.normal_creds()
+        elif creds_type == 'sts':
+            creds = self.sts_creds()
+        elif creds_type == 'sts_mfa':
+            creds = self.sts_mfa_creds()
+            checker_args['mfa_serial_number'] = creds[2]
+        else:
+            raise RuntimeError("unknown creds type: '%s'" % creds_type)
         os.environ['AWS_ACCESS_KEY_ID'] = creds[0]
         os.environ['AWS_SECRET_ACCESS_KEY'] = creds[1]
 
@@ -247,117 +266,6 @@ class TestIntegration(object):
         )
         assert len(records) == 0, "awslimitchecker emitted unexpected log " \
             "messages at WARN or higher: \n%s" % "\n".join(records)
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_default_creds_all_services(self):
-        """Test running alc with all services enabled"""
-        creds = self.normal_creds()
-        checker_args = {'region': REGION}
-        yield "limits", self.verify_limits, checker_args, \
-              creds, None, True, True, False
-        yield "usage", self.verify_usage, checker_args, creds, None, True, False
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_other_region_all_services(self):
-        """Test running alc with all services enabled in sa-east-1"""
-        creds = self.normal_creds()
-        checker_args = {'region': 'sa-east-1'}
-        yield "limits", self.verify_limits, checker_args, \
-              creds, None, True, True, True
-        yield "usage", self.verify_usage, checker_args, creds, None, False, True
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_default_creds_each_service(self):
-        """test running one service at a time for all services"""
-        creds = self.normal_creds()
-        checker_args = {'region': REGION}
-        for sname in _services:
-            eu = False
-            if sname in ['VPC', 'EC2', 'ElastiCache', 'EBS', 'IAM']:
-                eu = True
-            yield "%s limits" % sname, self.verify_limits, checker_args, \
-                  creds, sname, True, False, False
-            yield "%s usage" % sname, self.verify_usage, checker_args, \
-                  creds, sname, eu, False
-
-    ###########################################################################
-    # STS tests
-    # Since connection logic is shared by all service classes and
-    # TrustedAdvisor, just running a single service should suffice to test for
-    # STS functionality.
-    # As of 0.3.0, VPC seems to be the fastest service to query, so we'll use
-    # that. In reality, all we care about in these further (STS) tests are that
-    # we can connect and auth.
-    ###########################################################################
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_sts(self):
-        """test normal STS role"""
-        creds = self.sts_creds()
-        checker_args = {
-            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            'account_role': 'alc-integration-sts',
-            'region': REGION,
-        }
-        yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
-            True, False
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_sts_external_id(self):
-        """test STS role with external ID"""
-        creds = self.sts_creds()
-        checker_args = {
-            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            'account_role': 'alc-integration-sts',
-            'region': REGION,
-            'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
-        }
-        yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
-            True, False
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_sts_mfa(self):
-        """test STS role with MFA"""
-        creds = self.sts_mfa_creds()
-        checker_args = {
-            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            'account_role': 'alc-integration-sts-mfa',
-            'region': REGION,
-            'mfa_serial_number': creds[2],
-            'mfa_token': 'foo'  # will be replaced in the method
-        }
-        yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
-            True, False
-
-    @pytest.mark.integration
-    @skip_if_pr
-    def test_sts_mfa_external_id(self):
-        """test STS role with MFA"""
-        creds = self.sts_mfa_creds()
-        checker_args = {
-            'account_id': os.environ.get('AWS_MASTER_ACCOUNT_ID', None),
-            'account_role': 'alc-integration-sts-mfa-extid',
-            'region': REGION,
-            'external_id': os.environ.get('AWS_MFA_EXTERNAL_ID', None),
-            'mfa_serial_number': creds[2],
-            'mfa_token': 'foo'  # will be replaced in the method
-        }
-        yield "VPC limits", self.verify_limits, checker_args, creds, \
-              'VPC', True, False, False
-        yield "VPC usage", self.verify_usage, checker_args, creds, 'VPC', \
-            True, False
 
     def normal_creds(self):
         return (

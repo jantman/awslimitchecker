@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.services.base import _AwsService
-from awslimitchecker.services import _services
 from awslimitchecker.limit import AwsLimit
 import pytest
 import sys
@@ -289,7 +288,7 @@ class Test_AwsService(object):
 
 class Test_AwsServiceSubclasses(object):
 
-    def verify_subclass(self, clsname, cls):
+    def test_subclass_init(self, cls):
         # ensure we set limits in the constructor
         mock_limits = Mock()
         mock_get_limits = Mock()
@@ -315,8 +314,3 @@ class Test_AwsServiceSubclasses(object):
         assert sts_inst.account_id == '123'
         assert sts_inst.account_role == 'myrole'
         assert sts_inst.region == 'myregion'
-
-    def test_subclass_init(self):
-        for clsname, cls in _services.items():
-            yield "verify_subclass %s" % clsname, \
-                self.verify_subclass, clsname, cls
