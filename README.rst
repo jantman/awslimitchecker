@@ -1,5 +1,5 @@
 awslimitchecker
-========================
+===============
 
 .. image:: https://img.shields.io/pypi/v/awslimitchecker.svg
    :target: https://pypi.python.org/pypi/awslimitchecker

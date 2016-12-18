@@ -2,7 +2,7 @@
    :description: A script and python module to check your AWS service limits and usage, and warn when usage approaches limits.
 
 awslimitchecker
-================
+===============
 
 .. image:: https://img.shields.io/pypi/v/awslimitchecker.svg
    :target: https://pypi.python.org/pypi/awslimitchecker
@@ -72,6 +72,8 @@ can help this, but even the version that comes with Business and Enterprise supp
 and only alerts *weekly*. awslimitchecker provides a command line script and reusable package that queries your current
 usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, API-based limits where available, or data from Trusted
 Advisor where available), notifying you when you are approaching or at your limits.
+
+Full project documentation is available at `http://awslimitchecker.readthedocs.org <http://awslimitchecker.readthedocs.org>`_.
 
 Status
 ------
