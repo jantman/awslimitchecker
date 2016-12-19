@@ -120,7 +120,8 @@ class TestAwsLimitChecker(object):
         assert self.mock_ta_constr.mock_calls == [
             call(services, account_id=None, account_role=None, region=None,
                  external_id=None, mfa_serial_number=None, mfa_token=None,
-                 profile_name=None)
+                 profile_name=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None)
         ]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == []
@@ -187,7 +188,8 @@ class TestAwsLimitChecker(object):
         assert mock_ta_constr.mock_calls == [
             call(services, account_id=None, account_role=None, region=None,
                  external_id=None, mfa_serial_number=None, mfa_token=None,
-                 profile_name=None)
+                 profile_name=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None)
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
@@ -234,7 +236,8 @@ class TestAwsLimitChecker(object):
         assert mock_ta_constr.mock_calls == [
             call(services, profile_name='foo', account_id=None,
                  account_role=None, region='myregion', external_id=None,
-                 mfa_serial_number=None, mfa_token=None)
+                 mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None)
         ]
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
@@ -292,7 +295,9 @@ class TestAwsLimitChecker(object):
                 external_id=None,
                 mfa_serial_number=None,
                 mfa_token=None,
-                profile_name=None
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
             )
         ]
         assert mock_svc1.mock_calls == []
@@ -300,7 +305,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
 
-    def test_init_sts_external_id(self):
+    def test_init_sts_external_id_ta_refresh(self):
         mock_svc1 = Mock(spec_set=_AwsService)
         mock_svc2 = Mock(spec_set=_AwsService)
         mock_foo = Mock(spec_set=_AwsService)
@@ -328,7 +333,9 @@ class TestAwsLimitChecker(object):
                     region='myregion',
                     external_id='myextid',
                     mfa_serial_number=None,
-                    mfa_token=None
+                    mfa_token=None,
+                    ta_refresh_mode=123,
+                    ta_refresh_timeout=456
                 )
         # dict should be of _AwsService instances
         services = {
@@ -354,7 +361,9 @@ class TestAwsLimitChecker(object):
                 external_id='myextid',
                 mfa_serial_number=None,
                 mfa_token=None,
-                profile_name=None
+                profile_name=None,
+                ta_refresh_mode=123,
+                ta_refresh_timeout=456
             )
         ]
         assert mock_svc1.mock_calls == []

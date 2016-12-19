@@ -168,6 +168,8 @@ class AwsLimitChecker(object):
             external_id=external_id,
             mfa_serial_number=mfa_serial_number,
             mfa_token=mfa_token,
+            ta_refresh_mode=ta_refresh_mode,
+            ta_refresh_timeout=ta_refresh_timeout
         )
 
     def get_version(self):
