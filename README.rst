@@ -70,7 +70,7 @@ and only alerts *weekly*. awslimitchecker provides a command line script and reu
 usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, API-based limits where available, or data from Trusted
 Advisor where available), notifying you when you are approaching or at your limits.
 
-Full project documentation is available at `http://awslimitchecker.readthedocs.org <http://awslimitchecker.readthedocs.org>`_.
+Full project documentation for the latest release is available at `http://awslimitchecker.readthedocs.io/en/latest/ <http://awslimitchecker.readthedocs.io/en/latest/>`_.
 
 Status
 ------
@@ -106,8 +106,6 @@ Requirements
 
 Installation
 ------------
-
-See :ref:`getting_started`.
 
 It's recommended that you install into a virtual environment (virtualenv /
 venv). See the `virtualenv usage documentation <http://www.virtualenv.org/en/latest/>`_
