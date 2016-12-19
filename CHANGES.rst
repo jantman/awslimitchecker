@@ -7,6 +7,11 @@ Changelog
 This release deprecates support for Python 3.2. It will be removed in the
 next release.
 
+This release introduces support for automatically refreshing Trusted Advisor
+checks on accounts that support this. If you use this new feature,
+awslimitchecker will require a new permission, ``trustedadvisor:RefreshCheck``.
+See `link <broken link>`_ for further information.
+
 * `#231 <https://github.com/jantman/awslimitchecker/issues/231>`_ - add support
   for new f1, r4 and t2.(xlarge|2xlarge) instance types, introduced in November
   2016.

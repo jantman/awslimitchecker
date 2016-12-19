@@ -469,6 +469,7 @@ class AwsLimitChecker(object):
         required_actions = [
             'support:*',
             'trustedadvisor:Describe*',
+            'trustedadvisor:RefreshCheck'
         ]
         for cls in self.services.values():
             required_actions.extend(cls.required_iam_permissions())

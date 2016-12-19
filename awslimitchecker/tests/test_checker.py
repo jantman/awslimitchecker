@@ -666,7 +666,8 @@ class TestAwsLimitChecker(object):
                     'foo:perm1',
                     'foo:perm2',
                     'support:*',
-                    'trustedadvisor:Describe*'
+                    'trustedadvisor:Describe*',
+                    'trustedadvisor:RefreshCheck'
                 ],
             }],
         }
