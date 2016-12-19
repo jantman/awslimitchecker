@@ -20,6 +20,8 @@ sys.path.insert(0, os.path.abspath("../.."))
 from awslimitchecker.version import _get_version_info, _VERSION
 import sphinx.environment
 from docutils.utils import get_source_line
+from docutils.nodes import GenericNodeVisitor, inline, Text, literal
+from sphinx.addnodes import pending_xref
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -313,17 +315,163 @@ linkcheck_ignore = [
     r'https?://waffle\.io.*'
 ]
 
+
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734
 def remove_module_docstring(app, what, name, obj, options, lines):
     if what == "module":
         del lines[:]
+
 
 # ignore non-local image warnings
 def _warn_node(self, msg, node, **kwargs):
     if not msg.startswith('nonlocal image URI found:'):
         self._warnfunc(msg, '%s:%s' % get_source_line(node))
 
+
 sphinx.environment.BuildEnvironment.warn_node = _warn_node
+
+
+class LinkToRefVisitor(GenericNodeVisitor):
+    """
+    To simplify documentation and reduce duplication, we want to include
+    README.rst in docs/source/index.rst, since the files are *almost* identical.
+    However, the one major difference is that index.rst uses Sphinx/rST refs for
+    crosslinks, whereas README.rst is intended to be viewed on GitHub or PyPI,
+    and uses absolute links (URLs) to the RTD docs.
+
+    The solution to this is to find all of the links (reference and target) in
+    the original doctree (for files that were originally /README.rst or
+    /CHANGES.rst) and replace them with refrerences.
+
+    See also on_doctree_read().
+    """
+
+    def __init__(self, document, replacements):
+        GenericNodeVisitor.__init__(self, document)
+        self.replacements = replacements
+        self.lastref = None
+
+    def visit_reference(self, node):
+        """
+        Hyperlinks are made up of a reference node, and a target node somewhere
+        after it (with one or more Text nodes visited in-between them. When we
+        find a reference node, just store it in an instance variable, to be used
+        when the corresponding target node is found.
+        """
+        self.lastref = node
+
+    def visit_target(self, node):
+        """
+        When we find a target node, first make sure it matches the last
+        reference node we saw. Assuming it does, see if its refuri (link URI)
+        is in our replacement list. If so, replace the link with an internal
+        reference.
+        """
+        if (
+            self.lastref.attributes['name'].lower() not in
+            node.attributes['names'] and
+            self.lastref.attributes['name'].lower() not in
+            node.attributes['dupnames']
+        ):
+            # return if target doesn't match last reference found
+            return
+        if node.attributes['refuri'] not in self.replacements:
+            # return if the refuri isn't in our replacement mapping
+            return
+        # ok, we have a node to replace...
+        params = self.replacements[node.attributes['refuri']]
+        meth = params[0]
+        args = params[1:]
+        # remove the target itself; we'll just replace the reference
+        node.parent.remove(node)
+        self.lastref.parent.replace(self.lastref, meth(*args))
+
+    def unknown_visit(self, node):
+        pass
+
+    def default_visit(self, node):
+        pass
+
+    def default_departure(self, node):
+        pass
+
+
+def label_ref_node(docname, ref_to, title):
+    """Generate a node that references a label"""
+    txt = Text(title, rawsource=title)
+    newchild = inline(
+        ':ref:`%s`' % ref_to,
+        '',
+        txt,
+        classes=['xref', 'std', 'std-ref']
+    )
+    newnode = pending_xref(
+        ':ref:`%s`' % ref_to,
+        newchild,
+        reftype='ref',
+        refwarn='True',
+        reftarget=ref_to,
+        refexplicit='False',
+        refdomain='std',
+        refdoc=docname
+    )
+    return newnode
+
+
+def meth_ref_node(docname, ref_to, title=None):
+    """Generate a node that references a :py:meth:"""
+    if title is None:
+        title = ref_to
+    txt = Text(title, rawsource=title)
+    newchild = literal(
+        ':py:meth:`%s`' % ref_to,
+        '',
+        txt,
+        classes=['xref', 'py', 'py-meth']
+    )
+    newnode = pending_xref(
+        ':py:meth:`%s`' % ref_to,
+        newchild,
+        reftype='meth',
+        refwarn='True',
+        reftarget=ref_to,
+        refexplicit='False',
+        refdomain='py',
+        refdoc=docname
+    )
+    return newnode
+
+
+def on_doctree_read(_, doctree):
+    """
+    When the doctree has been read in, and ``include`` directives have been
+    executed and replaced with the included file, walk the tree via
+    LinkToRefVisitor.
+    """
+    docname = os.path.splitext(
+        os.path.basename(doctree.attributes['source']))[0]
+    if docname == 'changes':
+        ref_mapping = {
+            'http://awslimitchecker.readthedocs.io/en/latest/limits.html#ec2':
+                [
+                    label_ref_node, docname, 'limits.ec2',
+                    'the EC2 limit documentation'
+                ],
+            'https://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.'
+            'limit.html#awslimitchecker.limit.AwsLimit.get_limit':
+                [
+                    meth_ref_node, docname,
+                    'awslimitchecker.limit.AwsLimit.get_limit'
+                ]
+        }
+        doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
+    if docname == 'index':
+        ref_mapping = {
+
+        }
+        doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
+
 
 def setup(app):
     app.connect("autodoc-process-docstring", remove_module_docstring)
+    app.connect('doctree-read', on_doctree_read)
