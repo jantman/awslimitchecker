@@ -387,24 +387,28 @@ class Test_TrustedAdvisor(object):
         }
         tmp.return_value = poll_return_val
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            mock_id.return_value = (
-                'foo',
-                [
-                    'Region',
-                    'Service',
-                    'Limit Name',
-                    'Limit Amount',
-                    'Current Usage',
-                    'Status'
-                ]
-            )
-            res = self.cls._poll()
+            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+                mock_id.return_value = (
+                    'foo',
+                    [
+                        'Region',
+                        'Service',
+                        'Limit Name',
+                        'Limit Amount',
+                        'Current Usage',
+                        'Status'
+                    ]
+                )
+                res = self.cls._poll()
         assert self.mock_conn.mock_calls == [
             call.describe_trusted_advisor_check_result(
                 checkId='foo', language='en'
             )
         ]
         assert mock_id.mock_calls == [call(self.cls)]
+        assert mock_hr.mock_calls == [
+            call(self.cls, 'foo')
+        ]
         assert res == {
             'AutoScaling': {
                 'Launch configurations': 20,
@@ -511,24 +515,28 @@ class Test_TrustedAdvisor(object):
         }
         tmp.return_value = poll_return_val
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            mock_id.return_value = (
-                'foo',
-                [
-                    'Region',
-                    'Service',
-                    'Limit Name',
-                    'Limit Amount',
-                    'Current Usage',
-                    'Status'
-                ]
-            )
-            res = self.cls._poll()
+            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+                mock_id.return_value = (
+                    'foo',
+                    [
+                        'Region',
+                        'Service',
+                        'Limit Name',
+                        'Limit Amount',
+                        'Current Usage',
+                        'Status'
+                    ]
+                )
+                res = self.cls._poll()
         assert self.mock_conn.mock_calls == [
             call.describe_trusted_advisor_check_result(
                 checkId='foo', language='en'
             )
         ]
         assert mock_id.mock_calls == [call(self.cls)]
+        assert mock_hr.mock_calls == [
+            call(self.cls, 'foo')
+        ]
         assert res == {
             'AutoScaling': {
                 'Launch configurations': 20,
@@ -609,24 +617,28 @@ class Test_TrustedAdvisor(object):
         }
         tmp.return_value = poll_return_value
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            mock_id.return_value = (
-                'foo',
-                [
-                    'Region',
-                    'Service',
-                    'Limit Name',
-                    'Limit Amount',
-                    'Current Usage',
-                    'Status'
-                ]
-            )
-            res = self.cls._poll()
+            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+                mock_id.return_value = (
+                    'foo',
+                    [
+                        'Region',
+                        'Service',
+                        'Limit Name',
+                        'Limit Amount',
+                        'Current Usage',
+                        'Status'
+                    ]
+                )
+                res = self.cls._poll()
         assert self.mock_conn.mock_calls == [
             call.describe_trusted_advisor_check_result(
                 checkId='foo', language='en'
             )
         ]
         assert mock_id.mock_calls == [call(self.cls)]
+        assert mock_hr.mock_calls == [
+            call(self.cls, 'foo')
+        ]
         assert res == {
             'AutoScaling': {
                 'Auto Scaling groups': 20,
@@ -640,14 +652,16 @@ class Test_TrustedAdvisor(object):
         self.cls.have_ta = False
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('awslimitchecker.trustedadvisor'
-                       '.logger', autospec=True) as mock_logger:
-                res = self.cls._poll()
+            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+                with patch('awslimitchecker.trustedadvisor'
+                           '.logger', autospec=True) as mock_logger:
+                    res = self.cls._poll()
         assert self.mock_conn.mock_calls == []
         assert tmp.mock_calls == []
         assert mock_id.mock_calls == [
             call(self.cls)
         ]
+        assert mock_hr.mock_calls == []
         assert mock_logger.mock_calls == [
             call.info('Beginning TrustedAdvisor poll'),
             call.info('TrustedAdvisor.have_ta is False; not polling TA')

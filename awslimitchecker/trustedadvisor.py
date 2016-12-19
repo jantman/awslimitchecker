@@ -171,6 +171,7 @@ class TrustedAdvisor(Connectable):
                             "check; not using Trusted Advisor data.")
             return
         check_id, metadata = tmp
+        self._handle_refresh(check_id)
         region = self.ta_region or self.conn._client_config.region_name
         checks = self.conn.describe_trusted_advisor_check_result(
             checkId=check_id, language='en'
@@ -242,6 +243,19 @@ class TrustedAdvisor(Connectable):
         logger.debug("Unable to find check with category 'performance' and "
                      "name 'Service Limits'.")
         return (None, None)
+
+    def _handle_refresh(self, check_id):
+        """
+        Handle refreshing a Trusted Advisor check according to
+        ``self.refresh_mode`` and ``self.refresh_timeout``.
+
+        :param check_id: the Trusted Advisor check ID
+        :type check_id: str
+        """
+        if self.refresh_mode is None:
+            logger.info("Not refreshing Trusted Advisor check (refresh mode "
+                        "is None)")
+            return
 
     def _update_services(self, ta_results):
         """
