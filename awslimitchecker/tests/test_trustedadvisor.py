@@ -88,13 +88,19 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_token is None
         assert cls.all_services == {}
         assert cls.limits_updated is False
+        assert cls.refresh_mode is None
+        assert cls.refresh_timeout is None
 
     def test_init_sts(self):
         mock_svc = Mock(spec_set=_AwsService)
         mock_svc.get_limits.return_value = {}
         cls = TrustedAdvisor(
             {'foo': mock_svc},
-            account_id='aid', account_role='role', region='r'
+            account_id='aid',
+            account_role='role',
+            region='r',
+            ta_refresh_mode=123,
+            ta_refresh_timeout=456
         )
         assert cls.conn is None
         assert cls.account_id == 'aid'
@@ -106,11 +112,14 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_token is None
         assert cls.all_services == {'foo': mock_svc}
         assert cls.limits_updated is False
+        assert cls.refresh_mode == 123
+        assert cls.refresh_timeout == 456
 
     def test_init_sts_external_id(self):
         cls = TrustedAdvisor(
             {}, account_id='aid', account_role='role', region='r',
-            external_id='myeid'
+            external_id='myeid',
+            ta_refresh_mode='wait'
         )
         assert cls.conn is None
         assert cls.account_id == 'aid'
@@ -121,6 +130,8 @@ class Test_TrustedAdvisor(object):
         assert cls.mfa_serial_number is None
         assert cls.mfa_token is None
         assert cls.limits_updated is False
+        assert cls.refresh_mode == 'wait'
+        assert cls.refresh_timeout is None
 
     def test_update_limits(self):
         mock_results = Mock()
