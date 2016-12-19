@@ -367,6 +367,8 @@ class LinkToRefVisitor(GenericNodeVisitor):
         is in our replacement list. If so, replace the link with an internal
         reference.
         """
+        if self.lastref is None:
+            return
         if (
             self.lastref.attributes['name'].lower() not in
             node.attributes['names'] and
@@ -467,7 +469,46 @@ def on_doctree_read(_, doctree):
         doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
     if docname == 'index':
         ref_mapping = {
-
+            'http://awslimitchecker.readthedocs.io/en/latest/'
+            'getting_started.html':
+                [
+                    label_ref_node, docname, 'getting_started',
+                    'Getting Started'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/'
+            'getting_started.html#credentials':
+                [
+                    label_ref_node, docname, 'getting_started.credentials',
+                    'Credentials'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/getting_help.html':
+                [
+                    label_ref_node, docname, 'getting_help',
+                    'Getting Help'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/getting_help.html'
+            '#enterprise-support-agreements-and-contract-development':
+                [
+                    label_ref_node, docname, 'getting_help.paid_support',
+                    'Enterprise Support Agreements and Contract Development'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/changes.html':
+                [
+                    label_ref_node, docname, 'changes',
+                    'Changelog'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/'
+            'development.html#agpl-license':
+                [
+                    label_ref_node, docname, 'development.agpl',
+                    'Development / AGPL'
+                ],
+            'http://awslimitchecker.readthedocs.org/en/latest/'
+            'development.html#pull-requests':
+                [
+                    label_ref_node, docname, 'development.pull_requests',
+                    'development documentation'
+                ]
         }
         doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
 

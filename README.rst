@@ -104,71 +104,29 @@ Requirements
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
-Installation
-------------
+Installation and Usage
+-----------------------
 
-It's recommended that you install into a virtual environment (virtualenv /
-venv). See the `virtualenv usage documentation <http://www.virtualenv.org/en/latest/>`_
-for information on how to create a venv. If you really want to install
-system-wide, you can (using sudo).
-
-.. code-block:: bash
-
-    pip install awslimitchecker
+See `Getting Started <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html>`_.
 
 Credentials
 -----------
 
-Aside from STS, awslimitchecker does nothing with AWS credentials, it leaves that to boto itself.
-You must either have your credentials configured in one of boto's supported config
-files, or set as environment variables. See
-`boto3 config <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_
-and
-`this project's documentation <http://awslimitchecker.readthedocs.org/en/latest/getting_started.html#credentials>`_
-for further information.
+See `Credentials <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#credentials>`_.
 
-**Please note** that version 0.3.0 of awslimitchecker moved from using ``boto`` as its AWS API client to using
-``boto3``. This change is mostly transparent, but there is a minor change in how AWS credentials are handled. In
-``boto``, if the ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environment variables were set, and the
-region was not set explicitly via awslimitchecker, the AWS region would either be taken from the ``AWS_DEFAULT_REGION``
-environment variable or would default to us-east-1, regardless of whether a configuration file (``~/.aws/credentials``
-or ``~/.aws/config``) was present. With boto3, it appears that the default region from the configuration file will be
-used if present, regardless of whether the credentials come from that file or from environment variables.
+Getting Help and Asking Questions
+----------------------------------
 
-When using STS, you will need to specify the ``-r`` / ``--region`` option as well as the ``-A`` / ``--sts-account-id``
-and ``-R`` / ``--sts-account-role`` options to specify the Account ID that you want to assume a role in, and the
-name of the role you want to assume. If an external ID is required, you can specify it with ``-E`` / ``--external-id``.
-
-Usage
------
-
-For basic usage, see:
-
-.. code-block:: bash
-
-    awslimitchecker --help
-
-See the `project documentation <http://awslimitchecker.readthedocs.org>`_
-for further information.
-
-Bugs, Feature Requests, Support
--------------------------------
-
-Questions, comments, Bug reports and feature requests are happily accepted via
-the `GitHub Issue Tracker <https://github.com/jantman/awslimitchecker/issues>`_.
-Pull requests are always welcome.
-
-Please see the `Development <http://awslimitchecker.readthedocs.org/en/latest/development.html>`_
-and `Getting Help <http://awslimitchecker.readthedocs.org/en/latest/getting_help.html>`_ documentation for more information.
+See `Getting Help <http://awslimitchecker.readthedocs.io/en/latest/getting_help.html>`_.
 
 For paid support and development options, please see the
-`Enterprise Support Agreements and Contract Development <http://awslimitchecker.readthedocs.org/en/latest/getting_help.html#getting-help-paid-support>`_
+`Enterprise Support Agreements and Contract Development <http://awslimitchecker.readthedocs.io/en/latest/getting_help.html#enterprise-support-agreements-and-contract-development>`_
 section of the documentation.
 
 Changelog
 ---------
 
-See `https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst <https://github.com/jantman/awslimitchecker/blob/develop/CHANGES.rst>`_.
+See `Changelog <http://awslimitchecker.readthedocs.io/en/latest/changes.html>`_.
 
 Contributions
 -------------
@@ -181,14 +139,4 @@ License
 -------
 
 awslimitchecker is licensed under the `GNU Affero General Public License, version 3 or later <http://www.gnu.org/licenses/agpl.html>`_.
-This shouldn't be much of a concern to most people.
-
-If you're simply *running* awslimitchecker, all you must do is provide a notice on where to get the source code
-in your output; this is already handled via a warning-level log message in the package. If you modify awslimitchecker's
-code, you must update this URL to reflect your modifications (see ``awslimitchecker/version.py``).
-
-If you're distributing awslimitchecker with modifications or as part of your own software (as opposed to simply a
-requirement that gets installed with pip), please read the license and ensure that you comply with its terms.
-
-If you are running awslimitchecker as part of a hosted service that users somehow interact with, please
-ensure that the source code URL is visible in the output given to users.
+This shouldn't be much of a concern to most people; see `Development / AGPL <http://awslimitchecker.readthedocs.io/en/latest/development.html#agpl-license>`_ for more information.
