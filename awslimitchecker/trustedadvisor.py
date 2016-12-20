@@ -247,7 +247,7 @@ class TrustedAdvisor(Connectable):
         :param check_id: the Trusted Advisor check ID
         :type check_id: str
         :returns: dict check result. The return value of
-          :py:meth:`boto3.Support.Client.describe_trusted_advisor_check_result`
+          :py:meth:`Support.Client.describe_trusted_advisor_check_result`
         :rtype: dict
         """
         # handle a refresh_mode of None right off the bat
@@ -290,7 +290,7 @@ class TrustedAdvisor(Connectable):
         :param check_id: the Trusted Advisor check ID
         :type check_id: str
         :returns: dict check result. The return value of
-          :py:meth:`boto3.Support.Client.describe_trusted_advisor_check_result`
+          :py:meth:`Support.Client.describe_trusted_advisor_check_result`
         :rtype: dict
         """
         logger.warning('Polling for TA check %s refresh...', check_id)
@@ -349,7 +349,7 @@ class TrustedAdvisor(Connectable):
     def _get_check_result(self, check_id):
         """
         Directly wrap
-        :py:meth:`boto3.Support.Client.describe_trusted_advisor_check_result`;
+        :py:meth:`Support.Client.describe_trusted_advisor_check_result`;
         return a 2-tuple of the result dict and the last refresh DateTime.
 
         :param check_id: the Trusted Advisor check ID
@@ -425,9 +425,9 @@ class TrustedAdvisor(Connectable):
 
 def datetime_now():
     """
-    Helper function for testing; return :py:classmethod:`datetime.datetime.now`.
+    Helper function for testing; return :py:meth:`datetime.datetime.now`.
 
-    :return: :py:classmethod:`datetime.datetime.now`
+    :return: :py:meth:`datetime.datetime.now`
     :rtype: datetime.datetime
     """
     return datetime.now()
