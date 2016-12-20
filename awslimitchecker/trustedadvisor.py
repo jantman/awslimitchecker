@@ -274,6 +274,7 @@ class TrustedAdvisor(Connectable):
                                self.refresh_mode)
                 return self._get_check_result(check_id)[0]
         # do the refresh
+        logger.info("Refreshing Trusted Advisor check: %s", check_id)
         self.conn.refresh_trusted_advisor_check(checkId=check_id)
         # if mode isn't trigger, wait for refresh up to timeout
         if self.refresh_mode == 'trigger':
@@ -307,6 +308,7 @@ class TrustedAdvisor(Connectable):
             if status in ['success', 'abandoned']:
                 logger.info('Refresh status: %s; done polling', status)
                 break
+            # if status went from not "none" to "none", some problem...
             logger.info('Refresh status: %s; sleeping 30s', status)
             sleep(30)
         else:

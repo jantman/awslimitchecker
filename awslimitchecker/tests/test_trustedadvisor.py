@@ -769,7 +769,8 @@ class TestGetRefreshedCheckResult(object):
         assert mock_logger.mock_calls == [
             call.debug('Handling refresh of check: %s', 'abc123'),
             call.debug('ta_refresh_mode older; check last refresh: %s; '
-                       'threshold=%d seconds', check_dt, 120)
+                       'threshold=%d seconds', check_dt, 120),
+            call.info('Refreshing Trusted Advisor check: %s', 'abc123')
         ]
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0)
@@ -823,7 +824,8 @@ class TestGetRefreshedCheckResult(object):
         assert mock_crc.mock_calls == [call(self.cls, 'abc123')]
         assert mock_pfr.mock_calls == []
         assert mock_logger.mock_calls == [
-            call.debug('Handling refresh of check: %s', 'abc123')
+            call.debug('Handling refresh of check: %s', 'abc123'),
+            call.info('Refreshing Trusted Advisor check: %s', 'abc123')
         ]
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0)
