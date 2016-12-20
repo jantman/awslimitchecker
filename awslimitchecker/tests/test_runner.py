@@ -118,7 +118,9 @@ class TestAwsLimitCheckerRunner(object):
                  'information on the source code location.'
         with patch('awslimitchecker.runner.argparse.ArgumentParser',
                    spec_set=argparse.ArgumentParser) as mock_parser:
-                self.cls.parse_args(argv)
+            mock_result = Mock(ta_refresh_wait=True)
+            mock_parser.return_value.parse_args.return_value = mock_result
+            self.cls.parse_args(argv)
         assert mock_parser.mock_calls == [
             call(description=desc, epilog=epilog),
             call().add_argument('-S', '--service', action='store', default=None,
@@ -230,8 +232,7 @@ class TestAwsLimitCheckerRunner(object):
                                 action='store_true',
                                 default=False,
                                 help='print version number and exit.'),
-            call().parse_args(argv),
-            call().parse_args().ta_refresh_wait.__nonzero__()
+            call().parse_args(argv)
         ]
 
     def test_parse_args_multiple_ta(self):
