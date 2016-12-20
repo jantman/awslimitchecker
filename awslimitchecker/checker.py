@@ -52,7 +52,7 @@ class AwsLimitChecker(object):
     def __init__(self, warning_threshold=80, critical_threshold=99,
                  profile_name=None, account_id=None, account_role=None,
                  region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None):
+                 mfa_token=None, ta_refresh_mode=None, ta_refresh_timeout=None):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -96,6 +96,23 @@ class AwsLimitChecker(object):
         :param mfa_token: (optional) the `MFA Token` string to use when
           assuming a role via STS.
         :type mfa_token: str
+        :param ta_refresh_mode: How to handle refreshing Trusted Advisor checks;
+          this is either None (do not refresh at all), the string "wait"
+          (trigger refresh of all limit-related checks and wait for the refresh
+          to complete), the string "trigger" (trigger refresh of all
+          limit-related checks but do not wait for the refresh to complete), or
+          an integer, which causes any limit-related checks more than this
+          number of seconds old to be refreshed, waiting for the refresh to
+          complete. Note that "trigger" will likely result in the current run
+          getting stale data, but the check being refreshed in time for the
+          next run.
+        :type ta_refresh_mode: :py:class:`str` or :py:class:`int` or
+          :py:data:`None`
+        :param ta_refresh_timeout: If ``ta_refresh_mode`` is "wait" or an
+          integer (any mode that will wait for the refresh to complete), if this
+          parameter is not None, only wait up to this number of seconds for the
+          refresh to finish before continuing on anyway.
+        :type ta_refresh_timeout: :py:class:`int` or :py:data:`None`
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -151,6 +168,8 @@ class AwsLimitChecker(object):
             external_id=external_id,
             mfa_serial_number=mfa_serial_number,
             mfa_token=mfa_token,
+            ta_refresh_mode=ta_refresh_mode,
+            ta_refresh_timeout=ta_refresh_timeout
         )
 
     def get_version(self):
@@ -450,6 +469,7 @@ class AwsLimitChecker(object):
         required_actions = [
             'support:*',
             'trustedadvisor:Describe*',
+            'trustedadvisor:RefreshCheck'
         ]
         for cls in self.services.values():
             required_actions.extend(cls.required_iam_permissions())

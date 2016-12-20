@@ -71,7 +71,8 @@ permissions required for it to function correctly:
             "s3:ListAllMyBuckets", 
             "ses:GetSendQuota", 
             "support:*", 
-            "trustedadvisor:Describe*"
+            "trustedadvisor:Describe*", 
+            "trustedadvisor:RefreshCheck"
           ], 
           "Effect": "Allow", 
           "Resource": "*"

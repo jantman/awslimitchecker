@@ -71,6 +71,47 @@ data comes from. In the default case, their service and limit names will be used
 as they are set in the awslimitchecker code, and limits which have matching
 Trusted Advisor data will be automatically populated.
 
+In the :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor` class's
+:py:meth:`~.TrustedAdvisor._poll` method,
+:py:meth:`~.TrustedAdvisor._get_refreshed_check_result` is used to retrieve the
+check result data from Trusted Advisor. This method also implements the check
+refresh logic. See the comments in the source code for the specific logic. There
+are three methods of refreshing checks (refresh modes), which are controlled
+by the ``ta_refresh_mode`` parameter to :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`:
+
+* If ``ta_refresh_mode`` is the string "wait", the check will be refreshed and
+  awslimitchecker will poll for the refresh result every 30 seconds, waiting
+  for the refresh to complete (or until ``ta_refresh_timeout`` seconds have elapsed).
+  This is exposed via the CLI as the ``--ta-refresh-wait`` option.
+* If ``ta_refresh_mode`` is an integer, it will operate like the "wait" mode above,
+  but only if the current result data for the check is more than ``ta_refresh_mode``
+  seconds old. This is exposed via the CLI as the ``--ta-refresh-older`` option.
+* If ``ta_refresh_mode`` is the string "trigger", the check will be refreshed and
+  the program will continue on immediately, without waiting for the refresh to
+  complete; this will almost certainly result in stale check results in the current
+  run. However, this may be useful if you desire to keep ``awslimitchecker`` runs
+  short, and run it on a regular schedule (i.e. if you run ``awslimitchecker``
+  every 6 hours, and are OK with Trusted Advisor check data being 6 hours old).
+  This is exposed via the CLI as the ``--ta-refresh-trigger`` option.
+
+Additionally, :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor` has a
+``ta_refresh_timeout`` parameter. If this is set to a non-``None`` value (an integer),
+refreshes of the check will time out after that number of seconds. If a timeout
+occurs, a message will be logged at error level, but the program will continue
+running (most likely using the old result data). This parameter is exposed via
+the CLI as the ``--ta-refresh-timeout`` option.
+
+**Important:** It may take 30 to 60 *minutes* for the Service Limits check to
+refresh on large accounts. Please be aware of this when enabling the refresh
+options.
+
+Using the check refresh options will require the ``trustedadvisor:RefreshCheck``
+IAM permission.
+
+For use via Python, these same parameters (``ta_refresh_mode`` and ``ta_refresh_timeout``)
+are exposed as parameters on the
+:py:class:`~awslimitchecker.checker.AwsLimitChecker` constructor.
+
 Service API Limit Information
 -----------------------------
 

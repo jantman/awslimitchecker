@@ -318,7 +318,8 @@ Release Checklist
 10. Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
 11. Tag the release in Git, push tag to GitHub:
 
-   * tag the release. for now the message is quite simple: ``git tag -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
+   * tag the release with a signed tag: ``git tag -s -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
+   * Verify the signature on the tag, just to be sure: ``git tag -v X.Y.Z``
    * push the tag to GitHub: ``git push origin X.Y.Z``
 
 12. Upload package to live pypi:
@@ -327,7 +328,7 @@ Release Checklist
 
 13. make sure any GH issues fixed in the release were closed.
 14. merge master back into develop
-15. Log in to ReadTheDocs and enable build of the tag.
+15. Ensure that the issues are moved to Done on the `waffle.io board <https://waffle.io/jantman/awslimitchecker>`_
 16. Blog, tweet, etc. about the new version.
 
 Release Issue Template

@@ -464,6 +464,12 @@ def on_doctree_read(_, doctree):
                 [
                     meth_ref_node, docname,
                     'awslimitchecker.limit.AwsLimit.get_limit'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/'
+            'getting_started.html#trusted-advisor':
+                [
+                    label_ref_node, docname, 'getting_started.trusted_advisor',
+                    'Getting Started - Trusted Advisor'
                 ]
         }
         doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
@@ -508,6 +514,12 @@ def on_doctree_read(_, doctree):
                 [
                     label_ref_node, docname, 'development.pull_requests',
                     'development documentation'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/'
+            'getting_started.html#trusted-advisor':
+                [
+                    label_ref_node, docname, 'getting_started.trusted_advisor',
+                    'Getting Started - Trusted Advisor'
                 ]
         }
         doctree.walk(LinkToRefVisitor(doctree, ref_mapping))

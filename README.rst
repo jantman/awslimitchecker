@@ -93,6 +93,11 @@ What It Does
 - where possible, pull current limits from each service's API (for services that provide this information)
 - Supports explicitly setting the AWS region
 - Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
+- Optionally refresh Trusted Advisor "Service Limits" check before polling
+  Trusted Advisor data, and optionally wait for the refresh to complete (up to
+  an optional maximum time limit). See
+  `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_
+  for more information.
 
 Requirements
 ------------
