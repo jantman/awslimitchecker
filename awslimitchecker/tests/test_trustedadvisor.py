@@ -59,7 +59,7 @@ pbm = 'awslimitchecker.trustedadvisor'
 pb = '%s.TrustedAdvisor' % pbm
 
 
-class Test_TrustedAdvisor(object):
+class Test_Init(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -76,7 +76,7 @@ class Test_TrustedAdvisor(object):
             'SvcBar': self.mock_svc2,
         }
 
-    def test_init(self):
+    def test(self):
         cls = TrustedAdvisor({})
         assert cls.conn is None
         assert cls.account_id is None
@@ -91,7 +91,7 @@ class Test_TrustedAdvisor(object):
         assert cls.refresh_mode is None
         assert cls.refresh_timeout is None
 
-    def test_init_sts(self):
+    def test_sts(self):
         mock_svc = Mock(spec_set=_AwsService)
         mock_svc.get_limits.return_value = {}
         cls = TrustedAdvisor(
@@ -115,7 +115,7 @@ class Test_TrustedAdvisor(object):
         assert cls.refresh_mode == 123
         assert cls.refresh_timeout == 456
 
-    def test_init_sts_external_id(self):
+    def test_sts_external_id(self):
         cls = TrustedAdvisor(
             {}, account_id='aid', account_role='role', region='r',
             external_id='myeid',
@@ -133,7 +133,25 @@ class Test_TrustedAdvisor(object):
         assert cls.refresh_mode == 'wait'
         assert cls.refresh_timeout is None
 
-    def test_update_limits(self):
+
+class Test_Update_Limits(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test(self):
         mock_results = Mock()
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             with patch('%s._poll' % pb, autospec=True) as mock_poll:
@@ -147,7 +165,7 @@ class Test_TrustedAdvisor(object):
             call(self.cls, mock_results)
         ]
 
-    def test_update_limits_again(self):
+    def test_again(self):
         mock_results = Mock()
         self.cls.limits_updated = True
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
@@ -164,7 +182,25 @@ class Test_TrustedAdvisor(object):
             call.debug('Already polled TA; skipping update')
         ]
 
-    def test_get_limit_check_id(self):
+
+class Test_Get_Limit_Check_Id(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test(self):
         api_resp = {
             'checks': [
                 {
@@ -204,7 +240,7 @@ class Test_TrustedAdvisor(object):
             call.describe_trusted_advisor_checks(language='en')
         ]
 
-    def test_get_limit_check_id_none(self):
+    def test_none(self):
         api_resp = {
             'checks': [
                 {
@@ -226,7 +262,7 @@ class Test_TrustedAdvisor(object):
             call.describe_trusted_advisor_checks(language='en')
         ]
 
-    def test_get_limit_check_id_subscription_required(self):
+    def test_subscription_required(self):
 
         def se_api(language=None):
             response = {
@@ -259,7 +295,7 @@ class Test_TrustedAdvisor(object):
                          'use this service.')
         ]
 
-    def test_get_limit_check_id_other_exception(self):
+    def test_other_exception(self):
 
         def se_api(language=None):
             response = {
@@ -285,7 +321,25 @@ class Test_TrustedAdvisor(object):
         assert excinfo.value.response['Error']['Message'] == 'foo'
         assert excinfo.value.response['Error']['Code'] == 'SomeOtherException'
 
-    def test_poll_id_none(self):
+
+class Test_Poll(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test_none(self):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
             mock_id.return_value = None
@@ -293,8 +347,7 @@ class Test_TrustedAdvisor(object):
         assert tmp.mock_calls == []
         assert res is None
 
-    def test_poll(self):
-        tmp = self.mock_conn.describe_trusted_advisor_check_result
+    def test(self):
         poll_return_val = {
             'result': {
                 'timestamp': '2015-06-15T20:27:42Z',
@@ -385,9 +438,10 @@ class Test_TrustedAdvisor(object):
                 ]
             }
         }
-        tmp.return_value = poll_return_val
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+            with patch('%s._get_refreshed_check_result' % pb,
+                       autospec=True) as mock_hr:
+                mock_hr.return_value = poll_return_val
                 mock_id.return_value = (
                     'foo',
                     [
@@ -400,11 +454,7 @@ class Test_TrustedAdvisor(object):
                     ]
                 )
                 res = self.cls._poll()
-        assert self.mock_conn.mock_calls == [
-            call.describe_trusted_advisor_check_result(
-                checkId='foo', language='en'
-            )
-        ]
+        assert self.mock_conn.mock_calls == []
         assert mock_id.mock_calls == [call(self.cls)]
         assert mock_hr.mock_calls == [
             call(self.cls, 'foo')
@@ -422,8 +472,7 @@ class Test_TrustedAdvisor(object):
             }
         }
 
-    def test_poll_no_timestamp(self):
-        tmp = self.mock_conn.describe_trusted_advisor_check_result
+    def test_no_timestamp(self):
         poll_return_val = {
             'result': {
                 'flaggedResources': [
@@ -513,9 +562,10 @@ class Test_TrustedAdvisor(object):
                 ]
             }
         }
-        tmp.return_value = poll_return_val
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+            with patch('%s._get_refreshed_check_result' % pb,
+                       autospec=True) as mock_hr:
+                mock_hr.return_value = poll_return_val
                 mock_id.return_value = (
                     'foo',
                     [
@@ -528,11 +578,7 @@ class Test_TrustedAdvisor(object):
                     ]
                 )
                 res = self.cls._poll()
-        assert self.mock_conn.mock_calls == [
-            call.describe_trusted_advisor_check_result(
-                checkId='foo', language='en'
-            )
-        ]
+        assert self.mock_conn.mock_calls == []
         assert mock_id.mock_calls == [call(self.cls)]
         assert mock_hr.mock_calls == [
             call(self.cls, 'foo')
@@ -550,8 +596,7 @@ class Test_TrustedAdvisor(object):
             }
         }
 
-    def test_poll_region(self):
-        tmp = self.mock_conn.describe_trusted_advisor_check_result
+    def test_region(self):
         self.cls.ta_region = 'us-west-2'
         poll_return_value = {
             'result': {
@@ -615,9 +660,10 @@ class Test_TrustedAdvisor(object):
                 ]
             }
         }
-        tmp.return_value = poll_return_value
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+            with patch('%s._get_refreshed_check_result' % pb,
+                       autospec=True) as mock_hr:
+                mock_hr.return_value = poll_return_value
                 mock_id.return_value = (
                     'foo',
                     [
@@ -630,11 +676,7 @@ class Test_TrustedAdvisor(object):
                     ]
                 )
                 res = self.cls._poll()
-        assert self.mock_conn.mock_calls == [
-            call.describe_trusted_advisor_check_result(
-                checkId='foo', language='en'
-            )
-        ]
+        assert self.mock_conn.mock_calls == []
         assert mock_id.mock_calls == [call(self.cls)]
         assert mock_hr.mock_calls == [
             call(self.cls, 'foo')
@@ -648,16 +690,15 @@ class Test_TrustedAdvisor(object):
             }
         }
 
-    def test_poll_dont_have_ta(self):
+    def test_dont_have_ta(self):
         self.cls.have_ta = False
-        tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            with patch('%s._handle_refresh' % pb, autospec=True) as mock_hr:
+            with patch('%s._get_refreshed_check_result' % pb,
+                       autospec=True) as mock_hr:
                 with patch('awslimitchecker.trustedadvisor'
                            '.logger', autospec=True) as mock_logger:
                     res = self.cls._poll()
         assert self.mock_conn.mock_calls == []
-        assert tmp.mock_calls == []
         assert mock_id.mock_calls == [
             call(self.cls)
         ]
@@ -668,7 +709,25 @@ class Test_TrustedAdvisor(object):
         ]
         assert res == {}
 
-    def test_update_services(self):
+
+class Test_Update_Services(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test(self):
         mock_as_foo = Mock(spec_set=AwsLimit)
         mock_as_bar = Mock(spec_set=AwsLimit)
         mock_ec2_baz = Mock(spec_set=AwsLimit)
@@ -732,7 +791,25 @@ class Test_TrustedAdvisor(object):
             call._set_ta_limit(11)
         ]
 
-    def test_make_ta_service_dict(self):
+
+class Test_Make_TA_Service_Dict(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test(self):
         mock_ec2 = Mock(spec_set=_AwsService)
         mock_el1 = Mock(spec_set=AwsLimit)
         type(mock_el1).name = 'el1'
