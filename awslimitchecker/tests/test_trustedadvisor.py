@@ -1118,6 +1118,62 @@ class TestPollForRefresh(object):
             call.debug('Check shows last refresh time of: %s', check_dt)
         ]
 
+    def test_none(self):
+        self.cls.refresh_timeout = None
+        check_dt = datetime(2016, 12, 16, hour=10, minute=30, second=12,
+                            tzinfo=utc)
+        now_dt = datetime(2016, 12, 16, hour=11, minute=30, second=12,
+                          tzinfo=utc)
+        statuses = [
+            {'statuses': [{'status': 'none'}]},
+            {'statuses': [{'status': 'enqueued'}]},
+            {'statuses': [{'status': 'processing'}]},
+            {'statuses': [{'status': 'none'}]}
+        ]
+        m_s = self.mock_conn.describe_trusted_advisor_check_refresh_statuses
+        with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+            with patch('%s.sleep' % pbm, autospec=True) as mock_sleep:
+                with patch('%s._get_check_result' % pb, autospec=True) as gcr:
+                    with patch('%s.datetime_now' % pbm) as mock_dt_now:
+                        mock_dt_now.return_value = now_dt
+                        m_s.side_effect = statuses
+                        gcr.return_value = ({'foo': 'bar'}, check_dt)
+                        res = self.cls._poll_for_refresh('abc123')
+        assert res == {'foo': 'bar'}
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123'])
+        ]
+        assert gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_sleep.mock_calls == [
+            call(30), call(30), call(30)
+        ]
+        assert mock_dt_now.mock_calls == [
+            call(), call(), call(), call(), call()
+        ]
+        assert mock_logger.mock_calls == [
+            call.warning('Polling for TA check %s refresh...', 'abc123'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'none'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'enqueued'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'processing'),
+            call.debug('Checking refresh status'),
+            call.warning('Trusted Advisor check refresh status went '
+                         'from "%s" to "%s"; refresh is either complete '
+                         'or timed out on AWS side. Continuing',
+                         'processing', 'none'),
+            call.info('Done polling for check refresh'),
+            call.debug('Check shows last refresh time of: %s', check_dt)
+        ]
+
 
 class TestUpdateServices(object):
 

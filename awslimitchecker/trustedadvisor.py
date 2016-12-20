@@ -300,6 +300,7 @@ class TrustedAdvisor(Connectable):
             cutoff = datetime_now() + timedelta(days=365)
         else:
             cutoff = datetime_now() + timedelta(seconds=self.refresh_timeout)
+        last_status = None
         while datetime_now() <= cutoff:
             logger.debug('Checking refresh status')
             status = self.conn.describe_trusted_advisor_check_refresh_statuses(
@@ -308,7 +309,13 @@ class TrustedAdvisor(Connectable):
             if status in ['success', 'abandoned']:
                 logger.info('Refresh status: %s; done polling', status)
                 break
-            # if status went from not "none" to "none", some problem...
+            if status == 'none' and last_status not in ['none', None]:
+                logger.warning('Trusted Advisor check refresh status went '
+                               'from "%s" to "%s"; refresh is either complete '
+                               'or timed out on AWS side. Continuing',
+                               last_status, status)
+                break
+            last_status = status
             logger.info('Refresh status: %s; sleeping 30s', status)
             sleep(30)
         else:
