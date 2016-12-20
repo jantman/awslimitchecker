@@ -10,7 +10,7 @@ next release.
 This release introduces support for automatically refreshing Trusted Advisor
 checks on accounts that support this. If you use this new feature,
 awslimitchecker will require a new permission, ``trustedadvisor:RefreshCheck``.
-See `link <broken link>`_ for further information.
+See `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_ for further information.
 
 * `#231 <https://github.com/jantman/awslimitchecker/issues/231>`_ - add support
   for new f1, r4 and t2.(xlarge|2xlarge) instance types, introduced in November
@@ -25,6 +25,11 @@ See `link <broken link>`_ for further information.
   in the last 6 months, and the effort to support it is too high.
 * A bunch of Sphinx work to use README.rst in the generated documentation.
 * Changed DEBUG-level logging format to include timestamp.
+* `#239 <https://github.com/jantman/awslimitchecker/issues/239>`_ - Support
+  refreshing Trusted Advisor check results during the run, and optionally waiting
+  for refresh to finish. See
+  `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_
+  for further information.
 
 0.6.0 (2016-11-12)
 ------------------

@@ -53,6 +53,30 @@ parameter to the class constructor:
    >>> from awslimitchecker.checker import AwsLimitChecker
    >>> c = AwsLimitChecker(region='us-west-2')
 
+Refreshing Trusted Advisor Check Results
+++++++++++++++++++++++++++++++++++++++++
+
+Trusted Advisor check refresh behavior is controlled by the ``ta_refresh_mode``
+and ``ta_refresh_timeout`` parameters on the :py:class:`~awslimitchecker.checker.AwsLimitChecker`
+constructor, which are passed through to the :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`
+constructor. See :ref:`Internals - Trusted Advisor <internals.trusted_advisor>`
+for details of their possible values and meanings.
+
+The below example shows constructing an :py:class:`~awslimitchecker.checker.AwsLimitChecker`
+class that will refresh Trusted Advisor limit checks only if their data is at least
+6 hours (21600 seconds) old, and will allow up to 30 minutes (1800 seconds) for
+the refresh to complete (if it times out, awslimitchecker will continue on with
+the old data):
+
+.. code-block:: pycon
+
+   >>> import logging
+   >>> logging.basicConfig()
+   >>> logger = logging.getLogger()
+   >>>
+   >>> from awslimitchecker.checker import AwsLimitChecker
+   >>> c = AwsLimitChecker(ta_refresh_mode=21600, ta_refresh_timeout=1800)
+
 Assuming a Role with STS
 ++++++++++++++++++++++++
 
