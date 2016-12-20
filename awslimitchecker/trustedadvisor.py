@@ -299,7 +299,7 @@ class TrustedAdvisor(Connectable):
             cutoff = datetime_now() + timedelta(days=365)
         else:
             cutoff = datetime_now() + timedelta(seconds=self.refresh_timeout)
-        while datetime_now() < cutoff:
+        while datetime_now() <= cutoff:
             logger.debug('Checking refresh status')
             status = self.conn.describe_trusted_advisor_check_refresh_statuses(
                 checkIds=[check_id]
