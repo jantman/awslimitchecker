@@ -41,6 +41,9 @@ from botocore.exceptions import ClientError
 from dateutil import parser
 import logging
 from .connectable import Connectable
+from datetime import datetime, timedelta
+from pytz import utc
+from time import sleep
 
 logger = logging.getLogger(__name__)
 
@@ -171,17 +174,8 @@ class TrustedAdvisor(Connectable):
                             "check; not using Trusted Advisor data.")
             return
         check_id, metadata = tmp
-        self._handle_refresh(check_id)
+        checks = self._get_refreshed_check_result(check_id)
         region = self.ta_region or self.conn._client_config.region_name
-        checks = self.conn.describe_trusted_advisor_check_result(
-            checkId=check_id, language='en'
-        )
-        try:
-            check_datetime = parser.parse(checks['result']['timestamp'])
-        except KeyError:
-            check_datetime = 'unknown time (timestamp key missing)'
-        logger.debug("Got TrustedAdvisor data for check %s as of %s",
-                     check_id, check_datetime)
         res = {}
         for check in checks['result']['flaggedResources']:
             if 'region' in check and check['region'] != region:
@@ -244,18 +238,139 @@ class TrustedAdvisor(Connectable):
                      "name 'Service Limits'.")
         return (None, None)
 
-    def _handle_refresh(self, check_id):
+    def _get_refreshed_check_result(self, check_id):
         """
-        Handle refreshing a Trusted Advisor check according to
-        ``self.refresh_mode`` and ``self.refresh_timeout``.
+        Given the ``check_id``, return the dict of Trusted Advisor check
+        results. This handles refreshing the Trusted Advisor check, if desired,
+        according to ``self.refresh_mode`` and ``self.refresh_timeout``.
 
         :param check_id: the Trusted Advisor check ID
         :type check_id: str
+        :returns: dict check result. The return value of
+          :py:meth:`boto3.Support.Client.describe_trusted_advisor_check_result`
+        :rtype: dict
         """
+        # handle a refresh_mode of None right off the bat
         if self.refresh_mode is None:
             logger.info("Not refreshing Trusted Advisor check (refresh mode "
                         "is None)")
-            return
+            return self._get_check_result(check_id)[0]
+        logger.debug("Handling refresh of check: %s", check_id)
+        # if we want to refresh, step 1 is to see if we can yet...
+        if not self._can_refresh_check(check_id):
+            return self._get_check_result(check_id)[0]
+        # either it's not too soon to refresh, or we have no idea...
+        if isinstance(self.refresh_mode, type(1)):
+            # mode is an int, check the last refresh time and compare
+            checks, check_datetime = self._get_check_result(check_id)
+            logger.debug('ta_refresh_mode older; check last refresh: %s; '
+                         'threshold=%d seconds', check_datetime,
+                         self.refresh_mode)
+            if check_datetime >= datetime.now(utc) - timedelta(
+                    seconds=self.refresh_mode):
+                logger.warning('Trusted Advisor check %s last refresh time '
+                               'of %s is newer than refresh threshold of %d '
+                               'seconds.', check_id, check_datetime,
+                               self.refresh_mode)
+                return self._get_check_result(check_id)[0]
+        # do the refresh
+        self.conn.refresh_trusted_advisor_check(checkId=check_id)
+        # if mode isn't trigger, wait for refresh up to timeout
+        if self.refresh_mode == 'trigger':
+            result = self._get_check_result(check_id)[0]
+        else:
+            result = self._poll_for_refresh(check_id)
+        return result
+
+    def _poll_for_refresh(self, check_id):
+        """
+        Given a Trusted Advisor check_id that has just been refreshed, poll
+        until the refresh is complete. Once complete, return the check result.
+
+        :param check_id: the Trusted Advisor check ID
+        :type check_id: str
+        :returns: dict check result. The return value of
+          :py:meth:`boto3.Support.Client.describe_trusted_advisor_check_result`
+        :rtype: dict
+        """
+        logger.warning('Polling for TA check %s refresh...', check_id)
+        if self.refresh_timeout is None:
+            # no timeout...
+            cutoff = datetime_now() + timedelta(days=365)
+        else:
+            cutoff = datetime_now() + timedelta(seconds=self.refresh_timeout)
+        while datetime_now() < cutoff:
+            logger.debug('Checking refresh status')
+            status = self.conn.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=[check_id]
+            )['statuses'][0]['status']
+            if status in ['success', 'abandoned']:
+                logger.info('Refresh status: %s; done polling', status)
+                break
+            logger.info('Refresh status: %s; sleeping 30s', status)
+            sleep(30)
+        else:
+            logger.error('Timed out waiting for TA Check refresh; status=%s',
+                         status)
+        logger.info('Done polling for check refresh')
+        result, last_dt = self._get_check_result(check_id)
+        logger.debug('Check shows last refresh time of: %s', last_dt)
+        return result
+
+    def _can_refresh_check(self, check_id):
+        """
+        Determine if the given check_id can be refreshed yet.
+
+        :param check_id: the Trusted Advisor check ID
+        :type check_id: str
+        :return: whether or not the check can be refreshed yet
+        :rtype: bool
+        """
+        try:
+            refresh_status = \
+                self.conn.describe_trusted_advisor_check_refresh_statuses(
+                    checkIds=[check_id]
+                )
+            logger.debug("TA Check %s refresh status: %s", check_id,
+                         refresh_status['statuses'][0])
+            ms = refresh_status['statuses'][0]['millisUntilNextRefreshable']
+            if ms > 0:
+                logger.warning("Trusted Advisor check cannot be refreshed for "
+                               "another %d milliseconds; skipping refresh and "
+                               "getting check results now", ms)
+                return False
+            return True
+        except Exception:
+            logger.warning("Could not get refresh status for TA check %s",
+                           check_id, exc_info=True)
+        # default to True if we don't know...
+        return True
+
+    def _get_check_result(self, check_id):
+        """
+        Directly wrap
+        :py:meth:`boto3.Support.Client.describe_trusted_advisor_check_result`;
+        return a 2-tuple of the result dict and the last refresh DateTime.
+
+        :param check_id: the Trusted Advisor check ID
+        :type check_id: str
+        :return: 2-tuple of (result dict, last refresh DateTime). If the last
+          refresh time can't be parsed from the response, the second element
+          will be None.
+        :rtype: tuple
+        """
+        checks = self.conn.describe_trusted_advisor_check_result(
+            checkId=check_id, language='en'
+        )
+        try:
+            check_datetime = parser.parse(checks['result']['timestamp'])
+            logger.debug("Got TrustedAdvisor data for check %s as of %s",
+                         check_id, check_datetime)
+        except KeyError:
+            check_datetime = None
+            logger.debug("Got TrustedAdvisor data for check %s but unable to "
+                         "parse timestamp", check_id)
+        return checks, check_datetime
 
     def _update_services(self, ta_results):
         """
@@ -306,3 +421,13 @@ class TrustedAdvisor(Connectable):
                     res[lim.ta_service_name] = {}
                 res[lim.ta_service_name][lim.ta_limit_name] = lim
         return res
+
+
+def datetime_now():
+    """
+    Helper function for testing; return :py:classmethod:`datetime.datetime.now`.
+
+    :return: :py:classmethod:`datetime.datetime.now`
+    :rtype: datetime.datetime
+    """
+    return datetime.now()

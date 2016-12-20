@@ -39,10 +39,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from botocore.exceptions import ClientError
-from awslimitchecker.trustedadvisor import TrustedAdvisor
+from awslimitchecker.trustedadvisor import TrustedAdvisor, datetime_now
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.limit import AwsLimit
 import pytest
+from datetime import datetime
+from freezegun import freeze_time
+from pytz import utc
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -59,7 +62,7 @@ pbm = 'awslimitchecker.trustedadvisor'
 pb = '%s.TrustedAdvisor' % pbm
 
 
-class Test_Init(object):
+class TestInit(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -76,7 +79,7 @@ class Test_Init(object):
             'SvcBar': self.mock_svc2,
         }
 
-    def test(self):
+    def test_simple(self):
         cls = TrustedAdvisor({})
         assert cls.conn is None
         assert cls.account_id is None
@@ -134,7 +137,7 @@ class Test_Init(object):
         assert cls.refresh_timeout is None
 
 
-class Test_Update_Limits(object):
+class TestUpdateLimits(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -151,7 +154,7 @@ class Test_Update_Limits(object):
             'SvcBar': self.mock_svc2,
         }
 
-    def test(self):
+    def test_simple(self):
         mock_results = Mock()
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             with patch('%s._poll' % pb, autospec=True) as mock_poll:
@@ -183,7 +186,7 @@ class Test_Update_Limits(object):
         ]
 
 
-class Test_Get_Limit_Check_Id(object):
+class TestGetLimitCheckId(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -200,7 +203,7 @@ class Test_Get_Limit_Check_Id(object):
             'SvcBar': self.mock_svc2,
         }
 
-    def test(self):
+    def test_simple(self):
         api_resp = {
             'checks': [
                 {
@@ -322,7 +325,7 @@ class Test_Get_Limit_Check_Id(object):
         assert excinfo.value.response['Error']['Code'] == 'SomeOtherException'
 
 
-class Test_Poll(object):
+class TestPoll(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -347,7 +350,7 @@ class Test_Poll(object):
         assert tmp.mock_calls == []
         assert res is None
 
-    def test(self):
+    def test_basic(self):
         poll_return_val = {
             'result': {
                 'timestamp': '2015-06-15T20:27:42Z',
@@ -710,7 +713,7 @@ class Test_Poll(object):
         assert res == {}
 
 
-class Test_Update_Services(object):
+class TestGetRefreshedCheckResult(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -727,7 +730,411 @@ class Test_Update_Services(object):
             'SvcBar': self.mock_svc2,
         }
 
-    def test(self):
+    def test_mode_none(self):
+        self.cls.refresh_mode = None
+        with patch('%s._get_check_result' % pb, autospec=True) as mock_gcr:
+            with patch('%s._can_refresh_check' % pb, autospec=True) as mock_crc:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    with patch('%s._poll_for_refresh' % pb,
+                               autospec=True) as mock_pfr:
+                        mock_gcr.return_value = ({'mock': 'gcr'}, None)
+                        res = self.cls._get_refreshed_check_result('abc123')
+        assert res == {'mock': 'gcr'}
+        assert mock_gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_crc.mock_calls == []
+        assert mock_pfr.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.info("Not refreshing Trusted Advisor check (refresh mode is "
+                      "None)")
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0)
+    def test_mode_int(self):
+        self.cls.refresh_mode = 120  # 2 minutes
+        check_dt = datetime(2016, 12, 16, hour=10, minute=30, second=12,
+                            tzinfo=utc)
+        with patch('%s._get_check_result' % pb, autospec=True) as mock_gcr:
+            with patch('%s._can_refresh_check' % pb, autospec=True) as mock_crc:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    with patch('%s._poll_for_refresh' % pb,
+                               autospec=True) as mock_pfr:
+                        mock_gcr.return_value = ({'mock': 'gcr'}, check_dt)
+                        mock_pfr.return_value = {'mock': 'pfr'}
+                        mock_crc.return_value = True
+                        res = self.cls._get_refreshed_check_result('abc123')
+        assert res == {'mock': 'pfr'}
+        assert mock_gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_crc.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_pfr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_logger.mock_calls == [
+            call.debug('Handling refresh of check: %s', 'abc123'),
+            call.debug('ta_refresh_mode older; check last refresh: %s; '
+                       'threshold=%d seconds', check_dt, 120)
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0)
+    def test_mode_int_within_threshold(self):
+        self.cls.refresh_mode = 120  # 2 minutes
+        check_dt = datetime(2016, 12, 16, hour=10, minute=40, second=12,
+                            tzinfo=utc)
+        with patch('%s._get_check_result' % pb, autospec=True) as mock_gcr:
+            with patch('%s._can_refresh_check' % pb, autospec=True) as mock_crc:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    with patch('%s._poll_for_refresh' % pb,
+                               autospec=True) as mock_pfr:
+                        mock_gcr.return_value = ({'mock': 'gcr'}, check_dt)
+                        mock_pfr.return_value = {'mock': 'pfr'}
+                        mock_crc.return_value = True
+                        res = self.cls._get_refreshed_check_result('abc123')
+        assert res == {'mock': 'gcr'}
+        assert mock_gcr.mock_calls == [
+            call(self.cls, 'abc123'),
+            call(self.cls, 'abc123')
+        ]
+        assert mock_crc.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_pfr.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.debug('Handling refresh of check: %s', 'abc123'),
+            call.debug('ta_refresh_mode older; check last refresh: %s; '
+                       'threshold=%d seconds', check_dt, 120),
+            call.warning('Trusted Advisor check %s last refresh time of %s '
+                         'is newer than refresh threshold of %d seconds.',
+                         'abc123',
+                         datetime(2016, 12, 16, 10, 40, 12, tzinfo=utc),
+                         120)
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0)
+    def test_mode_trigger(self):
+        self.cls.refresh_mode = 'trigger'
+        check_dt = datetime(2016, 12, 16, hour=10, minute=30, second=12,
+                            tzinfo=utc)
+        with patch('%s._get_check_result' % pb, autospec=True) as mock_gcr:
+            with patch('%s._can_refresh_check' % pb, autospec=True) as mock_crc:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    with patch('%s._poll_for_refresh' % pb,
+                               autospec=True) as mock_pfr:
+                        mock_gcr.return_value = ({'mock': 'gcr'}, check_dt)
+                        mock_pfr.return_value = {'mock': 'pfr'}
+                        mock_crc.return_value = True
+                        res = self.cls._get_refreshed_check_result('abc123')
+        assert res == {'mock': 'gcr'}
+        assert mock_gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_crc.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_pfr.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.debug('Handling refresh of check: %s', 'abc123')
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0)
+    def test_cant_refresh(self):
+        self.cls.refresh_mode = 120  # 2 minutes
+        check_dt = datetime(2016, 12, 16, hour=10, minute=30, second=12,
+                            tzinfo=utc)
+        with patch('%s._get_check_result' % pb, autospec=True) as mock_gcr:
+            with patch('%s._can_refresh_check' % pb, autospec=True) as mock_crc:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    with patch('%s._poll_for_refresh' % pb,
+                               autospec=True) as mock_pfr:
+                        mock_gcr.return_value = ({'mock': 'gcr'}, check_dt)
+                        mock_pfr.return_value = {'mock': 'pfr'}
+                        mock_crc.return_value = False
+                        res = self.cls._get_refreshed_check_result('abc123')
+        assert res == {'mock': 'gcr'}
+        assert mock_gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_crc.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_pfr.mock_calls == []
+        assert mock_logger.mock_calls == [
+            call.debug('Handling refresh of check: %s', 'abc123')
+        ]
+
+
+class TestGetCheckResult(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test_simple(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        check_result = {
+            'result': {
+                'timestamp': '2015-06-15T20:27:42Z',
+                'flaggedResources': [
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-west-2',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '20',
+                            '2',
+                            'Green'
+                        ]
+                    }
+                ]
+            }
+        }
+        tmp.return_value = check_result
+        res = self.cls._get_check_result('abc123')
+        assert tmp.mock_calls == [
+            call(checkId='abc123', language='en')
+        ]
+        assert res == (
+            check_result,
+            datetime(2015, 6, 15, 20, 27, 42, tzinfo=utc)
+        )
+
+    def test_no_timestamp(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        check_result = {
+            'result': {
+                'flaggedResources': [
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-west-2',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '20',
+                            '2',
+                            'Green'
+                        ]
+                    }
+                ]
+            }
+        }
+        tmp.return_value = check_result
+        res = self.cls._get_check_result('abc123')
+        assert tmp.mock_calls == [
+            call(checkId='abc123', language='en')
+        ]
+        assert res == (check_result, None)
+
+
+class TestCanRefreshCheck(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+    def test_true(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_refresh_statuses
+        chkstat = {
+            'checkId': 'abc123',
+            'status': 'none',
+            'millisUntilNextRefreshable': 0
+        }
+        tmp.return_value = {
+            'statuses': [chkstat]
+        }
+        with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+            res = self.cls._can_refresh_check('abc123')
+        assert res is True
+        assert tmp.mock_calls == [
+            call(checkIds=['abc123'])
+        ]
+        assert mock_logger.mock_calls == [
+            call.debug('TA Check %s refresh status: %s',
+                       'abc123', chkstat)
+        ]
+
+    def test_false(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_refresh_statuses
+        chkstat = {
+            'checkId': 'abc123',
+            'status': 'none',
+            'millisUntilNextRefreshable': 123456
+        }
+        tmp.return_value = {
+            'statuses': [chkstat]
+        }
+        with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+            res = self.cls._can_refresh_check('abc123')
+        assert res is False
+        assert tmp.mock_calls == [
+            call(checkIds=['abc123'])
+        ]
+        assert mock_logger.mock_calls == [
+            call.debug('TA Check %s refresh status: %s',
+                       'abc123', chkstat),
+            call.warning("Trusted Advisor check cannot be refreshed for "
+                         "another %d milliseconds; skipping refresh and "
+                         "getting check results now", 123456)
+        ]
+
+    def test_exception(self):
+        tmp = self.mock_conn.describe_trusted_advisor_check_refresh_statuses
+        chkstat = {
+            'checkId': 'abc123',
+            'status': 'none'
+        }
+        tmp.return_value = {
+            'statuses': [chkstat]
+        }
+        with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+            res = self.cls._can_refresh_check('abc123')
+        assert res is True
+        assert tmp.mock_calls == [
+            call(checkIds=['abc123'])
+        ]
+        assert mock_logger.mock_calls == [
+            call.debug('TA Check %s refresh status: %s',
+                       'abc123', chkstat),
+            call.warning('Could not get refresh status for TA check %s',
+                         'abc123', exc_info=True)
+        ]
+
+
+class TestPollForRefresh(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+    def test_no_timeout(self):
+        self.cls.refresh_timeout = None
+        check_dt = datetime(2016, 12, 16, hour=10, minute=30, second=12,
+                            tzinfo=utc)
+        now_dt = datetime(2016, 12, 16, hour=11, minute=30, second=12,
+                          tzinfo=utc)
+        statuses = [
+            {'statuses': [{'status': 'none'}]},
+            {'statuses': [{'status': 'enqueued'}]},
+            {'statuses': [{'status': 'processing'}]},
+            {'statuses': [{'status': 'success'}]}
+        ]
+        m_s = self.mock_conn.describe_trusted_advisor_check_refresh_statuses
+        with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+            with patch('%s.sleep' % pbm, autospec=True) as mock_sleep:
+                with patch('%s._get_check_result' % pb, autospec=True) as gcr:
+                    with patch('%s.datetime_now' % pbm) as mock_dt_now:
+                        mock_dt_now.return_value = now_dt
+                        m_s.side_effect = statuses
+                        gcr.return_value = ({'foo': 'bar'}, check_dt)
+                        res = self.cls._poll_for_refresh('abc123')
+        assert res == {'foo': 'bar'}
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123'])
+        ]
+        assert gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_sleep.mock_calls == [
+            call(30), call(30), call(30)
+        ]
+        assert mock_dt_now.mock_calls == [
+            call(), call(), call(), call(), call()
+        ]
+        assert mock_logger.mock_calls == [
+            call.warning('Polling for TA check %s refresh...', 'abc123'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'none'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'enqueued'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'processing'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; done polling', 'success'),
+            call.info('Done polling for check refresh'),
+            call.debug('Check shows last refresh time of: %s', check_dt)
+        ]
+
+    def test_timeout(self):
+        self.cls.refresh_timeout = 45
+        check_dt = datetime(2016, 12, 16, hour=10, minute=30, second=12,
+                            tzinfo=utc)
+        now_dts = [
+            datetime(2016, 12, 16, hour=11, minute=30, second=0, tzinfo=utc),
+            datetime(2016, 12, 16, hour=11, minute=30, second=0, tzinfo=utc),
+            datetime(2016, 12, 16, hour=11, minute=30, second=30, tzinfo=utc),
+            datetime(2016, 12, 16, hour=11, minute=31, second=0, tzinfo=utc),
+        ]
+        status = {'statuses': [{'status': 'processing'}]}
+        m_s = self.mock_conn.describe_trusted_advisor_check_refresh_statuses
+        with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+            with patch('%s.sleep' % pbm, autospec=True) as mock_sleep:
+                with patch('%s._get_check_result' % pb, autospec=True) as gcr:
+                    with patch('%s.datetime_now' % pbm) as mock_dt_now:
+                        mock_dt_now.side_effect = now_dts
+                        m_s.return_value = status
+                        gcr.return_value = ({'foo': 'bar'}, check_dt)
+                        res = self.cls._poll_for_refresh('abc123')
+        assert res == {'foo': 'bar'}
+        assert self.mock_conn.mock_calls == [
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123']),
+            call.describe_trusted_advisor_check_refresh_statuses(
+                checkIds=['abc123'])
+        ]
+        assert gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_sleep.mock_calls == [
+            call(30), call(30)
+        ]
+        assert mock_dt_now.mock_calls == [
+            call(), call(), call(), call()
+        ]
+        assert mock_logger.mock_calls == [
+            call.warning('Polling for TA check %s refresh...', 'abc123'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'processing'),
+            call.debug('Checking refresh status'),
+            call.info('Refresh status: %s; sleeping 30s', 'processing'),
+            call.error('Timed out waiting for TA Check refresh; status=%s',
+                       'processing'),
+            call.info('Done polling for check refresh'),
+            call.debug('Check shows last refresh time of: %s', check_dt)
+        ]
+
+
+class TestUpdateServices(object):
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    def test_simple(self):
         mock_as_foo = Mock(spec_set=AwsLimit)
         mock_as_bar = Mock(spec_set=AwsLimit)
         mock_ec2_baz = Mock(spec_set=AwsLimit)
@@ -792,7 +1199,7 @@ class Test_Update_Services(object):
         ]
 
 
-class Test_Make_TA_Service_Dict(object):
+class TestMakeTAServiceDict(object):
 
     def setup(self):
         self.mock_conn = Mock()
@@ -809,7 +1216,7 @@ class Test_Make_TA_Service_Dict(object):
             'SvcBar': self.mock_svc2,
         }
 
-    def test(self):
+    def test_simple(self):
         mock_ec2 = Mock(spec_set=_AwsService)
         mock_el1 = Mock(spec_set=AwsLimit)
         type(mock_el1).name = 'el1'
@@ -857,3 +1264,11 @@ class Test_Make_TA_Service_Dict(object):
         }
         self.cls.all_services = svcs
         assert self.cls._make_ta_service_dict() == expected
+
+
+class TestDatetimeNow(object):
+
+    @freeze_time("2016-12-16 10:40:42")
+    def test_it(self):
+        dt = datetime(2016, 12, 16, hour=10, minute=40, second=42)
+        assert datetime_now() == dt
