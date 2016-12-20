@@ -24,6 +24,7 @@ See `link <broken link>`_ for further information.
   Python 3.2 support. There don't appear to have been any downloads on py32
   in the last 6 months, and the effort to support it is too high.
 * A bunch of Sphinx work to use README.rst in the generated documentation.
+* Changed DEBUG-level logging format to include timestamp.
 
 0.6.0 (2016-11-12)
 ------------------
