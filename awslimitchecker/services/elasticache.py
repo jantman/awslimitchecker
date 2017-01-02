@@ -169,7 +169,7 @@ class _ElastiCacheService(_AwsService):
         limits['Nodes'] = AwsLimit(
             'Nodes',
             self,
-            50,
+            100,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElastiCache::CacheNode',
