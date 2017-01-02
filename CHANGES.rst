@@ -30,6 +30,9 @@ See `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en
   for refresh to finish. See
   `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_
   for further information.
+* `#241 <https://github.com/jantman/awslimitchecker/issues/241>`_ / `PR #242 <https://github.com/jantman/awslimitchecker/pull/242>`_ -
+  Fix default ElastiCache/Nodes limit from 50 to 100, as that's `now <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_elasticache>`_
+  what the docs say.
 
 0.6.0 (2016-11-12)
 ------------------
