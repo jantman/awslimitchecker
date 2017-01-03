@@ -99,7 +99,7 @@ class Test_FirehoseService(object):
                 response_streams.append(stream_name)
         mock_conn = Mock()
         mock_conn.list_delivery_streams.side_effect = responses
-        cls = _FirehoseService(21, 43, region='us-west-2')
+        cls = _FirehoseService(21, 43, {'region_name': 'us-west-2'})
         cls.conn = mock_conn
         cls.find_usage()
         assert mock_conn.list_delivery_streams.call_count == len(responses)
