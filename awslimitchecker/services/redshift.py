@@ -42,6 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
 
@@ -67,29 +68,28 @@ class _RedshiftService(_AwsService):
         logger.debug("Done checking usage.")
 
     def _find_cluster_manual_snapshots(self):
-        snapshots = self.conn.describe_cluster_snapshots(SnapshotType='manual')
-        usage = len(snapshots['Snapshots'])
-        while snapshots.get('Marker'):
-            marker = snapshots['Marker']
-            snapshots = self.conn.describe_cluster_snapshots(
-                Marker=marker, SnapshotType='manual')
-            usage += len(snapshots['Snapshots'])
+        results = paginate_dict(
+            self.conn.describe_cluster_snapshots,
+            alc_marker_path=['Marker'],
+            alc_data_path=['Snapshots'],
+            alc_marker_param='Marker',
+            SnapshotType='manual'
+        )
         self.limits['Redshift manual snapshots']._add_current_usage(
-            usage,
+            len(results['Snapshots']),
             resource_id=self.region,
             aws_type='AWS::Redshift::Snapshot',
         )
 
     def _find_cluster_subnet_groups(self):
-        subnet_groups = self.conn.describe_cluster_subnet_groups()
-        usage = len(subnet_groups['ClusterSubnetGroups'])
-        while subnet_groups.get('Marker'):
-            marker = subnet_groups['Marker']
-            subnet_groups = self.conn.describe_cluster_subnet_groups(
-                Marker=marker)
-            usage += len(subnet_groups['ClusterSubnetGroups'])
+        results = paginate_dict(
+            self.conn.describe_cluster_subnet_groups,
+            alc_marker_path=['Marker'],
+            alc_data_path=['ClusterSubnetGroups'],
+            alc_marker_param='Marker'
+        )
         self.limits['Redshift subnet groups']._add_current_usage(
-            usage,
+            len(results['ClusterSubnetGroups']),
             resource_id=self.region,
             aws_type='AWS::Redshift::SubnetGroup',
         )
