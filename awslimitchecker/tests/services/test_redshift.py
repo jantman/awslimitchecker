@@ -73,6 +73,7 @@ class Test_RedshiftService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Redshift manual snapshots',
+            'Redshift subnet groups',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -94,6 +95,7 @@ class Test_RedshiftService(object):
             with patch.multiple(
                 pb,
                 _find_cluster_manual_snapshots=DEFAULT,
+                _find_cluster_subnet_groups=DEFAULT,
             ) as mocks:
                 cls = _RedshiftService(21, 43)
                 cls.conn = mock_conn
@@ -104,6 +106,7 @@ class Test_RedshiftService(object):
         assert mock_conn.mock_calls == []
         for x in [
             '_find_cluster_manual_snapshots',
+            '_find_cluster_subnet_groups',
         ]:
             assert mocks[x].mock_calls == [call()]
 
@@ -125,8 +128,25 @@ class Test_RedshiftService(object):
         assert cls.limits[limit_key].get_current_usage()[
             0].get_value() == 2
 
+    def test_find_usage_subnet_groups(self):
+        response = result_fixtures.Redshift.test_describe_cluster_subnet_groups
+        limit_key = 'Redshift subnet groups'
+
+        mock_conn = Mock()
+        mock_conn.describe_cluster_subnet_groups.return_value = response
+
+        cls = _RedshiftService(21, 43)
+        cls.conn = mock_conn
+        cls._find_cluster_subnet_groups()
+
+        assert mock_conn.mock_calls == [call.describe_cluster_subnet_groups()]
+        assert len(cls.limits[limit_key].get_current_usage()) == 1
+        assert cls.limits[limit_key].get_current_usage()[
+            0].get_value() == 3
+
     def test_required_iam_permissions(self):
         cls = _RedshiftService(21, 43)
         assert cls.required_iam_permissions() == [
             "redshift:DescribeClusterSnapshots",
+            "redshift:DescribeClusterSubnetGroups",
         ]

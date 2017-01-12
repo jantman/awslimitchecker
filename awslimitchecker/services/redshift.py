@@ -62,6 +62,7 @@ class _RedshiftService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_cluster_manual_snapshots()
+        self._find_cluster_subnet_groups()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -77,6 +78,20 @@ class _RedshiftService(_AwsService):
             usage,
             resource_id=self.region,
             aws_type='AWS::Redshift::Snapshot',
+        )
+
+    def _find_cluster_subnet_groups(self):
+        subnet_groups = self.conn.describe_cluster_subnet_groups()
+        usage = len(subnet_groups['ClusterSubnetGroups'])
+        while subnet_groups.get('Marker'):
+            marker = subnet_groups['Marker']
+            subnet_groups = self.conn.describe_cluster_subnet_groups(
+                Marker=marker)
+            usage += len(subnet_groups['ClusterSubnetGroups'])
+        self.limits['Redshift subnet groups']._add_current_usage(
+            usage,
+            resource_id=self.region,
+            aws_type='AWS::Redshift::SubnetGroup',
         )
 
     def get_limits(self):
@@ -98,6 +113,14 @@ class _RedshiftService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::Redshift::Snapshot',
         )
+        limits['Redshift subnet groups'] = AwsLimit(
+            'Redshift subnet groups',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Redshift::SubnetGroup',
+        )
         self.limits = limits
         return limits
 
@@ -112,4 +135,5 @@ class _RedshiftService(_AwsService):
         """
         return [
             "redshift:DescribeClusterSnapshots",
+            "redshift:DescribeClusterSubnetGroups",
         ]

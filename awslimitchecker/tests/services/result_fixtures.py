@@ -2107,3 +2107,77 @@ class Redshift(object):
             }
         ]
     }
+
+    test_describe_cluster_subnet_groups = {
+        "ClusterSubnetGroups": [
+            {
+                "Subnets": [
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-1",
+                        "SubnetAvailabilityZone": {
+                            "Name": "region-name"
+                        }
+                    },
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-2",
+                        "SubnetAvailabilityZone": {
+                            "Name": "alt-region-name"
+                        }
+                    }
+                ],
+                "VpcId": "vpc-1",
+                "Description": "Redshift Subnet Group for Test1",
+                "Tags": [],
+                "SubnetGroupStatus": "Complete",
+                "ClusterSubnetGroupName": "groupname1"
+            },
+            {
+                "Subnets": [
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-3",
+                        "SubnetAvailabilityZone": {
+                            "Name": "alt-region-name"
+                        }
+                    },
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-4",
+                        "SubnetAvailabilityZone": {
+                            "Name": "region-name"
+                        }
+                    }
+                ],
+                "VpcId": "vpc-2",
+                "Description": "Redshift Subnet Group for Test2",
+                "Tags": [],
+                "SubnetGroupStatus": "Complete",
+                "ClusterSubnetGroupName": "groupname2"
+            },
+            {
+                "Subnets": [
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-5",
+                        "SubnetAvailabilityZone": {
+                            "Name": "alt-region-name"
+                        }
+                    },
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-6",
+                        "SubnetAvailabilityZone": {
+                            "Name": "region-name"
+                        }
+                    }
+                ],
+                "VpcId": "vpc-3",
+                "Description": "Redshift Subnet Group for Test3",
+                "Tags": [],
+                "SubnetGroupStatus": "Complete",
+                "ClusterSubnetGroupName": "groupname3"
+            }
+        ]
+    }
