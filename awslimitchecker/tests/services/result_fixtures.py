@@ -2041,3 +2041,69 @@ class Firehose(object):
             }
         }
     ]
+
+
+class Redshift(object):
+
+    test_describe_cluster_snapshots = {
+        'Snapshots': [
+            {
+                "EstimatedSecondsToCompletion": 0,
+                "OwnerAccount": "123456789",
+                "CurrentBackupRateInMegaBytesPerSecond": 1.0,
+                "ActualIncrementalBackupSizeInMegaBytes": 1.0,
+                "NumberOfNodes": 1,
+                "Status": "available",
+                "VpcId": "vpc-123456",
+                "ClusterVersion": "1.0",
+                "Tags": [],
+                "MasterUsername": "username",
+                "TotalBackupSizeInMegaBytes": 10.0,
+                "DBName": "test",
+                "BackupProgressInMegaBytes": 4.0,
+                "ClusterCreateTime": "2017-01-01T00:00:00.000Z",
+                "RestorableNodeTypes": [
+                    "dc1.large"
+                ],
+                "EncryptedWithHSM": False,
+                "ClusterIdentifier": "test12346",
+                "SnapshotCreateTime": "2017-01-04T00:00:00.000Z",
+                "AvailabilityZone": "us-east-1e",
+                "NodeType": "dc1.large",
+                "Encrypted": False,
+                "ElapsedTimeInSeconds": 0,
+                "SnapshotType": "manual",
+                "Port": 1234,
+                "SnapshotIdentifier": "snapshot1"
+            },
+            {
+                "EstimatedSecondsToCompletion": 0,
+                "OwnerAccount": "123456789",
+                "CurrentBackupRateInMegaBytesPerSecond": 1.0,
+                "ActualIncrementalBackupSizeInMegaBytes": 1.0,
+                "NumberOfNodes": 1,
+                "Status": "available",
+                "VpcId": "vpc-123456",
+                "ClusterVersion": "1.0",
+                "Tags": [],
+                "MasterUsername": "username",
+                "TotalBackupSizeInMegaBytes": 10.0,
+                "DBName": "test",
+                "BackupProgressInMegaBytes": 4.0,
+                "ClusterCreateTime": "2017-01-01T00:00:00.000Z",
+                "RestorableNodeTypes": [
+                    "dc1.large"
+                ],
+                "EncryptedWithHSM": False,
+                "ClusterIdentifier": "test12346",
+                "SnapshotCreateTime": "2017-01-04T00:00:00.000Z",
+                "AvailabilityZone": "us-east-1e",
+                "NodeType": "dc1.large",
+                "Encrypted": False,
+                "ElapsedTimeInSeconds": 0,
+                "SnapshotType": "manual",
+                "Port": 1234,
+                "SnapshotIdentifier": "snapshot2"
+            }
+        ]
+    }
