@@ -48,7 +48,6 @@ import onetimepass as otp
 from awslimitchecker.utils import dict2cols
 from awslimitchecker.limit import SOURCE_TA, SOURCE_API
 from awslimitchecker.checker import AwsLimitChecker
-from awslimitchecker.connectable import Connectable
 from awslimitchecker.tests.support import LogRecordHelper
 
 if python_implementation() == 'CPython':
@@ -124,8 +123,6 @@ class TestIntegration(object):
           :py:meth:`~.support.LogRecordHelper.unexpected_logs`
         :type allow_endpoint_error: bool
         """
-        # clear the Connectable credentials
-        Connectable.credentials = None
         # destroy boto3's session, so it creates a new one
         boto3.DEFAULT_SESSION = None
         # set the env vars to the creds we want
@@ -215,8 +212,6 @@ class TestIntegration(object):
           :py:meth:`~.support.LogRecordHelper.unexpected_logs`
         :type allow_endpoint_error: bool
         """
-        # clear the Connectable credentials
-        Connectable.credentials = None
         # destroy boto3's session, so it creates a new one
         boto3.DEFAULT_SESSION = None
         # set the env vars to the creds we want

@@ -51,9 +51,7 @@ class _AwsService(Connectable):
     api_name = 'baseclass'
 
     def __init__(self, warning_threshold, critical_threshold,
-                 profile_name=None, account_id=None, account_role=None,
-                 region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None):
+                 boto_connection_kwargs={}):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -101,14 +99,7 @@ class _AwsService(Connectable):
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
-        self.profile_name = profile_name
-        self.account_id = account_id
-        self.account_role = account_role
-        self.region = region
-        self.external_id = external_id
-        self.mfa_serial_number = mfa_serial_number
-        self.mfa_token = mfa_token
-
+        self._boto3_connection_kwargs = boto_connection_kwargs
         self.limits = {}
         self.limits = self.get_limits()
         self.conn = None
