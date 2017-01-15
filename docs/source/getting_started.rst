@@ -16,7 +16,13 @@ What It Does
 - Define custom thresholds per-limit
 - Where possible, pull current limits from Trusted Advisor API
 - Supports explicitly setting the AWS region
-- Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
+- Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_
+  to assume roles in other accounts, including using ``external_id``.
+- Optionally refresh Trusted Advisor "Service Limits" check before polling
+  Trusted Advisor data, and optionally wait for the refresh to complete (up to
+  an optional maximum time limit). See
+  :ref:`Getting Started - Trusted Advisor <getting_started.trusted_advisor>`
+  for more information.
 
 .. _getting_started.nomenclature:
 
@@ -51,7 +57,10 @@ Threshold
 Requirements
 ------------
 
-* Python 2.6 through 3.5 (it should work, but is no longer tested, with PyPy and PyPy3).
+* Python 2.6, 2.7, 3.3+. It should work, but is no longer tested, with PyPy and
+  PyPy3. Python 3.2 support is deprecated as of 0.7.0 and
+  `will be removed <https://github.com/jantman/awslimitchecker/issues/236>`_
+  in the next release.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.2.3
 
@@ -121,6 +130,64 @@ Regions
 To specify the region that ``awslimitchecker`` connects to, use the ``-r`` / ``--region``
 command line option. At this time awslimitchecker can only connect to one region at a time;
 to check limits in multiple regions, simply run the script multiple times, once per region.
+
+.. _getting_started.trusted_advisor:
+
+Trusted Advisor
+---------------
+
+awslimitchecker supports retrieving your current service limits via the
+`Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
+`"Service Limits" performance check <https://aws.amazon.com/premiumsupport/trustedadvisor/best-practices/#performance>`_
+, for limits which Trusted Advisor tracks (currently a subset of what awslimitchecker
+knows about). The results of this check may not be available via the API for all
+accounts; as of December 2016, the Trusted Advisor documentation states that while
+this check is available for all accounts, API access is only available to accounts
+with Business- or Enterprise-level support plans. If your account does not have
+Trusted Advisor access, the API call will result in a ``SubscriptionRequiredException``
+and awslimitchecker will log a ``Cannot check TrustedAdvisor`` message at
+warning level.
+
+Trusted Advisor information is important to awslimitchecker, however, as it provides
+the current service limit values for a number of limits that cannot be obtained
+any other way. While you can completely disable Trusted Advisor polling via the
+``--skip-ta`` command-line option, you will then be left with default service
+limit values for many limits.
+
+As of 0.7.0, awslimitchecker also supports programmatically refreshing the
+"Service Limits" Trusted Advisor check, in order to get updated limit values. If
+this is not done, the data provided by Trusted Advisor may not be updated unless
+a human does so via the AWS Console. The refresh logic operates in one of three
+modes, controlled by command-line options (these are also exposed in the Python
+API; see the "Internals" link below):
+
+* ``--ta-refresh-wait`` - The check will be refreshed and awslimitchecker will
+  poll every 30 seconds waiting for the refresh to complete (or until
+  ``ta_refresh_timeout`` seconds have elapsed).
+* ``--ta-refresh-older INTEGER`` - This operates like the ``--ta-refresh-wait``
+  option, but will only refresh the check if its current result data is at least
+  ``INTEGER`` seconds old.
+* ``--ta-refresh-trigger`` - The check will be refreshed and the program will
+  continue on immediately, without waiting for the refresh to
+  complete; this will almost certainly result in stale check results in the current
+  run. However, this may be useful if you desire to keep ``awslimitchecker`` runs
+  short, and run it on a regular schedule (i.e. if you run ``awslimitchecker``
+  every 6 hours, and are OK with Trusted Advisor check data being 6 hours old).
+
+Additionally, there is a ``--ta-refresh-timeout`` option. If this is set (to an integer),
+refreshes of the check will time out after that number of seconds. If a timeout
+occurs, a message will be logged at error level, but the program will continue
+running (most likely using the old result data).
+
+**Important:** It may take 30 to 60 *minutes* for the Service Limits check to
+refresh on large accounts. Please be aware of this when enabling the refresh
+options.
+
+Using the check refresh options will require the ``trustedadvisor:RefreshCheck``
+IAM permission.
+
+See :ref:`Internals - Trusted Advisor <internals.trusted_advisor>` for technical
+information on the implementation of Trusted Advisor polling.
 
 .. _getting_started.permissions:
 

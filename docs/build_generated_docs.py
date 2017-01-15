@@ -7,7 +7,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -102,6 +102,7 @@ def build_limits(checker):
     for svc_name in sorted(limits):
         ta_limits[svc_name] = []
         api_limits[svc_name] = []
+        limit_info += '.. _limits.%s:\n\n' % svc_name
         limit_info += svc_name + "\n"
         limit_info += ('+' * (len(svc_name)+1)) + "\n"
         if svc_name == 'EC2':

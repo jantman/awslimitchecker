@@ -29,7 +29,10 @@ use as a Nagios-compatible plugin).
                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
                           [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
                           [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
-                          [-r REGION] [--skip-ta] [--no-color] [-v] [-V]
+                          [-r REGION] [--skip-ta]
+                          [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
+                          [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
+                          [-v] [-V]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -78,6 +81,22 @@ use as a Nagios-compatible plugin).
                            AWS region name to connect to; required for STS
      --skip-ta             do not attempt to pull *any* information on limits
                            from Trusted Advisor
+     --ta-refresh-wait     If applicable, refresh all Trusted Advisor limit-
+                           related checks, and wait for the refresh to complete
+                           before continuing.
+     --ta-refresh-trigger  If applicable, trigger refreshes for all Trusted
+                           Advisor limit-related checks, but do not wait for them
+                           to finish refreshing; trigger the refresh and continue
+                           on (useful to ensure checks are refreshed before the
+                           next scheduled run).
+     --ta-refresh-older TA_REFRESH_OLDER
+                           If applicable, trigger refreshes for all Trusted
+                           Advisor limit-related checks with results more than
+                           this number of seconds old. Wait for the refresh to
+                           complete before continuing.
+     --ta-refresh-timeout TA_REFRESH_TIMEOUT
+                           If waiting for TA checks to refresh, wait up to this
+                           number of seconds before continuing on anyway.
      --no-color            do not colorize output
      -v, --verbose         verbose output. specify twice for debug-level output.
      -V, --version         print version number and exit.
@@ -150,11 +169,11 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling groups                        650 (API)
+   AutoScaling/Auto Scaling groups                        800 (API)
    AutoScaling/Launch configurations                      1000 (API)
-   CloudFormation/Stacks                                  1000 (API)
+   CloudFormation/Stacks                                  1300 (API)
    EBS/Active snapshots                                   20000 (TA)
-   EBS/Active volumes                                     6500 (TA)
+   EBS/Active volumes                                     10000 (TA)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -171,9 +190,9 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   AutoScaling/Auto Scaling groups                        650 (API)
+   AutoScaling/Auto Scaling groups                        800 (API)
    AutoScaling/Launch configurations                      1000 (API)
-   CloudFormation/Stacks                                  1000 (API)
+   CloudFormation/Stacks                                  1300 (API)
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
    (...)
@@ -197,15 +216,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        492
-   AutoScaling/Launch configurations                      581
-   CloudFormation/Stacks                                  812
-   EBS/Active snapshots                                   15548
-   EBS/Active volumes                                     4937
+   AutoScaling/Auto Scaling groups                        601
+   AutoScaling/Launch configurations                      701
+   CloudFormation/Stacks                                  979
+   EBS/Active snapshots                                   17500
+   EBS/Active volumes                                     5527
    (...)
-   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-e93a (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=37 (vpc-ae7bc5cb=1, vpc-1e5 (...)
-   VPC/VPCs                                               13
+   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-a082 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-7bcef71f=1, vpc-e2e (...)
+   VPC/VPCs                                               12
 
 
 
@@ -228,9 +247,9 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    (venv)$ awslimitchecker -L "AutoScaling/Auto Scaling groups"=321 --limit="AutoScaling/Launch configurations"=456 -l
    AutoScaling/Auto Scaling groups                        321
    AutoScaling/Launch configurations                      456
-   CloudFormation/Stacks                                  1000 (API)
+   CloudFormation/Stacks                                  1300 (API)
    EBS/Active snapshots                                   20000 (TA)
-   EBS/Active volumes                                     6500 (TA)
+   EBS/Active volumes                                     10000 (TA)
    (...)
    VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
@@ -266,15 +285,16 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   CloudFormation/Stacks                                  (limit 1000) WARNING: 812
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=983
-   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-c2d513fb=5 WARNING: e (...)
-   ELB/Active load balancers                              (limit 600) WARNING: 493
-   ElastiCache/Clusters                                   (limit 50) WARNING: 44
-   (...)
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 382
-   S3/Buckets                                             (limit 100) CRITICAL: 224
-   VPC/NAT gateways                                       (limit 5) CRITICAL: 8
+   EBS/Active snapshots                                   (limit 20000) WARNING: 17500
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=996
+   EC2/VPC security groups per elastic network interface  (limit 5) WARNING: eni-63c2c58f=4, eni-65290b (...)
+   ElastiCache/Clusters                                   (limit 50) CRITICAL: 61
+   ElastiCache/Nodes                                      (limit 50) CRITICAL: 61
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 2078
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 146
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 451
+   IAM/Instance profiles                                  (limit 1000) WARNING: 817
+   S3/Buckets                                             (limit 100) CRITICAL: 293
 
 
 
@@ -286,12 +306,13 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=983
-   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-c2d513fb=5
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 1761
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 133
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 382
-   S3/Buckets                                             (limit 100) CRITICAL: 224
+   EC2/Security groups per VPC            (limit 500) CRITICAL: vpc-c89074a9=996
+   ElastiCache/Clusters                   (limit 50) CRITICAL: 61
+   ElastiCache/Nodes                      (limit 50) CRITICAL: 61
+   ElasticBeanstalk/Application versions  (limit 500) CRITICAL: 2078
+   ElasticBeanstalk/Applications          (limit 25) CRITICAL: 146
+   ElasticBeanstalk/Environments          (limit 200) CRITICAL: 451
+   S3/Buckets                             (limit 100) CRITICAL: 293
 
 
 

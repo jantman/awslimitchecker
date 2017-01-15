@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -104,6 +104,7 @@ class TestAwsLimitCheckerRunner(object):
         res = self.cls.parse_args(argv)
         assert isinstance(res, argparse.Namespace)
         assert res.version is True
+        assert res.ta_refresh_mode is None
 
     def test_parse_args_parser(self):
         argv = ['-V']
@@ -117,7 +118,9 @@ class TestAwsLimitCheckerRunner(object):
                  'information on the source code location.'
         with patch('awslimitchecker.runner.argparse.ArgumentParser',
                    spec_set=argparse.ArgumentParser) as mock_parser:
-                self.cls.parse_args(argv)
+            mock_result = Mock(ta_refresh_wait=True)
+            mock_parser.return_value.parse_args.return_value = mock_result
+            self.cls.parse_args(argv)
         assert mock_parser.mock_calls == [
             call(description=desc, epilog=epilog),
             call().add_argument('-S', '--service', action='store', default=None,
@@ -188,6 +191,35 @@ class TestAwsLimitCheckerRunner(object):
             call().add_argument('--skip-ta', action='store_true', default=False,
                                 help='do not attempt to pull *any* information '
                                 'on limits from Trusted Advisor'),
+            call().add_mutually_exclusive_group(),
+            call().add_mutually_exclusive_group().add_argument(
+                '--ta-refresh-wait', action='store_true', default=False,
+                dest='ta_refresh_wait',
+                help='If applicable, refresh all Trusted Advisor limit-related '
+                     'checks, and wait for the refresh to complete before '
+                     'continuing.'),
+            call().add_mutually_exclusive_group().add_argument(
+                '--ta-refresh-trigger', action='store_true', default=False,
+                dest='ta_refresh_trigger',
+                help='If applicable, trigger refreshes for all Trusted '
+                     'Advisor limit-related checks, but do not wait for '
+                     'them to finish refreshing; trigger the refresh and '
+                     'continue on (useful to ensure checks are refreshed '
+                     'before the next scheduled run).'),
+            call().add_mutually_exclusive_group().add_argument(
+                '--ta-refresh-older', action='store', default=None,
+                dest='ta_refresh_older',
+                help='If applicable, trigger refreshes for all Trusted '
+                     'Advisor limit-related checks with results more than '
+                     'this number of seconds old. Wait for the refresh to '
+                     'complete before continuing.',
+                type=int),
+            call().add_argument('--ta-refresh-timeout', action='store',
+                                default=None, dest='ta_refresh_timeout',
+                                help='If waiting for TA checks to refresh, '
+                                     'wait up to this number of seconds '
+                                     'before continuing on anyway.',
+                                type=int),
             call().add_argument('--no-color', action='store_true',
                                 default=False,
                                 help='do not colorize output'),
@@ -200,8 +232,31 @@ class TestAwsLimitCheckerRunner(object):
                                 action='store_true',
                                 default=False,
                                 help='print version number and exit.'),
-            call().parse_args(argv),
+            call().parse_args(argv)
         ]
+
+    def test_parse_args_multiple_ta(self):
+        argv = ['--ta-refresh-wait', '--ta-refresh-older=100']
+        with pytest.raises(SystemExit):
+            self.cls.parse_args(argv)
+
+    def test_parse_args_ta_refresh_wait(self):
+        argv = ['--ta-refresh-wait']
+        res = self.cls.parse_args(argv)
+        assert isinstance(res, argparse.Namespace)
+        assert res.ta_refresh_mode == 'wait'
+
+    def test_parse_args_ta_refresh_trigger(self):
+        argv = ['--ta-refresh-trigger']
+        res = self.cls.parse_args(argv)
+        assert isinstance(res, argparse.Namespace)
+        assert res.ta_refresh_mode == 'trigger'
+
+    def test_parse_args_ta_refresh_older(self):
+        argv = ['--ta-refresh-older=123']
+        res = self.cls.parse_args(argv)
+        assert isinstance(res, argparse.Namespace)
+        assert res.ta_refresh_mode == 123
 
     def test_entry_version(self, capsys):
         argv = ['awslimitchecker', '-V']
@@ -226,7 +281,9 @@ class TestAwsLimitCheckerRunner(object):
                 external_id=None,
                 mfa_serial_number=None,
                 mfa_token=None,
-                profile_name=None
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
             ),
             call().get_project_url(),
             call().get_version()
@@ -580,7 +637,9 @@ class TestAwsLimitCheckerRunner(object):
                 external_id=None,
                 mfa_serial_number=None,
                 mfa_token=None,
-                profile_name=None
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
             )
         ]
         assert self.cls.service_name is None
@@ -616,7 +675,9 @@ class TestAwsLimitCheckerRunner(object):
                 external_id=None,
                 mfa_serial_number=None,
                 mfa_token=None,
-                profile_name=None
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
             )
         ]
         assert self.cls.service_name is None
@@ -654,7 +715,9 @@ class TestAwsLimitCheckerRunner(object):
                 external_id='myextid',
                 mfa_serial_number=None,
                 mfa_token=None,
-                profile_name=None
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
             )
         ]
         assert self.cls.service_name is None
@@ -700,9 +763,19 @@ class TestAwsLimitCheckerRunner(object):
                         self.cls.console_entry_point()
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
-            call(warning_threshold=50, critical_threshold=99, account_id=None,
-                 account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None, profile_name=None)
+            call(
+                warning_threshold=50,
+                critical_threshold=99,
+                account_id=None,
+                account_role=None,
+                region=None,
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None,
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
+            )
         ]
 
     def test_entry_warning_profile_name(self):
@@ -716,9 +789,19 @@ class TestAwsLimitCheckerRunner(object):
                         self.cls.console_entry_point()
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
-            call(warning_threshold=50, critical_threshold=99, account_id=None,
-                 account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None, profile_name='myprof')
+            call(
+                warning_threshold=50,
+                critical_threshold=99,
+                account_id=None,
+                account_role=None,
+                region=None,
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None,
+                profile_name='myprof',
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
+            )
         ]
 
     def test_entry_critical(self):
@@ -732,9 +815,46 @@ class TestAwsLimitCheckerRunner(object):
                         self.cls.console_entry_point()
         assert excinfo.value.code == 9
         assert mock_alc.mock_calls == [
-            call(warning_threshold=80, critical_threshold=95, account_id=None,
-                 account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None, profile_name=None)
+            call(
+                warning_threshold=80,
+                critical_threshold=95,
+                account_id=None,
+                account_role=None,
+                region=None,
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None,
+                profile_name=None,
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
+            )
+        ]
+
+    def test_entry_critical_ta_refresh(self):
+        argv = ['awslimitchecker', '-C', '95', '--ta-refresh-timeout=123',
+                '--ta-refresh-older=456']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_alc:
+                with patch('%s.Runner.check_thresholds' % pb,
+                           autospec=True) as mock_ct:
+                    with pytest.raises(SystemExit) as excinfo:
+                        mock_ct.return_value = 9
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 9
+        assert mock_alc.mock_calls == [
+            call(
+                warning_threshold=80,
+                critical_threshold=95,
+                account_id=None,
+                account_role=None,
+                region=None,
+                external_id=None,
+                mfa_serial_number=None,
+                mfa_token=None,
+                profile_name=None,
+                ta_refresh_mode=456,
+                ta_refresh_timeout=123
+            )
         ]
 
     def test_entry_check_thresholds(self):

@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+import warnings
 import argparse
 import logging
 import json
@@ -161,6 +162,30 @@ class Runner(object):
         p.add_argument('--skip-ta', action='store_true', default=False,
                        help='do not attempt to pull *any* information on limits'
                        ' from Trusted Advisor')
+        g = p.add_mutually_exclusive_group()
+        g.add_argument('--ta-refresh-wait', dest='ta_refresh_wait',
+                       action='store_true', default=False,
+                       help='If applicable, refresh all Trusted Advisor '
+                            'limit-related checks, and wait for the refresh to'
+                            ' complete before continuing.')
+        g.add_argument('--ta-refresh-trigger', dest='ta_refresh_trigger',
+                       action='store_true', default=False,
+                       help='If applicable, trigger refreshes for all Trusted '
+                            'Advisor limit-related checks, but do not wait for '
+                            'them to finish refreshing; trigger the refresh '
+                            'and continue on (useful to ensure checks are '
+                            'refreshed before the next scheduled run).')
+        g.add_argument('--ta-refresh-older', dest='ta_refresh_older',
+                       action='store', type=int, default=None,
+                       help='If applicable, trigger refreshes for all Trusted '
+                            'Advisor limit-related checks with results more '
+                            'than this number of seconds old. Wait for the '
+                            'refresh to complete before continuing.')
+        p.add_argument('--ta-refresh-timeout', dest='ta_refresh_timeout',
+                       type=int, action='store', default=None,
+                       help='If waiting for TA checks to refresh, wait up to '
+                            'this number of seconds before continuing on '
+                            'anyway.')
         p.add_argument('--no-color', action='store_true', default=False,
                        help='do not colorize output')
         p.add_argument('-v', '--verbose', dest='verbose', action='count',
@@ -171,6 +196,13 @@ class Runner(object):
                        default=False,
                        help='print version number and exit.')
         args = p.parse_args(argv)
+        args.ta_refresh_mode = None
+        if args.ta_refresh_wait:
+            args.ta_refresh_mode = 'wait'
+        elif args.ta_refresh_trigger:
+            args.ta_refresh_mode = 'trigger'
+        elif args.ta_refresh_older is not None:
+            args.ta_refresh_mode = args.ta_refresh_older
         return args
 
     def list_services(self):
@@ -300,7 +332,7 @@ class Runner(object):
             logger.setLevel(logging.INFO)
         elif args.verbose > 1:
             # debug-level logging hacks
-            FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - " \
+            FORMAT = "%(asctime)s [%(levelname)s %(filename)s:%(lineno)s - " \
                      "%(name)s.%(funcName)s() ] %(message)s"
             debug_formatter = logging.Formatter(fmt=FORMAT)
             logger.handlers[0].setFormatter(debug_formatter)
@@ -322,7 +354,9 @@ class Runner(object):
             region=args.region,
             external_id=args.external_id,
             mfa_serial_number=args.mfa_serial_number,
-            mfa_token=args.mfa_token
+            mfa_token=args.mfa_token,
+            ta_refresh_mode=args.ta_refresh_mode,
+            ta_refresh_timeout=args.ta_refresh_timeout
         )
 
         if args.version:
@@ -337,26 +371,68 @@ class Runner(object):
 
         if args.list_services:
             self.list_services()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.list_defaults:
             self.list_defaults()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.list_limits:
             self.list_limits()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.iam_policy:
             self.iam_policy()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         if args.show_usage:
             self.show_usage()
+            if sys.version_info[0:2] == (3, 2):
+                warnings.warn("Python 3.2 support will be removed in the "
+                              "next release; see https://github.com/jantman/"
+                              "awslimitchecker/issues/236", DeprecationWarning)
+                logger.warning("Python 3.2 support will be removed in the "
+                               "next release; see https://github.com/jantman/"
+                               "awslimitchecker/issues/236")
             raise SystemExit(0)
 
         # else check
         res = self.check_thresholds()
+        if sys.version_info[0:2] == (3, 2):
+            warnings.warn("Python 3.2 support will be removed in the "
+                          "next release; see https://github.com/jantman/"
+                          "awslimitchecker/issues/236", DeprecationWarning)
+            logger.warning("Python 3.2 support will be removed in the "
+                           "next release; see https://github.com/jantman/"
+                           "awslimitchecker/issues/236")
         raise SystemExit(res)
 
 

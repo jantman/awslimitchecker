@@ -28,6 +28,10 @@ updated from Trusted Advisor:
 
   * Launch configurations
 
+* CloudFormation
+
+  * Stacks
+
 * EBS
 
   * Active snapshots
@@ -57,6 +61,8 @@ updated from Trusted Advisor:
   * Running On-Demand c4.4xlarge instances
 
   * Running On-Demand c4.large instances
+
+  * Running On-Demand c4.xlarge instances
 
   * Running On-Demand m3.2xlarge instances
 
@@ -103,6 +109,8 @@ updated from Trusted Advisor:
   * Groups
 
   * Instance profiles
+
+  * Policies
 
   * Roles
 
@@ -230,6 +238,8 @@ The section below lists every limit that this version of awslimitchecker knows
 how to check, and its hard-coded default value (per AWS documentation). Limits
 marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 
+.. _limits.AutoScaling:
+
 AutoScaling
 ++++++++++++
 
@@ -240,14 +250,18 @@ Auto Scaling groups :sup:`(TA)` :sup:`(API)`   20
 Launch configurations :sup:`(TA)` :sup:`(API)` 100
 ============================================== ===
 
+.. _limits.CloudFormation:
+
 CloudFormation
 +++++++++++++++
 
-=================== ===
-Limit               Default
-=================== ===
-Stacks :sup:`(API)` 200
-=================== ===
+=============================== ===
+Limit                           Default
+=============================== ===
+Stacks :sup:`(TA)` :sup:`(API)` 200
+=============================== ===
+
+.. _limits.EBS:
 
 EBS
 ++++
@@ -264,6 +278,8 @@ Provisioned IOPS (SSD) storage (GiB) :sup:`(TA)`       20480
 Provisioned IOPS :sup:`(TA)`                           40000
 Throughput Optimized (HDD) volume storage (GiB)        20480
 ====================================================== =====
+
+.. _limits.EC2:
 
 EC2
 ++++
@@ -311,7 +327,7 @@ Running On-Demand c4.2xlarge instances :sup:`(TA)`             20
 Running On-Demand c4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand c4.8xlarge instances                         5   
 Running On-Demand c4.large instances :sup:`(TA)`               20  
-Running On-Demand c4.xlarge instances                          20  
+Running On-Demand c4.xlarge instances :sup:`(TA)`              20  
 Running On-Demand cc2.8xlarge instances                        20  
 Running On-Demand cg1.4xlarge instances                        2   
 Running On-Demand cr1.8xlarge instances                        2   
@@ -319,6 +335,8 @@ Running On-Demand d2.2xlarge instances                         20
 Running On-Demand d2.4xlarge instances                         10  
 Running On-Demand d2.8xlarge instances                         5   
 Running On-Demand d2.xlarge instances                          20  
+Running On-Demand f1.16xlarge instances                        20  
+Running On-Demand f1.2xlarge instances                         20  
 Running On-Demand g2.2xlarge instances                         5   
 Running On-Demand g2.8xlarge instances                         2   
 Running On-Demand hi1.4xlarge instances                        2   
@@ -352,18 +370,28 @@ Running On-Demand r3.4xlarge instances :sup:`(TA)`             10
 Running On-Demand r3.8xlarge instances                         5   
 Running On-Demand r3.large instances :sup:`(TA)`               20  
 Running On-Demand r3.xlarge instances :sup:`(TA)`              20  
+Running On-Demand r4.16xlarge instances                        20  
+Running On-Demand r4.2xlarge instances                         20  
+Running On-Demand r4.4xlarge instances                         20  
+Running On-Demand r4.8xlarge instances                         20  
+Running On-Demand r4.large instances                           20  
+Running On-Demand r4.xlarge instances                          20  
 Running On-Demand t1.micro instances :sup:`(TA)`               20  
+Running On-Demand t2.2xlarge instances                         20  
 Running On-Demand t2.large instances :sup:`(TA)`               20  
 Running On-Demand t2.medium instances :sup:`(TA)`              20  
 Running On-Demand t2.micro instances :sup:`(TA)`               20  
 Running On-Demand t2.nano instances                            20  
 Running On-Demand t2.small instances :sup:`(TA)`               20  
+Running On-Demand t2.xlarge instances                          20  
 Running On-Demand x1.16xlarge instances                        20  
 Running On-Demand x1.32xlarge instances                        20  
 Security groups per VPC                                        500 
 VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5   
 VPC security groups per elastic network interface :sup:`(API)` 5   
 ============================================================== ====
+
+.. _limits.ELB:
 
 ELB
 ++++
@@ -375,19 +403,23 @@ Active load balancers :sup:`(TA)` 20
 Listeners per load balancer       100
 ================================= ===
 
+.. _limits.ElastiCache:
+
 ElastiCache
 ++++++++++++
 
-================= ==
+================= ===
 Limit             Default
-================= ==
-Clusters          50
-Nodes             50
-Nodes per Cluster 20
-Parameter Groups  20
-Security Groups   50
-Subnet Groups     50
-================= ==
+================= ===
+Clusters          50 
+Nodes             100
+Nodes per Cluster 20 
+Parameter Groups  20 
+Security Groups   50 
+Subnet Groups     50 
+================= ===
+
+.. _limits.ElasticBeanstalk:
 
 ElasticBeanstalk
 +++++++++++++++++
@@ -400,6 +432,8 @@ Applications         25
 Environments         200
 ==================== ===
 
+.. _limits.Firehose:
+
 Firehose
 +++++++++
 
@@ -409,6 +443,8 @@ Limit                       Default
 Delivery streams per region 20
 =========================== ==
 
+.. _limits.IAM:
+
 IAM
 ++++
 
@@ -417,12 +453,14 @@ Limit                                        Default
 ============================================ =====
 Groups :sup:`(TA)` :sup:`(API)`              100  
 Instance profiles :sup:`(TA)` :sup:`(API)`   100  
-Policies :sup:`(API)`                        1000 
+Policies :sup:`(TA)` :sup:`(API)`            1000 
 Policy Versions In Use :sup:`(API)`          10000
 Roles :sup:`(TA)` :sup:`(API)`               250  
 Server certificates :sup:`(TA)` :sup:`(API)` 20   
 Users :sup:`(TA)` :sup:`(API)`               5000 
 ============================================ =====
+
+.. _limits.RDS:
 
 RDS
 ++++
@@ -447,6 +485,8 @@ Subnets per Subnet Group :sup:`(API)`                 20
 VPC Security Groups                                   5     
 ===================================================== ======
 
+.. _limits.S3:
+
 S3
 +++
 
@@ -456,6 +496,8 @@ Limit   Default
 Buckets 100
 ======= ===
 
+.. _limits.SES:
+
 SES
 ++++
 
@@ -464,6 +506,8 @@ Limit                                        Default
 ============================================ ===
 Daily sending quota :sup:`(TA)` :sup:`(API)` 200
 ============================================ ===
+
+.. _limits.VPC:
 
 VPC
 ++++

@@ -84,7 +84,7 @@ class _FirehoseService(_AwsService):
             usage += len(streams['DeliveryStreamNames'])
         self.limits['Delivery streams per region']._add_current_usage(
             usage,
-            resource_id=self.region,
+            resource_id=self._boto3_connection_kwargs['region_name'],
             aws_type='AWS::KinesisFirehose::DeliveryStream',
         )
 

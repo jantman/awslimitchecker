@@ -1,6 +1,61 @@
 Changelog
 =========
 
+0.7.0 (2017-01-15)
+------------------
+
+This release deprecates support for Python 3.2. It will be removed in the
+next release.
+
+This release introduces support for automatically refreshing Trusted Advisor
+checks on accounts that support this. If you use this new feature,
+awslimitchecker will require a new permission, ``trustedadvisor:RefreshCheck``.
+See `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_ for further information.
+
+* `#231 <https://github.com/jantman/awslimitchecker/issues/231>`_ - add support
+  for new f1, r4 and t2.(xlarge|2xlarge) instance types, introduced in November
+  2016.
+* `#230 <https://github.com/jantman/awslimitchecker/issues/230>`_ - replace the
+  built-in ``versioncheck.py`` with `versionfinder <http://versionfinder.readthedocs.io/en/latest/>`_. Remove all of the many versioncheck tests.
+* `#233 <https://github.com/jantman/awslimitchecker/issues/233>`_ - refactor
+  tests to replace yield-based tests with parametrize, as yield-based tests are
+  deprecated and will be removed in pytest 4.
+* `#235 <https://github.com/jantman/awslimitchecker/issues/235>`_ - Deprecate
+  Python 3.2 support. There don't appear to have been any downloads on py32
+  in the last 6 months, and the effort to support it is too high.
+* A bunch of Sphinx work to use README.rst in the generated documentation.
+* Changed DEBUG-level logging format to include timestamp.
+* `#239 <https://github.com/jantman/awslimitchecker/issues/239>`_ - Support
+  refreshing Trusted Advisor check results during the run, and optionally waiting
+  for refresh to finish. See
+  `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_
+  for further information.
+* `#241 <https://github.com/jantman/awslimitchecker/issues/241>`_ / `PR #242 <https://github.com/jantman/awslimitchecker/pull/242>`_ -
+  Fix default ElastiCache/Nodes limit from 50 to 100, as that's `now <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_elasticache>`_
+  what the docs say.
+* `#220 <https://github.com/jantman/awslimitchecker/issues/220>`_ / `PR #243 <https://github.com/jantman/awslimitchecker/pull/243>`_ /
+  `PR #245 <https://github.com/jantman/awslimitchecker/pull/245>`_ - Fix for ExpiredTokenException Errors.
+  **awslimitchecker.connectable.credentials has been removed.**
+  In previous releases, awslimitchecker had been using a ``Connectable.credentials`` class attribute
+  to store AWS API credentials and share them between ``Connectable`` subclass instances. The side-effect
+  of this was that AWS credentials were set at the start of the Python process and never changed. For users
+  taking advantage of the Python API and either using short-lived STS credentials or using long-running
+  or threaded implementations, the same credentials persisted for the life of the process, and would often
+  result in ExpiredTokenExceptions. The fix was to move
+  `_boto_conn_kwargs <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker._boto_conn_kwargs>`_
+  and `_get_sts_token <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker._get_sts_token>`_
+  from `connectable <http://awslimitchecker.readthedocs.io/en/develop/awslimitchecker.connectable.html>`_ to the top-level
+  `AwsLimitChecker <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker>`_
+  class itself, get the value of the ``_boto_conn_kwargs`` property in the constructor, and pass that value in to all
+  ``Connectable`` subclasses. This means that each instance of AwsLimitChecker has its own unique connection-related kwargs
+  and credentials, and constructing a new instance will work intuitively - either use the newly-specified credentials,
+  or regenerate STS credentials if configured to use them. I have to extend my deepest gratitude to the folks who
+  identified and fixed this issue, specifically `cstewart87 <https://github.com/cstewart87>`_ for the initial
+  bug report and description, `aebie <https://github.com/aebie>`_ for the tireless and relentlessly thorough
+  investigation and brainstorming and for coordinating work for a fix, and `willusher <https://github.com/willusher>`_
+  for the final implementation and dealing (wonderfully) with the dizzying complexity of many of the unit tests
+  (and even matching the existing style).
+
 0.6.0 (2016-11-12)
 ------------------
 
@@ -76,7 +131,7 @@ This release requires the following new IAM permissions to function:
 0.5.0 (2016-07-06)
 ------------------
 
-This release includes a change to ``awslimitchecker``'s Python API. `awslimitchecker.limit.AwsLimit.get_limit <https://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.limit.html#awslimitchecker.limit.AwsLimit.get_limit>` can now return either an ``int`` or ``None``, as TrustedAdvisor now lists some service limits as being explicitly "unlimited".
+This release includes a change to ``awslimitchecker``'s Python API. `awslimitchecker.limit.AwsLimit.get_limit <https://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.limit.html#awslimitchecker.limit.AwsLimit.get_limit>`_ can now return either an ``int`` or ``None``, as TrustedAdvisor now lists some service limits as being explicitly "unlimited".
 
 * `#195 <https://github.com/jantman/awslimitchecker/issues/195>`_ - Handle TrustedAdvisor explicitly reporting some limits as "unlimited". This introduces the concept of unlimited limits, where the effective limit is ``None``.
 
