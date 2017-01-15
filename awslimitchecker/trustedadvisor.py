@@ -44,6 +44,7 @@ from .connectable import Connectable
 from datetime import datetime, timedelta
 from pytz import utc
 from time import sleep
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
@@ -114,8 +115,9 @@ class TrustedAdvisor(Connectable):
         self.have_ta = True
         self.ta_region = boto_connection_kwargs.get('region_name')
         # All Support/TA API connections are to us-east-1 only
-        boto_connection_kwargs['region_name'] = 'us-east-1'
-        self._boto3_connection_kwargs = boto_connection_kwargs
+        ta_kwargs = deepcopy(boto_connection_kwargs)
+        ta_kwargs['region_name'] = 'us-east-1'
+        self._boto3_connection_kwargs = ta_kwargs
         self.refresh_mode = ta_refresh_mode
         self.refresh_timeout = ta_refresh_timeout
         self.all_services = all_services
