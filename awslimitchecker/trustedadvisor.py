@@ -44,12 +44,12 @@ from .connectable import Connectable
 from datetime import datetime, timedelta
 from pytz import utc
 from time import sleep
+from copy import deepcopy
 
 logger = logging.getLogger(__name__)
 
 
 class TrustedAdvisor(Connectable):
-
     """
     Class to handle interaction with TrustedAdvisor API, polling TA and updating
     limits from TA information.
@@ -58,10 +58,8 @@ class TrustedAdvisor(Connectable):
     service_name = 'TrustedAdvisor'
     api_name = 'support'
 
-    def __init__(self, all_services, profile_name=None, account_id=None,
-                 account_role=None, region=None, external_id=None,
-                 mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
-                 ta_refresh_timeout=None):
+    def __init__(self, all_services, boto_connection_kwargs,
+                 ta_refresh_mode=None, ta_refresh_timeout=None):
         """
         Class to contain all TrustedAdvisor-related logic.
 
@@ -115,14 +113,11 @@ class TrustedAdvisor(Connectable):
         """
         self.conn = None
         self.have_ta = True
-        self.profile_name = profile_name
-        self.account_id = account_id
-        self.account_role = account_role
-        self.region = 'us-east-1'
-        self.ta_region = region
-        self.external_id = external_id
-        self.mfa_serial_number = mfa_serial_number
-        self.mfa_token = mfa_token
+        self.ta_region = boto_connection_kwargs.get('region_name')
+        # All Support/TA API connections are to us-east-1 only
+        ta_kwargs = deepcopy(boto_connection_kwargs)
+        ta_kwargs['region_name'] = 'us-east-1'
+        self._boto3_connection_kwargs = ta_kwargs
         self.refresh_mode = ta_refresh_mode
         self.refresh_timeout = ta_refresh_timeout
         self.all_services = all_services
@@ -226,8 +221,8 @@ class TrustedAdvisor(Connectable):
                 raise ex
         for check in checks:
             if (
-                    check['category'] == 'performance' and
-                    check['name'] == 'Service Limits'
+                            check['category'] == 'performance' and
+                            check['name'] == 'Service Limits'
             ):
                 logger.debug("Found TA check; id=%s", check['id'])
                 return (

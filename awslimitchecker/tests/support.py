@@ -162,6 +162,39 @@ class LogRecordHelper(object):
             ))
         return res
 
+    def verify_region(self, region_name):
+        """
+        Verify that all connection logs are to the specified region. Raise
+        an AssertionError otherwise.
+
+        :param region_name: expected region name
+        :type region_name: str
+        """
+        overall_region = None
+        support_region = None
+        service_regions = {}
+        for r in self.records:
+            if r.msg == 'Connected to %s in region %s':
+                if r.args[0] == 'support':
+                    support_region = r.args[1]
+                else:
+                    service_regions[r.args[0]] = r.args[1]
+            elif r.msg in [
+                'Connecting to region %s',
+                'Connecting to STS in region %s'
+            ]:
+                overall_region = r.args[0]
+        assert overall_region == region_name, "Expected overall connection " \
+                                              "region to be %s but got %s" \
+                                              "" % (region_name, overall_region)
+        assert support_region == 'us-east-1', "Expected Support API region " \
+                                              "to be us-east-1 but got %s" \
+                                              "" % support_region
+        for svc, rname in service_regions.items():
+            assert rname == region_name, "Expected service %s to connect to " \
+                                         "region %s, but connected to %s" % (
+                                             svc, region_name, rname)
+
     @property
     def num_ta_polls(self):
         """

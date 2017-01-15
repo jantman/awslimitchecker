@@ -72,55 +72,6 @@ class Connectable(object):
     connecting via regions and/or STS.
     """
 
-    # Class attribute to reuse credentials between calls
-    credentials = None
-
-    @property
-    def _boto3_connection_kwargs(self):
-        """
-        Generate keyword arguments for boto3 connection functions.
-        If ``self.account_id`` is None, this will just include
-        ``region_name=self.region``. Otherwise, call
-        :py:meth:`~._get_sts_token` to get STS token credentials using
-        `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
-        latest/reference/services/sts.html#STS.Client.assume_role>`_ and include
-        those credentials in the return value.
-
-        :return: keyword arguments for boto3 connection functions
-        :rtype: dict
-        """
-        kwargs = {'region_name': self.region}
-        if self.account_id is not None:
-            if Connectable.credentials is None:
-                logger.debug("Connecting for account %s role '%s' with STS "
-                             "(region: %s)", self.account_id, self.account_role,
-                             self.region)
-                Connectable.credentials = self._get_sts_token()
-            else:
-                if self.account_id == Connectable.credentials.account_id:
-                    logger.debug("Reusing previous STS credentials for "
-                                 "account %s", self.account_id)
-                else:
-                    logger.debug("Previous STS credentials are for account %s; "
-                                 "getting new credentials for current account "
-                                 "(%s)", Connectable.credentials.account_id,
-                                 self.account_id)
-                    Connectable.credentials = self._get_sts_token()
-            kwargs['aws_access_key_id'] = Connectable.credentials.access_key
-            kwargs['aws_secret_access_key'] = Connectable.credentials.secret_key
-            kwargs['aws_session_token'] = Connectable.credentials.session_token
-        elif self.profile_name is not None:
-            # use boto3.Session to get credentials from the named profile
-            logger.debug("Using credentials profile: %s", self.profile_name)
-            session = boto3.Session(profile_name=self.profile_name)
-            credentials = session._session.get_credentials()
-            kwargs['aws_access_key_id'] = credentials.access_key
-            kwargs['aws_secret_access_key'] = credentials.secret_key
-            kwargs['aws_session_token'] = credentials.token
-        else:
-            logger.debug("Connecting to region %s", self.region)
-        return kwargs
-
     def connect(self):
         """
         Connect to an AWS API via boto3 low-level client and set ``self.conn``
@@ -135,8 +86,8 @@ class Connectable(object):
             return
         kwargs = self._boto3_connection_kwargs
         self.conn = boto3.client(self.api_name, **kwargs)
-        logger.info("Connected to %s in region %s", self.api_name,
-                    self.conn._client_config.region_name)
+        logger.info("Connected to %s in region %s",
+                    self.api_name, self.conn._client_config.region_name)
 
     def connect_resource(self):
         """
@@ -155,41 +106,3 @@ class Connectable(object):
         self.resource_conn = boto3.resource(self.api_name, **kwargs)
         logger.info("Connected to %s (resource) in region %s", self.api_name,
                     self.resource_conn.meta.client._client_config.region_name)
-
-    def _get_sts_token(self):
-        """
-        Assume a role via STS and return the credentials.
-
-        First connect to STS via :py:func:`boto3.client`, then
-        assume a role using `boto3.STS.Client.assume_role <https://boto3.readthe
-        docs.org/en/latest/reference/services/sts.html#STS.Client.assume_role>`_
-        using ``self.account_id`` and ``self.account_role`` (and optionally
-        ``self.external_id``, ``self.mfa_serial_number``, ``self.mfa_token``).
-        Return the resulting :py:class:`~.ConnectableCredentials`
-        object.
-
-        :returns: STS assumed role credentials
-        :rtype: :py:class:`~.ConnectableCredentials`
-        """
-        logger.debug("Connecting to STS in region %s", self.region)
-        sts = boto3.client('sts', region_name=self.region)
-        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
-        logger.debug("STS assume role for %s", arn)
-        assume_kwargs = {
-            'RoleArn': arn,
-            'RoleSessionName': 'awslimitchecker'
-        }
-        if self.external_id is not None:
-            assume_kwargs['ExternalId'] = self.external_id
-        if self.mfa_serial_number is not None:
-            assume_kwargs['SerialNumber'] = self.mfa_serial_number
-        if self.mfa_token is not None:
-            assume_kwargs['TokenCode'] = self.mfa_token
-        role = sts.assume_role(**assume_kwargs)
-
-        creds = ConnectableCredentials(role)
-        creds.account_id = self.account_id
-
-        logger.debug("Got STS credentials for role; access_key_id=%s "
-                     "(account_id=%s)", creds.access_key, creds.account_id)
-        return creds
