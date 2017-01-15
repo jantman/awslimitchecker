@@ -167,6 +167,8 @@ class TestIntegration(object):
                 data["{s}/{l}".format(s=svc, l=lim)] = '{v}{t}'.format(
                     v=limits[svc][lim].get_limit(),
                     t=src_str)
+        # check that we connected to the right region
+        logs.verify_region(checker_args.get('region', REGION))
         # this is the normal Runner output
         print(dict2cols(data))
         if expect_api_source:
@@ -181,8 +183,6 @@ class TestIntegration(object):
         polls = logs.num_ta_polls
         assert polls == 1, "awslimitchecker should have polled Trusted " \
             "Advisor once, but polled %s times" % polls
-        # check that we connected to the right region
-        logs.verify_region(checker_args.get('region', REGION))
 
     @pytest.mark.integration
     @skip_if_pr
@@ -256,6 +256,8 @@ class TestIntegration(object):
                 for usage in limit.get_current_usage():
                     if usage.get_value() != 0:
                         have_usage = True
+        # check that we connected to the right region
+        logs.verify_region(checker_args.get('region', REGION))
         # this is the normal Runner command line output
         print(dict2cols(data))
         if expect_usage:
