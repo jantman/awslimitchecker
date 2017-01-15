@@ -50,7 +50,7 @@ if sys.version_info[0:2] != (3, 2):
     except ImportError:
         logger.error("Unable to import versionfinder", exc_info=True)
 
-_VERSION = '0.6.0'
+_VERSION = '0.7.0'
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
 
 

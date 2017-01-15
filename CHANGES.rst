@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.7.0 (unreleased)
+0.7.0 (2017-01-15)
 ------------------
 
 This release deprecates support for Python 3.2. It will be removed in the
