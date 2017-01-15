@@ -39,7 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from awslimitchecker.limit import AwsLimit
 import logging
-import re
 
 
 class LogRecordHelper(object):
@@ -188,15 +187,13 @@ class LogRecordHelper(object):
         assert overall_region == region_name, "Expected overall connection " \
                                               "region to be %s but got %s" \
                                               "" % (region_name, overall_region)
-        assert support_region == 'us-east-1', "Expected Support API region to " \
-                                              "be us-east-1 but got %s" \
+        assert support_region == 'us-east-1', "Expected Support API region " \
+                                              "to be us-east-1 but got %s" \
                                               "" % support_region
         for svc, rname in service_regions.items():
             assert rname == region_name, "Expected service %s to connect to " \
                                          "region %s, but connected to %s" % (
-                svc, region_name, rname
-            )
-
+                                             svc, region_name, rname)
 
     @property
     def num_ta_polls(self):
