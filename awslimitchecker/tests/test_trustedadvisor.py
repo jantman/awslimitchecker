@@ -82,7 +82,9 @@ class TestInit(object):
     def test_simple(self):
         cls = TrustedAdvisor({}, {})
         assert cls.conn is None
-        assert not cls._boto3_connection_kwargs
+        assert cls._boto3_connection_kwargs == {
+            'region_name': 'us-east-1'
+        }
         assert cls.all_services == {}
         assert cls.limits_updated is False
         assert cls.refresh_mode is None
@@ -104,7 +106,7 @@ class TestInit(object):
         )
         assert cls.conn is None
         cls_boto_args = cls._boto3_connection_kwargs
-        assert cls_boto_args.get('region_name') == 'myregion'
+        assert cls_boto_args.get('region_name') == 'us-east-1'
         assert cls_boto_args.get('aws_access_key_id') == 'myaccesskey'
         assert cls_boto_args.get('aws_secret_access_key') == 'mysecretkey'
         assert cls_boto_args.get('aws_session_token') == 'mytoken'

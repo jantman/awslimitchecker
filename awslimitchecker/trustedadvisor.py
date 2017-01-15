@@ -112,8 +112,9 @@ class TrustedAdvisor(Connectable):
         """
         self.conn = None
         self.have_ta = True
-        self.region = 'us-east-1'
         self.ta_region = boto_connection_kwargs.get('region_name')
+        # All Support/TA API connections are to us-east-1 only
+        boto_connection_kwargs['region_name'] = 'us-east-1'
         self._boto3_connection_kwargs = boto_connection_kwargs
         self.refresh_mode = ta_refresh_mode
         self.refresh_timeout = ta_refresh_timeout
