@@ -309,10 +309,10 @@ nitpick_ignore = [
 linkcheck_ignore = [
     r'https?://landscape\.io.*',
     r'https?://www\.virtualenv\.org.*',
-    r'https?://.*\.readthedocs\.org.*',
     r'https?://codecov\.io.*',
     r'https?://.*readthedocs\.org.*',
-    r'https?://waffle\.io.*'
+    r'https?://.*readthedocs\.io.*',
+    r'https?://waffle\.io.*',
 ]
 
 
