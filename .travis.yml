@@ -15,11 +15,13 @@ matrix:
       env: TOXENV=py34
     - python: "3.5"
       env: TOXENV=py35
+    - python: "3.6"
+      env: TOXENV=py36
     - python: "2.7"
       env: TOXENV=docs
     - python: "2.7"
       env: TOXENV=integration
-    - python: "3.4"
+    - python: "3.6"
       env: TOXENV=integration3
 install:
 - virtualenv --version; test $TOXENV = "py32" -o $TOXENV = "pypy3" && pip install --upgrade virtualenv==13.1.2 || /bin/true
