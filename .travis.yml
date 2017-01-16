@@ -1,8 +1,6 @@
 language: python
 sudo: false
-cache:
-  directories:
-  - "$HOME/.pip-cache/"
+cache: pip
 matrix:
   include:
     - python: "2.6"
