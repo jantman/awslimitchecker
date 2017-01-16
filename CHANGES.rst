@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.8.0 (unreleased)
+------------------
+
+* Various TravisCI/tox build fixes:
+
+  * Fix pip caching; use default pip cache directory
+  * Add python 3.6 tox env and Travis env, now that it's released
+  * Switch integration3 tox env from py3.4 to py3.6
+
 0.7.0 (2017-01-15)
 ------------------
 
