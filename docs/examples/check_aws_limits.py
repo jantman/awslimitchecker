@@ -9,7 +9,7 @@ The latest version of this package is available at:
 
 ################################################################################
 
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 

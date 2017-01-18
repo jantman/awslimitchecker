@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -69,7 +69,7 @@ class TestInit(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -80,61 +80,41 @@ class TestInit(object):
         }
 
     def test_simple(self):
-        cls = TrustedAdvisor({})
+        cls = TrustedAdvisor({}, {})
         assert cls.conn is None
-        assert cls.account_id is None
-        assert cls.account_role is None
-        assert cls.region == 'us-east-1'
-        assert cls.ta_region is None
-        assert cls.external_id is None
-        assert cls.mfa_serial_number is None
-        assert cls.mfa_token is None
+        assert cls._boto3_connection_kwargs == {
+            'region_name': 'us-east-1'
+        }
         assert cls.all_services == {}
         assert cls.limits_updated is False
         assert cls.refresh_mode is None
         assert cls.refresh_timeout is None
 
-    def test_sts(self):
+    def test_boto_kwargs(self):
         mock_svc = Mock(spec_set=_AwsService)
         mock_svc.get_limits.return_value = {}
+        boto_args = dict(region_name='myregion',
+                         aws_access_key_id='myaccesskey',
+                         aws_secret_access_key='mysecretkey',
+                         aws_session_token='mytoken')
+
         cls = TrustedAdvisor(
             {'foo': mock_svc},
-            account_id='aid',
-            account_role='role',
-            region='r',
+            boto_args,
             ta_refresh_mode=123,
             ta_refresh_timeout=456
         )
         assert cls.conn is None
-        assert cls.account_id == 'aid'
-        assert cls.account_role == 'role'
-        assert cls.region == 'us-east-1'
-        assert cls.ta_region == 'r'
-        assert cls.external_id is None
-        assert cls.mfa_serial_number is None
-        assert cls.mfa_token is None
+        cls_boto_args = cls._boto3_connection_kwargs
+        assert cls_boto_args.get('region_name') == 'us-east-1'
+        assert cls_boto_args.get('aws_access_key_id') == 'myaccesskey'
+        assert cls_boto_args.get('aws_secret_access_key') == 'mysecretkey'
+        assert cls_boto_args.get('aws_session_token') == 'mytoken'
+        assert cls.ta_region == 'myregion'
         assert cls.all_services == {'foo': mock_svc}
         assert cls.limits_updated is False
         assert cls.refresh_mode == 123
         assert cls.refresh_timeout == 456
-
-    def test_sts_external_id(self):
-        cls = TrustedAdvisor(
-            {}, account_id='aid', account_role='role', region='r',
-            external_id='myeid',
-            ta_refresh_mode='wait'
-        )
-        assert cls.conn is None
-        assert cls.account_id == 'aid'
-        assert cls.account_role == 'role'
-        assert cls.region == 'us-east-1'
-        assert cls.ta_region == 'r'
-        assert cls.external_id == 'myeid'
-        assert cls.mfa_serial_number is None
-        assert cls.mfa_token is None
-        assert cls.limits_updated is False
-        assert cls.refresh_mode == 'wait'
-        assert cls.refresh_timeout is None
 
 
 class TestUpdateLimits(object):
@@ -144,7 +124,7 @@ class TestUpdateLimits(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -193,7 +173,7 @@ class TestGetLimitCheckId(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -332,7 +312,7 @@ class TestPoll(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -720,7 +700,7 @@ class TestGetRefreshedCheckResult(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -858,7 +838,7 @@ class TestGetCheckResult(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -938,7 +918,7 @@ class TestCanRefreshCheck(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
     def test_true(self):
@@ -1016,7 +996,7 @@ class TestPollForRefresh(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
     def test_no_timeout(self):
@@ -1182,7 +1162,7 @@ class TestUpdateServices(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)
@@ -1264,7 +1244,7 @@ class TestMakeTAServiceDict(object):
         self.mock_client_config = Mock()
         type(self.mock_client_config).region_name = 'us-east-1'
         type(self.mock_conn)._client_config = self.mock_client_config
-        self.cls = TrustedAdvisor({})
+        self.cls = TrustedAdvisor({}, {})
         self.cls.conn = self.mock_conn
 
         self.mock_svc1 = Mock(spec_set=_AwsService)

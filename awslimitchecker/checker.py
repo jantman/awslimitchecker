@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -37,9 +37,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+from .connectable import ConnectableCredentials
 from .services import _services
-from .version import _get_version_info
 from .trustedadvisor import TrustedAdvisor
+from .version import _get_version_info
+import boto3
 import sys
 import logging
 import warnings
@@ -153,24 +155,58 @@ class AwsLimitChecker(object):
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
         self.region = region
+
         self.services = {}
+
+        boto_conn_kwargs = self._boto_conn_kwargs
         for sname, cls in _services.items():
-            self.services[sname] = cls(warning_threshold, critical_threshold,
-                                       profile_name, account_id, account_role,
-                                       region, external_id, mfa_serial_number,
-                                       mfa_token)
-        self.ta = TrustedAdvisor(
-            self.services,
-            profile_name=profile_name,
-            account_id=account_id,
-            account_role=account_role,
-            region=region,
-            external_id=external_id,
-            mfa_serial_number=mfa_serial_number,
-            mfa_token=mfa_token,
-            ta_refresh_mode=ta_refresh_mode,
-            ta_refresh_timeout=ta_refresh_timeout
-        )
+            self.services[sname] = cls(warning_threshold,
+                                       critical_threshold,
+                                       boto_conn_kwargs)
+
+        self.ta = TrustedAdvisor(self.services,
+                                 boto_conn_kwargs,
+                                 ta_refresh_mode=ta_refresh_mode,
+                                 ta_refresh_timeout=ta_refresh_timeout)
+
+    @property
+    def _boto_conn_kwargs(self):
+        """
+        Generate keyword arguments for boto3 connection functions.
+
+        If ``self.account_id`` is defined, this will call
+        :py:meth:`~._get_sts_token` to get STS token credentials using
+        `boto3.STS.Client.assume_role <https://boto3.readthedocs.org/en/
+        latest/reference/services/sts.html#STS.Client.assume_role>`_ and include
+        those credentials in the return value.
+
+        If ``self.profile_name`` is defined, this will call `boto3.Session()
+        <http://boto3.readthedocs.io/en/latest/reference/core/session.html>`
+        with that profile and include those credentials in the return value.
+
+        :return: keyword arguments for boto3 connection functions
+        :rtype: dict
+        """
+        kwargs = {'region_name': self.region}
+        if self.account_id is not None:
+            logger.debug("Connecting for account %s role '%s' with STS "
+                         "(region: %s)", self.account_id, self.account_role,
+                         self.region)
+            credentials = self._get_sts_token()
+            kwargs['aws_access_key_id'] = credentials.access_key
+            kwargs['aws_secret_access_key'] = credentials.secret_key
+            kwargs['aws_session_token'] = credentials.session_token
+        elif self.profile_name is not None:
+            # use boto3.Session to get credentials from the named profile
+            logger.debug("Using credentials profile: %s", self.profile_name)
+            session = boto3.Session(profile_name=self.profile_name)
+            credentials = session._session.get_credentials()
+            kwargs['aws_access_key_id'] = credentials.access_key
+            kwargs['aws_secret_access_key'] = credentials.secret_key
+            kwargs['aws_session_token'] = credentials.token
+        else:
+            logger.debug("Connecting to region %s", self.region)
+        return kwargs
 
     def get_version(self):
         """
@@ -226,6 +262,44 @@ class AwsLimitChecker(object):
         :rtype: list
         """
         return sorted(self.services.keys())
+
+    def _get_sts_token(self):
+        """
+        Assume a role via STS and return the credentials.
+
+        First connect to STS via :py:func:`boto3.client`, then
+        assume a role using `boto3.STS.Client.assume_role <https://boto3.readthe
+        docs.org/en/latest/reference/services/sts.html#STS.Client.assume_role>`_
+        using ``self.account_id`` and ``self.account_role`` (and optionally
+        ``self.external_id``, ``self.mfa_serial_number``, ``self.mfa_token``).
+        Return the resulting :py:class:`~.ConnectableCredentials`
+        object.
+
+        :returns: STS assumed role credentials
+        :rtype: :py:class:`~.ConnectableCredentials`
+        """
+        logger.debug("Connecting to STS in region %s", self.region)
+        sts = boto3.client('sts', region_name=self.region)
+        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        logger.debug("STS assume role for %s", arn)
+        assume_kwargs = {
+            'RoleArn': arn,
+            'RoleSessionName': 'awslimitchecker'
+        }
+        if self.external_id is not None:
+            assume_kwargs['ExternalId'] = self.external_id
+        if self.mfa_serial_number is not None:
+            assume_kwargs['SerialNumber'] = self.mfa_serial_number
+        if self.mfa_token is not None:
+            assume_kwargs['TokenCode'] = self.mfa_token
+        role = sts.assume_role(**assume_kwargs)
+
+        creds = ConnectableCredentials(role)
+        creds.account_id = self.account_id
+
+        logger.debug("Got STS credentials for role; access_key_id=%s "
+                     "(account_id=%s)", creds.access_key, creds.account_id)
+        return creds
 
     def find_usage(self, service=None, use_ta=True):
         """

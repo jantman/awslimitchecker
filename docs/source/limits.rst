@@ -28,6 +28,10 @@ updated from Trusted Advisor:
 
   * Launch configurations
 
+* CloudFormation
+
+  * Stacks
+
 * EBS
 
   * Active snapshots
@@ -57,6 +61,8 @@ updated from Trusted Advisor:
   * Running On-Demand c4.4xlarge instances
 
   * Running On-Demand c4.large instances
+
+  * Running On-Demand c4.xlarge instances
 
   * Running On-Demand m3.2xlarge instances
 
@@ -103,6 +109,8 @@ updated from Trusted Advisor:
   * Groups
 
   * Instance profiles
+
+  * Policies
 
   * Roles
 
@@ -247,11 +255,11 @@ Launch configurations :sup:`(TA)` :sup:`(API)` 100
 CloudFormation
 +++++++++++++++
 
-=================== ===
-Limit               Default
-=================== ===
-Stacks :sup:`(API)` 200
-=================== ===
+=============================== ===
+Limit                           Default
+=============================== ===
+Stacks :sup:`(TA)` :sup:`(API)` 200
+=============================== ===
 
 .. _limits.EBS:
 
@@ -319,7 +327,7 @@ Running On-Demand c4.2xlarge instances :sup:`(TA)`             20
 Running On-Demand c4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand c4.8xlarge instances                         5   
 Running On-Demand c4.large instances :sup:`(TA)`               20  
-Running On-Demand c4.xlarge instances                          20  
+Running On-Demand c4.xlarge instances :sup:`(TA)`              20  
 Running On-Demand cc2.8xlarge instances                        20  
 Running On-Demand cg1.4xlarge instances                        2   
 Running On-Demand cr1.8xlarge instances                        2   
@@ -400,16 +408,16 @@ Listeners per load balancer       100
 ElastiCache
 ++++++++++++
 
-================= ==
+================= ===
 Limit             Default
-================= ==
-Clusters          50
-Nodes             50
-Nodes per Cluster 20
-Parameter Groups  20
-Security Groups   50
-Subnet Groups     50
-================= ==
+================= ===
+Clusters          50 
+Nodes             100
+Nodes per Cluster 20 
+Parameter Groups  20 
+Security Groups   50 
+Subnet Groups     50 
+================= ===
 
 .. _limits.ElasticBeanstalk:
 
@@ -445,7 +453,7 @@ Limit                                        Default
 ============================================ =====
 Groups :sup:`(TA)` :sup:`(API)`              100  
 Instance profiles :sup:`(TA)` :sup:`(API)`   100  
-Policies :sup:`(API)`                        1000 
+Policies :sup:`(TA)` :sup:`(API)`            1000 
 Policy Versions In Use :sup:`(API)`          10000
 Roles :sup:`(TA)` :sup:`(API)`               250  
 Server certificates :sup:`(TA)` :sup:`(API)` 20   

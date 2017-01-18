@@ -70,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'awslimitchecker'
-copyright = u'2015, 2016 Jason Antman'
+copyright = u'2015-2017 Jason Antman'
 author = u'Jason Antman'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -309,10 +309,10 @@ nitpick_ignore = [
 linkcheck_ignore = [
     r'https?://landscape\.io.*',
     r'https?://www\.virtualenv\.org.*',
-    r'https?://.*\.readthedocs\.org.*',
     r'https?://codecov\.io.*',
     r'https?://.*readthedocs\.org.*',
-    r'https?://waffle\.io.*'
+    r'https?://.*readthedocs\.io.*',
+    r'https?://waffle\.io.*',
 ]
 
 

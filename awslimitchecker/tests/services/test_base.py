@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -109,40 +109,21 @@ class Test_AwsService(object):
         assert cls.limits == {'foo': 'bar'}
         assert cls.conn is None
         assert cls._have_usage is False
-        assert cls.account_id is None
-        assert cls.account_role is None
-        assert cls.region is None
-        assert cls.external_id is None
+        assert not cls._boto3_connection_kwargs
 
-    def test_init_subclass_sts(self):
-        cls = AwsServiceTester(
-            1,
-            2,
-            account_id='012345678912',
-            account_role='myrole',
-            region='myregion'
-        )
+    def test_init_subclass_boto_xargs(self):
+        boto_args = {'region_name': 'myregion',
+                     'aws_access_key_id': 'myaccesskey',
+                     'aws_secret_access_key': 'mysecretkey',
+                     'aws_session_token': 'mytoken'}
+
+        cls = AwsServiceTester(1, 2, boto_args)
         assert cls.warning_threshold == 1
         assert cls.critical_threshold == 2
         assert cls.limits == {'foo': 'bar'}
         assert cls.conn is None
         assert cls._have_usage is False
-        assert cls.account_id == '012345678912'
-        assert cls.account_role == 'myrole'
-        assert cls.region == 'myregion'
-
-    def test_init_subclass_profile(self):
-        cls = AwsServiceTester(
-            1,
-            2,
-            profile_name='foo'
-        )
-        assert cls.warning_threshold == 1
-        assert cls.critical_threshold == 2
-        assert cls.limits == {'foo': 'bar'}
-        assert cls.conn is None
-        assert cls._have_usage is False
-        assert cls.profile_name == 'foo'
+        assert cls._boto3_connection_kwargs == boto_args
 
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -305,12 +286,12 @@ class Test_AwsServiceSubclasses(object):
         # ensure warning and critical thresholds
         assert inst.warning_threshold == 3
         assert inst.critical_threshold == 7
-        assert inst.account_id is None
-        assert inst.account_role is None
-        assert inst.region is None
+        assert not inst._boto3_connection_kwargs
 
-        sts_inst = cls(3, 7, account_id='123', account_role='myrole',
-                       region='myregion')
-        assert sts_inst.account_id == '123'
-        assert sts_inst.account_role == 'myrole'
-        assert sts_inst.region == 'myregion'
+        boto_args = dict(region_name='myregion',
+                         aws_access_key_id='myaccesskey',
+                         aws_secret_access_key='mysecretkey',
+                         aws_session_token='mytoken')
+
+        sts_inst = cls(3, 7, boto_args)
+        assert sts_inst._boto3_connection_kwargs == boto_args
