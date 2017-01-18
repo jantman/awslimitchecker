@@ -77,7 +77,7 @@ class _RedshiftService(_AwsService):
         )
         self.limits['Redshift manual snapshots']._add_current_usage(
             len(results['Snapshots']),
-            resource_id=self.region,
+            resource_id=self._boto3_connection_kwargs['region_name'],
             aws_type='AWS::Redshift::Snapshot',
         )
 
@@ -90,7 +90,7 @@ class _RedshiftService(_AwsService):
         )
         self.limits['Redshift subnet groups']._add_current_usage(
             len(results['ClusterSubnetGroups']),
-            resource_id=self.region,
+            resource_id=self._boto3_connection_kwargs['region_name'],
             aws_type='AWS::Redshift::SubnetGroup',
         )
 

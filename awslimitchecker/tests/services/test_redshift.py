@@ -117,7 +117,7 @@ class Test_RedshiftService(object):
         mock_conn = Mock()
         mock_conn.describe_cluster_snapshots.return_value = response
 
-        cls = _RedshiftService(21, 43)
+        cls = _RedshiftService(21, 43, {'region_name': 'us-west-2'})
         cls.conn = mock_conn
         cls._find_cluster_manual_snapshots()
 
@@ -135,7 +135,7 @@ class Test_RedshiftService(object):
         mock_conn = Mock()
         mock_conn.describe_cluster_subnet_groups.return_value = response
 
-        cls = _RedshiftService(21, 43)
+        cls = _RedshiftService(21, 43, {'region_name': 'us-west-2'})
         cls.conn = mock_conn
         cls._find_cluster_subnet_groups()
 
