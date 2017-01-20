@@ -245,7 +245,7 @@ class AwsLimitChecker(object):
         res = {}
         to_get = self.services
         if service is not None:
-            to_get = {each: self.services[each] for each in service}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for sname, cls in to_get.items():
@@ -319,7 +319,7 @@ class AwsLimitChecker(object):
         """
         to_get = self.services
         if service is not None:
-            to_get = {each: self.services[each] for each in service}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for cls in to_get.values():
@@ -517,7 +517,7 @@ class AwsLimitChecker(object):
         res = {}
         to_get = self.services
         if service is not None:
-            to_get = {each: self.services[each] for each in service}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for sname, cls in to_get.items():
