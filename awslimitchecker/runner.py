@@ -99,7 +99,7 @@ class Runner(object):
                  'entitled to a copy of the source code. Use `--version` for ' \
                  'information on the source code location.'
         p = argparse.ArgumentParser(description=desc, epilog=epilog)
-        p.add_argument('-S', '--service', action='store', default=None,
+        p.add_argument('-S', '--service', action='store', nargs='*',
                        help='perform action for only the specified service name'
                             '; see -s|--list-services for valid names')
         p.add_argument('-s', '--list-services', action='store_true',
