@@ -123,7 +123,7 @@ class TestAwsLimitCheckerRunner(object):
             self.cls.parse_args(argv)
         assert mock_parser.mock_calls == [
             call(description=desc, epilog=epilog),
-            call().add_argument('-S', '--service', action='store', default=None,
+            call().add_argument('-S', '--service', action='store', nargs='*',
                                 help='perform action for only the specified '
                                      'service name; see -s|--list-services for '
                                      'valid names'),
@@ -381,7 +381,7 @@ class TestAwsLimitCheckerRunner(object):
             'SvcFoo': sample_limits()['SvcFoo'],
         }
         self.cls.checker = mock_checker
-        self.cls.service_name = 'SvcFoo'
+        self.cls.service_name = ['SvcFoo']
         with patch('awslimitchecker.runner.dict2cols',
                    autospec=True) as mock_d2c:
             mock_d2c.return_value = 'd2cval'
@@ -389,7 +389,7 @@ class TestAwsLimitCheckerRunner(object):
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
         assert mock_checker.mock_calls == [
-            call.get_limits(service='SvcFoo')
+            call.get_limits(service=['SvcFoo'])
         ]
         assert mock_d2c.mock_calls == [
             call({
@@ -436,14 +436,14 @@ class TestAwsLimitCheckerRunner(object):
             'SvcFoo': sample_limits_api()['SvcFoo'],
         }
         self.cls.checker = mock_checker
-        self.cls.service_name = 'SvcFoo'
+        self.cls.service_name = ['SvcFoo']
         with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
             mock_d2c.return_value = 'd2cval'
             self.cls.list_limits()
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
         assert mock_checker.mock_calls == [
-            call.get_limits(use_ta=True, service='SvcFoo')
+            call.get_limits(use_ta=True, service=['SvcFoo'])
         ]
         assert mock_d2c.mock_calls == [
             call({
@@ -558,7 +558,7 @@ class TestAwsLimitCheckerRunner(object):
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.get_limits.return_value = limits
         self.cls.checker = mock_checker
-        self.cls.service_name = 'SvcFoo'
+        self.cls.service_name = ['SvcFoo']
         self.cls.skip_ta = True
         with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
             mock_d2c.return_value = 'd2cval'
@@ -566,8 +566,8 @@ class TestAwsLimitCheckerRunner(object):
         out, err = capsys.readouterr()
         assert out == 'd2cval\n'
         assert mock_checker.mock_calls == [
-            call.find_usage(service='SvcFoo', use_ta=False),
-            call.get_limits(service='SvcFoo', use_ta=False)
+            call.find_usage(service=['SvcFoo'], use_ta=False),
+            call.get_limits(service=['SvcFoo'], use_ta=False)
         ]
         assert mock_d2c.mock_calls == [
             call({
@@ -599,7 +599,7 @@ class TestAwsLimitCheckerRunner(object):
         out, err = capsys.readouterr()
         assert out == ''
         assert excinfo.value.code == 6
-        assert self.cls.service_name == 'foo'
+        assert self.cls.service_name == ['foo']
 
     def test_entry_no_service_name(self, capsys):
         argv = ['awslimitchecker']
@@ -1013,7 +1013,7 @@ class TestAwsLimitCheckerRunner(object):
         }
 
         self.cls.checker = mock_checker
-        self.cls.service_name = 'svc2'
+        self.cls.service_name = ['svc2']
         with patch('awslimitchecker.runner.Runner.print_issue',
                    autospec=True) as mock_print:
             mock_print.return_value = ('', '')
@@ -1021,7 +1021,7 @@ class TestAwsLimitCheckerRunner(object):
                 mock_d2c.return_value = 'd2cval'
                 res = self.cls.check_thresholds()
         assert mock_checker.mock_calls == [
-            call.check_thresholds(use_ta=True, service='svc2')
+            call.check_thresholds(use_ta=True, service=['svc2'])
         ]
         assert mock_print.mock_calls == [
             call(self.cls, 'svc2', mock_limit2, [], [mock_w3]),
