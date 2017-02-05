@@ -4,6 +4,7 @@ Changelog
 0.8.0 (unreleased)
 ------------------
 
+* `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the ``--service`` command line option to accept multiple values.
 * Various TravisCI/tox build fixes:
 
   * Fix pip caching; use default pip cache directory

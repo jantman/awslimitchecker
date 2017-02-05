@@ -235,7 +235,7 @@ class AwsLimitChecker(object):
         the service name, whose value is a nested dict as described below.
 
         :param service: the name of one service to return limits for
-        :type service: string
+        :type service: list
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         :returns: dict of service name (string) to nested dict
@@ -245,7 +245,7 @@ class AwsLimitChecker(object):
         res = {}
         to_get = self.services
         if service is not None:
-            to_get = {service: self.services[service]}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for sname, cls in to_get.items():
@@ -313,13 +313,13 @@ class AwsLimitChecker(object):
 
         :param service: :py:class:`~._AwsService` name, or ``None`` to
           check all services.
-        :type service: :py:obj:`None`, or :py:obj:`string` service name to get
+        :type service: :py:obj:`None`, or :py:obj:`list` service name to get
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         """
         to_get = self.services
         if service is not None:
-            to_get = {service: self.services[service]}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for cls in to_get.values():
@@ -517,7 +517,7 @@ class AwsLimitChecker(object):
         res = {}
         to_get = self.services
         if service is not None:
-            to_get = {service: self.services[service]}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for sname, cls in to_get.items():
