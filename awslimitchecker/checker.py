@@ -234,7 +234,7 @@ class AwsLimitChecker(object):
         If ``service`` is specified, the returned dict has one element,
         the service name, whose value is a nested dict as described below.
 
-        :param service: the name of one service to return limits for
+        :param service: the name(s) of one or more services to return limits for
         :type service: list
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
@@ -311,9 +311,9 @@ class AwsLimitChecker(object):
         :py:class:`~.AwsLimit` objects for each service, which can
         then be queried using :py:meth:`~.get_limits`.
 
-        :param service: :py:class:`~._AwsService` name, or ``None`` to
-          check all services.
-        :type service: :py:obj:`None`, or :py:obj:`list` service name to get
+        :param service: list of :py:class:`~._AwsService` name(s), or ``None``
+          to check all services.
+        :type service: :py:obj:`None`, or :py:obj:`list` service names to get
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         """
@@ -506,8 +506,9 @@ class AwsLimitChecker(object):
 
         See :py:meth:`.AwsLimit.check_thresholds`.
 
-        :param service: the name of one service to return results for
-        :type service: string
+        :param service: the name(s) of one or more service(s) to return
+          results for
+        :type service: list
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         :returns: dict of service name (string) to nested dict

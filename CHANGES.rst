@@ -4,7 +4,18 @@ Changelog
 0.8.0 (unreleased)
 ------------------
 
-* `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the ``--service`` command line option to accept multiple values.
+This release includes a **breaking API change**. Please see the first bullet point
+below. Note that once 1.0.0 is released (which should be relatively soon), such
+API changes will only come with a major version increment.
+
+* `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the
+  ``--service`` command line option to accept multiple values. This is a
+  **breaking public API change**; the ``awslimitchecker.checker.AwsLimitChecker``
+  `check_thresholds <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.check_thresholds>`_,
+  `find_usage <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.find_usage>`_,
+  and `get_limits <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.get_limits>`_
+  methods now take an optional ``service`` *list* keyword argument instead of a *string* for a
+  single service name.
 * Various TravisCI/tox build fixes:
 
   * Fix pip caching; use default pip cache directory
