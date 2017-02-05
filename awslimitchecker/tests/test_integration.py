@@ -151,7 +151,7 @@ class TestIntegration(object):
         # test functions, per https://github.com/pytest-dev/pytest/issues/227
         with LogCapture() as l:
             checker = AwsLimitChecker(**checker_args)
-            limits = checker.get_limits(use_ta=use_ta, service=service_name)
+            limits = checker.get_limits(use_ta=use_ta, service=[service_name])
         logs = LogRecordHelper(l)
 
         have_api_source = False
@@ -242,8 +242,8 @@ class TestIntegration(object):
         # test functions, per https://github.com/pytest-dev/pytest/issues/227
         with LogCapture() as l:
             checker = AwsLimitChecker(**checker_args)
-            checker.find_usage(service=service_name)
-            limits = checker.get_limits(service=service_name)
+            checker.find_usage(service=[service_name])
+            limits = checker.get_limits(service=[service_name])
         logs = LogRecordHelper(l)
 
         have_usage = False
