@@ -508,7 +508,7 @@ class AwsLimitChecker(object):
 
         :param service: the name(s) of one or more service(s) to return
           results for
-        :type service: lisr
+        :type service: list
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         :returns: dict of service name (string) to nested dict
