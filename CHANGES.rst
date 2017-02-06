@@ -8,6 +8,8 @@ This release includes a **breaking API change**. Please see the first bullet poi
 below. Note that once 1.0.0 is released (which should be relatively soon), such
 API changes will only come with a major version increment.
 
+This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups``.
+
 * `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the
   ``--service`` command line option to accept multiple values. This is a
   **breaking public API change**; the ``awslimitchecker.checker.AwsLimitChecker``
@@ -16,6 +18,10 @@ API changes will only come with a major version increment.
   and `get_limits <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.get_limits>`_
   methods now take an optional ``service`` *list* keyword argument instead of a *string* for a
   single service name.
+* `PR #251 <https://github.com/jantman/awslimitchecker/pull/251>`_ to handle GovCloud-specific edge cases; specifically, UnsupportedOperation errors
+  for EC2 Spot Instance-related API calls, and limits returned as 0 by the DescribeAccountAttributes EC2 API action.
+* `PR #249 <https://github.com/jantman/awslimitchecker/pull/249>`_ to add support for RedShift limits (Redshift subnet groups and Redshift manual snapshots).
+  This requires the ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups`` IAM permissions.
 * Various TravisCI/tox build fixes:
 
   * Fix pip caching; use default pip cache directory
