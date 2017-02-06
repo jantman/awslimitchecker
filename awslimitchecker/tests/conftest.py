@@ -190,7 +190,7 @@ def param_for_integration_test_verify_usage(metafunc):
                 'region': REGION,
             },
             'sts',
-            'VPC',
+            ['VPC'],
             True,
             False
         ],
@@ -202,7 +202,7 @@ def param_for_integration_test_verify_usage(metafunc):
                 'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
             },
             'sts',
-            'VPC',
+            ['VPC'],
             True,
             False
         ],
@@ -214,7 +214,7 @@ def param_for_integration_test_verify_usage(metafunc):
                 'mfa_token': 'foo'  # will be replaced in the method
             },
             'sts_mfa',
-            'VPC',
+            ['VPC'],
             True,
             False
         ],
@@ -227,7 +227,7 @@ def param_for_integration_test_verify_usage(metafunc):
                 'mfa_token': 'foo'  # will be replaced in the method
             },
             'sts_mfa',
-            'VPC',
+            ['VPC'],
             True,
             False
         ]
@@ -247,7 +247,7 @@ def param_for_integration_test_verify_usage(metafunc):
         argvals.append([
             {'region': REGION},
             'normal',
-            sname,
+            [sname],
             eu,
             False
         ])
@@ -292,7 +292,7 @@ def param_for_integration_test_verify_limits(metafunc):
                 'region': REGION,
             },
             'sts',
-            'VPC',
+            ['VPC'],
             True,
             False,
             False
@@ -305,7 +305,7 @@ def param_for_integration_test_verify_limits(metafunc):
                 'external_id': os.environ.get('AWS_EXTERNAL_ID', None),
             },
             'sts',
-            'VPC',
+            ['VPC'],
             True,
             False,
             False
@@ -318,7 +318,7 @@ def param_for_integration_test_verify_limits(metafunc):
                 'mfa_token': 'foo'  # will be replaced in the method
             },
             'sts_mfa',
-            'VPC',
+            ['VPC'],
             True,
             False,
             False
@@ -332,7 +332,7 @@ def param_for_integration_test_verify_limits(metafunc):
                 'mfa_token': 'foo'  # will be replaced in the method
             },
             'sts_mfa',
-            'VPC',
+            ['VPC'],
             True,
             False,
             False
@@ -350,7 +350,7 @@ def param_for_integration_test_verify_limits(metafunc):
         argvals.append([
             {'region': REGION},
             'normal',
-            sname,
+            [sname],
             True,
             False,
             False
