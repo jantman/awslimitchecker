@@ -1709,6 +1709,34 @@ class EC2(object):
         ]
     }
 
+    test_update_limits_from_api_unsupported = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'supported-platforms',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': 'EC2'
+                    },
+                    {
+                        'AttributeValue': 'VPC'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'max-elastic-ips',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '0'
+                    }
+                ]
+            },
+        ]
+    }
+
     test_find_usage_spot_instances = {
         'SpotInstanceRequests': [
             {
