@@ -42,6 +42,8 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 
+import botocore
+
 from .base import _AwsService
 from ..limit import AwsLimit
 
@@ -136,7 +138,12 @@ class _Ec2Service(_AwsService):
                        "may not me accurate in all cases. Please see the notes "
                        "at: <http://awslimitchecker.readthedocs.io/en/latest"
                        "/limits.html#ec2>")
-        res = self.conn.describe_spot_instance_requests()
+        try:
+            res = self.conn.describe_spot_instance_requests()
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'UnsupportedOperation':
+                return
+            raise
         count = 0
         for req in res['SpotInstanceRequests']:
             if req['State'] in ['open', 'active']:
@@ -158,7 +165,12 @@ class _Ec2Service(_AwsService):
     def _find_usage_spot_fleets(self):
         """calculate spot fleet request usage and update Limits"""
         logger.debug('Getting spot fleet request usage')
-        res = self.conn.describe_spot_fleet_requests()
+        try:
+            res = self.conn.describe_spot_fleet_requests()
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'UnsupportedOperation':
+                return
+            raise
         if 'NextToken' in res:
             logger.error('Error: describe_spot_fleet_requests() response '
                          'includes pagination token, but pagination not '
@@ -304,6 +316,8 @@ class _Ec2Service(_AwsService):
             elif aname == 'vpc-max-security-groups-per-interface':
                 lname = 'VPC security groups per elastic network interface'
             if lname is not None:
+                if int(val) == 0:
+                    continue
                 self.limits[lname]._set_api_limit(int(val))
         logger.debug("Done setting limits from API")
 
