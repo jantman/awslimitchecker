@@ -281,6 +281,8 @@ specific to your logging setup:
 Advanced Examples
 ------------------
 
+For more examples, see `docs/examples/README.rst on GitHub <https://github.com/jantman/awslimitchecker/blob/master/docs/examples/README.rst>`_.
+
 CI / Deployment Checks
 +++++++++++++++++++++++
 

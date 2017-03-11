@@ -29,6 +29,8 @@ This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapsho
   * Add python 3.6 tox env and Travis env, now that it's released
   * Switch integration3 tox env from py3.4 to py3.6
 
+* `PR #256 <https://github.com/jantman/awslimitchecker/pull/256>`_ - Add example of wrapping awslimitchecker in a script to send metrics to `Prometheus <https://prometheus.io/>`_.
+
 0.7.0 (2017-01-15)
 ------------------
 
