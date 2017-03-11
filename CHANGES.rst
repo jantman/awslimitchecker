@@ -37,6 +37,7 @@ or bug reports specific to 3.2 will be closed.
 * `Issue #236 <https://github.com/jantman/awslimitchecker/issues/236>`_ - Drop support for Python 3.2; stop testing under py32.
 * `Issue #257 <https://github.com/jantman/awslimitchecker/issues/257>`_ - Handle ElastiCache DescribeCacheCluster responses that are missing ``CacheNodes`` key in a cluster description.
 * `Issue #200 <https://github.com/jantman/awslimitchecker/issues/200>`_ - Remove EC2 Spot Instances/Fleets limits from experimental status.
+* `Issue #123 <https://github.com/jantman/awslimitchecker/issues/123>`_ - Update documentation on using session tokens (Session or Federation temporary creds).
 
 0.7.0 (2017-01-15)
 ------------------

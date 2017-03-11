@@ -117,7 +117,10 @@ API calls will throw errors when trying to access the IAM API (except for Sessio
 work for IAM API calls only if an MFA token is used). Furthermore, Federation tokens cannot make use
 of the STS AssumeRole functionality. If you attempt to use awslimitchecker with credentials generated
 by these APIs (commonly used by organizations to hand out limited-lifetime credentials), you will likely
-encounter errors.
+encounter errors when checking IAM limits. If this is acceptable, you can use these credentials by setting
+the ``AWS_SESSION_TOKEN`` environment variable in addition to ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY``,
+or by otherwise configuring these credentials in a way that's supported by
+`boto3 <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_.
 
 .. _getting_started.regions:
 
