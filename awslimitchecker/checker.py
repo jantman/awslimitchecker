@@ -553,7 +553,7 @@ class AwsLimitChecker(object):
             'Statement': [{
                 'Effect': 'Allow',
                 'Resource': '*',
-                'Action': sorted(required_actions),
+                'Action': sorted(list(set(required_actions))),
             }],
         }
         return policy

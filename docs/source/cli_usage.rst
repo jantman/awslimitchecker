@@ -130,7 +130,7 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    EC2
    ELB
    (...)
-   RDS
+   Redshift
    S3
    SES
    VPC
@@ -170,7 +170,7 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling groups                        800 (API)
+   AutoScaling/Auto Scaling groups                        1000 (API)
    AutoScaling/Launch configurations                      1000 (API)
    CloudFormation/Stacks                                  1300 (API)
    EBS/Active snapshots                                   30000 (TA)
@@ -191,7 +191,7 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   AutoScaling/Auto Scaling groups                        800 (API)
+   AutoScaling/Auto Scaling groups                        1000 (API)
    AutoScaling/Launch configurations                      1000 (API)
    CloudFormation/Stacks                                  1300 (API)
    EBS/Active snapshots                                   10000
@@ -217,14 +217,14 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        637
-   AutoScaling/Launch configurations                      741
-   CloudFormation/Stacks                                  1050
-   EBS/Active snapshots                                   18335
-   EBS/Active volumes                                     5990
+   AutoScaling/Auto Scaling groups                        673
+   AutoScaling/Launch configurations                      788
+   CloudFormation/Stacks                                  1125
+   EBS/Active snapshots                                   18852
+   EBS/Active volumes                                     1743
    (...)
    VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-7bcef71f=1, vpc-e2e (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-e2edf486=1, vpc-7bc (...)
    VPC/VPCs                                               11
 
 
@@ -286,15 +286,15 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   CloudFormation/Stacks                                  (limit 1300) WARNING: 1050
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=601, vpc-c (...)
-   EC2/VPC security groups per elastic network interface  (limit 5) WARNING: eni-2b6bbcc5=4, eni-ef3e99 (...)
-   ELB/Active load balancers                              (limit 800) WARNING: 651
-   ElastiCache/Clusters                                   (limit 50) CRITICAL: 64
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 2527
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 158
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 483
-   S3/Buckets                                             (limit 100) CRITICAL: 343
+   CloudFormation/Stacks                                  (limit 1300) WARNING: 1125
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=719, vpc-c (...)
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5 WARNING: e (...)
+   ELB/Active load balancers                              (limit 800) WARNING: 695
+   ElastiCache/Clusters                                   (limit 50) CRITICAL: 68
+   (...)
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 513
+   RDS/DB security groups                                 (limit 25) WARNING: 20
+   S3/Buckets                                             (limit 100) CRITICAL: 380
 
 
 
@@ -306,12 +306,13 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC            (limit 500) CRITICAL: vpc-36f22951=601, vpc-c89074a9=892
-   ElastiCache/Clusters                   (limit 50) CRITICAL: 64
-   ElasticBeanstalk/Application versions  (limit 500) CRITICAL: 2527
-   ElasticBeanstalk/Applications          (limit 25) CRITICAL: 158
-   ElasticBeanstalk/Environments          (limit 200) CRITICAL: 483
-   S3/Buckets                             (limit 100) CRITICAL: 343
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=719, vpc-c (...)
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
+   ElastiCache/Clusters                                   (limit 50) CRITICAL: 68
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 2800
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 172
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 513
+   S3/Buckets                                             (limit 100) CRITICAL: 380
 
 
 
