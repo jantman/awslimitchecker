@@ -22,9 +22,9 @@ or bug reports specific to 3.2 will be closed.
   and `get_limits <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.get_limits>`_
   methods now take an optional ``service`` *list* keyword argument instead of a *string* for a
   single service name.
-* `PR #251 <https://github.com/jantman/awslimitchecker/pull/251>`_ to handle GovCloud-specific edge cases; specifically, UnsupportedOperation errors
+* `PR #251 <https://github.com/jantman/awslimitchecker/pull/251>`_ - Handle GovCloud-specific edge cases; specifically, UnsupportedOperation errors
   for EC2 Spot Instance-related API calls, and limits returned as 0 by the DescribeAccountAttributes EC2 API action.
-* `PR #249 <https://github.com/jantman/awslimitchecker/pull/249>`_ to add support for RedShift limits (Redshift subnet groups and Redshift manual snapshots).
+* `PR #249 <https://github.com/jantman/awslimitchecker/pull/249>`_ - Add support for RedShift limits (Redshift subnet groups and Redshift manual snapshots).
   This requires the ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups`` IAM permissions.
 * `Issue #259 <https://github.com/jantman/awslimitchecker/issues/259>`_ - remove duplicates from required IAM policy returned by ``awslimitchecker.checker.AwsLimitChecker.get_required_iam_policy`` and ``awslimitchecker --iam-policy``.
 * Various TravisCI/tox build fixes:
@@ -34,8 +34,8 @@ or bug reports specific to 3.2 will be closed.
   * Switch integration3 tox env from py3.4 to py3.6
 
 * `PR #256 <https://github.com/jantman/awslimitchecker/pull/256>`_ - Add example of wrapping awslimitchecker in a script to send metrics to `Prometheus <https://prometheus.io/>`_.
-* `Issue #236 <https://github.com/jantman/awslimitchecker/issues/236>`_ Drop support for Python 3.2; stop testing under py32.
-
+* `Issue #236 <https://github.com/jantman/awslimitchecker/issues/236>`_ - Drop support for Python 3.2; stop testing under py32.
+* `Issue #257 <https://github.com/jantman/awslimitchecker/issues/257>`_ - Handle ElastiCache DescribeCacheCluster responses that are missing ``CacheNodes`` key in a cluster description.
 
 0.7.0 (2017-01-15)
 ------------------

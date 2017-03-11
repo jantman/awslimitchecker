@@ -1304,6 +1304,39 @@ class ElastiCache(object):
                 'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
                 'CacheNodes': None,
             },
+            {
+                'Engine': 'redis',
+                'CacheParameterGroup': {
+                    'CacheNodeIdsToReboot': [],
+                    'CacheParameterGroupName': 'default.redis2.8',
+                    'ParameterApplyStatus': 'in-sync'
+                },
+                'CacheClusterId': 'redis3',
+                'CacheSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'CacheSecurityGroupName': 'csg-redis2'
+                    }
+                ],
+                'ConfigurationEndpoint': None,
+                'CacheClusterCreateTime': 1412253787.123,
+                'ReplicationGroupId': None,
+                'AutoMinorVersionUpgrade': True,
+                'CacheClusterStatus': 'available',
+                'NumCacheNodes': 4,
+                'PreferredAvailabilityZone': 'us-east-1a',
+                'SecurityGroups': None,
+                'CacheSubnetGroupName': None,
+                'EngineVersion': '2.8.6',
+                'PendingModifiedValues': {
+                    'NumCacheNodes': None,
+                    'EngineVersion': None,
+                    'CacheNodeIdsToRemove': None
+                },
+                'CacheNodeType': 'cache.m3.medium',
+                'NotificationConfiguration': None,
+                'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30'
+            },
         ],
     })
 

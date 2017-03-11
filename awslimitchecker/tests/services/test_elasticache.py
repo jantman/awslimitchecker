@@ -134,20 +134,22 @@ class TestElastiCacheService(object):
 
         usage = cls.limits['Nodes'].get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 7
+        assert usage[0].get_value() == 11
 
         usage = cls.limits['Clusters'].get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 3
+        assert usage[0].get_value() == 4
 
         usage = sorted(cls.limits['Nodes per Cluster'].get_current_usage())
-        assert len(usage) == 3
+        assert len(usage) == 4
         assert usage[0].get_value() == 1
         assert usage[0].resource_id == 'memcached1'
         assert usage[1].get_value() == 2
         assert usage[1].resource_id == 'redis1'
         assert usage[2].get_value() == 4
         assert usage[2].resource_id == 'redis2'
+        assert usage[3].get_value() == 4
+        assert usage[3].resource_id == 'redis3'
 
         assert mock_conn.mock_calls == [
             call.get_paginator('describe_cache_clusters'),
