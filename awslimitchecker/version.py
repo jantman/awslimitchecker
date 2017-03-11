@@ -38,17 +38,14 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import os
-import sys
 
 import logging
 logger = logging.getLogger(__name__)
 
-# GitPython doesn't work at all on py32; throws SyntaxErrors
-if sys.version_info[0:2] != (3, 2):
-    try:
-        from versionfinder import find_version
-    except ImportError:
-        logger.error("Unable to import versionfinder", exc_info=True)
+try:
+    from versionfinder import find_version
+except ImportError:
+    logger.error("Unable to import versionfinder", exc_info=True)
 
 _VERSION = '0.7.0'
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'

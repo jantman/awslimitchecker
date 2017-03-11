@@ -7,8 +7,6 @@ matrix:
       env: TOXENV=py26
     - python: "2.7"
       env: TOXENV=py27
-    - python: "3.2"
-      env: TOXENV=py32
     - python: "3.3"
       env: TOXENV=py33
     - python: "3.4"
@@ -24,7 +22,6 @@ matrix:
     - python: "3.6"
       env: TOXENV=integration3
 install:
-- virtualenv --version; test $TOXENV = "py32" -o $TOXENV = "pypy3" && pip install --upgrade virtualenv==13.1.2 || /bin/true
 - git config --global user.email "travisci@jasonantman.com"
 - git config --global user.name "travisci"
 - pip install tox

@@ -44,7 +44,6 @@ from .version import _get_version_info
 import boto3
 import sys
 import logging
-import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -139,13 +138,6 @@ class AwsLimitChecker(object):
                 self.vinfo.url
             )
         )
-        if sys.version_info[0:2] == (3, 2):
-            warnings.warn("Python 3.2 support will be removed in the "
-                          "next release; see https://github.com/jantman/"
-                          "awslimitchecker/issues/236", DeprecationWarning)
-            logger.warning("Python 3.2 support will be removed in the "
-                           "next release; see https://github.com/jantman/"
-                           "awslimitchecker/issues/236")
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.profile_name = profile_name

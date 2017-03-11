@@ -10,6 +10,10 @@ API changes will only come with a major version increment.
 
 This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups``.
 
+This release **removes Python 3.2 support**. This was deprecated in 0.7.0. As of this release,
+awslimitchecker may still work on Python 3.2, but it is no longer tested and any support tickets
+or bug reports specific to 3.2 will be closed.
+
 * `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the
   ``--service`` command line option to accept multiple values. This is a
   **breaking public API change**; the ``awslimitchecker.checker.AwsLimitChecker``
@@ -30,6 +34,8 @@ This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapsho
   * Switch integration3 tox env from py3.4 to py3.6
 
 * `PR #256 <https://github.com/jantman/awslimitchecker/pull/256>`_ - Add example of wrapping awslimitchecker in a script to send metrics to `Prometheus <https://prometheus.io/>`_.
+* `Issue #236 <https://github.com/jantman/awslimitchecker/issues/236>`_ Drop support for Python 3.2; stop testing under py32.
+
 
 0.7.0 (2017-01-15)
 ------------------
