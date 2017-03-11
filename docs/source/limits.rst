@@ -50,6 +50,8 @@ updated from Trusted Advisor:
 
   * Elastic IP addresses (EIPs)
 
+  * Running On-Demand c3.2xlarge instances
+
   * Running On-Demand c3.4xlarge instances
 
   * Running On-Demand c3.large instances
@@ -318,7 +320,7 @@ Rules per VPC security group                                   50
 Running On-Demand EC2 instances :sup:`(API)`                   20  
 Running On-Demand c1.medium instances                          20  
 Running On-Demand c1.xlarge instances                          20  
-Running On-Demand c3.2xlarge instances                         20  
+Running On-Demand c3.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand c3.4xlarge instances :sup:`(TA)`             20  
 Running On-Demand c3.8xlarge instances                         20  
 Running On-Demand c3.large instances :sup:`(TA)`               20  
@@ -484,6 +486,18 @@ Subnet Groups :sup:`(API)`                            20
 Subnets per Subnet Group :sup:`(API)`                 20    
 VPC Security Groups                                   5     
 ===================================================== ======
+
+.. _limits.Redshift:
+
+Redshift
++++++++++
+
+========================= ==
+Limit                     Default
+========================= ==
+Redshift manual snapshots 20
+Redshift subnet groups    20
+========================= ==
 
 .. _limits.S3:
 

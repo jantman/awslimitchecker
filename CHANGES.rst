@@ -22,6 +22,7 @@ This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapsho
   for EC2 Spot Instance-related API calls, and limits returned as 0 by the DescribeAccountAttributes EC2 API action.
 * `PR #249 <https://github.com/jantman/awslimitchecker/pull/249>`_ to add support for RedShift limits (Redshift subnet groups and Redshift manual snapshots).
   This requires the ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups`` IAM permissions.
+* `Issue #259 <https://github.com/jantman/awslimitchecker/issues/259>`_ - remove duplicates from required IAM policy returned by ``awslimitchecker.checker.AwsLimitChecker.get_required_iam_policy`` and ``awslimitchecker --iam-policy``.
 * Various TravisCI/tox build fixes:
 
   * Fix pip caching; use default pip cache directory
