@@ -36,6 +36,7 @@ or bug reports specific to 3.2 will be closed.
 * `PR #256 <https://github.com/jantman/awslimitchecker/pull/256>`_ - Add example of wrapping awslimitchecker in a script to send metrics to `Prometheus <https://prometheus.io/>`_.
 * `Issue #236 <https://github.com/jantman/awslimitchecker/issues/236>`_ - Drop support for Python 3.2; stop testing under py32.
 * `Issue #257 <https://github.com/jantman/awslimitchecker/issues/257>`_ - Handle ElastiCache DescribeCacheCluster responses that are missing ``CacheNodes`` key in a cluster description.
+* `Issue #200 <https://github.com/jantman/awslimitchecker/issues/200>`_ - Remove EC2 Spot Instances/Fleets limits from experimental status.
 
 0.7.0 (2017-01-15)
 ------------------

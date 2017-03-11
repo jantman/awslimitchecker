@@ -107,16 +107,6 @@ def build_limits(checker):
         limit_info += ('+' * (len(svc_name)+1)) + "\n"
         if svc_name == 'EC2':
             limit_info += "\n" + dedent("""
-            **Note on Spot Instances:** spot instance
-            support in awslimitchecker is experimental and not thoroughly used
-            outside of testing. Be advised that spot instances are _not_ counted
-            against the Running On-Demand Instances limits. Also be advised that
-            spot instance and fleet requests are only counted towards usage
-            if they are in the *active* state. If you find any problems with
-            spot instance or fleet usage or limits, please
-            `open an issue on GitHub <https://github.com/jantman/awslimitchecker
-            /issues/new>`_""") + "\n"
-            limit_info += "\n" + dedent("""
             **Note on On-Demand vs Reserved Instances:** The EC2 limits for
             "Running On-Demand" EC2 Instances apply only to On-Demand instances,
             not Reserved Instances. If you list all EC2 instances that are
