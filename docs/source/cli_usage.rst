@@ -220,7 +220,7 @@ using their IDs).
    AutoScaling/Auto Scaling groups                        673
    AutoScaling/Launch configurations                      788
    CloudFormation/Stacks                                  1125
-   EBS/Active snapshots                                   18852
+   EBS/Active snapshots                                   18854
    EBS/Active volumes                                     1743
    (...)
    VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)

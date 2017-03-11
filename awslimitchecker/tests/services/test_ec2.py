@@ -540,10 +540,6 @@ class Test_Ec2Service(object):
         assert usage[0].get_value() == 2
         assert mock_logger.mock_calls == [
             call.debug('Getting spot instance request usage'),
-            call.warning('EC2 spot instance support is experimental and '
-                         'results may not me accurate in all cases. Please '
-                         'see the notes at: <http://awslimitchecker'
-                         '.readthedocs.io/en/latest/limits.html#ec2>'),
             call.debug('NOT counting spot instance request %s state=%s',
                        'reqID1', 'closed'),
             call.debug('Counting spot instance request %s state=%s',
@@ -551,9 +547,7 @@ class Test_Ec2Service(object):
             call.debug('Counting spot instance request %s state=%s',
                        'reqID3', 'open'),
             call.debug('NOT counting spot instance request %s state=%s',
-                       'reqID4', 'failed'),
-            call.debug('Setting "Max spot instance requests per region" '
-                       'limit (%s) current usage to: %d', lim, 2)
+                       'reqID4', 'failed')
         ]
 
     def test_find_usage_spot_instances_unsupported(self):
@@ -636,14 +630,8 @@ class Test_Ec2Service(object):
             call.debug('Getting spot fleet request usage'),
             call.debug('Skipping spot fleet request %s in state %s', 'req1',
                        'failed'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req2', 11, 3),
             call.debug('Skipping spot fleet request %s in state %s',
-                       'req3', 'modifying'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req4', 33, 1),
-            call.debug('Total active spot fleets: %d; total target capacity '
-                       'for all spot fleets: %d', 2, 44)
+                       'req3', 'modifying')
         ]
 
     def test_find_usage_spot_fleets_paginated(self):
@@ -695,14 +683,8 @@ class Test_Ec2Service(object):
                        'configured in awslimitchecker.'),
             call.debug('Skipping spot fleet request %s in state %s', 'req1',
                        'failed'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req2', 11, 3),
             call.debug('Skipping spot fleet request %s in state %s',
-                       'req3', 'modifying'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req4', 33, 1),
-            call.debug('Total active spot fleets: %d; total target capacity '
-                       'for all spot fleets: %d', 2, 44)
+                       'req3', 'modifying')
         ]
 
     def test_find_usage_spot_fleets_unsupported(self):
