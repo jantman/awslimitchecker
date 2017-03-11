@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.8.0 (unreleased)
+0.8.0 (2017-03-11)
 ------------------
 
 This release includes a **breaking API change**. Please see the first bullet point
