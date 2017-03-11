@@ -39,10 +39,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import awslimitchecker.version as version
 from awslimitchecker.version import AWSLimitCheckerVersion
+from versionfinder.versioninfo import VersionInfo
 
 import re
 import sys
-import pytest
 from logging import CRITICAL
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -55,10 +55,6 @@ if (
 else:
     from unittest.mock import patch, call, Mock
 
-# GitPython doesn't work at all on py32
-if sys.version_info[0:2] != (3, 2):
-    from versionfinder.versioninfo import VersionInfo
-
 
 class TestVersion(object):
 
@@ -66,8 +62,6 @@ class TestVersion(object):
         expected = 'https://github.com/jantman/awslimitchecker'
         assert version._PROJECT_URL == expected
 
-    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
-                        reason='versionfinder doesnt work on py32')
     def test__get_version_info(self):
         with patch('awslimitchecker.version.find_version') as mock_ver:
             mock_ver.return_value = VersionInfo(
@@ -81,8 +75,6 @@ class TestVersion(object):
         assert v.tag == 'foobar'
         assert mock_ver.mock_calls == [call('awslimitchecker')]
 
-    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
-                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_dirty_commit(self):
         with patch('awslimitchecker.version.find_version') as mock_ver:
             mock_ver.return_value = VersionInfo(
@@ -97,8 +89,6 @@ class TestVersion(object):
         assert v.commit == '1234567*'
         assert mock_ver.mock_calls == [call('awslimitchecker')]
 
-    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
-                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_long_commit(self):
         with patch('awslimitchecker.version.find_version') as mock_ver:
             mock_ver.return_value = VersionInfo(
@@ -112,8 +102,6 @@ class TestVersion(object):
         assert v.commit == '12345678'
         assert mock_ver.mock_calls == [call('awslimitchecker')]
 
-    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
-                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_fallback(self):
         def se(foo):
             raise Exception("foo")
@@ -132,18 +120,6 @@ class TestVersion(object):
                            ' may not be in compliance with the AGPLv3 license:')
         ]
 
-    @pytest.mark.skipif(sys.version_info[0:2] != (3, 2),
-                        reason='py32 versionfinder test')
-    def test__get_version_info_py32(self):
-        with patch('awslimitchecker.version.logger') as mock_logger:
-            version._get_version_info()
-        assert mock_logger.mock_calls == [
-            call.exception('Error checking installed version; this installation'
-                           ' may not be in compliance with the AGPLv3 license:')
-        ]
-
-    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
-                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_loggers(self):
         mock_loggers = {
             'versionfinder': Mock(),
@@ -176,8 +152,6 @@ class TestVersion(object):
             call.setLevel(CRITICAL)
         ]
 
-    @pytest.mark.skipif(sys.version_info[0:2] == (3, 2),
-                        reason='versionfinder doesnt work on py32')
     def test__get_version_info_loggers_enabled(self):
         mock_loggers = {
             'versionfinder': Mock(),
