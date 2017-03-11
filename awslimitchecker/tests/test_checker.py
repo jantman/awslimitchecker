@@ -703,6 +703,7 @@ class TestAwsLimitChecker(object):
         self.mock_svc1.required_iam_permissions.return_value = [
             'ec2:foo',
             'ec2:bar',
+            'foo:perm1'
         ]
         self.mock_svc2.required_iam_permissions.return_value = [
             'foo:perm1',
