@@ -44,7 +44,6 @@ from .version import _get_version_info
 import boto3
 import sys
 import logging
-import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -139,13 +138,6 @@ class AwsLimitChecker(object):
                 self.vinfo.url
             )
         )
-        if sys.version_info[0:2] == (3, 2):
-            warnings.warn("Python 3.2 support will be removed in the "
-                          "next release; see https://github.com/jantman/"
-                          "awslimitchecker/issues/236", DeprecationWarning)
-            logger.warning("Python 3.2 support will be removed in the "
-                           "next release; see https://github.com/jantman/"
-                           "awslimitchecker/issues/236")
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.profile_name = profile_name
@@ -234,8 +226,8 @@ class AwsLimitChecker(object):
         If ``service`` is specified, the returned dict has one element,
         the service name, whose value is a nested dict as described below.
 
-        :param service: the name of one service to return limits for
-        :type service: string
+        :param service: the name(s) of one or more services to return limits for
+        :type service: list
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         :returns: dict of service name (string) to nested dict
@@ -245,7 +237,7 @@ class AwsLimitChecker(object):
         res = {}
         to_get = self.services
         if service is not None:
-            to_get = {service: self.services[service]}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for sname, cls in to_get.items():
@@ -311,15 +303,15 @@ class AwsLimitChecker(object):
         :py:class:`~.AwsLimit` objects for each service, which can
         then be queried using :py:meth:`~.get_limits`.
 
-        :param service: :py:class:`~._AwsService` name, or ``None`` to
-          check all services.
-        :type service: :py:obj:`None`, or :py:obj:`string` service name to get
+        :param service: list of :py:class:`~._AwsService` name(s), or ``None``
+          to check all services.
+        :type service: :py:obj:`None`, or :py:obj:`list` service names to get
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         """
         to_get = self.services
         if service is not None:
-            to_get = {service: self.services[service]}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for cls in to_get.values():
@@ -506,8 +498,9 @@ class AwsLimitChecker(object):
 
         See :py:meth:`.AwsLimit.check_thresholds`.
 
-        :param service: the name of one service to return results for
-        :type service: string
+        :param service: the name(s) of one or more service(s) to return
+          results for
+        :type service: list
         :param use_ta: check Trusted Advisor for information on limits
         :type use_ta: bool
         :returns: dict of service name (string) to nested dict
@@ -517,7 +510,7 @@ class AwsLimitChecker(object):
         res = {}
         to_get = self.services
         if service is not None:
-            to_get = {service: self.services[service]}
+            to_get = dict((each, self.services[each]) for each in service)
         if use_ta:
             self.ta.update_limits()
         for sname, cls in to_get.items():
@@ -552,7 +545,7 @@ class AwsLimitChecker(object):
             'Statement': [{
                 'Effect': 'Allow',
                 'Resource': '*',
-                'Action': sorted(required_actions),
+                'Action': sorted(list(set(required_actions))),
             }],
         }
         return policy

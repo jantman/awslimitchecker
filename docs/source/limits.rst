@@ -50,6 +50,8 @@ updated from Trusted Advisor:
 
   * Elastic IP addresses (EIPs)
 
+  * Running On-Demand c3.2xlarge instances
+
   * Running On-Demand c3.4xlarge instances
 
   * Running On-Demand c3.large instances
@@ -285,17 +287,6 @@ EC2
 ++++
 
 
-**Note on Spot Instances:** spot instance
-support in awslimitchecker is experimental and not thoroughly used
-outside of testing. Be advised that spot instances are _not_ counted
-against the Running On-Demand Instances limits. Also be advised that
-spot instance and fleet requests are only counted towards usage
-if they are in the *active* state. If you find any problems with
-spot instance or fleet usage or limits, please
-`open an issue on GitHub <https://github.com/jantman/awslimitchecker
-/issues/new>`_
-
-
 **Note on On-Demand vs Reserved Instances:** The EC2 limits for
 "Running On-Demand" EC2 Instances apply only to On-Demand instances,
 not Reserved Instances. If you list all EC2 instances that are
@@ -318,7 +309,7 @@ Rules per VPC security group                                   50
 Running On-Demand EC2 instances :sup:`(API)`                   20  
 Running On-Demand c1.medium instances                          20  
 Running On-Demand c1.xlarge instances                          20  
-Running On-Demand c3.2xlarge instances                         20  
+Running On-Demand c3.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand c3.4xlarge instances :sup:`(TA)`             20  
 Running On-Demand c3.8xlarge instances                         20  
 Running On-Demand c3.large instances :sup:`(TA)`               20  
@@ -484,6 +475,18 @@ Subnet Groups :sup:`(API)`                            20
 Subnets per Subnet Group :sup:`(API)`                 20    
 VPC Security Groups                                   5     
 ===================================================== ======
+
+.. _limits.Redshift:
+
+Redshift
++++++++++
+
+========================= ==
+Limit                     Default
+========================= ==
+Redshift manual snapshots 20
+Redshift subnet groups    20
+========================= ==
 
 .. _limits.S3:
 

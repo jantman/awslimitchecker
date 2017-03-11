@@ -1,30 +1,27 @@
 language: python
 sudo: false
-cache:
-  directories:
-  - "$HOME/.pip-cache/"
+cache: pip
 matrix:
   include:
     - python: "2.6"
-      env: TOXENV=py26 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+      env: TOXENV=py26
     - python: "2.7"
-      env: TOXENV=py27 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
-    - python: "3.2"
-      env: TOXENV=py32 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+      env: TOXENV=py27
     - python: "3.3"
-      env: TOXENV=py33 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+      env: TOXENV=py33
     - python: "3.4"
-      env: TOXENV=py34 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+      env: TOXENV=py34
     - python: "3.5"
-      env: TOXENV=py35 PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+      env: TOXENV=py35
+    - python: "3.6"
+      env: TOXENV=py36
     - python: "2.7"
-      env: TOXENV=docs PIP_DOWNLOAD_CACHE=$HOME/.pip-cache
+      env: TOXENV=docs
     - python: "2.7"
       env: TOXENV=integration
-    - python: "3.4"
+    - python: "3.6"
       env: TOXENV=integration3
 install:
-- virtualenv --version; test $TOXENV = "py32" -o $TOXENV = "pypy3" && pip install --upgrade virtualenv==13.1.2 || /bin/true
 - git config --global user.email "travisci@jasonantman.com"
 - git config --global user.name "travisci"
 - pip install tox

@@ -1,6 +1,44 @@
 Changelog
 =========
 
+0.8.0 (2017-03-11)
+------------------
+
+This release includes a **breaking API change**. Please see the first bullet point
+below. Note that once 1.0.0 is released (which should be relatively soon), such
+API changes will only come with a major version increment.
+
+This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups``.
+
+This release **removes Python 3.2 support**. This was deprecated in 0.7.0. As of this release,
+awslimitchecker may still work on Python 3.2, but it is no longer tested and any support tickets
+or bug reports specific to 3.2 will be closed.
+
+* `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the
+  ``--service`` command line option to accept multiple values. This is a
+  **breaking public API change**; the ``awslimitchecker.checker.AwsLimitChecker``
+  `check_thresholds <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.check_thresholds>`_,
+  `find_usage <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.find_usage>`_,
+  and `get_limits <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.get_limits>`_
+  methods now take an optional ``service`` *list* keyword argument instead of a *string* for a
+  single service name.
+* `PR #251 <https://github.com/jantman/awslimitchecker/pull/251>`_ - Handle GovCloud-specific edge cases; specifically, UnsupportedOperation errors
+  for EC2 Spot Instance-related API calls, and limits returned as 0 by the DescribeAccountAttributes EC2 API action.
+* `PR #249 <https://github.com/jantman/awslimitchecker/pull/249>`_ - Add support for RedShift limits (Redshift subnet groups and Redshift manual snapshots).
+  This requires the ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups`` IAM permissions.
+* `Issue #259 <https://github.com/jantman/awslimitchecker/issues/259>`_ - remove duplicates from required IAM policy returned by ``awslimitchecker.checker.AwsLimitChecker.get_required_iam_policy`` and ``awslimitchecker --iam-policy``.
+* Various TravisCI/tox build fixes:
+
+  * Fix pip caching; use default pip cache directory
+  * Add python 3.6 tox env and Travis env, now that it's released
+  * Switch integration3 tox env from py3.4 to py3.6
+
+* `PR #256 <https://github.com/jantman/awslimitchecker/pull/256>`_ - Add example of wrapping awslimitchecker in a script to send metrics to `Prometheus <https://prometheus.io/>`_.
+* `Issue #236 <https://github.com/jantman/awslimitchecker/issues/236>`_ - Drop support for Python 3.2; stop testing under py32.
+* `Issue #257 <https://github.com/jantman/awslimitchecker/issues/257>`_ - Handle ElastiCache DescribeCacheCluster responses that are missing ``CacheNodes`` key in a cluster description.
+* `Issue #200 <https://github.com/jantman/awslimitchecker/issues/200>`_ - Remove EC2 Spot Instances/Fleets limits from experimental status.
+* `Issue #123 <https://github.com/jantman/awslimitchecker/issues/123>`_ - Update documentation on using session tokens (Session or Federation temporary creds).
+
 0.7.0 (2017-01-15)
 ------------------
 

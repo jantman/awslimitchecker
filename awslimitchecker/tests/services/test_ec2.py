@@ -39,6 +39,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from copy import deepcopy
+import pytest
+import botocore
 from awslimitchecker.tests.services import result_fixtures
 from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.limit import AwsLimit
@@ -538,10 +540,6 @@ class Test_Ec2Service(object):
         assert usage[0].get_value() == 2
         assert mock_logger.mock_calls == [
             call.debug('Getting spot instance request usage'),
-            call.warning('EC2 spot instance support is experimental and '
-                         'results may not me accurate in all cases. Please '
-                         'see the notes at: <http://awslimitchecker'
-                         '.readthedocs.io/en/latest/limits.html#ec2>'),
             call.debug('NOT counting spot instance request %s state=%s',
                        'reqID1', 'closed'),
             call.debug('Counting spot instance request %s state=%s',
@@ -549,10 +547,43 @@ class Test_Ec2Service(object):
             call.debug('Counting spot instance request %s state=%s',
                        'reqID3', 'open'),
             call.debug('NOT counting spot instance request %s state=%s',
-                       'reqID4', 'failed'),
-            call.debug('Setting "Max spot instance requests per region" '
-                       'limit (%s) current usage to: %d', lim, 2)
+                       'reqID4', 'failed')
         ]
+
+    def test_find_usage_spot_instances_unsupported(self):
+        mock_client_conn = Mock()
+        err = botocore.exceptions.ClientError(
+            {'Error': {'Code': 'UnsupportedOperation'}},
+            'operation',
+        )
+        mock_client_conn.describe_spot_instance_requests.side_effect = err
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        cls._find_usage_spot_instances()
+        lim = cls.limits['Max spot instance requests per region']
+        usage = lim.get_current_usage()
+        assert len(usage) == 0
+
+    def test_find_usage_spot_instances_unknown_code(self):
+        mock_client_conn = Mock()
+        err = botocore.exceptions.ClientError(
+            {'Error': {'Code': 'SomeCode'}},
+            'operation',
+        )
+        mock_client_conn.describe_spot_instance_requests.side_effect = err
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        with pytest.raises(botocore.exceptions.ClientError):
+            cls._find_usage_spot_instances()
+
+    def test_find_usage_spot_instances_unknown_error(self):
+        mock_client_conn = Mock()
+        err = RuntimeError
+        mock_client_conn.describe_spot_instance_requests.side_effect = err
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        with pytest.raises(RuntimeError):
+            cls._find_usage_spot_instances()
 
     def test_find_usage_spot_fleets(self):
         data = fixtures.test_find_usage_spot_fleets
@@ -599,14 +630,8 @@ class Test_Ec2Service(object):
             call.debug('Getting spot fleet request usage'),
             call.debug('Skipping spot fleet request %s in state %s', 'req1',
                        'failed'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req2', 11, 3),
             call.debug('Skipping spot fleet request %s in state %s',
-                       'req3', 'modifying'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req4', 33, 1),
-            call.debug('Total active spot fleets: %d; total target capacity '
-                       'for all spot fleets: %d', 2, 44)
+                       'req3', 'modifying')
         ]
 
     def test_find_usage_spot_fleets_paginated(self):
@@ -658,15 +683,43 @@ class Test_Ec2Service(object):
                        'configured in awslimitchecker.'),
             call.debug('Skipping spot fleet request %s in state %s', 'req1',
                        'failed'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req2', 11, 3),
             call.debug('Skipping spot fleet request %s in state %s',
-                       'req3', 'modifying'),
-            call.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                       'req4', 33, 1),
-            call.debug('Total active spot fleets: %d; total target capacity '
-                       'for all spot fleets: %d', 2, 44)
+                       'req3', 'modifying')
         ]
+
+    def test_find_usage_spot_fleets_unsupported(self):
+        mock_client_conn = Mock()
+        err = botocore.exceptions.ClientError(
+            {'Error': {'Code': 'UnsupportedOperation'}},
+            'operation',
+        )
+        mock_client_conn.describe_spot_fleet_requests.side_effect = err
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        cls._find_usage_spot_fleets()
+        total = cls.limits['Max active spot fleets per '
+                           'region'].get_current_usage()
+        assert len(total) == 0
+
+    def test_find_usage_spot_fleets_unknown_code(self):
+        mock_client_conn = Mock()
+        err = botocore.exceptions.ClientError(
+            {'Error': {'Code': 'SomeCode'}},
+            'operation',
+        )
+        mock_client_conn.describe_spot_fleet_requests.side_effect = err
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        with pytest.raises(botocore.exceptions.ClientError):
+            cls._find_usage_spot_fleets()
+
+    def test_find_usage_spot_fleets_unknown_error(self):
+        mock_client_conn = Mock()
+        mock_client_conn.describe_spot_fleet_requests.side_effect = RuntimeError
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        with pytest.raises(RuntimeError):
+            cls._find_usage_spot_fleets()
 
     def test_update_limits_from_api(self):
         data = fixtures.test_update_limits_from_api
@@ -692,3 +745,15 @@ class Test_Ec2Service(object):
         assert cls.limits['VPC Elastic IP addresses (EIPs)'].api_limit == 200
         assert cls.limits['VPC security groups per elastic '
                           'network interface'].api_limit == 5
+
+    def test_update_limits_from_api_unsupported(self):
+        data = fixtures.test_update_limits_from_api_unsupported
+        mock_client_conn = Mock()
+        mock_client_conn.describe_account_attributes.return_value = data
+
+        cls = _Ec2Service(21, 43)
+        cls.conn = mock_client_conn
+        cls._update_limits_from_api()
+        lim = cls.limits['Elastic IP addresses (EIPs)']
+        usage = lim.get_current_usage()
+        assert len(usage) == 0

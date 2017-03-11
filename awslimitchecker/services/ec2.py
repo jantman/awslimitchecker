@@ -42,6 +42,8 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 
+import botocore
+
 from .base import _AwsService
 from ..limit import AwsLimit
 
@@ -132,11 +134,12 @@ class _Ec2Service(_AwsService):
     def _find_usage_spot_instances(self):
         """calculate spot instance request usage and update Limits"""
         logger.debug('Getting spot instance request usage')
-        logger.warning("EC2 spot instance support is experimental and results "
-                       "may not me accurate in all cases. Please see the notes "
-                       "at: <http://awslimitchecker.readthedocs.io/en/latest"
-                       "/limits.html#ec2>")
-        res = self.conn.describe_spot_instance_requests()
+        try:
+            res = self.conn.describe_spot_instance_requests()
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'UnsupportedOperation':
+                return
+            raise
         count = 0
         for req in res['SpotInstanceRequests']:
             if req['State'] in ['open', 'active']:
@@ -146,10 +149,6 @@ class _Ec2Service(_AwsService):
             else:
                 logger.debug('NOT counting spot instance request %s state=%s',
                              req['SpotInstanceRequestId'], req['State'])
-        logger.debug('Setting "Max spot instance requests per region" limit '
-                     '(%s) current usage to: %d',
-                     self.limits['Max spot instance requests per region'],
-                     count)
         self.limits['Max spot instance requests per region']._add_current_usage(
             count,
             aws_type='AWS::EC2::SpotInstanceRequest'
@@ -158,13 +157,16 @@ class _Ec2Service(_AwsService):
     def _find_usage_spot_fleets(self):
         """calculate spot fleet request usage and update Limits"""
         logger.debug('Getting spot fleet request usage')
-        res = self.conn.describe_spot_fleet_requests()
+        try:
+            res = self.conn.describe_spot_fleet_requests()
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'UnsupportedOperation':
+                return
+            raise
         if 'NextToken' in res:
             logger.error('Error: describe_spot_fleet_requests() response '
                          'includes pagination token, but pagination not '
                          'configured in awslimitchecker.')
-        # @TODO: assumption: 'Max target capacity for all spot fleets in region'
-        # only counts active fleets (not submitted)
         active_fleets = 0
         total_target_cap = 0
         lim_cap_per_fleet = self.limits['Max target capacity per spot fleet']
@@ -181,16 +183,11 @@ class _Ec2Service(_AwsService):
             launch_specs = len(
                 fleet['SpotFleetRequestConfig']['LaunchSpecifications'])
             total_target_cap += cap
-            logger.debug('Active fleet %s: target capacity=%s, %d launch specs',
-                         _id, cap,
-                         launch_specs)
             lim_cap_per_fleet._add_current_usage(
                 cap, resource_id=_id, aws_type='AWS::EC2::SpotFleetRequest')
             lim_launch_specs._add_current_usage(
                 launch_specs, resource_id=_id,
                 aws_type='AWS::EC2::SpotFleetRequest')
-        logger.debug('Total active spot fleets: %d; total target capacity '
-                     'for all spot fleets: %d', active_fleets, total_target_cap)
         self.limits['Max active spot fleets per region']._add_current_usage(
             active_fleets, aws_type='AWS::EC2::SpotFleetRequest'
         )
@@ -304,6 +301,8 @@ class _Ec2Service(_AwsService):
             elif aname == 'vpc-max-security-groups-per-interface':
                 lname = 'VPC security groups per elastic network interface'
             if lname is not None:
+                if int(val) == 0:
+                    continue
                 self.limits[lname]._set_api_limit(int(val))
         logger.debug("Done setting limits from API")
 

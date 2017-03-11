@@ -1304,6 +1304,39 @@ class ElastiCache(object):
                 'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30',
                 'CacheNodes': None,
             },
+            {
+                'Engine': 'redis',
+                'CacheParameterGroup': {
+                    'CacheNodeIdsToReboot': [],
+                    'CacheParameterGroupName': 'default.redis2.8',
+                    'ParameterApplyStatus': 'in-sync'
+                },
+                'CacheClusterId': 'redis3',
+                'CacheSecurityGroups': [
+                    {
+                        'Status': 'active',
+                        'CacheSecurityGroupName': 'csg-redis2'
+                    }
+                ],
+                'ConfigurationEndpoint': None,
+                'CacheClusterCreateTime': 1412253787.123,
+                'ReplicationGroupId': None,
+                'AutoMinorVersionUpgrade': True,
+                'CacheClusterStatus': 'available',
+                'NumCacheNodes': 4,
+                'PreferredAvailabilityZone': 'us-east-1a',
+                'SecurityGroups': None,
+                'CacheSubnetGroupName': None,
+                'EngineVersion': '2.8.6',
+                'PendingModifiedValues': {
+                    'NumCacheNodes': None,
+                    'EngineVersion': None,
+                    'CacheNodeIdsToRemove': None
+                },
+                'CacheNodeType': 'cache.m3.medium',
+                'NotificationConfiguration': None,
+                'PreferredMaintenanceWindow': 'mon:05:30-mon:06:30'
+            },
         ],
     })
 
@@ -1709,6 +1742,34 @@ class EC2(object):
         ]
     }
 
+    test_update_limits_from_api_unsupported = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'supported-platforms',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': 'EC2'
+                    },
+                    {
+                        'AttributeValue': 'VPC'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'max-elastic-ips',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '0'
+                    }
+                ]
+            },
+        ]
+    }
+
     test_find_usage_spot_instances = {
         'SpotInstanceRequests': [
             {
@@ -2041,3 +2102,143 @@ class Firehose(object):
             }
         }
     ]
+
+
+class Redshift(object):
+
+    test_describe_cluster_snapshots = {
+        'Snapshots': [
+            {
+                "EstimatedSecondsToCompletion": 0,
+                "OwnerAccount": "123456789",
+                "CurrentBackupRateInMegaBytesPerSecond": 1.0,
+                "ActualIncrementalBackupSizeInMegaBytes": 1.0,
+                "NumberOfNodes": 1,
+                "Status": "available",
+                "VpcId": "vpc-123456",
+                "ClusterVersion": "1.0",
+                "Tags": [],
+                "MasterUsername": "username",
+                "TotalBackupSizeInMegaBytes": 10.0,
+                "DBName": "test",
+                "BackupProgressInMegaBytes": 4.0,
+                "ClusterCreateTime": "2017-01-01T00:00:00.000Z",
+                "RestorableNodeTypes": [
+                    "dc1.large"
+                ],
+                "EncryptedWithHSM": False,
+                "ClusterIdentifier": "test12346",
+                "SnapshotCreateTime": "2017-01-04T00:00:00.000Z",
+                "AvailabilityZone": "us-east-1e",
+                "NodeType": "dc1.large",
+                "Encrypted": False,
+                "ElapsedTimeInSeconds": 0,
+                "SnapshotType": "manual",
+                "Port": 1234,
+                "SnapshotIdentifier": "snapshot1"
+            },
+            {
+                "EstimatedSecondsToCompletion": 0,
+                "OwnerAccount": "123456789",
+                "CurrentBackupRateInMegaBytesPerSecond": 1.0,
+                "ActualIncrementalBackupSizeInMegaBytes": 1.0,
+                "NumberOfNodes": 1,
+                "Status": "available",
+                "VpcId": "vpc-123456",
+                "ClusterVersion": "1.0",
+                "Tags": [],
+                "MasterUsername": "username",
+                "TotalBackupSizeInMegaBytes": 10.0,
+                "DBName": "test",
+                "BackupProgressInMegaBytes": 4.0,
+                "ClusterCreateTime": "2017-01-01T00:00:00.000Z",
+                "RestorableNodeTypes": [
+                    "dc1.large"
+                ],
+                "EncryptedWithHSM": False,
+                "ClusterIdentifier": "test12346",
+                "SnapshotCreateTime": "2017-01-04T00:00:00.000Z",
+                "AvailabilityZone": "us-east-1e",
+                "NodeType": "dc1.large",
+                "Encrypted": False,
+                "ElapsedTimeInSeconds": 0,
+                "SnapshotType": "manual",
+                "Port": 1234,
+                "SnapshotIdentifier": "snapshot2"
+            }
+        ]
+    }
+
+    test_describe_cluster_subnet_groups = {
+        "ClusterSubnetGroups": [
+            {
+                "Subnets": [
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-1",
+                        "SubnetAvailabilityZone": {
+                            "Name": "region-name"
+                        }
+                    },
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-2",
+                        "SubnetAvailabilityZone": {
+                            "Name": "alt-region-name"
+                        }
+                    }
+                ],
+                "VpcId": "vpc-1",
+                "Description": "Redshift Subnet Group for Test1",
+                "Tags": [],
+                "SubnetGroupStatus": "Complete",
+                "ClusterSubnetGroupName": "groupname1"
+            },
+            {
+                "Subnets": [
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-3",
+                        "SubnetAvailabilityZone": {
+                            "Name": "alt-region-name"
+                        }
+                    },
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-4",
+                        "SubnetAvailabilityZone": {
+                            "Name": "region-name"
+                        }
+                    }
+                ],
+                "VpcId": "vpc-2",
+                "Description": "Redshift Subnet Group for Test2",
+                "Tags": [],
+                "SubnetGroupStatus": "Complete",
+                "ClusterSubnetGroupName": "groupname2"
+            },
+            {
+                "Subnets": [
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-5",
+                        "SubnetAvailabilityZone": {
+                            "Name": "alt-region-name"
+                        }
+                    },
+                    {
+                        "SubnetStatus": "Active",
+                        "SubnetIdentifier": "subnet-6",
+                        "SubnetAvailabilityZone": {
+                            "Name": "region-name"
+                        }
+                    }
+                ],
+                "VpcId": "vpc-3",
+                "Description": "Redshift Subnet Group for Test3",
+                "Tags": [],
+                "SubnetGroupStatus": "Complete",
+                "ClusterSubnetGroupName": "groupname3"
+            }
+        ]
+    }

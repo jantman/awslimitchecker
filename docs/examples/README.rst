@@ -19,6 +19,11 @@ Jenkins-AWS_Limit_Check.xml
 
 This is a sample Jenkins job to run ``check_aws_limits.py`` every 6 hours, 
 
+prometheus.py
+-------------
+
+This is an example of wrapping awslimitchecker in a script that sends metrics to `Prometheus <https://prometheus.io/>`_.
+
 test_check_aws_limits.py
 ------------------------
 
