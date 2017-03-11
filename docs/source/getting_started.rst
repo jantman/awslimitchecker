@@ -120,7 +120,7 @@ by these APIs (commonly used by organizations to hand out limited-lifetime crede
 encounter errors when checking IAM limits. If this is acceptable, you can use these credentials by setting
 the ``AWS_SESSION_TOKEN`` environment variable in addition to ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY``,
 or by otherwise configuring these credentials in a way that's supported by
-`boto3 <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_.
+`boto3 configuration <http://boto3.readthedocs.org/en/latest/guide/configuration.html#guide-configuration>`_.
 
 .. _getting_started.regions:
 
