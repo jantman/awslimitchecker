@@ -456,7 +456,7 @@ class TestAwsLimitChecker(object):
         limits = sample_limits()
         self.mock_svc1.get_limits.return_value = limits['SvcFoo']
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
-        res = self.cls.get_limits(service='SvcFoo')
+        res = self.cls.get_limits(service=['SvcFoo'])
         assert res == {'SvcFoo': limits['SvcFoo']}
         assert self.mock_ta.mock_calls == [
             call.update_limits()
@@ -470,7 +470,7 @@ class TestAwsLimitChecker(object):
         limits = sample_limits()
         self.mock_svc1.get_limits.return_value = limits['SvcFoo']
         self.mock_svc2.get_limits.return_value = limits['SvcBar']
-        res = self.cls.get_limits(service='SvcBar')
+        res = self.cls.get_limits(service=['SvcBar'])
         assert res == {'SvcBar': limits['SvcBar']}
         assert self.mock_ta.mock_calls == [
             call.update_limits()
@@ -506,7 +506,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_ta.mock_calls == []
 
     def test_find_usage_service(self):
-        self.cls.find_usage(service='SvcFoo')
+        self.cls.find_usage(service=['SvcFoo'])
         assert self.mock_svc1.mock_calls == [
             call.find_usage()
         ]
@@ -516,7 +516,7 @@ class TestAwsLimitChecker(object):
         ]
 
     def test_find_usage_service_with_api(self):
-        self.cls.find_usage(service='SvcBar')
+        self.cls.find_usage(service=['SvcBar'])
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
@@ -703,6 +703,7 @@ class TestAwsLimitChecker(object):
         self.mock_svc1.required_iam_permissions.return_value = [
             'ec2:foo',
             'ec2:bar',
+            'foo:perm1'
         ]
         self.mock_svc2.required_iam_permissions.return_value = [
             'foo:perm1',
@@ -740,7 +741,7 @@ class TestAwsLimitChecker(object):
     def test_check_thresholds_service(self):
         self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
         self.mock_svc2.check_thresholds.return_value = {'baz': 'blam'}
-        res = self.cls.check_thresholds(service='SvcFoo')
+        res = self.cls.check_thresholds(service=['SvcFoo'])
         assert res == {
             'SvcFoo': {
                 'foo': 'bar',
@@ -757,7 +758,7 @@ class TestAwsLimitChecker(object):
     def test_check_thresholds_service_api(self):
         self.mock_svc1.check_thresholds.return_value = {'foo': 'bar'}
         self.mock_svc2.check_thresholds.return_value = {'baz': 'blam'}
-        res = self.cls.check_thresholds(service='SvcBar')
+        res = self.cls.check_thresholds(service=['SvcBar'])
         assert res == {
             'SvcBar': {
                 'baz': 'blam',

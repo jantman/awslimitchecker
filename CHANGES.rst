@@ -1,6 +1,34 @@
 Changelog
 =========
 
+0.8.0 (unreleased)
+------------------
+
+This release includes a **breaking API change**. Please see the first bullet point
+below. Note that once 1.0.0 is released (which should be relatively soon), such
+API changes will only come with a major version increment.
+
+This release **requires new IAM permissions**: ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups``.
+
+* `PR #250 <https://github.com/jantman/awslimitchecker/pull/250>`_ - Allow the
+  ``--service`` command line option to accept multiple values. This is a
+  **breaking public API change**; the ``awslimitchecker.checker.AwsLimitChecker``
+  `check_thresholds <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.check_thresholds>`_,
+  `find_usage <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.find_usage>`_,
+  and `get_limits <http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.checker.html#awslimitchecker.checker.AwsLimitChecker.get_limits>`_
+  methods now take an optional ``service`` *list* keyword argument instead of a *string* for a
+  single service name.
+* `PR #251 <https://github.com/jantman/awslimitchecker/pull/251>`_ to handle GovCloud-specific edge cases; specifically, UnsupportedOperation errors
+  for EC2 Spot Instance-related API calls, and limits returned as 0 by the DescribeAccountAttributes EC2 API action.
+* `PR #249 <https://github.com/jantman/awslimitchecker/pull/249>`_ to add support for RedShift limits (Redshift subnet groups and Redshift manual snapshots).
+  This requires the ``redshift:DescribeClusterSnapshots`` and ``redshift:DescribeClusterSubnetGroups`` IAM permissions.
+* `Issue #259 <https://github.com/jantman/awslimitchecker/issues/259>`_ - remove duplicates from required IAM policy returned by ``awslimitchecker.checker.AwsLimitChecker.get_required_iam_policy`` and ``awslimitchecker --iam-policy``.
+* Various TravisCI/tox build fixes:
+
+  * Fix pip caching; use default pip cache directory
+  * Add python 3.6 tox env and Travis env, now that it's released
+  * Switch integration3 tox env from py3.4 to py3.6
+
 0.7.0 (2017-01-15)
 ------------------
 

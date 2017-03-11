@@ -470,6 +470,25 @@ def on_doctree_read(_, doctree):
                 [
                     label_ref_node, docname, 'getting_started.trusted_advisor',
                     'Getting Started - Trusted Advisor'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.'
+            'checker.html#awslimitchecker.checker.AwsLimitChecker.'
+            'check_thresholds':
+                [
+                    meth_ref_node, docname,
+                    'awslimitchecker.checker.AwsLimitChecker.check_thresholds'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.'
+            'checker.html#awslimitchecker.checker.AwsLimitChecker.find_usage':
+                [
+                    meth_ref_node, docname,
+                    'awslimitchecker.checker.AwsLimitChecker.find_usage'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/awslimitchecker.'
+            'checker.html#awslimitchecker.checker.AwsLimitChecker.get_limits':
+                [
+                    meth_ref_node, docname,
+                    'awslimitchecker.checker.AwsLimitChecker.get_limits'
                 ]
         }
         doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
