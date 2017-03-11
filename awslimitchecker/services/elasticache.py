@@ -79,7 +79,7 @@ class _ElastiCacheService(_AwsService):
             for cluster in page['CacheClusters']:
                 try:
                     num_nodes = len(cluster['CacheNodes'])
-                except (IndexError, TypeError):
+                except (IndexError, TypeError, KeyError):
                     # sometimes CacheNodes is None...
                     logger.debug(
                         "Cache Cluster '%s' returned dict with CacheNodes "
