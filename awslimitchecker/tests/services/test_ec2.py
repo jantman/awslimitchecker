@@ -76,11 +76,12 @@ class Test_Ec2Service(object):
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
-        assert len(types) == 70
+        assert len(types) == 76
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
         assert 'i2.4xlarge' in types
+        assert 'i3.16xlarge' in types
         assert 'd2.2xlarge' in types
         assert 'g2.8xlarge' in types
         assert 'hs1.8xlarge' in types
@@ -134,7 +135,7 @@ class Test_Ec2Service(object):
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
-        assert len(limits) == 71
+        assert len(limits) == 77
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
@@ -148,6 +149,10 @@ class Test_Ec2Service(object):
         assert i2_8xlarge.default_limit == 2
         assert i2_8xlarge.limit_type == 'On-Demand instances'
         assert i2_8xlarge.limit_subtype == 'i2.8xlarge'
+        i3_16xlarge = limits['Running On-Demand i3.16xlarge instances']
+        assert i3_16xlarge.default_limit == 2
+        assert i3_16xlarge.limit_type == 'On-Demand instances'
+        assert i3_16xlarge.limit_subtype == 'i3.16xlarge'
         m4_16xlarge = limits['Running On-Demand m4.16xlarge instances']
         assert m4_16xlarge.default_limit == 5
         assert m4_16xlarge.limit_type == 'On-Demand instances'
