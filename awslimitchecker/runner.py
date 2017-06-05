@@ -362,11 +362,6 @@ class Runner(object):
             ta_refresh_timeout=args.ta_refresh_timeout
         )
 
-        if args.skip_service is not None:
-            if args.service is not None:
-                raise SystemExit(0)
-            self.checker.remove_services(args.skip_service)
-
         if args.version:
             print('awslimitchecker {v} (see <{s}> for source code)'.format(
                 s=self.checker.get_project_url(),
