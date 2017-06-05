@@ -218,18 +218,17 @@ class AwsLimitChecker(object):
         """
         return self.vinfo.url
 
-    def remove_skipped_services(self, service_to_skip=None):
+    def remove_services(self, services_to_remove=[]):
         """
-        If ``service_to_skip`` is specified, the listed services
+        If ``services_to_remove`` is specified, the list of services
         are removed from the services[] class list.
 
-        :param service_to_skip: the name(s) of one or more services to avoid
-          returning limits for
+        :param services_to_remove: the name(s) of one or more services to
+          permanently exclude from future calls to this class
         :type service_to_skip: list
         """
-        if service_to_skip is not None:
-            for sname in service_to_skip:
-                del self.services[sname]
+        for sname in services_to_remove:
+            del self.services[sname]
 
     def get_limits(self, service=None, use_ta=True):
         """

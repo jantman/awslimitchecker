@@ -364,7 +364,7 @@ class Runner(object):
         if args.skip_service is not None:
             if args.service is not None:
                 raise SystemExit(0)
-            self.checker.remove_skipped_services(args.skip_service)
+            self.checker.remove_services(args.skip_service)
 
         if args.version:
             print('awslimitchecker {v} (see <{s}> for source code)'.format(
