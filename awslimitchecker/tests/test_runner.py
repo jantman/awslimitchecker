@@ -128,6 +128,7 @@ class TestAwsLimitCheckerRunner(object):
                                      'service name; see -s|--list-services for '
                                      'valid names'),
             call().add_argument('--skip-service', action='store', nargs='*',
+                                default=[],
                                 help='avoid performing actions for the '
                                      'specified service name; see '
                                      '-s|--list-services for valid names'),
