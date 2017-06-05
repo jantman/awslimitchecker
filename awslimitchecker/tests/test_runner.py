@@ -127,6 +127,10 @@ class TestAwsLimitCheckerRunner(object):
                                 help='perform action for only the specified '
                                      'service name; see -s|--list-services for '
                                      'valid names'),
+            call().add_argument('--skip-service', action='store', nargs='*',
+                                help='avoid performing actions for the specified '
+                                     'service name; see -s|--list-services for '
+                                     'valid names'),
             call().add_argument('-s', '--list-services',
                                 default=False, action='store_true',
                                 help='print a list of all AWS service types '
@@ -603,6 +607,19 @@ class TestAwsLimitCheckerRunner(object):
 
     def test_entry_no_service_name(self, capsys):
         argv = ['awslimitchecker']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_ct:
+                with pytest.raises(SystemExit) as excinfo:
+                    mock_ct.return_value = 6
+                    self.cls.console_entry_point()
+        out, err = capsys.readouterr()
+        assert out == ''
+        assert excinfo.value.code == 6
+        assert self.cls.service_name is None
+
+    def test_entry_no_service_name_skip_service(self, capsys):
+        argv = ['awslimitchecker', '--skip-service', 'Firehose']
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_ct:

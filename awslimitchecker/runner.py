@@ -101,6 +101,9 @@ class Runner(object):
         p.add_argument('-S', '--service', action='store', nargs='*',
                        help='perform action for only the specified service name'
                             '; see -s|--list-services for valid names')
+        p.add_argument('--skip-service', action='store', nargs='*',
+                       help='avoid performing actions for the specified service name'
+                            '; see -s|--list-services for valid names')
         p.add_argument('-s', '--list-services', action='store_true',
                        default=False,
                        help='print a list of all AWS service types that '
@@ -357,6 +360,11 @@ class Runner(object):
             ta_refresh_mode=args.ta_refresh_mode,
             ta_refresh_timeout=args.ta_refresh_timeout
         )
+
+        if args.skip_service is not None:
+            if args.service is not None:
+                raise SystemExit(0)
+            self.checker.remove_skipped_services(args.skip_service)
 
         if args.version:
             print('awslimitchecker {v} (see <{s}> for source code)'.format(

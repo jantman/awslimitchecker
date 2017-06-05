@@ -218,6 +218,19 @@ class AwsLimitChecker(object):
         """
         return self.vinfo.url
 
+    def remove_skipped_services(self, service_to_skip=None):
+        """
+        If ``service_to_skip`` is specified, the listed services
+        are removed from the services[] class list.
+
+        :param service_to_skip: the name(s) of one or more services to avoid
+          returning limits for
+        :type service_to_skip: list
+        """
+        if service_to_skip is not None:
+            for sname in service_to_skip:
+                del self.services[sname]
+
     def get_limits(self, service=None, use_ta=True):
         """
         Return all :py:class:`~.AwsLimit` objects for the given
