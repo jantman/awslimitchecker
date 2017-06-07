@@ -101,6 +101,10 @@ class Runner(object):
         p.add_argument('-S', '--service', action='store', nargs='*',
                        help='perform action for only the specified service name'
                             '; see -s|--list-services for valid names')
+        p.add_argument('--skip-service', action='store', nargs='*',
+                       default=[],
+                       help='avoid performing actions for the specified service'
+                            ' name; see -s|--list-services for valid names')
         p.add_argument('-s', '--list-services', action='store_true',
                        default=False,
                        help='print a list of all AWS service types that '
