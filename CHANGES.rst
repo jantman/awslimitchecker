@@ -6,7 +6,7 @@ Unreleased Changes
 
 * `PR #276 <https://github.com/jantman/awslimitchecker/pull/276>`_ /
   `Issue #275 <https://github.com/jantman/awslimitchecker/issues/275>`_ - Add new
-  ``--skip-service`` CLI option and :py:meth:`~.Checker.remove_services` to allow
+  ``--skip-service`` CLI option and :py:meth:`~.AwsLimitChecker.remove_services` to allow
   skipping of one or more specific services during runs. (Thanks to `tamsky <https://github.com/tamsky>`_)
   for this contribution.)
 * `PR #274 <https://github.com/jantman/awslimitchecker/pull/274>`_ /
