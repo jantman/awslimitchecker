@@ -66,6 +66,18 @@ from Trusted Advisor for all commands.
 
 {skip_ta}
 
+Disabling Specific Services
++++++++++++++++++++++++++++
+
+The ``--skip-service`` option can be used to completely disable the specified
+service name(s) (as shown by ``-s`` / ``--list-services``) for services that are
+problematic or you do not wish to query at all.
+
+For example, you can check usage of all services _except_ for ``Firehose`` and
+``EC2``:
+
+{skip_services}
+
 Checking Usage
 +++++++++++++++
 

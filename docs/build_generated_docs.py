@@ -249,6 +249,12 @@ def build_runner_examples():
         'check_thresholds_custom': ['awslimitchecker', '-W', '97',
                                     '--critical=98', '--no-color'],
         'iam_policy': ['awslimitchecker', '--iam-policy'],
+        'skip_services': [
+            'awslimitchecker',
+            '--skip-service=Firehose',
+            '--skip-service EC2',
+            '-u'
+        ],
     }
     results = {}
     # run the commands
