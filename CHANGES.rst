@@ -14,6 +14,7 @@ Unreleased Changes
   for new ``i3`` EC2 Instance types.  (Thanks to `tamsky <https://github.com/tamsky>`_)
   for this contribution.)
 * Fix broken docs build due to changes Intersphinx reference to ValueError in python2 docs
+* Add hack to ``docs/source/conf.py`` as workaround for https://github.com/sphinx-doc/sphinx/issues/3860
 
 0.8.0 (2017-03-11)
 ------------------

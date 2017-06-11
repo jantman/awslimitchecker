@@ -15,6 +15,8 @@
 import sys
 import os
 import re
+import logging
+import types
 # to let sphinx find the actual source...
 sys.path.insert(0, os.path.abspath("../.."))
 from awslimitchecker.version import _get_version_info, _VERSION
@@ -315,7 +317,6 @@ linkcheck_ignore = [
     r'https?://waffle\.io.*',
 ]
 
-
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734
 def remove_module_docstring(app, what, name, obj, options, lines):
     if what == "module":
@@ -324,11 +325,27 @@ def remove_module_docstring(app, what, name, obj, options, lines):
 
 # ignore non-local image warnings
 def _warn_node(self, msg, node, **kwargs):
-    if not msg.startswith('nonlocal image URI found:'):
-        self._warnfunc(msg, '%s:%s' % get_source_line(node))
-
+    if msg.startswith('nonlocal image URI found:'):
+        return
+    self._warnfunc(msg, '%s:%s' % get_source_line(node))
 
 sphinx.environment.BuildEnvironment.warn_node = _warn_node
+
+
+# BEGIN workaround for https://github.com/sphinx-doc/sphinx/issues/3860
+def _images_log_warning(self, msg, *args, **kwargs):
+    if msg.startswith(
+            'Could not fetch remote image: '
+            'https://readthedocs.org/projects/awslimitchecker/badge/?'
+    ):
+        print('Suppressing RTD badge remote image warning: %s' % msg)
+        return
+    self._orig_warning(msg, *args, **kwargs)
+
+img_log = logging.getLogger('sphinx.transforms.post_transforms.images')
+img_log._orig_warning = img_log.warning
+img_log.warning = types.MethodType(_images_log_warning, img_log)
+# END workaround for https://github.com/sphinx-doc/sphinx/issues/3860
 
 
 class LinkToRefVisitor(GenericNodeVisitor):
