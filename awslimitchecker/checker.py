@@ -363,8 +363,8 @@ class AwsLimitChecker(object):
         :param override_ta: whether or not to use this value even if Trusted
           Advisor supplies limit information
         :type override_ta: bool
-        :raises: :py:exc:`exceptions.ValueError` if limit_name is not known to
-          the service instance
+        :raises: :py:exc:`ValueError` if limit_name is not known to the
+          service instance
         """
         for svc_name in override_dict:
             for lim_name in override_dict[svc_name]:
@@ -397,7 +397,8 @@ class AwsLimitChecker(object):
         :param override_ta: whether or not to use this value even if Trusted
           Advisor supplies limit information
         :type override_ta: bool
-        :raises: ValueError if limit_name is not known to the service instance
+        :raises: :py:exc:`ValueError` if limit_name is not known to the
+          service instance
         """
         self.services[service_name].set_limit_override(
             limit_name,

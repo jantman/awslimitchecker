@@ -13,6 +13,7 @@ Unreleased Changes
   `Issue #273 <https://github.com/jantman/awslimitchecker/issues/273>`_ - Add support
   for new ``i3`` EC2 Instance types.  (Thanks to `tamsky <https://github.com/tamsky>`_)
   for this contribution.)
+* Fix broken docs build due to changes Intersphinx reference to ValueError in python2 docs
 
 0.8.0 (2017-03-11)
 ------------------
