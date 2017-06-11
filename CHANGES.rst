@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+0.9.0 (2017-06-11)
 ------------------
 
 * `Issue #269 <https://github.com/jantman/awslimitchecker/issues/269>`_ - set Trusted
