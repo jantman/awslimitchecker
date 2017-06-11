@@ -7,7 +7,7 @@
 .. _cli_usage:
 
 Command Line Usage
-===================
+==================
 
 awslimitchecker ships with a command line script for use outside of
 Python environments. ``awslimitchecker`` is installed as a
@@ -24,7 +24,8 @@ use as a Nagios-compatible plugin).
 .. code-block:: console
 
    (venv)$ awslimitchecker --help
-   usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]] [-s] [-l]
+   usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
+                          [--skip-service SKIP_SERVICE] [-s] [-l]
                           [--list-defaults] [-L LIMIT] [-u] [--iam-policy]
                           [-W WARNING_THRESHOLD] [-C CRITICAL_THRESHOLD]
                           [-P PROFILE_NAME] [-A STS_ACCOUNT_ID]
@@ -42,6 +43,9 @@ use as a Nagios-compatible plugin).
      -S [SERVICE [SERVICE ...]], --service [SERVICE [SERVICE ...]]
                            perform action for only the specified service name;
                            see -s|--list-services for valid names
+     --skip-service SKIP_SERVICE
+                           avoid performing actions for the specified service
+                           name; see -s|--list-services for valid names
      -s, --list-services   print a list of all AWS service types that
                            awslimitchecker knows how to check
      -l, --list-limits     print all AWS effective limits in
@@ -108,7 +112,7 @@ use as a Nagios-compatible plugin).
 
 
 Examples
----------
+--------
 
 In the following examples, **output has been truncated** to simplify documentation.
 When running with all services enabled, ``awslimitchecker`` will provide *many* lines
@@ -116,7 +120,7 @@ of output. ``(...)`` has been inserted in the output below to denote removed
 or truncated lines.
 
 Listing Supported Services
-+++++++++++++++++++++++++++
+++++++++++++++++++++++++++
 
 View the AWS services currently supported by ``awslimitchecker`` with the
 ``-s`` or ``--list-services`` option.
@@ -138,7 +142,7 @@ View the AWS services currently supported by ``awslimitchecker`` with the
 
 
 Listing Default Limits
-+++++++++++++++++++++++
+++++++++++++++++++++++
 
 To show the hard-coded default limits, ignoring any limit overrides
 or Trusted Advisor data, run with ``--list-defaults``:
@@ -159,7 +163,7 @@ or Trusted Advisor data, run with ``--list-defaults``:
 
 
 Viewing Limits
-+++++++++++++++
+++++++++++++++
 
 View the limits that ``awslimitchecker`` currently knows how to check, and what
 the limit value is set as (if you specify limit overrides, they will be used
@@ -171,8 +175,8 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 
    (venv)$ awslimitchecker -l
    AutoScaling/Auto Scaling groups                        1000 (API)
-   AutoScaling/Launch configurations                      1000 (API)
-   CloudFormation/Stacks                                  1300 (API)
+   AutoScaling/Launch configurations                      1400 (API)
+   CloudFormation/Stacks                                  1600 (API)
    EBS/Active snapshots                                   30000 (TA)
    EBS/Active volumes                                     10000 (TA)
    (...)
@@ -183,7 +187,7 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 
 
 Disabling Trusted Advisor Checks
-+++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++
 
 Using the ``--skip-ta`` option will disable attempting to query limit information
 from Trusted Advisor for all commands.
@@ -192,8 +196,8 @@ from Trusted Advisor for all commands.
 
    (venv)$ awslimitchecker -l --skip-ta
    AutoScaling/Auto Scaling groups                        1000 (API)
-   AutoScaling/Launch configurations                      1000 (API)
-   CloudFormation/Stacks                                  1300 (API)
+   AutoScaling/Launch configurations                      1400 (API)
+   CloudFormation/Stacks                                  1600 (API)
    EBS/Active snapshots                                   10000
    EBS/Active volumes                                     5000
    (...)
@@ -203,8 +207,25 @@ from Trusted Advisor for all commands.
 
 
 
+Disabling Specific Services
++++++++++++++++++++++++++++
+
+The ``--skip-service`` option can be used to completely disable the specified
+service name(s) (as shown by ``-s`` / ``--list-services``) for services that are
+problematic or you do not wish to query at all.
+
+For example, you can check usage of all services _except_ for ``Firehose`` and
+``EC2``:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --skip-service=Firehose --skip-service EC2
+    WARNING:awslimitchecker.checker:Skipping service: Firehose
+    WARNING:awslimitchecker.checker:Skipping service: EC2
+    ... normal output ...
+
 Checking Usage
-+++++++++++++++
+++++++++++++++
 
 The ``-u`` or ``--show-usage`` options to ``awslimitchecker`` show the current
 usage for each limit that ``awslimitchecker`` knows about. It will connect to the
@@ -217,20 +238,20 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        673
-   AutoScaling/Launch configurations                      788
-   CloudFormation/Stacks                                  1125
-   EBS/Active snapshots                                   18854
-   EBS/Active volumes                                     1743
+   AutoScaling/Auto Scaling groups                        701
+   AutoScaling/Launch configurations                      817
+   CloudFormation/Stacks                                  1318
+   EBS/Active snapshots                                   20115
+   EBS/Active volumes                                     1854
    (...)
-   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-8190 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-e2edf486=1, vpc-7bc (...)
-   VPC/VPCs                                               11
+   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-3f36 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-7bcef71f=1, vpc-1e5 (...)
+   VPC/VPCs                                               17
 
 
 
 Overriding Limits
-++++++++++++++++++
++++++++++++++++++
 
 In cases where you've been given a limit increase by AWS Support, you can override
 the default limits with custom ones. Currently, to do this from the command line,
@@ -248,7 +269,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    (venv)$ awslimitchecker -L "AutoScaling/Auto Scaling groups"=321 --limit="AutoScaling/Launch configurations"=456 -l
    AutoScaling/Auto Scaling groups                        321
    AutoScaling/Launch configurations                      456
-   CloudFormation/Stacks                                  1300 (API)
+   CloudFormation/Stacks                                  1600 (API)
    EBS/Active snapshots                                   30000 (TA)
    EBS/Active volumes                                     10000 (TA)
    (...)
@@ -261,7 +282,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 This example simply sets the overrides, and then prints the limits for confirmation.
 
 Check Limits Against Thresholds
-++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++
 
 The default mode of operation for ``awslimitchecker`` (when no other action-specific
 options are specified) is to check the usage of all known limits, compare them against
@@ -286,38 +307,39 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   CloudFormation/Stacks                                  (limit 1300) WARNING: 1125
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=719, vpc-c (...)
+   CloudFormation/Stacks                                  (limit 1600) WARNING: 1318
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=951 WARNIN (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5 WARNING: e (...)
-   ELB/Active load balancers                              (limit 800) WARNING: 695
-   ElastiCache/Clusters                                   (limit 50) CRITICAL: 68
+   ElastiCache/Clusters                                   (limit 50) CRITICAL: 80
+   ElastiCache/Nodes                                      (limit 100) WARNING: 81
    (...)
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 513
-   RDS/DB security groups                                 (limit 25) WARNING: 20
-   S3/Buckets                                             (limit 100) CRITICAL: 380
+   RDS/VPC Security Groups                                (limit 5) WARNING: 4
+   S3/Buckets                                             (limit 100) CRITICAL: 475
+   VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
 
 
 
 Set Custom Thresholds
-++++++++++++++++++++++
++++++++++++++++++++++
 
 To set the warning threshold of 50% and a critical threshold of 75% when checking limits:
 
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=719, vpc-c (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=951
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
-   ElastiCache/Clusters                                   (limit 50) CRITICAL: 68
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 2800
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 172
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 513
-   S3/Buckets                                             (limit 100) CRITICAL: 380
+   ElastiCache/Clusters                                   (limit 50) CRITICAL: 80
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3285
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 205
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 528
+   S3/Buckets                                             (limit 100) CRITICAL: 475
+   VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
 
 
 
 Required IAM Policy
-++++++++++++++++++++
++++++++++++++++++++
 
 ``awslimitchecker`` can also provide the user with an IAM Policy listing the minimum
 permissions for it to perform all limit checks. This can be viewed with the

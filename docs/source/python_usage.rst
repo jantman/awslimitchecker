@@ -240,6 +240,20 @@ or :py:meth:`~.AwsLimitChecker.check_thresholds` with ``use_ta=False``:
 
    >>> result = c.check_thresholds(use_ta=False)
 
+Skipping Specific Services
+++++++++++++++++++++++++++
+
+You can completely disable all interaction with specific Services with the
+:py:meth:`~.AwsLimitChecker.remove_services` method. This method takes a list of
+string Service names to remove from AwsLimitChecker's internal ``services`` dict,
+which will prevent those services from being queried or reported on.
+
+To remove the Firehose and EC2 services:
+
+.. code-block:: pycon
+
+    c.remove_services(['Firehose', 'EC2'])
+
 Logging
 -------
 

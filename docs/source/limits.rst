@@ -76,8 +76,6 @@ updated from Trusted Advisor:
 
   * Running On-Demand m4.2xlarge instances
 
-  * Running On-Demand m4.4xlarge instances
-
   * Running On-Demand m4.large instances
 
   * Running On-Demand m4.xlarge instances
@@ -90,6 +88,8 @@ updated from Trusted Advisor:
 
   * Running On-Demand r3.xlarge instances
 
+  * Running On-Demand r4.large instances
+
   * Running On-Demand t1.micro instances
 
   * Running On-Demand t2.large instances
@@ -98,7 +98,11 @@ updated from Trusted Advisor:
 
   * Running On-Demand t2.micro instances
 
+  * Running On-Demand t2.nano instances
+
   * Running On-Demand t2.small instances
+
+  * Running On-Demand t2.xlarge instances
 
   * VPC Elastic IP addresses (EIPs)
 
@@ -122,6 +126,10 @@ updated from Trusted Advisor:
 
 * RDS
 
+  * DB Cluster Parameter Groups
+
+  * DB Clusters
+
   * DB instances
 
   * DB parameter groups
@@ -130,11 +138,17 @@ updated from Trusted Advisor:
 
   * DB snapshots per user
 
+  * Event Subscriptions
+
   * Max auths per security group
 
   * Read replicas per master
 
   * Storage quota (GB)
+
+  * Subnet Groups
+
+  * Subnets per Subnet Group
 
 * SES
 
@@ -336,6 +350,12 @@ Running On-Demand i2.2xlarge instances                         8
 Running On-Demand i2.4xlarge instances                         4   
 Running On-Demand i2.8xlarge instances                         2   
 Running On-Demand i2.xlarge instances                          8   
+Running On-Demand i3.16xlarge instances                        2   
+Running On-Demand i3.2xlarge instances                         2   
+Running On-Demand i3.4xlarge instances                         2   
+Running On-Demand i3.8xlarge instances                         2   
+Running On-Demand i3.large instances                           2   
+Running On-Demand i3.xlarge instances                          2   
 Running On-Demand m1.large instances                           20  
 Running On-Demand m1.medium instances                          20  
 Running On-Demand m1.small instances                           20  
@@ -350,7 +370,7 @@ Running On-Demand m3.xlarge instances :sup:`(TA)`              20
 Running On-Demand m4.10xlarge instances                        5   
 Running On-Demand m4.16xlarge instances                        5   
 Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
+Running On-Demand m4.4xlarge instances                         10  
 Running On-Demand m4.large instances :sup:`(TA)`               20  
 Running On-Demand m4.xlarge instances :sup:`(TA)`              20  
 Running On-Demand p2.16xlarge instances                        1   
@@ -365,16 +385,16 @@ Running On-Demand r4.16xlarge instances                        20
 Running On-Demand r4.2xlarge instances                         20  
 Running On-Demand r4.4xlarge instances                         20  
 Running On-Demand r4.8xlarge instances                         20  
-Running On-Demand r4.large instances                           20  
+Running On-Demand r4.large instances :sup:`(TA)`               20  
 Running On-Demand r4.xlarge instances                          20  
 Running On-Demand t1.micro instances :sup:`(TA)`               20  
 Running On-Demand t2.2xlarge instances                         20  
 Running On-Demand t2.large instances :sup:`(TA)`               20  
 Running On-Demand t2.medium instances :sup:`(TA)`              20  
 Running On-Demand t2.micro instances :sup:`(TA)`               20  
-Running On-Demand t2.nano instances                            20  
+Running On-Demand t2.nano instances :sup:`(TA)`                20  
 Running On-Demand t2.small instances :sup:`(TA)`               20  
-Running On-Demand t2.xlarge instances                          20  
+Running On-Demand t2.xlarge instances :sup:`(TA)`              20  
 Running On-Demand x1.16xlarge instances                        20  
 Running On-Demand x1.32xlarge instances                        20  
 Security groups per VPC                                        500 
@@ -459,20 +479,20 @@ RDS
 ===================================================== ======
 Limit                                                 Default
 ===================================================== ======
-DB Cluster Parameter Groups :sup:`(API)`              50    
-DB Clusters :sup:`(API)`                              40    
+DB Cluster Parameter Groups :sup:`(TA)` :sup:`(API)`  50    
+DB Clusters :sup:`(TA)` :sup:`(API)`                  40    
 DB instances :sup:`(TA)` :sup:`(API)`                 40    
 DB parameter groups :sup:`(TA)` :sup:`(API)`          50    
 DB security groups :sup:`(TA)` :sup:`(API)`           25    
 DB snapshots per user :sup:`(TA)` :sup:`(API)`        50    
-Event Subscriptions :sup:`(API)`                      20    
+Event Subscriptions :sup:`(TA)` :sup:`(API)`          20    
 Max auths per security group :sup:`(TA)` :sup:`(API)` 20    
 Option Groups :sup:`(API)`                            20    
 Read replicas per master :sup:`(TA)` :sup:`(API)`     5     
 Reserved Instances :sup:`(API)`                       40    
 Storage quota (GB) :sup:`(TA)` :sup:`(API)`           100000
-Subnet Groups :sup:`(API)`                            20    
-Subnets per Subnet Group :sup:`(API)`                 20    
+Subnet Groups :sup:`(TA)` :sup:`(API)`                20    
+Subnets per Subnet Group :sup:`(TA)` :sup:`(API)`     20    
 VPC Security Groups                                   5     
 ===================================================== ======
 

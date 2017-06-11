@@ -101,6 +101,10 @@ class Runner(object):
         p.add_argument('-S', '--service', action='store', nargs='*',
                        help='perform action for only the specified service name'
                             '; see -s|--list-services for valid names')
+        p.add_argument('--skip-service', action='append', default=[],
+                       dest='skip_service',
+                       help='avoid performing actions for the specified service'
+                            ' name; see -s|--list-services for valid names')
         p.add_argument('-s', '--list-services', action='store_true',
                        default=False,
                        help='print a list of all AWS service types that '
@@ -364,6 +368,9 @@ class Runner(object):
                 v=self.checker.get_version()
             ))
             raise SystemExit(0)
+
+        if len(args.skip_service) > 0:
+            self.checker.remove_services(args.skip_service)
 
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)

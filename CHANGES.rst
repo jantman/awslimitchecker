@@ -1,6 +1,31 @@
 Changelog
 =========
 
+0.9.0 (2017-06-11)
+------------------
+
+* `Issue #269 <https://github.com/jantman/awslimitchecker/issues/269>`_ - set Trusted
+  Advisor limit name overrides for some RDS limits that were recently added to TA, but
+  with different names than what awslimitchecker uses.
+* Fix bug `Issue #270 <https://github.com/jantman/awslimitchecker/issues/270>`_ -
+  do not count propagated routes towards the VPC "Entries per route table" limit,
+  per clarification in `VPC service limits documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_vpc>`_ ("This is the limit
+  for the number of non-propagated entries per route table.")
+* `PR #276 <https://github.com/jantman/awslimitchecker/pull/276>`_ /
+  `Issue #275 <https://github.com/jantman/awslimitchecker/issues/275>`_ - Add new
+  ``--skip-service`` CLI option and :py:meth:`~.AwsLimitChecker.remove_services` to allow
+  skipping of one or more specific services during runs. (Thanks to `tamsky <https://github.com/tamsky>`_)
+  for this contribution.)
+* `PR #274 <https://github.com/jantman/awslimitchecker/pull/274>`_ /
+  `Issue #273 <https://github.com/jantman/awslimitchecker/issues/273>`_ - Add support
+  for new ``i3`` EC2 Instance types.  (Thanks to `tamsky <https://github.com/tamsky>`_)
+  for this contribution.)
+* Fix broken docs build due to changes Intersphinx reference to ValueError in python2 docs
+* Add hack to ``docs/source/conf.py`` as workaround for https://github.com/sphinx-doc/sphinx/issues/3860
+* `Issue #267 <https://github.com/jantman/awslimitchecker/issues/267>`_ - Firehose is only
+  available in ``us-east-1``, ``us-west-2`` and ``eu-west-1``. Omit the traceback from the
+  log message for Firehose ``EndpointConnectionError`` and log at warning instead of error.
+
 0.8.0 (2017-03-11)
 ------------------
 

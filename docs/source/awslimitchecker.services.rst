@@ -1,5 +1,5 @@
-awslimitchecker.services package
-================================
+awslimitchecker\.services package
+=================================
 
 .. automodule:: awslimitchecker.services
     :members:

@@ -248,7 +248,7 @@ def build_runner_examples():
         'check_thresholds': ['awslimitchecker', '--no-color'],
         'check_thresholds_custom': ['awslimitchecker', '-W', '97',
                                     '--critical=98', '--no-color'],
-        'iam_policy': ['awslimitchecker', '--iam-policy'],
+        'iam_policy': ['awslimitchecker', '--iam-policy']
     }
     results = {}
     # run the commands

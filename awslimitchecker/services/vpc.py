@@ -124,8 +124,12 @@ class _VpcService(_AwsService):
         for table in self.conn.describe_route_tables()['RouteTables']:
             tables[table['VpcId']] += 1
             # Entries per route table
+            routes = [
+                r for r in table['Routes']
+                if r['Origin'] != 'EnableVgwRoutePropagation'
+            ]
             self.limits['Entries per route table']._add_current_usage(
-                len(table['Routes']),
+                len(routes),
                 aws_type='AWS::EC2::RouteTable',
                 resource_id=table['RouteTableId']
             )

@@ -218,6 +218,27 @@ class AwsLimitChecker(object):
         """
         return self.vinfo.url
 
+    def remove_services(self, services_to_remove=[]):
+        """
+        Remove all service names specified in ``services_to_remove`` from
+        ``self.services``. This allows explicitly removing certain services from
+        ever being checked or otherwise handled.
+
+        By default, the various methods that work on Services (i.e.
+        :py:meth:`~.get_limits`, :py:meth:`~.find_usage` and
+        :py:meth:`~.check_thresholds`) operate on either all known services,
+        or one specified service name at a time. This method allows you to
+        remove one or more problematic or undesirable services from the dict
+        of all services, and then operate on the remaining ones.
+
+        :param services_to_remove: the name(s) of one or more services to
+          permanently exclude from future calls to this instance
+        :type service_to_skip: list
+        """
+        for sname in services_to_remove:
+            logger.warning('Skipping service: %s', sname)
+            self.services.pop(sname, None)
+
     def get_limits(self, service=None, use_ta=True):
         """
         Return all :py:class:`~.AwsLimit` objects for the given
@@ -351,8 +372,8 @@ class AwsLimitChecker(object):
         :param override_ta: whether or not to use this value even if Trusted
           Advisor supplies limit information
         :type override_ta: bool
-        :raises: :py:exc:`exceptions.ValueError` if limit_name is not known to
-          the service instance
+        :raises: :py:exc:`ValueError` if limit_name is not known to the
+          service instance
         """
         for svc_name in override_dict:
             for lim_name in override_dict[svc_name]:
@@ -385,7 +406,8 @@ class AwsLimitChecker(object):
         :param override_ta: whether or not to use this value even if Trusted
           Advisor supplies limit information
         :type override_ta: bool
-        :raises: ValueError if limit_name is not known to the service instance
+        :raises: :py:exc:`ValueError` if limit_name is not known to the
+          service instance
         """
         self.services[service_name].set_limit_override(
             limit_name,

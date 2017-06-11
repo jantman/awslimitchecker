@@ -127,6 +127,11 @@ class TestAwsLimitCheckerRunner(object):
                                 help='perform action for only the specified '
                                      'service name; see -s|--list-services for '
                                      'valid names'),
+            call().add_argument('--skip-service', action='append',
+                                dest='skip_service', default=[],
+                                help='avoid performing actions for the '
+                                     'specified service name; see '
+                                     '-s|--list-services for valid names'),
             call().add_argument('-s', '--list-services',
                                 default=False, action='store_true',
                                 help='print a list of all AWS service types '
@@ -257,6 +262,25 @@ class TestAwsLimitCheckerRunner(object):
         res = self.cls.parse_args(argv)
         assert isinstance(res, argparse.Namespace)
         assert res.ta_refresh_mode == 123
+
+    def test_parse_args_skip_service_none(self):
+        argv = []
+        res = self.cls.parse_args(argv)
+        assert res.skip_service == []
+
+    def test_parse_args_skip_service_one(self):
+        argv = ['--skip-service', 'foo']
+        res = self.cls.parse_args(argv)
+        assert res.skip_service == ['foo']
+
+    def test_parse_args_skip_service_multiple(self):
+        argv = [
+            '--skip-service', 'foo',
+            '--skip-service', 'bar',
+            '--skip-service=baz'
+        ]
+        res = self.cls.parse_args(argv)
+        assert res.skip_service == ['foo', 'bar', 'baz']
 
     def test_entry_version(self, capsys):
         argv = ['awslimitchecker', '-V']
@@ -450,6 +474,63 @@ class TestAwsLimitCheckerRunner(object):
                 'SvcFoo/foo limit3': '10 (TA)',
                 'SvcFoo/zzz limit4': '34 (API)',
             })
+        ]
+
+    def test_entry_skip_service_none(self):
+        argv = ['awslimitchecker']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80)
+        ]
+
+    def test_entry_skip_service(self):
+        argv = ['awslimitchecker', '--skip-service=foo']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80),
+            call().remove_services(['foo'])
+        ]
+
+    def test_entry_skip_service_multi(self):
+        argv = [
+            'awslimitchecker',
+            '--skip-service=foo',
+            '--skip-service', 'bar'
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80),
+            call().remove_services(['foo', 'bar'])
         ]
 
     def test_entry_limit(self):
