@@ -143,7 +143,7 @@ class LogRecordHelper(object):
                 allow_endpoint_error and r.levelno == logging.WARN and
                 len(r.args) > 0
             ):
-                if isinstance(r.args, EndpointConnectionError):
+                if isinstance(r.args[0], EndpointConnectionError):
                     continue
                 if 'Could not connect to the endpoint URL:' in r.args[0]:
                     continue
