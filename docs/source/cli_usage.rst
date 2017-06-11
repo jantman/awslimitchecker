@@ -238,14 +238,14 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        700
-   AutoScaling/Launch configurations                      816
-   CloudFormation/Stacks                                  1317
-   EBS/Active snapshots                                   20114
-   EBS/Active volumes                                     1865
+   AutoScaling/Auto Scaling groups                        701
+   AutoScaling/Launch configurations                      817
+   CloudFormation/Stacks                                  1318
+   EBS/Active snapshots                                   20115
+   EBS/Active volumes                                     1854
    (...)
    VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-3f36 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-1e5e3c7b=1, vpc-7bc (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-7bcef71f=1, vpc-1e5 (...)
    VPC/VPCs                                               17
 
 
@@ -307,14 +307,14 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   CloudFormation/Stacks                                  (limit 1600) WARNING: 1317
+   CloudFormation/Stacks                                  (limit 1600) WARNING: 1318
    EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=951 WARNIN (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5 WARNING: e (...)
    ElastiCache/Clusters                                   (limit 50) CRITICAL: 80
    ElastiCache/Nodes                                      (limit 100) WARNING: 81
    (...)
+   RDS/VPC Security Groups                                (limit 5) WARNING: 4
    S3/Buckets                                             (limit 100) CRITICAL: 475
-   VPC/Entries per route table                            (limit 50) CRITICAL: rtb-c39cbba4=51, rtb-7fa (...)
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
 
 
@@ -332,9 +332,8 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
    ElastiCache/Clusters                                   (limit 50) CRITICAL: 80
    ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3285
    ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 205
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 524
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 528
    S3/Buckets                                             (limit 100) CRITICAL: 475
-   VPC/Entries per route table                            (limit 50) CRITICAL: rtb-834e2dfa=49, rtb-8b4 (...)
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
 
 

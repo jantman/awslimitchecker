@@ -147,7 +147,7 @@ class _RDSService(_AwsService):
             40,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::RDS::DBInstance',
+            limit_type='AWS::RDS::DBInstance'
         )
         limits['Reserved Instances'] = AwsLimit(
             'Reserved Instances',
@@ -204,6 +204,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSubnetGroup',
+            ta_limit_name='Subnet groups'
         )
         limits['Subnets per Subnet Group'] = AwsLimit(
             'Subnets per Subnet Group',
@@ -212,6 +213,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSubnetGroup',
+            ta_limit_name='Subnets per subnet group'
         )
         limits['Option Groups'] = AwsLimit(
             'Option Groups',
@@ -228,6 +230,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBEventSubscription',
+            ta_limit_name='Event subscriptions'
         )
         limits['Read replicas per master'] = AwsLimit(
             'Read replicas per master',
@@ -254,6 +257,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBCluster',
+            ta_limit_name='Clusters'
         )
         limits['DB Cluster Parameter Groups'] = AwsLimit(
             'DB Cluster Parameter Groups',
@@ -262,6 +266,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBClusterParameterGroup',
+            ta_limit_name='Cluster parameter groups'
         )
         self.limits = limits
         return limits

@@ -4,6 +4,9 @@ Changelog
 Unreleased Changes
 ------------------
 
+* `Issue #269 <https://github.com/jantman/awslimitchecker/issues/269>`_ - set Trusted
+  Advisor limit name overrides for some RDS limits that were recently added to TA, but
+  with different names than what awslimitchecker uses.
 * Fix bug `Issue #270 <https://github.com/jantman/awslimitchecker/issues/270>`_ -
   do not count propagated routes towards the VPC "Entries per route table" limit,
   per clarification in `VPC service limits documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_vpc>`_ ("This is the limit

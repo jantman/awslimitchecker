@@ -126,6 +126,10 @@ updated from Trusted Advisor:
 
 * RDS
 
+  * DB Cluster Parameter Groups
+
+  * DB Clusters
+
   * DB instances
 
   * DB parameter groups
@@ -134,11 +138,17 @@ updated from Trusted Advisor:
 
   * DB snapshots per user
 
+  * Event Subscriptions
+
   * Max auths per security group
 
   * Read replicas per master
 
   * Storage quota (GB)
+
+  * Subnet Groups
+
+  * Subnets per Subnet Group
 
 * SES
 
@@ -469,20 +479,20 @@ RDS
 ===================================================== ======
 Limit                                                 Default
 ===================================================== ======
-DB Cluster Parameter Groups :sup:`(API)`              50    
-DB Clusters :sup:`(API)`                              40    
+DB Cluster Parameter Groups :sup:`(TA)` :sup:`(API)`  50    
+DB Clusters :sup:`(TA)` :sup:`(API)`                  40    
 DB instances :sup:`(TA)` :sup:`(API)`                 40    
 DB parameter groups :sup:`(TA)` :sup:`(API)`          50    
 DB security groups :sup:`(TA)` :sup:`(API)`           25    
 DB snapshots per user :sup:`(TA)` :sup:`(API)`        50    
-Event Subscriptions :sup:`(API)`                      20    
+Event Subscriptions :sup:`(TA)` :sup:`(API)`          20    
 Max auths per security group :sup:`(TA)` :sup:`(API)` 20    
 Option Groups :sup:`(API)`                            20    
 Read replicas per master :sup:`(TA)` :sup:`(API)`     5     
 Reserved Instances :sup:`(API)`                       40    
 Storage quota (GB) :sup:`(TA)` :sup:`(API)`           100000
-Subnet Groups :sup:`(API)`                            20    
-Subnets per Subnet Group :sup:`(API)`                 20    
+Subnet Groups :sup:`(TA)` :sup:`(API)`                20    
+Subnets per Subnet Group :sup:`(TA)` :sup:`(API)`     20    
 VPC Security Groups                                   5     
 ===================================================== ======
 
