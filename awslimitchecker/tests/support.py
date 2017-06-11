@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from awslimitchecker.limit import AwsLimit
 import logging
+from botocore.exceptions import EndpointConnectionError
 
 
 class LogRecordHelper(object):
@@ -138,10 +139,14 @@ class LogRecordHelper(object):
                     r.funcName == '_find_usage_spot_instances' and
                     'spot instance support is experimental' in r.msg):
                 continue
-            if (allow_endpoint_error and r.levelno == logging.WARN and
-                    len(r.args) > 0 and
-                    'Could not connect to the endpoint URL:' in r.args[0]):
-                continue
+            if (
+                allow_endpoint_error and r.levelno == logging.WARN and
+                len(r.args) > 0
+            ):
+                if isinstance(r.args, EndpointConnectionError):
+                    continue
+                if 'Could not connect to the endpoint URL:' in r.args[0]:
+                    continue
             if (r.levelno == logging.ERROR and r.module == 'vpc' and
                     r.funcName == '_find_usage_nat_gateways' and
                     'perhaps NAT service does not exist in this regi' in r.msg):
