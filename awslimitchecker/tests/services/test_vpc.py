@@ -223,9 +223,9 @@ class Test_VpcService(object):
         assert entries[0].resource_id == 'rt-2'
         assert entries[0].get_value() == 1
         assert entries[1].resource_id == 'rt-1'
-        assert entries[1].get_value() == 3
+        assert entries[1].get_value() == 2
         assert entries[2].resource_id == 'rt-3'
-        assert entries[2].get_value() == 5
+        assert entries[2].get_value() == 3
         assert mock_conn.mock_calls == [
             call.describe_route_tables()
         ]

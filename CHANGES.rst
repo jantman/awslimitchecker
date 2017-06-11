@@ -4,6 +4,10 @@ Changelog
 Unreleased Changes
 ------------------
 
+* Fix bug `Issue #270 <https://github.com/jantman/awslimitchecker/issues/270>`_ -
+  do not count propagated routes towards the VPC "Entries per route table" limit,
+  per clarification in `VPC service limits documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_vpc>`_ ("This is the limit
+  for the number of non-propagated entries per route table.")
 * `PR #276 <https://github.com/jantman/awslimitchecker/pull/276>`_ /
   `Issue #275 <https://github.com/jantman/awslimitchecker/issues/275>`_ - Add new
   ``--skip-service`` CLI option and :py:meth:`~.AwsLimitChecker.remove_services` to allow

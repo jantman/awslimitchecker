@@ -369,8 +369,16 @@ class VPC(object):
                         'State': 'active',
                         'Origin': 'CreateRouteTable'
                     },
-                    {'foo': 'bar', 'baz': 'blam'},
-                    {'foo': 'bar', 'baz': 'blam'},
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'CreateRoute'
+                    },
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'EnableVgwRoutePropagation'
+                    },
                 ],
                 'Associations': [
                     {
@@ -396,18 +404,42 @@ class VPC(object):
                 'RouteTableId': 'rt-2',
                 'VpcId': 'vpc-1',
                 'Routes': [
-                    {'foo': 'bar', 'baz': 'blam'},
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'CreateRouteTable'
+                    },
                 ],
             },
             {
                 'RouteTableId': 'rt-3',
                 'VpcId': 'vpc-2',
                 'Routes': [
-                    {'foo': 'bar', 'baz': 'blam'},
-                    {'foo': 'bar', 'baz': 'blam'},
-                    {'foo': 'bar', 'baz': 'blam'},
-                    {'foo': 'bar', 'baz': 'blam'},
-                    {'foo': 'bar', 'baz': 'blam'},
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'EnableVgwRoutePropagation'
+                    },
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'CreateRoute'
+                    },
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'CreateRoute'
+                    },
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'EnableVgwRoutePropagation'
+                    },
+                    {
+                        'foo': 'bar',
+                        'baz': 'blam',
+                        'Origin': 'CreateRouteTable'
+                    },
                 ],
             }
         ]
