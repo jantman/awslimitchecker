@@ -236,6 +236,7 @@ class AwsLimitChecker(object):
         :type service_to_skip: list
         """
         for sname in services_to_remove:
+            logger.warning('Skipping service: %s', sname)
             del self.services[sname]
 
     def get_limits(self, service=None, use_ta=True):
