@@ -7,7 +7,7 @@
 .. _cli_usage:
 
 Command Line Usage
-===================
+==================
 
 awslimitchecker ships with a command line script for use outside of
 Python environments. ``awslimitchecker`` is installed as a
@@ -24,7 +24,7 @@ use as a Nagios-compatible plugin).
 {help}
 
 Examples
----------
+--------
 
 In the following examples, **output has been truncated** to simplify documentation.
 When running with all services enabled, ``awslimitchecker`` will provide *many* lines
@@ -32,7 +32,7 @@ of output. ``(...)`` has been inserted in the output below to denote removed
 or truncated lines.
 
 Listing Supported Services
-+++++++++++++++++++++++++++
+++++++++++++++++++++++++++
 
 View the AWS services currently supported by ``awslimitchecker`` with the
 ``-s`` or ``--list-services`` option.
@@ -40,7 +40,7 @@ View the AWS services currently supported by ``awslimitchecker`` with the
 {list_services}
 
 Listing Default Limits
-+++++++++++++++++++++++
+++++++++++++++++++++++
 
 To show the hard-coded default limits, ignoring any limit overrides
 or Trusted Advisor data, run with ``--list-defaults``:
@@ -48,7 +48,7 @@ or Trusted Advisor data, run with ``--list-defaults``:
 {list_defaults}
 
 Viewing Limits
-+++++++++++++++
+++++++++++++++
 
 View the limits that ``awslimitchecker`` currently knows how to check, and what
 the limit value is set as (if you specify limit overrides, they will be used
@@ -59,7 +59,7 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 {list_limits}
 
 Disabling Trusted Advisor Checks
-+++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++
 
 Using the ``--skip-ta`` option will disable attempting to query limit information
 from Trusted Advisor for all commands.
@@ -76,10 +76,15 @@ problematic or you do not wish to query at all.
 For example, you can check usage of all services _except_ for ``Firehose`` and
 ``EC2``:
 
-{skip_services}
+.. code-block:: console
+
+   (venv)$ awslimitchecker --skip-service=Firehose --skip-service EC2
+    WARNING:awslimitchecker.checker:Skipping service: Firehose
+    WARNING:awslimitchecker.checker:Skipping service: EC2
+    ... normal output ...
 
 Checking Usage
-+++++++++++++++
+++++++++++++++
 
 The ``-u`` or ``--show-usage`` options to ``awslimitchecker`` show the current
 usage for each limit that ``awslimitchecker`` knows about. It will connect to the
@@ -92,7 +97,7 @@ using their IDs).
 {show_usage}
 
 Overriding Limits
-++++++++++++++++++
++++++++++++++++++
 
 In cases where you've been given a limit increase by AWS Support, you can override
 the default limits with custom ones. Currently, to do this from the command line,
@@ -110,7 +115,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 This example simply sets the overrides, and then prints the limits for confirmation.
 
 Check Limits Against Thresholds
-++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++
 
 The default mode of operation for ``awslimitchecker`` (when no other action-specific
 options are specified) is to check the usage of all known limits, compare them against
@@ -135,14 +140,14 @@ threshold only, and another has crossed the critical threshold):
 {check_thresholds}
 
 Set Custom Thresholds
-++++++++++++++++++++++
++++++++++++++++++++++
 
 To set the warning threshold of 50% and a critical threshold of 75% when checking limits:
 
 {check_thresholds_custom}
 
 Required IAM Policy
-++++++++++++++++++++
++++++++++++++++++++
 
 ``awslimitchecker`` can also provide the user with an IAM Policy listing the minimum
 permissions for it to perform all limit checks. This can be viewed with the

@@ -76,8 +76,6 @@ updated from Trusted Advisor:
 
   * Running On-Demand m4.2xlarge instances
 
-  * Running On-Demand m4.4xlarge instances
-
   * Running On-Demand m4.large instances
 
   * Running On-Demand m4.xlarge instances
@@ -90,6 +88,8 @@ updated from Trusted Advisor:
 
   * Running On-Demand r3.xlarge instances
 
+  * Running On-Demand r4.large instances
+
   * Running On-Demand t1.micro instances
 
   * Running On-Demand t2.large instances
@@ -98,7 +98,11 @@ updated from Trusted Advisor:
 
   * Running On-Demand t2.micro instances
 
+  * Running On-Demand t2.nano instances
+
   * Running On-Demand t2.small instances
+
+  * Running On-Demand t2.xlarge instances
 
   * VPC Elastic IP addresses (EIPs)
 
@@ -336,6 +340,12 @@ Running On-Demand i2.2xlarge instances                         8
 Running On-Demand i2.4xlarge instances                         4   
 Running On-Demand i2.8xlarge instances                         2   
 Running On-Demand i2.xlarge instances                          8   
+Running On-Demand i3.16xlarge instances                        2   
+Running On-Demand i3.2xlarge instances                         2   
+Running On-Demand i3.4xlarge instances                         2   
+Running On-Demand i3.8xlarge instances                         2   
+Running On-Demand i3.large instances                           2   
+Running On-Demand i3.xlarge instances                          2   
 Running On-Demand m1.large instances                           20  
 Running On-Demand m1.medium instances                          20  
 Running On-Demand m1.small instances                           20  
@@ -350,7 +360,7 @@ Running On-Demand m3.xlarge instances :sup:`(TA)`              20
 Running On-Demand m4.10xlarge instances                        5   
 Running On-Demand m4.16xlarge instances                        5   
 Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
+Running On-Demand m4.4xlarge instances                         10  
 Running On-Demand m4.large instances :sup:`(TA)`               20  
 Running On-Demand m4.xlarge instances :sup:`(TA)`              20  
 Running On-Demand p2.16xlarge instances                        1   
@@ -365,16 +375,16 @@ Running On-Demand r4.16xlarge instances                        20
 Running On-Demand r4.2xlarge instances                         20  
 Running On-Demand r4.4xlarge instances                         20  
 Running On-Demand r4.8xlarge instances                         20  
-Running On-Demand r4.large instances                           20  
+Running On-Demand r4.large instances :sup:`(TA)`               20  
 Running On-Demand r4.xlarge instances                          20  
 Running On-Demand t1.micro instances :sup:`(TA)`               20  
 Running On-Demand t2.2xlarge instances                         20  
 Running On-Demand t2.large instances :sup:`(TA)`               20  
 Running On-Demand t2.medium instances :sup:`(TA)`              20  
 Running On-Demand t2.micro instances :sup:`(TA)`               20  
-Running On-Demand t2.nano instances                            20  
+Running On-Demand t2.nano instances :sup:`(TA)`                20  
 Running On-Demand t2.small instances :sup:`(TA)`               20  
-Running On-Demand t2.xlarge instances                          20  
+Running On-Demand t2.xlarge instances :sup:`(TA)`              20  
 Running On-Demand x1.16xlarge instances                        20  
 Running On-Demand x1.32xlarge instances                        20  
 Security groups per VPC                                        500 
