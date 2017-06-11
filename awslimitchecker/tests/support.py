@@ -146,7 +146,7 @@ class LogRecordHelper(object):
                     r.funcName == '_find_usage_nat_gateways' and
                     'perhaps NAT service does not exist in this regi' in r.msg):
                 continue
-            if (r.levelno == logging.ERROR and r.module == 'firehose' and
+            if (r.levelno == logging.WARNING and r.module == 'firehose' and
                     r.funcName == 'find_usage' and 'perhaps the Firehose '
                     'service is not available in this region' in r.msg):
                 continue
