@@ -220,11 +220,19 @@ class AwsLimitChecker(object):
 
     def remove_services(self, services_to_remove=[]):
         """
-        If ``services_to_remove`` is specified, the list of services
-        are removed from the services[] class list.
+        Remove all service names specified in ``services_to_remove`` from
+        ``self.services``. This allows explicitly removing certain services from
+        ever being checked or otherwise handled.
+
+        By default, the various methods that work on Services (i.e.
+        :py:meth:`~.get_limits`, :py:meth:`~.find_usage` and
+        :py:meth:`~.check_thresholds`) operate on either all known services,
+        or one specified service name at a time. This method allows you to
+        remove one or more problematic or undesirable services from the dict
+        of all services, and then operate on the remaining ones.
 
         :param services_to_remove: the name(s) of one or more services to
-          permanently exclude from future calls to this class
+          permanently exclude from future calls to this instance
         :type service_to_skip: list
         """
         for sname in services_to_remove:
