@@ -415,6 +415,23 @@ class TestAwsLimitChecker(object):
         assert res == 'http://myurl'
         assert mock_version.mock_calls == []
 
+    def test_remove_services_none(self):
+        self.cls.remove_services()
+        assert self.cls.services == {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2
+        }
+
+    def test_remove_services_one(self):
+        self.cls.remove_services(['SvcFoo'])
+        assert self.cls.services == {
+            'SvcBar': self.mock_svc2
+        }
+
+    def test_remove_services_all(self):
+        self.cls.remove_services(['SvcFoo', 'SvcBar'])
+        assert self.cls.services == {}
+
     def test_get_service_names(self):
         res = self.cls.get_service_names()
         assert res == ['SvcBar', 'SvcFoo']
