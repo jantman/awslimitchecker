@@ -64,11 +64,11 @@ class _FirehoseService(_AwsService):
             lim._reset_usage()
         try:
             self._find_delivery_streams()
-        except EndpointConnectionError:
-            logger.error(
-                'Caught exception when trying to use Firehose; '
-                'perhaps the Firehose service is not available in this region?',
-                exc_info=1,
+        except EndpointConnectionError as ex:
+            logger.warning(
+                'Caught exception when trying to use Firehose ('
+                'perhaps the Firehose service is not available in this '
+                'region?): %s', ex
             )
 
         self._have_usage = True

@@ -15,6 +15,9 @@ Unreleased Changes
   for this contribution.)
 * Fix broken docs build due to changes Intersphinx reference to ValueError in python2 docs
 * Add hack to ``docs/source/conf.py`` as workaround for https://github.com/sphinx-doc/sphinx/issues/3860
+* `Issue #267 <https://github.com/jantman/awslimitchecker/issues/267>`_ - Firehose is only
+  available in ``us-east-1``, ``us-west-2`` and ``eu-west-1``. Omit the traceback from the
+  log message for Firehose ``EndpointConnectionError`` and log at warning instead of error.
 
 0.8.0 (2017-03-11)
 ------------------

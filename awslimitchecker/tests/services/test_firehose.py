@@ -126,6 +126,7 @@ class Test_FirehoseService(object):
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
             cls.find_usage()
         error_msg = (
-            'Caught exception when trying to use Firehose; '
-            'perhaps the Firehose service is not available in this region?')
-        assert call.error(error_msg, exc_info=1) in mock_logger.mock_calls
+            'Caught exception when trying to use Firehose ('
+            'perhaps the Firehose service is not available in this region?): '
+            '%s')
+        assert call.warning(error_msg, client_error) in mock_logger.mock_calls
