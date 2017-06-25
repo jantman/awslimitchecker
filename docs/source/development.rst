@@ -352,7 +352,9 @@ Issue content:
     * [ ] Ensure that Travis tests are passing in all environments.
     * [ ] Ensure that test coverage is no less than the last release (ideally, 100%).
     * [ ] Build docs for the branch (locally) and ensure they look correct. Commit any changes.
-    * [ ] Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned. Mention the issue in the commit for this, and push to GitHub.
+    * [ ] Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned.
+    * [ ] Run ``dev/release.py gist`` to convert the CHANGES.rst entry for the current version to Markdown and upload it as a Github Gist. View the gist and ensure that the Markdown rendered properly and all links are valid. Iterate on this until the rendered version looks correct.
+    * [ ] Commit all changes, mention the issue in the commit, and push to GitHub.
     * [ ] Confirm that README.rst renders correctly on GitHub.
     * [ ] Upload package to testpypi, confirm that README.rst renders correctly.
 
@@ -364,4 +366,4 @@ Issue content:
        * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
     * [ ] Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
-    * [ ] Continue at [#11 on the Release Checklist](http://awslimitchecker.readthedocs.io/en/develop/development.html#release-checklist).
+    * [ ] Continue at [#13 on the Release Checklist](http://awslimitchecker.readthedocs.io/en/develop/development.html#release-checklist).
