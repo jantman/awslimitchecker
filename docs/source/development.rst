@@ -57,12 +57,13 @@ To setup awslimitchecker for development:
     $ cd awslimitchecker
     $ source bin/activate
 
-3. Install your fork in the virtualenv as an editable git clone
+3. Install your fork in the virtualenv as an editable git clone and install development dependencies:
 
 .. code-block:: bash
 
     $ pip install -e git+git@github.com:YOUR_NAME/awslimitchecker.git#egg=awslimitchecker
     $ cd src/awslimitchecker
+    $ pip install -r dev/requirements_dev.txt
 
 4. Check out a new git branch. If you're working on a GitHub issue you opened, your
    branch should be called "issues/N" where N is the issue number.
@@ -293,6 +294,11 @@ For issues:
 Release Checklist
 -----------------
 
+Note that to perform releases, you will need:
+
+* Your Github access token exported as the ``GITHUB_TOKEN`` environment variable.
+* `pandoc <http://pandoc.org/>`_ installed on your local machine and in your ``PATH``.
+
 1. Open an issue for the release (the checklist below may help); cut a branch off ``develop`` for that issue.
 2. Build docs locally (``tox -e localdocs``) and ensure they're current; commit any changes.
 3. Run ``dev/terraform.py`` in the awslimitchecker source directory to update the
@@ -301,12 +307,11 @@ Release Checklist
 4. Ensure that Travis tests are passing in all environments.
 5. Ensure that test coverage is no less than the last release (ideally, 100%).
 6. Build docs for the branch (locally) and ensure they look correct. Commit any changes.
-7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst.
-   Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking
-   changes or new required IAM permissions are explicitly mentioned. Mention the issue in the commit for this,
-   and push to GitHub.
-8. Confirm that README.rst renders correctly on GitHub.
-9. Upload package to testpypi, confirm that README.rst renders correctly.
+7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned.
+8. Run ``dev/release.py gist`` to convert the CHANGES.rst entry for the current version to Markdown and upload it as a Github Gist. View the gist and ensure that the Markdown rendered properly and all links are valid. Iterate on this until the rendered version looks correct.
+9. Commit all changes, mention the issue in the commit, and push to GitHub.
+10. Confirm that README.rst renders correctly on GitHub.
+11. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct (a repo called ``test`` for https://testpypi.python.org/pypi).
    * ``rm -Rf dist``
@@ -315,21 +320,22 @@ Release Checklist
    * ``twine upload -r test dist/*``
    * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
 
-10. Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
-11. Tag the release in Git, push tag to GitHub:
+12. Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
+13. Tag the release in Git, push tag to GitHub:
 
    * tag the release with a signed tag: ``git tag -s -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
    * Verify the signature on the tag, just to be sure: ``git tag -v X.Y.Z``
    * push the tag to GitHub: ``git push origin X.Y.Z``
 
-12. Upload package to live pypi:
+14. Upload package to live pypi:
 
     * ``twine upload dist/*``
 
-13. make sure any GH issues fixed in the release were closed.
-14. merge master back into develop
-15. Ensure that the issues are moved to Done on the `waffle.io board <https://waffle.io/jantman/awslimitchecker>`_
-16. Blog, tweet, etc. about the new version.
+15. make sure any GH issues fixed in the release were closed.
+16. merge master back into develop
+17. Run ``dev/release.py release`` to create the release on GitHub.
+18. Ensure that the issues are moved to Done on the `waffle.io board <https://waffle.io/jantman/awslimitchecker>`_
+19. Blog, tweet, etc. about the new version.
 
 Release Issue Template
 ++++++++++++++++++++++
