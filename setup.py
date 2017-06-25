@@ -47,7 +47,7 @@ requires = [
     'boto3>=1.2.3',
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.2',
-    'versionfinder==0.1.0',
+    'versionfinder>=0.1.1',
     'pytz'
 ]
 
