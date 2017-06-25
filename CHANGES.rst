@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+* `#283 <https://github.com/jantman/awslimitchecker/issues/283>`_ - Add gitter.im chat link to README and docs.
+
 0.9.0 (2017-06-11)
 ------------------
 

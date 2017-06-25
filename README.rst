@@ -25,6 +25,10 @@ awslimitchecker
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
 
+.. image:: http://badges.gitter.im/jantman/awslimitchecker.png
+   :alt: gitter.im chat
+   :target: https://gitter.im/awslimitchecker/Lobby
+
 Master:
 
 .. image:: https://secure.travis-ci.org/jantman/awslimitchecker.png?branch=master
@@ -124,6 +128,8 @@ See `Getting Help <http://awslimitchecker.readthedocs.io/en/latest/getting_help.
 For paid support and development options, please see the
 `Enterprise Support Agreements and Contract Development <http://awslimitchecker.readthedocs.io/en/latest/getting_help.html#enterprise-support-agreements-and-contract-development>`_
 section of the documentation.
+
+There is also a `gitter.im chat channel <https://gitter.im/awslimitchecker/Lobby>`_ for support and discussion.
 
 Changelog
 ---------
