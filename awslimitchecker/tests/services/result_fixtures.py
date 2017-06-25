@@ -1401,12 +1401,6 @@ class ElastiCache(object):
                         'SubnetAvailabilityZone': {
                             'Name': 'us-east-1d'
                         }
-                    },
-                    {
-                        'SubnetIdentifier': 'subnet-4f027f38',
-                        'SubnetAvailabilityZone': {
-                            'Name': 'us-east-1a'
-                        }
                     }
                 ],
                 'CacheSubnetGroupName': 'break-memca-6yi6axon9ol9',

@@ -72,8 +72,6 @@ class _ElastiCacheService(_AwsService):
     def _find_usage_nodes(self):
         """find usage for cache nodes"""
         nodes = 0
-        num_clusters = 0
-
         paginator = self.conn.get_paginator('describe_cache_clusters')
         for page in paginator.paginate(ShowCacheNodeInfo=True):
             for cluster in page['CacheClusters']:
@@ -86,17 +84,13 @@ class _ElastiCacheService(_AwsService):
                         "None", cluster['CacheClusterId'])
                     num_nodes = cluster['NumCacheNodes']
                 nodes += num_nodes
-                num_clusters += 1
-                self.limits['Nodes per Cluster']._add_current_usage(
-                    num_nodes,
-                    aws_type='AWS::ElastiCache::CacheCluster',
-                    resource_id=cluster['CacheClusterId'],
-                )
+                if cluster['Engine'] == 'memcached':
+                    self.limits['Nodes per Cluster']._add_current_usage(
+                        num_nodes,
+                        aws_type='AWS::ElastiCache::CacheCluster',
+                        resource_id=cluster['CacheClusterId'],
+                    )
 
-        self.limits['Clusters']._add_current_usage(
-            num_clusters,
-            aws_type='AWS::ElastiCache::CacheCluster'
-        )
         self.limits['Nodes']._add_current_usage(
             nodes,
             aws_type='AWS::ElastiCache::CacheNode'
@@ -110,6 +104,11 @@ class _ElastiCacheService(_AwsService):
         for page in paginator.paginate():
             for group in page['CacheSubnetGroups']:
                 num_groups += 1
+                self.limits['Subnets per subnet group']._add_current_usage(
+                    len(group['Subnets']),
+                    resource_id=group['CacheSubnetGroupName'],
+                    aws_type='AWS::ElastiCache::SubnetGroup'
+                )
         self.limits['Subnet Groups']._add_current_usage(
             num_groups,
             aws_type='AWS::ElastiCache::SubnetGroup'
@@ -175,15 +174,6 @@ class _ElastiCacheService(_AwsService):
             limit_type='AWS::ElastiCache::CacheNode',
         )
 
-        limits['Clusters'] = AwsLimit(
-            'Clusters',
-            self,
-            50,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::ElastiCache::CacheCluster',
-        )
-
         limits['Nodes per Cluster'] = AwsLimit(
             'Nodes per Cluster',
             self,
@@ -197,6 +187,15 @@ class _ElastiCacheService(_AwsService):
             'Subnet Groups',
             self,
             50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElastiCache::SubnetGroup',
+        )
+
+        limits['Subnets per subnet group'] = AwsLimit(
+            'Subnets per subnet group',
+            self,
+            20,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElastiCache::SubnetGroup',
