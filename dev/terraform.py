@@ -86,7 +86,7 @@ class TerraformIAM(object):
             }
         }
         runner = TerraformRunner(conf, 'terraform')
-        runner._set_remote(stream=True)
+        runner._setup_tf(stream=True)
         runner._run_tf('plan', cmd_args=['-input=false', '-refresh=true', '.'],
                        stream=True)
         res = raw_input('Does this look correct? [y|N]')
