@@ -3,6 +3,8 @@
 Getting Help
 =============
 
+If you have a quick question or need some simple assistance, you can try the
+`gitter.im chat channel <https://gitter.im/awslimitchecker/Lobby>`_.
 
 .. _getting_help.paid_support:
 

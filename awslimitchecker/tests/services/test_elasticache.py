@@ -73,11 +73,11 @@ class TestElastiCacheService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Nodes',
-            'Clusters',
             'Nodes per Cluster',
             'Parameter Groups',
             'Subnet Groups',
             'Security Groups',
+            'Subnets per subnet group'
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -136,20 +136,10 @@ class TestElastiCacheService(object):
         assert len(usage) == 1
         assert usage[0].get_value() == 11
 
-        usage = cls.limits['Clusters'].get_current_usage()
-        assert len(usage) == 1
-        assert usage[0].get_value() == 4
-
         usage = sorted(cls.limits['Nodes per Cluster'].get_current_usage())
-        assert len(usage) == 4
+        assert len(usage) == 1
         assert usage[0].get_value() == 1
         assert usage[0].resource_id == 'memcached1'
-        assert usage[1].get_value() == 2
-        assert usage[1].resource_id == 'redis1'
-        assert usage[2].get_value() == 4
-        assert usage[2].resource_id == 'redis2'
-        assert usage[3].get_value() == 4
-        assert usage[3].resource_id == 'redis3'
 
         assert mock_conn.mock_calls == [
             call.get_paginator('describe_cache_clusters'),
@@ -184,6 +174,11 @@ class TestElastiCacheService(object):
         usage = cls.limits['Subnet Groups'].get_current_usage()
         assert len(usage) == 1
         assert usage[0].get_value() == 3
+        usage2 = cls.limits['Subnets per subnet group'].get_current_usage()
+        assert len(usage2) == 3
+        assert usage2[0].get_value() == 2
+        assert usage2[1].get_value() == 1
+        assert usage2[2].get_value() == 3
 
     def test_find_usage_parameter_groups(self):
         """test find usage for parameter groups"""

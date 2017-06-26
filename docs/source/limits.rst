@@ -419,16 +419,16 @@ Listeners per load balancer       100
 ElastiCache
 ++++++++++++
 
-================= ===
-Limit             Default
-================= ===
-Clusters          50 
-Nodes             100
-Nodes per Cluster 20 
-Parameter Groups  20 
-Security Groups   50 
-Subnet Groups     50 
-================= ===
+======================== ===
+Limit                    Default
+======================== ===
+Nodes                    100
+Nodes per Cluster        20 
+Parameter Groups         20 
+Security Groups          50 
+Subnet Groups            50 
+Subnets per subnet group 20 
+======================== ===
 
 .. _limits.ElasticBeanstalk:
 

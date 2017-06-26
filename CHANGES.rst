@@ -1,21 +1,35 @@
 Changelog
 =========
 
+0.10.0 (2017-06-25)
+-------------------
+
+This release **removes the ElastiCache Clusters limit**, which no longer exists.
+
+* `Issue #283 <https://github.com/jantman/awslimitchecker/issues/283>`_ - Add gitter.im chat link to README and docs.
+* `Issue #282 <https://github.com/jantman/awslimitchecker/issues/282>`_ - versionfinder caused awslimitchecker to die unexpectedly on systems without a ``git`` binary on the PATH. Bump versionfinder requirement to ``>= 0.1.1``.
+* `Issue #284 <https://github.com/jantman/awslimitchecker/issues/284>`_ - Fix ElastiCache limits to reflect what AWS Support and the `current documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_elasticache>`_ say, instead of a `support ticket from July 2015 <https://github.com/jantman/awslimitchecker/issues/38#issuecomment-118806921>`_.
+
+  * Remove the "Clusters" limit, which no longer exists.
+  * "Nodes per Cluster" limit is Memcached only.
+  * Add "Subnets per subnet group" limit.
+
+* `Issue #279 <https://github.com/jantman/awslimitchecker/issues/279>`_ - Add Github release to release process.
+
 0.9.0 (2017-06-11)
 ------------------
 
 * `Issue #269 <https://github.com/jantman/awslimitchecker/issues/269>`_ - set Trusted
   Advisor limit name overrides for some RDS limits that were recently added to TA, but
   with different names than what awslimitchecker uses.
-* Fix bug `Issue #270 <https://github.com/jantman/awslimitchecker/issues/270>`_ -
-  do not count propagated routes towards the VPC "Entries per route table" limit,
+* Fix bug `Issue #270 <https://github.com/jantman/awslimitchecker/issues/270>`_ - do
+  not count propagated routes towards the VPC "Entries per route table" limit,
   per clarification in `VPC service limits documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_vpc>`_ ("This is the limit
   for the number of non-propagated entries per route table.")
 * `PR #276 <https://github.com/jantman/awslimitchecker/pull/276>`_ /
   `Issue #275 <https://github.com/jantman/awslimitchecker/issues/275>`_ - Add new
-  ``--skip-service`` CLI option and :py:meth:`~.AwsLimitChecker.remove_services` to allow
-  skipping of one or more specific services during runs. (Thanks to `tamsky <https://github.com/tamsky>`_)
-  for this contribution.)
+  ``--skip-service`` CLI option and ``AwsLimitChecker.remove_services`` to allow
+  skipping of one or more specific services during runs. (Thanks to `tamsky <https://github.com/tamsky>`_ for this contribution.)
 * `PR #274 <https://github.com/jantman/awslimitchecker/pull/274>`_ /
   `Issue #273 <https://github.com/jantman/awslimitchecker/issues/273>`_ - Add support
   for new ``i3`` EC2 Instance types.  (Thanks to `tamsky <https://github.com/tamsky>`_)
