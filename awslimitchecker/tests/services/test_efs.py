@@ -100,7 +100,8 @@ class Test_EfsService(object):
         assert cls._have_usage is True
         assert mock_buckets.mock_calls == [call.all()]
         assert len(cls.limits['File systems'].get_current_usage()) == 1
-        assert cls.limits['File systems'].get_current_usage()[0].get_value() == 3
+        assert cls.limits['File systems'].get_current_usage()[0]\
+            .get_value() == 3
 
     def test_required_iam_permissions(self):
         cls = _EfsService(21, 43)
