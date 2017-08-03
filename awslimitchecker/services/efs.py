@@ -47,7 +47,7 @@ from ..utils import paginate_dict
 logger = logging.getLogger(__name__)
 
 
-class _EFSService(_AwsService):
+class _EfsService(_AwsService):
 
     service_name = 'EFS'
     api_name = 'efs'  # AWS API name to connect to (boto3.client)

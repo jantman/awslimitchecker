@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from awslimitchecker.services.efs import _EFSService
+from awslimitchecker.services.efs import _EfsService
 from awslimitchecker.limit import AwsLimit
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -53,14 +53,14 @@ else:
 
 
 pbm = 'awslimitchecker.services.efs'  # module patch base
-pb = '%s._EFSService' % pbm  # class patch pase
+pb = '%s._EfsService' % pbm  # class patch pase
 
 
-class Test_EFSService(object):
+class Test_EfsService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _EFSService(21, 43)
+        cls = _EfsService(21, 43)
         assert cls.service_name == 'EFS'
         assert cls.api_name == 'efs'
         assert cls.conn is None
@@ -68,7 +68,7 @@ class Test_EFSService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _EFSService(21, 43)
+        cls = _EfsService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -82,7 +82,7 @@ class Test_EFSService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)
-        cls = _EFSService(21, 43)
+        cls = _EfsService(21, 43)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -92,7 +92,7 @@ class Test_EFSService(object):
         mock_buckets.all.return_value = ['a', 'b', 'c']
         mock_conn = Mock(buckets=mock_buckets)
         with patch('%s.connect_resource' % pb) as mock_connect:
-            cls = _EFSService(21, 43)
+            cls = _EfsService(21, 43)
             cls.resource_conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
@@ -103,7 +103,7 @@ class Test_EFSService(object):
         assert cls.limits['File systems'].get_current_usage()[0].get_value() == 3
 
     def test_required_iam_permissions(self):
-        cls = _EFSService(21, 43)
+        cls = _EfsService(21, 43)
         assert cls.required_iam_permissions() == [
             'elasticfilesystem:DescribeFileSystems'
         ]
