@@ -59,7 +59,8 @@ class _EfsService(_AwsService):
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service %s", self.service_name)
-        self.connect_resource()
+        self.connect()
+
         for lim in self.limits.values():
             lim._reset_usage()
 
