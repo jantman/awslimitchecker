@@ -88,20 +88,35 @@ class Test_EfsService(object):
         assert res == mock_limits
 
     def test_find_usage(self):
-        mock_buckets = Mock()
-        mock_buckets.all.return_value = ['a', 'b', 'c']
-        mock_conn = Mock(buckets=mock_buckets)
-        with patch('%s.connect_resource' % pb) as mock_connect:
-            cls = _EfsService(21, 43)
-            cls.resource_conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
+        mock_conn = Mock()
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.paginate_dict' % pbm) as mock_paginate:
+                mock_paginate.return_value = {
+                    'FileSystems': [
+                        {'FileSystemId': 'foo'},
+                        {'FileSystemId': 'bar'},
+                        {'FileSystemId': 'baz'}
+                    ]
+                }
+                cls = _EfsService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
         assert cls._have_usage is True
-        assert mock_buckets.mock_calls == [call.all()]
-        assert len(cls.limits['File systems'].get_current_usage()) == 1
-        assert cls.limits['File systems'].get_current_usage()[0]\
-            .get_value() == 3
+        assert mock_connect.mock_calls == [call()]
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_file_systems,
+                alc_marker_path=['NextMarker'],
+                alc_data_path=['FileSystems'],
+                alc_marker_param='Marker'
+            )
+        ]
+        assert len(cls.limits) == 1
+        usage = cls.limits['File systems'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 3
+        assert usage[0].aws_type == 'AWS::EFS::FileSystem'
 
     def test_required_iam_permissions(self):
         cls = _EfsService(21, 43)
