@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import logging
+from botocore.exceptions import EndpointConnectionError
 
 from .base import _AwsService
 from ..limit import AwsLimit
@@ -60,24 +61,30 @@ class _EfsService(_AwsService):
         """
         logger.debug("Checking usage for service %s", self.service_name)
         self.connect()
-
         for lim in self.limits.values():
             lim._reset_usage()
+        try:
+            self._find_usage_filesystems()
+        except EndpointConnectionError as ex:
+            logger.warning(
+                'Caught exception when trying to use EFS ('
+                'perhaps the EFS service is not available in this '
+                'region?): %s', ex
+            )
+        self._have_usage = True
+        logger.debug("Done checking usage.")
 
+    def _find_usage_filesystems(self):
         filesystems = paginate_dict(
             self.conn.describe_file_systems,
             alc_marker_path=['NextMarker'],
             alc_data_path=['FileSystems'],
             alc_marker_param='Marker'
         )
-
         self.limits['File systems']._add_current_usage(
             len(filesystems['FileSystems']),
             aws_type='AWS::EFS::FileSystem',
         )
-
-        self._have_usage = True
-        logger.debug("Done checking usage.")
 
     def get_limits(self):
         """
