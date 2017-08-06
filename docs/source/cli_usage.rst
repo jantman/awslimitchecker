@@ -132,7 +132,7 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    CloudFormation
    EBS
    EC2
-   ELB
+   EFS
    (...)
    Redshift
    S3
@@ -238,14 +238,14 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        718
-   AutoScaling/Launch configurations                      834
-   CloudFormation/Stacks                                  1352
-   EBS/Active snapshots                                   20337
-   EBS/Active volumes                                     1979
+   AutoScaling/Auto Scaling groups                        762
+   AutoScaling/Launch configurations                      899
+   CloudFormation/Stacks                                  1449
+   EBS/Active snapshots                                   20932
+   EBS/Active volumes                                     1851
    (...)
-   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-3f36 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-1e5e3c7b=1, vpc-ae7 (...)
+   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-9703 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-ae7bc5cb=1, vpc-1e5 (...)
    VPC/VPCs                                               17
 
 
@@ -307,15 +307,14 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   CloudFormation/Stacks                                  (limit 1600) WARNING: 1352
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=960 WARNIN (...)
+   CloudFormation/Stacks                                  (limit 1600) WARNING: 1449
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=533, vpc-c (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5 WARNING: e (...)
+   EFS/File systems                                       (limit 10) CRITICAL: 20
    ElastiCache/Parameter Groups                           (limit 20) WARNING: 18
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3375
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 213
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 534
-   RDS/VPC Security Groups                                (limit 5) WARNING: 4
-   S3/Buckets                                             (limit 100) CRITICAL: 488
+   (...)
+   RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
+   S3/Buckets                                             (limit 100) CRITICAL: 483
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
 
 
@@ -328,12 +327,14 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=960
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=533, vpc-c (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3375
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 213
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 534
-   S3/Buckets                                             (limit 100) CRITICAL: 488
+   EFS/File systems                                       (limit 10) CRITICAL: 20
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3265
+   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 235
+   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 589
+   RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
+   S3/Buckets                                             (limit 100) CRITICAL: 483
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
 
 

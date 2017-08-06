@@ -42,6 +42,7 @@ from awslimitchecker.services.ec2 import _Ec2Service
 from awslimitchecker.services.vpc import _VpcService
 from awslimitchecker.services.autoscaling import _AutoscalingService
 from awslimitchecker.services.ebs import _EbsService
+from awslimitchecker.services.efs import _EfsService
 from awslimitchecker.services.elasticbeanstalk import _ElasticBeanstalkService
 from awslimitchecker.services.elb import _ElbService
 from awslimitchecker.services.elasticache import _ElastiCacheService

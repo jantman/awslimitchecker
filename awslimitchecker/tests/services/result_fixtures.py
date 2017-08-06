@@ -1180,6 +1180,109 @@ class ELB(object):
             ],
         }
 
+    test_update_limits_elb = {
+        'ResponseMetadata': {
+            'RetryAttempts': 0,
+            'HTTPStatusCode': 200,
+            'RequestId': 'aaaa',
+            'HTTPHeaders': {
+                'x-amzn-requestid': 'ccccccc',
+                'date': 'Sun, 06 Aug 2017 12:00:40 GMT',
+                'content-length': '520',
+                'content-type': 'text/xml'
+            }
+        },
+        'Limits': [
+            {'Max': '3', 'Name': 'classic-load-balancers'},
+            {'Max': '5', 'Name': 'classic-listeners'},
+            {'Name': 'invalid', 'Max': '99'},  # test invalid name
+            {'Name': 'classic-listeners'}  # test no Max
+        ]
+    }
+
+    test_update_limits_alb = {
+        'ResponseMetadata': {
+            'RetryAttempts': 0,
+            'HTTPStatusCode': 200,
+            'RequestId': 'bbb',
+            'HTTPHeaders': {
+                'x-amzn-requestid': 'dddddd',
+                'date': 'Sun, 06 Aug 2017 12:19:40 GMT',
+                'content-length': '860',
+                'content-type': 'text/xml'
+            }
+        },
+        'Limits': [
+            {'Max': '6', 'Name': 'application-load-balancers'},
+            {'Max': '7', 'Name': 'target-groups'},
+            {'Max': '8', 'Name': 'targets-per-application-load-balancer'},
+            {'Max': '9', 'Name': 'listeners-per-application-load-balancer'},
+            {'Max': '10', 'Name': 'rules-per-application-load-balancer'},
+            {'Name': 'invalid', 'Max': '99'},  # test invalid name
+            {'Name': 'target-groups'}  # test no Max
+        ]
+    }
+
+    test_find_usage_elbv2_elbs = {
+        'LoadBalancers': [
+            {
+                'LoadBalancerName': 'lb1',
+                'LoadBalancerArn': 'lb-arn1'
+            },
+            {
+                'LoadBalancerName': 'lb2',
+                'LoadBalancerArn': 'lb-arn2'
+            }
+        ]
+    }
+
+    test_find_usage_elbv2_target_groups = {
+        'TargetGroups': [
+            {
+                'TargetGroupArn': 'arn1',
+                'TargetGroupName': 'name1'
+            },
+            {
+                'TargetGroupArn': 'arn2',
+                'TargetGroupName': 'name2'
+            },
+            {
+                'TargetGroupArn': 'arn3',
+                'TargetGroupName': 'name3'
+            }
+        ]
+    }
+
+    test_usage_elbv2_listeners = {
+        'Listeners': [
+            {'ListenerArn': 'listener1'},
+            {'ListenerArn': 'listener2'},
+            {'ListenerArn': 'listener3'},
+        ]
+    }
+
+    test_usage_elbv2_rules = [
+        {
+            'Rules': [
+                {'RuleArn': 'listener1rule1'},
+                {'RuleArn': 'listener1rule2'}
+            ]
+        },
+        {
+            'Rules': [
+                {'RuleArn': 'listener2rule1'}
+            ]
+        },
+        {
+            'Rules': [
+                {'RuleArn': 'listener3rule1'},
+                {'RuleArn': 'listener3rule2'},
+                {'RuleArn': 'listener3rule3'},
+                {'RuleArn': 'listener3rule4'}
+            ]
+        }
+    ]
+
 
 class ElastiCache(object):
     test_find_usage_nodes = []

@@ -97,7 +97,6 @@ class GithubReleaser(object):
             self._gist(md)
 
     def _release(self, markdown):
-        _VERSION = 'foobar'
         for rel in self._repo.releases():
             if rel.tag_name == _VERSION:
                 logger.error('Error: Release already present for %s: "%s" (%s)',

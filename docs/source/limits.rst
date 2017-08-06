@@ -22,12 +22,6 @@ awslimitchecker. The following service limits have been confirmed as being
 updated from Trusted Advisor:
 
 
-* AutoScaling
-
-  * Auto Scaling groups
-
-  * Launch configurations
-
 * CloudFormation
 
   * Stacks
@@ -65,6 +59,8 @@ updated from Trusted Advisor:
   * Running On-Demand c4.large instances
 
   * Running On-Demand c4.xlarge instances
+
+  * Running On-Demand m1.small instances
 
   * Running On-Demand m3.2xlarge instances
 
@@ -193,6 +189,18 @@ precedence than anything other than explicit limit overrides:
 
   * VPC security groups per elastic network interface
 
+* ELB
+
+  * Active load balancers
+
+  * Listeners per application load balancer
+
+  * Listeners per load balancer
+
+  * Rules per application load balancer
+
+  * Target groups
+
 * IAM
 
   * Groups
@@ -259,12 +267,12 @@ marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 AutoScaling
 ++++++++++++
 
-============================================== ===
-Limit                                          Default
-============================================== ===
-Auto Scaling groups :sup:`(TA)` :sup:`(API)`   20 
-Launch configurations :sup:`(TA)` :sup:`(API)` 100
-============================================== ===
+================================== ===
+Limit                              Default
+================================== ===
+Auto Scaling groups :sup:`(API)`   20 
+Launch configurations :sup:`(API)` 100
+================================== ===
 
 .. _limits.CloudFormation:
 
@@ -358,7 +366,7 @@ Running On-Demand i3.large instances                           2
 Running On-Demand i3.xlarge instances                          2   
 Running On-Demand m1.large instances                           20  
 Running On-Demand m1.medium instances                          20  
-Running On-Demand m1.small instances                           20  
+Running On-Demand m1.small instances :sup:`(TA)`               20  
 Running On-Demand m1.xlarge instances                          20  
 Running On-Demand m2.2xlarge instances                         20  
 Running On-Demand m2.4xlarge instances                         20  
@@ -402,17 +410,31 @@ VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5
 VPC security groups per elastic network interface :sup:`(API)` 5   
 ============================================================== ====
 
+.. _limits.EFS:
+
+EFS
+++++
+
+============ ==
+Limit        Default
+============ ==
+File systems 10
+============ ==
+
 .. _limits.ELB:
 
 ELB
 ++++
 
-================================= ===
-Limit                             Default
-================================= ===
-Active load balancers :sup:`(TA)` 20 
-Listeners per load balancer       100
-================================= ===
+==================================================== ====
+Limit                                                Default
+==================================================== ====
+Active load balancers :sup:`(TA)` :sup:`(API)`       20  
+Listeners per application load balancer :sup:`(API)` 50  
+Listeners per load balancer :sup:`(API)`             100 
+Rules per application load balancer :sup:`(API)`     100 
+Target groups :sup:`(API)`                           3000
+==================================================== ====
 
 .. _limits.ElastiCache:
 
