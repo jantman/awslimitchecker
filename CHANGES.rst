@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+This release **requires new IAM permissions**: ``elasticfilesystem:DescribeFileSystems``.
+
+* `Issue #287 <https://github.com/jantman/awslimitchecker/issues/287>`_ / `PR #288 <https://github.com/jantman/awslimitchecker/pull/288>`_ - Add support for Elastic Filesystem number of filesystems limit. (Thanks to `nicksantamaria <https://github.com/nicksantamaria>`_ for the contribution.)
+
 0.10.0 (2017-06-25)
 -------------------
 
