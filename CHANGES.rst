@@ -4,9 +4,18 @@ Changelog
 Unreleased
 ----------
 
-This release **requires new IAM permissions**: ``elasticfilesystem:DescribeFileSystems``.
+This release **requires new IAM permissions**:
+
+* ``elasticfilesystem:DescribeFileSystems``
+* ``elasticloadbalancing:DescribeAccountLimits``
+* ``elasticloadbalancing:DescribeListeners``
+* ``elasticloadbalancing:DescribeTargetGroups``
+* ``elasticloadbalancing:DescribeRules``
+
+Changes in this release:
 
 * `Issue #287 <https://github.com/jantman/awslimitchecker/issues/287>`_ / `PR #288 <https://github.com/jantman/awslimitchecker/pull/288>`_ - Add support for Elastic Filesystem number of filesystems limit. (Thanks to `nicksantamaria <https://github.com/nicksantamaria>`_ for the contribution.)
+* `Issue #268 <https://github.com/jantman/awslimitchecker/issues/268>`_ - Add support for ELBv2 (Application Load Balancer) limits; get ELBv1 (Classic) and ELBv2 (Application) limits from the DescribeAccountLimits API calls.
 
 0.10.0 (2017-06-25)
 -------------------
