@@ -47,7 +47,7 @@ try:
 except ImportError:
     logger.error("Unable to import versionfinder", exc_info=True)
 
-_VERSION = '0.10.0'
+_VERSION = '0.11.0'
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
 
 
