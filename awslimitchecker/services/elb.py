@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import logging
+from boto3 import client
 
 from .base import _AwsService
 from ..limit import AwsLimit
@@ -48,6 +49,11 @@ logger = logging.getLogger(__name__)
 
 
 class _ElbService(_AwsService):
+    """
+    Note that ELB (ELBv1) and ALB (ELBv2) are combined in the same service.
+    This is because, per AWS docs, the limit for number of load balancers
+    per region is a combination of ELB and ALB.
+    """
 
     service_name = 'ELB'
     api_name = 'elb'
@@ -59,18 +65,32 @@ class _ElbService(_AwsService):
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service %s", self.service_name)
-        self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
+        elb_usage = self._find_usage_elbv1()
+        alb_usage = self._find_usage_elbv2()
+        logger.debug('ELBs in use: %d, ALBs in use: %d', elb_usage, alb_usage)
+        self.limits['Active load balancers']._add_current_usage(
+            (elb_usage + alb_usage),
+            aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
+        )
+        self._have_usage = True
+        logger.debug("Done checking usage.")
+
+    def _find_usage_elbv1(self):
+        """
+        Find usage for ELBv1 / Classic ELB and update the appropriate limits.
+
+        :returns: number of Classic ELBs in use
+        :rtype: int
+        """
+        logger.debug("Checking usage for ELBv1")
+        self.connect()
         lbs = paginate_dict(
             self.conn.describe_load_balancers,
             alc_marker_path=['NextMarker'],
             alc_data_path=['LoadBalancerDescriptions'],
             alc_marker_param='Marker'
-        )
-        self.limits['Active load balancers']._add_current_usage(
-            len(lbs['LoadBalancerDescriptions']),
-            aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
         )
         for lb in lbs['LoadBalancerDescriptions']:
             self.limits['Listeners per load balancer']._add_current_usage(
@@ -78,8 +98,90 @@ class _ElbService(_AwsService):
                 aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
                 resource_id=lb['LoadBalancerName'],
             )
-        self._have_usage = True
-        logger.debug("Done checking usage.")
+        logger.debug('Done with ELBv1 usage')
+        return len(lbs['LoadBalancerDescriptions'])
+
+    def _find_usage_elbv2(self):
+        """
+        Find usage for ELBv2 / Application LB and update the appropriate limits.
+
+        :returns: number of Application LBs in use
+        :rtype: int
+        """
+        logger.debug('Checking usage for ELBv2')
+        conn2 = client('elbv2', **self._boto3_connection_kwargs)
+        logger.debug("Connected to %s in region %s",
+                     'elbv2', conn2._client_config.region_name)
+        # Target groups
+        tgroups = paginate_dict(
+            conn2.describe_target_groups,
+            alc_marker_path=['NextMarker'],
+            alc_data_path=['TargetGroups'],
+            alc_marker_param='Marker'
+        )
+        self.limits['Target groups']._add_current_usage(
+            len(tgroups['TargetGroups']),
+            aws_type='AWS::ElasticLoadBalancingV2::TargetGroup'
+        )
+        # ALBs
+        lbs = paginate_dict(
+            conn2.describe_load_balancers,
+            alc_marker_path=['NextMarker'],
+            alc_data_path=['LoadBalancers'],
+            alc_marker_param='Marker'
+        )
+        logger.debug(
+            'Checking usage for each of %d ALBs', len(lbs['LoadBalancers'])
+        )
+        for lb in lbs['LoadBalancers']:
+            self._update_usage_for_elbv2(
+                conn2,
+                lb['LoadBalancerArn'],
+                lb['LoadBalancerName']
+            )
+        logger.debug('Done with ELBv2 usage')
+        return len(lbs['LoadBalancers'])
+
+    def _update_usage_for_elbv2(self, conn, alb_arn, alb_name):
+        """
+        Update usage for a single ALB.
+
+        :param conn: elbv2 API connection
+        :type conn: boto3.client
+        :param alb_arn: Load Balancer ARN
+        :type alb_arn: str
+        :param alb_name: Load Balancer Name
+        :type alb_name: str
+        """
+        logger.debug('Updating usage for ALB %s', alb_arn)
+        listeners = paginate_dict(
+            conn.describe_listeners,
+            LoadBalancerArn=alb_arn,
+            alc_marker_path=['NextMarker'],
+            alc_data_path=['Listeners'],
+            alc_marker_param='Marker'
+        )['Listeners']
+        num_rules = 0
+        for l in listeners:
+            rules = paginate_dict(
+                conn.describe_rules,
+                ListenerArn=l['ListenerArn'],
+                alc_marker_path=['NextMarker'],
+                alc_data_path=['Rules'],
+                alc_marker_param='Marker'
+            )['Rules']
+            num_rules += len(rules)
+        self.limits[
+            'Listeners per application load balancer']._add_current_usage(
+            len(listeners),
+            aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            resource_id=alb_name,
+        )
+        self.limits['Rules per application load balancer']._add_current_usage(
+            num_rules,
+            aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            resource_id=alb_name,
+        )
 
     def get_limits(self):
         """
@@ -92,6 +194,7 @@ class _ElbService(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
+        # ELBv1 (Classic ELB) limits
         limits['Active load balancers'] = AwsLimit(
             'Active load balancers',
             self,
@@ -109,8 +212,77 @@ class _ElbService(_AwsService):
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
             limit_subtype='LoadBalancerListener'
         )
+        # ELBv2 (ALB) limits
+        limits['Target groups'] = AwsLimit(
+            'Target groups',
+            self,
+            3000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            limit_subtype='LoadBalancerTargetGroup'
+        )
+        limits['Listeners per application load balancer'] = AwsLimit(
+            'Listeners per application load balancer',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            limit_subtype='LoadBalancerListener'
+        )
+        limits['Rules per application load balancer'] = AwsLimit(
+            'Rules per application load balancer',
+            self,
+            100,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            limit_subtype='LoadBalancerRule'
+        )
         self.limits = limits
         return limits
+
+    def _update_limits_from_api(self):
+        """
+        Query ELB's DescribeAccountLimits API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
+        self.connect()
+        logger.debug("Querying ELB DescribeAccountLimits for limits")
+        attribs = self.conn.describe_account_limits()
+        name_to_limits = {
+            'classic-load-balancers': 'Active load balancers',
+            'classic-listeners': 'Listeners per load balancer'
+        }
+        for attrib in attribs['Limits']:
+            if int(attrib.get('Max', 0)) == 0:
+                continue
+            name = attrib.get('Name', 'unknown')
+            if name not in name_to_limits:
+                continue
+            self.limits[name_to_limits[name]]._set_api_limit(int(attrib['Max']))
+        # connect to ELBv2 API as well
+        self.conn2 = client('elbv2', **self._boto3_connection_kwargs)
+        logger.debug("Connected to %s in region %s",
+                     'elbv2', self.conn2._client_config.region_name)
+        logger.debug("Querying ELBv2 (ALB) DescribeAccountLimits for limits")
+        attribs = self.conn2.describe_account_limits()
+        name_to_limits = {
+            'target-groups': 'Target groups',
+            'listeners-per-application-load-balancer':
+                'Listeners per application load balancer',
+            'rules-per-application-load-balancer':
+                'Rules per application load balancer'
+        }
+        for attrib in attribs['Limits']:
+            if int(attrib.get('Max', 0)) == 0:
+                continue
+            name = attrib.get('Name', 'unknown')
+            if name not in name_to_limits:
+                continue
+            self.limits[name_to_limits[name]]._set_api_limit(int(attrib['Max']))
+        logger.debug("Done setting limits from API")
 
     def required_iam_permissions(self):
         """
@@ -122,5 +294,9 @@ class _ElbService(_AwsService):
         :rtype: list
         """
         return [
-            "elasticloadbalancing:DescribeLoadBalancers"
+            "elasticloadbalancing:DescribeLoadBalancers",
+            "elasticloadbalancing:DescribeAccountLimits",
+            "elasticloadbalancing:DescribeListeners",
+            "elasticloadbalancing:DescribeTargetGroups",
+            "elasticloadbalancing:DescribeRules"
         ]
