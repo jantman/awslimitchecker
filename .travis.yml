@@ -24,7 +24,7 @@ matrix:
 install:
 - git config --global user.email "travisci@jasonantman.com"
 - git config --global user.name "travisci"
-- pip install tox
+- pip install tox==2.7.0
 - pip install codecov
 - pip freeze
 - virtualenv --version
