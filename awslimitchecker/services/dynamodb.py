@@ -49,6 +49,7 @@ class _DynamodbService(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
+        
         logger.debug("Checking usage for service %s", self.service_name)
 
         self.connect()
