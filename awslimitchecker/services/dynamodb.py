@@ -63,6 +63,7 @@ class _DynamodbService(_AwsService):
         ''' calculates current usage for all DynamoDB limits '''
 
         logger.debug("Getting usage for DynamoDB tables")
+        
         table_count = 0
         region_read_capacity = 0
         region_write_capacity = 0
