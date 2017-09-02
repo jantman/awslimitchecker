@@ -123,7 +123,6 @@ class _DynamodbService(_AwsService):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
-
         if self.limits != {}:
             return self.limits
         limits = {}
