@@ -45,10 +45,10 @@ class _DynamodbService(_AwsService):
 
     def find_usage(self):
         """
-                Determine the current usage for each limit of this service,
-                and update corresponding Limit via
-                :py:meth:`~.AwsLimit._add_current_usage`.
-                """
+        Determine the current usage for each limit of this service,
+        and update corresponding Limit via
+        :py:meth:`~.AwsLimit._add_current_usage`.
+        """
         logger.debug("Checking usage for service %s", self.service_name)
 
         self.connect()
@@ -100,10 +100,10 @@ class _DynamodbService(_AwsService):
 
     def get_limits(self):
         """
-            Return all known limits for this service, as a dict of their names
-            to :py:class:`~.AwsLimit` objects.
-            :returns: dict of limit names to :py:class:`~.AwsLimit` objects
-            :rtype: dict
+        Return all known limits for this service, as a dict of their names
+        to :py:class:`~.AwsLimit` objects.
+        :returns: dict of limit names to :py:class:`~.AwsLimit` objects
+        :rtype: dict
         """
 
         if self.limits != {}:
@@ -115,10 +115,10 @@ class _DynamodbService(_AwsService):
 
     def _get_limits_dynamodb(self):
         """
-            Return a dict of DynamoDB-related limits only.
-            This method should only be used internally by
-            :py:meth:~.get_limits`.
-            :rtype: dict
+        Return a dict of DynamoDB-related limits only.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+        :rtype: dict
         """
         limits = {}
 
