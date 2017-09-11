@@ -193,7 +193,7 @@ Testing is done via `pytest <http://pytest.org/latest/>`_, driven by `tox <https
 
 * testing is as simple as:
 
-  * ``pip install tox``
+  * ``pip install tox==2.7.0``
   * ``tox``
 
 * If you want to see code coverage: ``tox -e cov``

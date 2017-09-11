@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* Pin `tox <https://tox.readthedocs.io/>`_ version to 2.7.0 as workaround for parsing change.
+
 0.11.0 (2017-08-06)
 -------------------
 
