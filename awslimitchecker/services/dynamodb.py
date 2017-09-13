@@ -146,6 +146,7 @@ class _DynamodbService(_AwsService):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
+        self.connect()
         region_name = self.conn._client_config.region_name
         if self.limits != {}:
             return self.limits
