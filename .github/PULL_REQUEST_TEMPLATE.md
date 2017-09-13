@@ -2,16 +2,25 @@ Before submitting pull requests, please see the
 [Development documentation](http://awslimitchecker.readthedocs.org/en/latest/development.html)
 and specifically the [Pull Request Guidelines](http://awslimitchecker.readthedocs.org/en/latest/development.html#pull-requests).
 
-__IMPORTANT:__ Please take note of the below checklist, especially the first two items.
+__IMPORTANT:__ Please take note of the below checklist, especially the first three items.
+
+# Summary
+
+*Add a summary of what your PR does here. This could be as simple as "adds support for X service" or "fixes default limit for Y", or a longer explanation for less straightforward changes.*
 
 # Pull Request Checklist
 
 - [ ] All pull requests should be __against the develop branch__, not master.
 - [ ] All pull requests must include the Contributor License Agreement (see below).
+- [ ] Whether or not your PR includes unit tests:
+    - [ ] Please make sure you have run the exact code contained in the PR locally, and it functions as desired.
+    - [ ] Please make sure the TravisCI build passes or, if not, you've corrected any obvious problems identified by the tests.
 - [ ] Code should conform to the [Development Guidelines](http://awslimitchecker.readthedocs.org/en/latest/development.html#guidelines):
     - [ ] pep8 compliant with some exceptions (see pytest.ini)
     - [ ] 100% test coverage with pytest (with valid tests). If you have difficulty
-      writing tests for the code, feel free to ask for help or submit the PR without tests.
+      writing tests for the code, that's fine, just mention that in the summary and either
+      ask for assistance, or clarify that you'd like someone else to handle the tests. PRs that
+      include complete test coverage will usually be merged faster.
     - [ ] Complete, correctly-formatted documentation for all classes, functions and methods.
     - [ ] documentation has been rebuilt with ``tox -e docs``
     - [ ] Connections to the AWS services should only be made by the class's
