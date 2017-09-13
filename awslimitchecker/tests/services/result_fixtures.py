@@ -496,6 +496,27 @@ class VPC(object):
                 'CreateTime': datetime(1970, 1, 1),
                 'State': 'available',
             },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet2',
+                'NatGatewayId': 'nat-125',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'deleted',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
+                'NatGatewayId': 'nat-126',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'pending',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
+                'NatGatewayId': 'nat-127',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'failed',
+            }
         ],
         'NextToken': None,
     }

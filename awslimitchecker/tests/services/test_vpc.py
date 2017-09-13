@@ -262,7 +262,7 @@ class Test_VpcService(object):
 
         assert len(cls.limits['NAT Gateways per AZ'].get_current_usage()) == 2
         az2 = cls.limits['NAT Gateways per AZ'].get_current_usage()[0]
-        assert az2.get_value() == 2
+        assert az2.get_value() == 3
         assert az2.resource_id == 'az2'
         az3 = cls.limits['NAT Gateways per AZ'].get_current_usage()[1]
         assert az3.get_value() == 1
@@ -275,6 +275,12 @@ class Test_VpcService(object):
                 'ERROR: NAT Gateway %s in SubnetId %s, but SubnetId not '
                 'found in subnet_to_az; Gateway cannot be counted!',
                 'nat-124', 'subnet4'
+            ),
+            call.debug(
+                'Skipping NAT Gateway %s in state: %s', 'nat-125', 'deleted'
+            ),
+            call.debug(
+                'Skipping NAT Gateway %s in state: %s', 'nat-127', 'failed'
             )
         ]
 
