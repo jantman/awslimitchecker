@@ -41,6 +41,7 @@ from .connectable import ConnectableCredentials
 from .services import _services
 from .trustedadvisor import TrustedAdvisor
 from .version import _get_version_info
+from .utils import _get_latest_version
 import boto3
 import sys
 import logging
@@ -53,7 +54,8 @@ class AwsLimitChecker(object):
     def __init__(self, warning_threshold=80, critical_threshold=99,
                  profile_name=None, account_id=None, account_role=None,
                  region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None, ta_refresh_mode=None, ta_refresh_timeout=None):
+                 mfa_token=None, ta_refresh_mode=None, ta_refresh_timeout=None,
+                 check_version=True):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -114,6 +116,9 @@ class AwsLimitChecker(object):
           parameter is not None, only wait up to this number of seconds for the
           refresh to finish before continuing on anyway.
         :type ta_refresh_timeout: :py:class:`int` or :py:data:`None`
+        :param check_version: Whether or not to check for latest version of
+          awslimitchecker on PyPI during instantiation.
+        :type check_version: bool
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -138,6 +143,14 @@ class AwsLimitChecker(object):
                 self.vinfo.url
             )
         )
+        if check_version:
+            latest_ver = _get_latest_version()
+            if latest_ver is not None:
+                logger.warning(
+                    'You are running awslimitchecker %s, but the latest version'
+                    ' is %s; please consider upgrading.', self.vinfo.release,
+                    latest_ver
+                )
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.profile_name = profile_name
