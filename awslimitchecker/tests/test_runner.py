@@ -228,6 +228,9 @@ class TestAwsLimitCheckerRunner(object):
             call().add_argument('--no-color', action='store_true',
                                 default=False,
                                 help='do not colorize output'),
+            call().add_argument('--no-check-version', action='store_false',
+                                default=True, dest='check_version',
+                                help='do not check latest version at startup'),
             call().add_argument('-v', '--verbose', dest='verbose',
                                 action='count',
                                 default=0,
@@ -307,7 +310,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=True
             ),
             call().get_project_url(),
             call().get_version()
@@ -490,7 +494,8 @@ class TestAwsLimitCheckerRunner(object):
             call(account_id=None, account_role=None, critical_threshold=99,
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
-                 ta_refresh_timeout=None, warning_threshold=80)
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True)
         ]
 
     def test_entry_skip_service(self):
@@ -507,7 +512,8 @@ class TestAwsLimitCheckerRunner(object):
             call(account_id=None, account_role=None, critical_threshold=99,
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
-                 ta_refresh_timeout=None, warning_threshold=80),
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True),
             call().remove_services(['foo'])
         ]
 
@@ -529,7 +535,8 @@ class TestAwsLimitCheckerRunner(object):
             call(account_id=None, account_role=None, critical_threshold=99,
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
-                 ta_refresh_timeout=None, warning_threshold=80),
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True),
             call().remove_services(['foo', 'bar'])
         ]
 
@@ -720,7 +727,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=True
             )
         ]
         assert self.cls.service_name is None
@@ -758,7 +766,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=True
             )
         ]
         assert self.cls.service_name is None
@@ -773,7 +782,8 @@ class TestAwsLimitCheckerRunner(object):
             '-R',
             'myrole',
             '-E',
-            'myextid'
+            'myextid',
+            '--no-check-version'
         ]
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
@@ -798,7 +808,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=False
             )
         ]
         assert self.cls.service_name is None
@@ -855,7 +866,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=True
             )
         ]
 
@@ -881,7 +893,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name='myprof',
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=True
             )
         ]
 
@@ -907,7 +920,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=None,
-                ta_refresh_timeout=None
+                ta_refresh_timeout=None,
+                check_version=True
             )
         ]
 
@@ -934,7 +948,8 @@ class TestAwsLimitCheckerRunner(object):
                 mfa_token=None,
                 profile_name=None,
                 ta_refresh_mode=456,
-                ta_refresh_timeout=123
+                ta_refresh_timeout=123,
+                check_version=True
             )
         ]
 
