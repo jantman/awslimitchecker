@@ -221,6 +221,8 @@ def _get_latest_version():
     be retrieved or is not greater than the currently running version, return
     None.
 
+    This function MUST not ever raise an exception.
+
     :return: latest version from PyPI, if newer than current version
     :rtype: `str` or `None`
     """
