@@ -40,6 +40,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import argparse
 import logging
 from copy import deepcopy
+import botocore.vendored.requests as requests
+from awslimitchecker.version import _VERSION_TUP
 
 logger = logging.getLogger(__name__)
 
@@ -209,3 +211,30 @@ def _set_dict_value_by_path(d, val, path):
         k = tmp_path.pop(0)
         result = result[k]
     return tmp_d
+
+
+def _get_latest_version():
+    """
+    Attempt to retrieve the latest awslimitchecker version from PyPI, timing
+    out after 4 seconds. If the version can be retrieved and is greater than
+    the currently running version, return it as a string. If the version cannot
+    be retrieved or is not greater than the currently running version, return
+    None.
+
+    :return: latest version from PyPI, if newer than current version
+    :rtype: `str` or `None`
+    """
+    try:
+        r = requests.get(
+            'http://pypi.python.org/pypi/awslimitchecker/json',
+            timeout=4.0,
+        )
+        j = r.json()
+        latest = tuple([
+            int(i) for i in j['info']['version'].split('.')[0:3]
+        ])
+        if latest > _VERSION_TUP:
+            return j['info']['version']
+    except Exception:
+        logger.debug('Error getting latest version from PyPI', exc_info=True)
+    return None
