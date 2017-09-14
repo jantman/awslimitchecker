@@ -289,6 +289,34 @@ For issues:
 7. Assign the "unreleased fix" label to the issue. It should be closed automatically when develop is merged to master for
    a release, but this lets us track which issues have unreleased fixes.
 
+.. _development.versioning_policy:
+
+Versioning Policy
+-----------------
+
+As of version 1.0.0, awslimitchecker strives to follow `semver 2.0.0 <http://semver.org/>`_
+for versioning, with some specific clarifications:
+
+* Major version bumps (backwards-incompatible changes):
+
+  * Any additional required IAM permissions, beyond the minimum policy from the last major version.
+  * Renaming (any change to the case-sensitive strings) any existing services or limits.
+  * Changing the signatures or argument types of any public methods.
+  * Any changes to direct dependencies or direct dependency version requirements.
+  * Any changes that would cause the documented usage examples (Python or CLI) to cease functioning.
+
+* Minor version bumps (backwards-compatible feature additions and changes):
+
+  * Adding new limits or services that don't require any IAM policy changes.
+  * New functionality that doesn't change existing APIs or CLI arguments.
+
+* Patch version bumps:
+
+  * Bug fixes
+  * Documentation, development/support tooling, or anything else that isn't user-executed code.
+
+This means that after 1.0.0, major version numbers will likely increase rather quickly.
+
 .. _development.release_checklist:
 
 Release Checklist
