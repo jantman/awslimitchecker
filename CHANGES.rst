@@ -4,6 +4,7 @@ Changelog
 Unreleased Changes
 ------------------
 
+* `Issue #254 <https://github.com/jantman/awslimitchecker/issues/254>`_ - Officially adopt SemVer for this project, and document our :ref:`versioning policy <development.versioning_policy>`.
 * `Issue #294 <https://github.com/jantman/awslimitchecker/issues/294>`_ - Ignore NAT Gateways that are not in "available" or "pending" state.
 * Pin `tox <https://tox.readthedocs.io/>`_ version to 2.7.0 as workaround for parsing change.
 

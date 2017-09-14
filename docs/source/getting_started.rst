@@ -78,6 +78,16 @@ can be whatever you want):
     source limitchecker/bin/activate
     pip install awslimitchecker
 
+Version Specification
++++++++++++++++++++++
+
+If you're using awslimitchecker in automated tooling that recreates the virtualenv
+(such as Jenkins or cron jobs, etc) you'll probably want to install a specific version
+so that the job doesn't unexpectedly break. It's recommended that you pin your installation
+to a ``major`` version. According to awslimitchecker's :ref:`versioning policy <development.versioning_policy>`,
+this should ensure that you get the latest awslimitchecker version that's compatible with
+your IAM policy and dependencies and has no backwards-incompatible API changes.
+
 .. _getting_started.credentials:
 
 Credentials
