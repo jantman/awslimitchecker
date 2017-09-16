@@ -255,20 +255,33 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_nat_gateways.return_value = response
 
-        cls = _VpcService(21, 43)
-        cls.conn = mock_conn
-
-        cls._find_usage_nat_gateways(subnets)
+        with patch('%s.logger' % self.pbm) as mock_logger:
+            cls = _VpcService(21, 43)
+            cls.conn = mock_conn
+            cls._find_usage_nat_gateways(subnets)
 
         assert len(cls.limits['NAT Gateways per AZ'].get_current_usage()) == 2
         az2 = cls.limits['NAT Gateways per AZ'].get_current_usage()[0]
-        assert az2.get_value() == 2
+        assert az2.get_value() == 3
         assert az2.resource_id == 'az2'
         az3 = cls.limits['NAT Gateways per AZ'].get_current_usage()[1]
         assert az3.get_value() == 1
         assert az3.resource_id == 'az3'
         assert mock_conn.mock_calls == [
             call.describe_nat_gateways(),
+        ]
+        assert mock_logger.mock_calls == [
+            call.error(
+                'ERROR: NAT Gateway %s in SubnetId %s, but SubnetId not '
+                'found in subnet_to_az; Gateway cannot be counted!',
+                'nat-124', 'subnet4'
+            ),
+            call.debug(
+                'Skipping NAT Gateway %s in state: %s', 'nat-125', 'deleted'
+            ),
+            call.debug(
+                'Skipping NAT Gateway %s in state: %s', 'nat-127', 'failed'
+            )
         ]
 
     def test_find_usage_nat_gateways_exception(self):

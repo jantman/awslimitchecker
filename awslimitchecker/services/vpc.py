@@ -166,6 +166,12 @@ class _VpcService(_AwsService):
                                     alc_data_path=['NatGateways'],
                                     alc_marker_param='NextToken'
                                     )['NatGateways']:
+                if gw['State'] not in ['pending', 'available']:
+                    logger.debug(
+                        'Skipping NAT Gateway %s in state: %s',
+                        gw['NatGatewayId'], gw['State']
+                    )
+                    continue
                 if gw['SubnetId'] not in subnet_to_az:
                     logger.error('ERROR: NAT Gateway %s in SubnetId %s, but '
                                  'SubnetId not found in subnet_to_az; Gateway '

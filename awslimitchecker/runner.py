@@ -191,6 +191,9 @@ class Runner(object):
                             'anyway.')
         p.add_argument('--no-color', action='store_true', default=False,
                        help='do not colorize output')
+        p.add_argument('--no-check-version', action='store_false', default=True,
+                       dest='check_version',
+                       help='do not check latest version at startup')
         p.add_argument('-v', '--verbose', dest='verbose', action='count',
                        default=0,
                        help='verbose output. specify twice for debug-level '
@@ -359,7 +362,8 @@ class Runner(object):
             mfa_serial_number=args.mfa_serial_number,
             mfa_token=args.mfa_token,
             ta_refresh_mode=args.ta_refresh_mode,
-            ta_refresh_timeout=args.ta_refresh_timeout
+            ta_refresh_timeout=args.ta_refresh_timeout,
+            check_version=args.check_version
         )
 
         if args.version:
