@@ -80,6 +80,7 @@ class Test_VpcService(object):
             'Network ACLs per VPC',
             'Rules per network ACL',
             'Route tables per VPC',
+            'Virtual private gateways',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -110,6 +111,7 @@ class Test_VpcService(object):
                     _find_usage_route_tables=DEFAULT,
                     _find_usage_gateways=DEFAULT,
                     _find_usage_nat_gateways=DEFAULT,
+                    _find_usages_vpn_gateways=DEFAULT
             ) as mocks:
                 mocks['_find_usage_subnets'].return_value = sn
                 cls = _VpcService(21, 43)
@@ -124,7 +126,8 @@ class Test_VpcService(object):
                 '_find_usage_subnets',
                 '_find_usage_ACLs',
                 '_find_usage_route_tables',
-                '_find_usage_gateways'
+                '_find_usage_gateways',
+                '_find_usages_vpn_gateways',
         ]:
             assert mocks[x].mock_calls == [call()]
         assert mocks['_find_usage_nat_gateways'].mock_calls == [call(sn)]
@@ -309,6 +312,33 @@ class Test_VpcService(object):
                        exc_info=1)
         ]
 
+    def test_find_usages_vpn_gateways(self):
+        response = result_fixtures.VPC.test_find_usages_vpn_gateways
+
+        mock_conn = Mock()
+        mock_conn.describe_vpn_gateways.return_value = response
+
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+
+        cls._find_usages_vpn_gateways()
+
+        assert len(cls.limits['Virtual private gateways']
+                   .get_current_usage()) == 1
+        assert cls.limits['Virtual private gateways'].get_current_usage()[
+            0].get_value() == 2
+        assert mock_conn.mock_calls == [
+            call.describe_vpn_gateways(Filters=[
+                {
+                    'Name': 'state',
+                    'Values': [
+                        'available',
+                        'pending'
+                    ]
+                }
+            ]),
+        ]
+
     def test_required_iam_permissions(self):
         cls = _VpcService(21, 43)
         assert cls.required_iam_permissions() == [
@@ -317,4 +347,5 @@ class Test_VpcService(object):
             'ec2:DescribeRouteTables',
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
+            'ec2:DescribeVpnGateways',
         ]

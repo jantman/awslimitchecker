@@ -527,6 +527,30 @@ class VPC(object):
         'subnet3': 'az2'
     }
 
+    test_find_usages_vpn_gateways = {
+        'VpnGateways': [
+            {
+                'AvailabilityZone': 'string',
+                'State': 'pending',
+                'Type': 'ipsec.1',
+                'VpcAttachments': [
+                    {
+                        'State': 'attaching',
+                        'VpcId': 'string'
+                    },
+                ],
+                'VpnGatewayId': 'string',
+                'Tags': [
+                    {
+                        'Key': 'string',
+                        'Value': 'string'
+                    },
+                ]
+            },
+            {'VpnGatewayId': 'string1'}
+        ]
+    }
+
 
 class RDS(object):
     test_find_usage_instances = []
