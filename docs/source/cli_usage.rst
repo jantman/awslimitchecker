@@ -132,8 +132,8 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    ApiGateway
    AutoScaling
    CloudFormation
+   DynamoDB
    EBS
-   EC2
    (...)
    Redshift
    S3
@@ -157,9 +157,9 @@ or Trusted Advisor data, run with ``--list-defaults``:
    ApiGateway/Custom authorizers per API                  10
    ApiGateway/Documentation parts per API                 2000
    (...)
-   VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               5
+   VPC/Virtual private gateways                           5
 
 
 
@@ -183,9 +183,9 @@ and limits followed by ``(API)`` have been obtained from the service's API.
    (...)
    AutoScaling/Auto Scaling groups                        1000 (API)
    (...)
-   VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               1000 (TA)
+   VPC/Virtual private gateways                           5
 
 
 
@@ -206,9 +206,9 @@ from Trusted Advisor for all commands.
    (...)
    AutoScaling/Auto Scaling groups                        1000 (API)
    (...)
-   VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               5
+   VPC/Virtual private gateways                           5
 
 
 
@@ -249,9 +249,9 @@ using their IDs).
    ApiGateway/Custom authorizers per API                  max: 0bdkl1u8vk=2 (0bdkl1u8vk=2, 0cyhj26jhb=2 (...)
    ApiGateway/Documentation parts per API                 max: 0bdkl1u8vk=2 (0bdkl1u8vk=2, 0cyhj26jhb=2 (...)
    (...)
-   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-9703 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-1e5e3c7b=1, vpc-ae7 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-1e5e3c7b=1, vpc-e2e (...)
    VPC/VPCs                                               17
+   VPC/Virtual private gateways                           5
 
 
 
@@ -280,9 +280,9 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    (...)
    CloudFormation/Stacks                                  2000 (API)
    (...)
-   VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               1000 (TA)
+   VPC/Virtual private gateways                           5
 
 
 
@@ -315,14 +315,14 @@ threshold only, and another has crossed the critical threshold):
 
    (venv)$ awslimitchecker --no-color
    ApiGateway/APIs per account                            (limit 60) WARNING: 54
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=793 WARNIN (...)
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some-dynamo-db-table-name (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=784 WARNIN (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5 WARNING: e (...)
    EFS/File systems                                       (limit 10) CRITICAL: 25
-   ElastiCache/Nodes                                      (limit 100) WARNING: 82
    (...)
-   RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
-   S3/Buckets                                             (limit 100) CRITICAL: 526
+   S3/Buckets                                             (limit 100) CRITICAL: 528
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
 
 
@@ -334,15 +334,15 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=793
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some-dynamo-db-table-name (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=784
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
    EFS/File systems                                       (limit 10) CRITICAL: 25
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3768
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 251
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 585
-   RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
-   S3/Buckets                                             (limit 100) CRITICAL: 526
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3789
+   (...)
+   S3/Buckets                                             (limit 100) CRITICAL: 528
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
 
 

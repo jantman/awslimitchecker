@@ -60,6 +60,8 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.xlarge instances
 
+  * Running On-Demand m1.small instances
+
   * Running On-Demand m3.2xlarge instances
 
   * Running On-Demand m3.large instances
@@ -69,6 +71,8 @@ updated from Trusted Advisor:
   * Running On-Demand m3.xlarge instances
 
   * Running On-Demand m4.2xlarge instances
+
+  * Running On-Demand m4.4xlarge instances
 
   * Running On-Demand m4.large instances
 
@@ -154,8 +158,6 @@ updated from Trusted Advisor:
 
   * VPCs
 
-  * Virtual Private Gateways
-
 
 
 .. _limits.api:
@@ -178,6 +180,16 @@ precedence than anything other than explicit limit overrides:
 * CloudFormation
 
   * Stacks
+
+* DynamoDB
+
+  * Account Max Read Capacity Units
+
+  * Account Max Write Capacity Units
+
+  * Table Max Read Capacity Units
+
+  * Table Max Write Capacity Units
 
 * EC2
 
@@ -303,6 +315,23 @@ Limit                           Default
 Stacks :sup:`(TA)` :sup:`(API)` 200
 =============================== ===
 
+.. _limits.DynamoDB:
+
+DynamoDB
++++++++++
+
+============================================= =====
+Limit                                         Default
+============================================= =====
+Account Max Read Capacity Units :sup:`(API)`  80000
+Account Max Write Capacity Units :sup:`(API)` 80000
+Global Secondary Indexes                      5    
+Local Secondary Indexes                       5    
+Table Max Read Capacity Units :sup:`(API)`    40000
+Table Max Write Capacity Units :sup:`(API)`   40000
+Tables Per Region                             256  
+============================================= =====
+
 .. _limits.EBS:
 
 EBS
@@ -384,7 +413,7 @@ Running On-Demand i3.large instances                           2
 Running On-Demand i3.xlarge instances                          2   
 Running On-Demand m1.large instances                           20  
 Running On-Demand m1.medium instances                          20  
-Running On-Demand m1.small instances                           20  
+Running On-Demand m1.small instances :sup:`(TA)`               20  
 Running On-Demand m1.xlarge instances                          20  
 Running On-Demand m2.2xlarge instances                         20  
 Running On-Demand m2.4xlarge instances                         20  
@@ -396,7 +425,7 @@ Running On-Demand m3.xlarge instances :sup:`(TA)`              20
 Running On-Demand m4.10xlarge instances                        5   
 Running On-Demand m4.16xlarge instances                        5   
 Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand m4.4xlarge instances                         10  
+Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand m4.large instances :sup:`(TA)`               20  
 Running On-Demand m4.xlarge instances :sup:`(TA)`              20  
 Running On-Demand p2.16xlarge instances                        1   
@@ -585,8 +614,8 @@ Network ACLs per VPC          200
 Route tables per VPC          200
 Rules per network ACL         20 
 Subnets per VPC               200
-VPCs :sup:`(TA)`              5
-Virtual Private Gateways      5
+VPCs :sup:`(TA)`              5  
+Virtual private gateways      5  
 ============================= ===
 
 
