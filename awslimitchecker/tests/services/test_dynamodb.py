@@ -70,10 +70,20 @@ class Test_DynamodbService(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_get_limits(self):
-        cls = _DynamodbService(21, 43)
-        region_name = cls.conn._client_config.region_name
-        limits = cls.get_limits()
+    def test_get_limits_other_region(self):
+        mock_conn = Mock()
+        m_client = Mock()
+        type(m_client).region_name = 'foo'
+        type(mock_conn)._client_config = m_client
+
+        def se_conn(cls):
+            cls.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            mock_connect.side_effect = se_conn
+            cls = _DynamodbService(21, 43)
+
+        limits = cls.limits
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
@@ -96,17 +106,53 @@ class Test_DynamodbService(object):
         local_secondary_index = limits['Local Secondary Indexes']
         assert local_secondary_index.limit_type == 'AWS::DynamoDB::Table'
         assert local_secondary_index.default_limit == 5
+        # NOT us-east-1
+        assert write_capacity_region.default_limit == 20000
+        assert write_capacity_table.default_limit == 10000
+        assert read_capacity_region.default_limit == 20000
+        assert read_capacity_table.default_limit == 10000
 
-        if region_name == 'us-east-1':
-            assert write_capacity_region.default_limit == 80000
-            assert write_capacity_table.default_limit == 40000
-            assert read_capacity_region.default_limit == 80000
-            assert read_capacity_table.default_limit == 40000
-        else:
-            assert write_capacity_region.default_limit == 20000
-            assert write_capacity_table.default_limit == 10000
-            assert read_capacity_region.default_limit == 20000
-            assert read_capacity_table.default_limit == 10000
+    def test_get_limits_us_east_1(self):
+        mock_conn = Mock()
+        m_client = Mock()
+        type(m_client).region_name = 'us-east-1'
+        type(mock_conn)._client_config = m_client
+
+        def se_conn(cls):
+            cls.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            mock_connect.side_effect = se_conn
+            cls = _DynamodbService(21, 43)
+
+        limits = cls.limits
+        for x in limits:
+            assert isinstance(limits[x], AwsLimit)
+            assert x == limits[x].name
+            assert limits[x].service == cls
+        assert len(limits) == 7
+        table_count = limits['Tables Per Region']
+        assert table_count.limit_type == 'AWS::DynamoDB::Table'
+        assert table_count.default_limit == 256
+        write_capacity_region = limits['Account Max Write Capacity Units']
+        assert write_capacity_region.limit_type == 'AWS::DynamoDB::Table'
+        write_capacity_table = limits['Table Max Write Capacity Units']
+        assert write_capacity_table.limit_type == 'AWS::DynamoDB::Table'
+        read_capacity_region = limits['Account Max Read Capacity Units']
+        assert read_capacity_region.limit_type == 'AWS::DynamoDB::Table'
+        read_capacity_table = limits['Table Max Read Capacity Units']
+        assert read_capacity_table.limit_type == 'AWS::DynamoDB::Table'
+        global_secondary_index = limits['Global Secondary Indexes']
+        assert global_secondary_index.limit_type == 'AWS::DynamoDB::Table'
+        assert global_secondary_index.default_limit == 5
+        local_secondary_index = limits['Local Secondary Indexes']
+        assert local_secondary_index.limit_type == 'AWS::DynamoDB::Table'
+        assert local_secondary_index.default_limit == 5
+        # us-east-1
+        assert write_capacity_region.default_limit == 80000
+        assert write_capacity_table.default_limit == 40000
+        assert read_capacity_region.default_limit == 80000
+        assert read_capacity_table.default_limit == 40000
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
@@ -116,28 +162,55 @@ class Test_DynamodbService(object):
         res = cls.get_limits()
         assert res == mock_limits
 
-    """
     def test_update_limits_from_api(self):
-        response = result_fixtures.Dynamodb.test_update_limits_from_api
+        response = result_fixtures.DynamoDB.test_update_limits_from_api
         mock_conn = Mock()
-        mock_conn.describe_account_attributes.return_value = response
-        with patch('%s.logger' % pbm) as mock_logger:
-            with patch('%s.connect' % pb) as mock_connect:
-                cls = _DynamodbService(21, 43)
-                cls.conn = mock_conn
+        mock_conn.describe_limits.return_value = response
+        m_client = Mock()
+        type(m_client).region_name = 'foo'
+        type(mock_conn)._client_config = m_client
+
+        def se_conn(cls):
+            cls.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            mock_connect.side_effect = se_conn
+            cls = _DynamodbService(21, 43)
+            cls.conn = mock_conn
+            cls._update_limits_from_api()
+        assert cls.limits['Account Max Read Capacity Units'].api_limit == 111
+        assert cls.limits['Account Max Write Capacity Units'].api_limit == 222
+        assert cls.limits['Table Max Read Capacity Units'].api_limit == 333
+        assert cls.limits['Table Max Write Capacity Units'].api_limit == 444
+        assert mock_connect.mock_calls == [
+            call(cls), call(cls)
+        ]
+        assert mock_conn.mock_calls == [call.describe_limits()]
 
     def test_find_usage(self):
         mock_conn = Mock()
-        mock_conn.some_method.return_value =   # some logical return value
-        with patch('%s.connect' % pb) as mock_connect:
-            cls = _DynamodbService(21, 43)
+        m_client = Mock()
+        type(m_client).region_name = 'foo'
+        type(mock_conn)._client_config = m_client
+
+        def se_conn(cls):
             cls.conn = mock_conn
-            assert cls._have_usage is False
-            cls.find_usage()
-        assert mock_connect.mock_calls == [call()]
+
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            with patch('%s._find_usage_dynamodb' % pb, autospec=True) as m_fud:
+                mock_connect.side_effect = se_conn
+                cls = _DynamodbService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert mock_connect.mock_calls == [
+            call(cls),
+            call(cls)
+        ]
+        assert mock_conn.mock_calls == []
+        assert m_client.mock_calls == []
+        assert m_fud.mock_calls == [call(cls)]
         assert cls._have_usage is True
-        assert mock_conn.mock_calls == [call.some_method()]
-    """
 
     def test_required_iam_permissions(self):
         cls = _DynamodbService(21, 43)

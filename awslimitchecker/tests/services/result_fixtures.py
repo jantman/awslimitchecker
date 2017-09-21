@@ -3205,3 +3205,13 @@ class ApiGateway(object):
             ]
         }
     ]
+
+
+class DynamoDB(object):
+
+    test_update_limits_from_api = {
+        'AccountMaxReadCapacityUnits': 111,
+        'AccountMaxWriteCapacityUnits': 222,
+        'TableMaxReadCapacityUnits': 333,
+        'TableMaxWriteCapacityUnits': 444
+    }
