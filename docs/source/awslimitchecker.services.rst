@@ -11,9 +11,11 @@ Submodules
 
 .. toctree::
 
+   awslimitchecker.services.apigateway
    awslimitchecker.services.autoscaling
    awslimitchecker.services.base
    awslimitchecker.services.cloudformation
+   awslimitchecker.services.dynamodb
    awslimitchecker.services.ebs
    awslimitchecker.services.ec2
    awslimitchecker.services.efs

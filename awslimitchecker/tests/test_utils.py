@@ -43,7 +43,7 @@ import sys
 
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, paginate_dict, _get_dict_value_by_path,
-    _set_dict_value_by_path
+    _set_dict_value_by_path, _get_latest_version
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -52,9 +52,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import call, Mock
+    from mock import call, Mock, patch
 else:
-    from unittest.mock import call, Mock
+    from unittest.mock import call, Mock, patch
 
 pbm = 'awslimitchecker.utils'
 
@@ -404,3 +404,56 @@ class TestDictFuncs(object):
         d = {'foo': 'bar'}
         res = _set_dict_value_by_path(d, 'baz', [])
         assert res == d
+
+
+class TestGetCurrentVersion(object):
+
+    def test_exception(self):
+        with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
+            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    mock_req.get.side_effect = RuntimeError()
+                    res = _get_latest_version()
+        assert res is None
+        assert mock_logger.mock_calls == [
+            call.debug('Error getting latest version from PyPI', exc_info=True)
+        ]
+
+    def test_older(self):
+        mock_resp = Mock()
+        mock_resp.json.return_value = {
+            'info': {'version': '1.0.1'}
+        }
+        with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
+            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    mock_req.get.return_value = mock_resp
+                    res = _get_latest_version()
+        assert res == '1.0.1'
+        assert mock_logger.mock_calls == []
+
+    def test_equal(self):
+        mock_resp = Mock()
+        mock_resp.json.return_value = {
+            'info': {'version': '0.2.3'}
+        }
+        with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
+            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    mock_req.get.return_value = mock_resp
+                    res = _get_latest_version()
+        assert res is None
+        assert mock_logger.mock_calls == []
+
+    def test_newer(self):
+        mock_resp = Mock()
+        mock_resp.json.return_value = {
+            'info': {'version': '0.1.2'}
+        }
+        with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
+            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    mock_req.get.return_value = mock_resp
+                    res = _get_latest_version()
+        assert res is None
+        assert mock_logger.mock_calls == []

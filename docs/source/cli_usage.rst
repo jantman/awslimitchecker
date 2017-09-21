@@ -34,7 +34,7 @@ use as a Nagios-compatible plugin).
                           [--skip-ta]
                           [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
                           [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
-                          [-v] [-V]
+                          [--no-check-version] [-v] [-V]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -103,6 +103,7 @@ use as a Nagios-compatible plugin).
                            If waiting for TA checks to refresh, wait up to this
                            number of seconds before continuing on anyway.
      --no-color            do not colorize output
+     --no-check-version    do not check latest version at startup
      -v, --verbose         verbose output. specify twice for debug-level output.
      -V, --version         print version number and exit.
    awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
@@ -128,11 +129,11 @@ View the AWS services currently supported by ``awslimitchecker`` with the
 .. code-block:: console
 
    (venv)$ awslimitchecker -s
+   ApiGateway
    AutoScaling
    CloudFormation
+   DynamoDB
    EBS
-   EC2
-   EFS
    (...)
    Redshift
    S3
@@ -150,15 +151,15 @@ or Trusted Advisor data, run with ``--list-defaults``:
 .. code-block:: console
 
    (venv)$ awslimitchecker --list-defaults
-   AutoScaling/Auto Scaling groups                        20
-   AutoScaling/Launch configurations                      100
-   CloudFormation/Stacks                                  200
-   EBS/Active snapshots                                   10000
-   EBS/Active volumes                                     5000
+   ApiGateway/API keys per account                        500
+   ApiGateway/APIs per account                            60
+   ApiGateway/Client certificates per account             60
+   ApiGateway/Custom authorizers per API                  10
+   ApiGateway/Documentation parts per API                 2000
    (...)
-   VPC/Rules per network ACL                              20
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               5
+   VPC/Virtual private gateways                           5
 
 
 
@@ -174,15 +175,17 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   AutoScaling/Auto Scaling groups                        1000 (API)
-   AutoScaling/Launch configurations                      1400 (API)
-   CloudFormation/Stacks                                  1600 (API)
-   EBS/Active snapshots                                   30000 (TA)
-   EBS/Active volumes                                     10000 (TA)
+   ApiGateway/API keys per account                        500
+   ApiGateway/APIs per account                            60
+   ApiGateway/Client certificates per account             60
+   ApiGateway/Custom authorizers per API                  10
+   ApiGateway/Documentation parts per API                 2000
    (...)
-   VPC/Rules per network ACL                              20
+   AutoScaling/Auto Scaling groups                        1000 (API)
+   (...)
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               1000 (TA)
+   VPC/Virtual private gateways                           5
 
 
 
@@ -195,15 +198,17 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   AutoScaling/Auto Scaling groups                        1000 (API)
-   AutoScaling/Launch configurations                      1400 (API)
-   CloudFormation/Stacks                                  1600 (API)
-   EBS/Active snapshots                                   10000
-   EBS/Active volumes                                     5000
+   ApiGateway/API keys per account                        500
+   ApiGateway/APIs per account                            60
+   ApiGateway/Client certificates per account             60
+   ApiGateway/Custom authorizers per API                  10
+   ApiGateway/Documentation parts per API                 2000
    (...)
-   VPC/Rules per network ACL                              20
+   AutoScaling/Auto Scaling groups                        1000 (API)
+   (...)
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               5
+   VPC/Virtual private gateways                           5
 
 
 
@@ -238,15 +243,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   AutoScaling/Auto Scaling groups                        762
-   AutoScaling/Launch configurations                      899
-   CloudFormation/Stacks                                  1449
-   EBS/Active snapshots                                   20932
-   EBS/Active volumes                                     1851
+   ApiGateway/API keys per account                        19
+   ApiGateway/APIs per account                            54
+   ApiGateway/Client certificates per account             2
+   ApiGateway/Custom authorizers per API                  max: 0bdkl1u8vk=2 (0bdkl1u8vk=2, 0cyhj26jhb=2 (...)
+   ApiGateway/Documentation parts per API                 max: 0bdkl1u8vk=2 (0bdkl1u8vk=2, 0cyhj26jhb=2 (...)
    (...)
-   VPC/Rules per network ACL                              max: acl-bde47dd9=6 (acl-4bd96a2e=4, acl-9703 (...)
-   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-ae7bc5cb=1, vpc-1e5 (...)
+   VPC/Subnets per VPC                                    max: vpc-c89074a9=40 (vpc-1e5e3c7b=1, vpc-e2e (...)
    VPC/VPCs                                               17
+   VPC/Virtual private gateways                           5
 
 
 
@@ -267,15 +272,17 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 .. code-block:: console
 
    (venv)$ awslimitchecker -L "AutoScaling/Auto Scaling groups"=321 --limit="AutoScaling/Launch configurations"=456 -l
-   AutoScaling/Auto Scaling groups                        321
-   AutoScaling/Launch configurations                      456
-   CloudFormation/Stacks                                  1600 (API)
-   EBS/Active snapshots                                   30000 (TA)
-   EBS/Active volumes                                     10000 (TA)
+   ApiGateway/API keys per account                        500
+   ApiGateway/APIs per account                            60
+   ApiGateway/Client certificates per account             60
+   ApiGateway/Custom authorizers per API                  10
+   ApiGateway/Documentation parts per API                 2000
    (...)
-   VPC/Rules per network ACL                              20
+   CloudFormation/Stacks                                  2000 (API)
+   (...)
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               1000 (TA)
+   VPC/Virtual private gateways                           5
 
 
 
@@ -307,15 +314,15 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
-   CloudFormation/Stacks                                  (limit 1600) WARNING: 1449
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=533, vpc-c (...)
+   ApiGateway/APIs per account                            (limit 60) WARNING: 54
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some-dynamo-db-table-name (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=784 WARNIN (...)
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5 WARNING: e (...)
-   EFS/File systems                                       (limit 10) CRITICAL: 20
-   ElastiCache/Parameter Groups                           (limit 20) WARNING: 18
+   EFS/File systems                                       (limit 10) CRITICAL: 25
    (...)
-   RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
-   S3/Buckets                                             (limit 100) CRITICAL: 483
+   S3/Buckets                                             (limit 100) CRITICAL: 528
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
 
 
@@ -327,15 +334,15 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-36f22951=533, vpc-c (...)
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some-dynamo-db-table-name (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=784
    EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
-   EFS/File systems                                       (limit 10) CRITICAL: 20
-   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3265
-   ElasticBeanstalk/Applications                          (limit 25) CRITICAL: 235
-   ElasticBeanstalk/Environments                          (limit 200) CRITICAL: 589
-   RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
-   S3/Buckets                                             (limit 100) CRITICAL: 483
+   EFS/File systems                                       (limit 10) CRITICAL: 25
+   ElasticBeanstalk/Application versions                  (limit 500) CRITICAL: 3789
+   (...)
+   S3/Buckets                                             (limit 100) CRITICAL: 528
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1b= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
 
 
@@ -353,7 +360,7 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "autoscaling:DescribeAccountLimits", 
+           "apigateway:GET", 
    (...)
        }
      ], 

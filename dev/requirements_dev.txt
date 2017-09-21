@@ -1,4 +1,4 @@
-tox
+tox==2.7.0
 twine
 webhook2lambda2sqs
 wheel

@@ -496,6 +496,27 @@ class VPC(object):
                 'CreateTime': datetime(1970, 1, 1),
                 'State': 'available',
             },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet2',
+                'NatGatewayId': 'nat-125',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'deleted',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
+                'NatGatewayId': 'nat-126',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'pending',
+            },
+            {
+                'VpcId': 'vpc-123',
+                'SubnetId': 'subnet3',
+                'NatGatewayId': 'nat-127',
+                'CreateTime': datetime(1970, 1, 1),
+                'State': 'failed',
+            }
         ],
         'NextToken': None,
     }
@@ -504,6 +525,30 @@ class VPC(object):
         'string': 'az2',
         'subnet2': 'az3',
         'subnet3': 'az2'
+    }
+
+    test_find_usages_vpn_gateways = {
+        'VpnGateways': [
+            {
+                'AvailabilityZone': 'string',
+                'State': 'pending',
+                'Type': 'ipsec.1',
+                'VpcAttachments': [
+                    {
+                        'State': 'attaching',
+                        'VpcId': 'string'
+                    },
+                ],
+                'VpnGatewayId': 'string',
+                'Tags': [
+                    {
+                        'Key': 'string',
+                        'Value': 'string'
+                    },
+                ]
+            },
+            {'VpnGatewayId': 'string1'}
+        ]
     }
 
 
@@ -2371,3 +2416,931 @@ class Redshift(object):
             }
         ]
     }
+
+
+class ApiGateway(object):
+
+    get_rest_apis = [
+        {
+            'items': [
+                {
+                    'id': 'api3',
+                    'name': 'api3name',
+                    'description': 'api3desc',
+                    'createdDate': datetime(2015, 1, 1),
+                    'version': 'api3ver',
+                    'warnings': [
+                        'string',
+                    ],
+                    'binaryMediaTypes': [
+                        'string',
+                    ]
+                },
+                {
+                    'id': 'api2',
+                    'name': 'api2name',
+                    'description': 'api2desc',
+                    'createdDate': datetime(2016, 1, 1),
+                    'version': 'api2ver',
+                    'warnings': [],
+                    'binaryMediaTypes': []
+                }
+            ],
+            'NextToken': 'string'
+        },
+        {
+            'items': [
+                {
+                    'id': 'api1',
+                    'name': 'api1name',
+                    'description': 'api1desc',
+                    'createdDate': datetime(2017, 1, 1),
+                    'version': 'api1ver',
+                    'warnings': [
+                        'string',
+                    ],
+                    'binaryMediaTypes': [
+                        'string',
+                    ]
+                },
+            ]
+        }
+    ]
+
+    resources_api1 = [
+        {
+            'items': [
+                {
+                    'id': 'api1res1',
+                    'parentId': 'string',
+                    'pathPart': 'string',
+                    'path': 'string',
+                    'resourceMethods': {
+                        'string': {
+                            'httpMethod': 'string',
+                            'authorizationType': 'string',
+                            'authorizerId': 'string',
+                            'apiKeyRequired': False,
+                            'requestValidatorId': 'string',
+                            'operationName': 'string',
+                            'requestParameters': {
+                                'string': False
+                            },
+                            'requestModels': {
+                                'string': 'string'
+                            },
+                            'methodResponses': {
+                                'string': {
+                                    'statusCode': 'string',
+                                    'responseParameters': {
+                                        'string': True
+                                    },
+                                    'responseModels': {
+                                        'string': 'string'
+                                    }
+                                }
+                            },
+                            'methodIntegration': {
+                                'type': 'HTTP',
+                                'httpMethod': 'string',
+                                'uri': 'string',
+                                'credentials': 'string',
+                                'requestParameters': {
+                                    'string': 'string'
+                                },
+                                'requestTemplates': {
+                                    'string': 'string'
+                                },
+                                'passthroughBehavior': 'string',
+                                'contentHandling': 'CONVERT_TO_BINARY',
+                                'cacheNamespace': 'string',
+                                'cacheKeyParameters': [
+                                    'string',
+                                ],
+                                'integrationResponses': {
+                                    'string': {
+                                        'statusCode': 'string',
+                                        'selectionPattern': 'string',
+                                        'responseParameters': {
+                                            'string': 'string'
+                                        },
+                                        'responseTemplates': {
+                                            'string': 'string'
+                                        },
+                                        'contentHandling': 'CONVERT_TO_BINARY'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    'id': 'api1res2',
+                    'parentId': 'string',
+                    'pathPart': 'string',
+                    'path': 'string',
+                    'resourceMethods': {
+                        'string': {
+                            'httpMethod': 'string',
+                            'authorizationType': 'string',
+                            'authorizerId': 'string',
+                            'apiKeyRequired': False,
+                            'requestValidatorId': 'string',
+                            'operationName': 'string',
+                            'requestParameters': {
+                                'string': False
+                            },
+                            'requestModels': {
+                                'string': 'string'
+                            },
+                            'methodResponses': {
+                                'string': {
+                                    'statusCode': 'string',
+                                    'responseParameters': {
+                                        'string': True
+                                    },
+                                    'responseModels': {
+                                        'string': 'string'
+                                    }
+                                }
+                            },
+                            'methodIntegration': {
+                                'type': 'AWS_PROXY',
+                                'httpMethod': 'string',
+                                'uri': 'string',
+                                'credentials': 'string',
+                                'requestParameters': {
+                                    'string': 'string'
+                                },
+                                'requestTemplates': {
+                                    'string': 'string'
+                                },
+                                'passthroughBehavior': 'string',
+                                'contentHandling': 'CONVERT_TO_TEXT',
+                                'cacheNamespace': 'string',
+                                'cacheKeyParameters': [
+                                    'string',
+                                ],
+                                'integrationResponses': {
+                                    'string': {
+                                        'statusCode': 'string',
+                                        'selectionPattern': 'string',
+                                        'responseParameters': {
+                                            'string': 'string'
+                                        },
+                                        'responseTemplates': {
+                                            'string': 'string'
+                                        },
+                                        'contentHandling': 'CONVERT_TO_TEXT'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            'NextToken': 'string'
+        },
+        {
+            'items': [
+                {
+                    'id': 'api1res3',
+                    'parentId': 'string',
+                    'pathPart': 'string',
+                    'path': 'string',
+                    'resourceMethods': {
+                        'string': {
+                            'httpMethod': 'string',
+                            'authorizationType': 'string',
+                            'authorizerId': 'string',
+                            'apiKeyRequired': False,
+                            'requestValidatorId': 'string',
+                            'operationName': 'string',
+                            'requestParameters': {
+                                'string': False
+                            },
+                            'requestModels': {
+                                'string': 'string'
+                            },
+                            'methodResponses': {
+                                'string': {
+                                    'statusCode': 'string',
+                                    'responseParameters': {
+                                        'string': True
+                                    },
+                                    'responseModels': {
+                                        'string': 'string'
+                                    }
+                                }
+                            },
+                            'methodIntegration': {
+                                'type': 'HTTP',
+                                'httpMethod': 'string',
+                                'uri': 'string',
+                                'credentials': 'string',
+                                'requestParameters': {
+                                    'string': 'string'
+                                },
+                                'requestTemplates': {
+                                    'string': 'string'
+                                },
+                                'passthroughBehavior': 'string',
+                                'contentHandling': 'CONVERT_TO_TEXT',
+                                'cacheNamespace': 'string',
+                                'cacheKeyParameters': [
+                                    'string',
+                                ],
+                                'integrationResponses': {
+                                    'string': {
+                                        'statusCode': 'string',
+                                        'selectionPattern': 'string',
+                                        'responseParameters': {
+                                            'string': 'string'
+                                        },
+                                        'responseTemplates': {
+                                            'string': 'string'
+                                        },
+                                        'contentHandling': 'CONVERT_TO_TEXT'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+
+    resources_api2 = [
+        {
+            'items': [
+                {
+                    'id': 'api2res1',
+                    'parentId': 'string',
+                    'pathPart': 'string',
+                    'path': 'string',
+                    'resourceMethods': {
+                        'string': {
+                            'httpMethod': 'string',
+                            'authorizationType': 'string',
+                            'authorizerId': 'string',
+                            'apiKeyRequired': False,
+                            'requestValidatorId': 'string',
+                            'operationName': 'string',
+                            'requestParameters': {
+                                'string': False
+                            },
+                            'requestModels': {
+                                'string': 'string'
+                            },
+                            'methodResponses': {
+                                'string': {
+                                    'statusCode': 'string',
+                                    'responseParameters': {
+                                        'string': True
+                                    },
+                                    'responseModels': {
+                                        'string': 'string'
+                                    }
+                                }
+                            },
+                            'methodIntegration': {
+                                'type': 'HTTP',
+                                'httpMethod': 'string',
+                                'uri': 'string',
+                                'credentials': 'string',
+                                'requestParameters': {
+                                    'string': 'string'
+                                },
+                                'requestTemplates': {
+                                    'string': 'string'
+                                },
+                                'passthroughBehavior': 'string',
+                                'contentHandling': 'CONVERT_TO_BINARY',
+                                'cacheNamespace': 'string',
+                                'cacheKeyParameters': [
+                                    'string',
+                                ],
+                                'integrationResponses': {
+                                    'string': {
+                                        'statusCode': 'string',
+                                        'selectionPattern': 'string',
+                                        'responseParameters': {
+                                            'string': 'string'
+                                        },
+                                        'responseTemplates': {
+                                            'string': 'string'
+                                        },
+                                        'contentHandling': 'CONVERT_TO_TEXT'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+            ],
+            'NextToken': 'string'
+        },
+        {
+            'items': [
+                {
+                    'id': 'api2res2',
+                    'parentId': 'string',
+                    'pathPart': 'string',
+                    'path': 'string',
+                    'resourceMethods': {
+                        'string': {
+                            'httpMethod': 'string',
+                            'authorizationType': 'string',
+                            'authorizerId': 'string',
+                            'apiKeyRequired': False,
+                            'requestValidatorId': 'string',
+                            'operationName': 'string',
+                            'requestParameters': {
+                                'string': False
+                            },
+                            'requestModels': {
+                                'string': 'string'
+                            },
+                            'methodResponses': {
+                                'string': {
+                                    'statusCode': 'string',
+                                    'responseParameters': {
+                                        'string': True
+                                    },
+                                    'responseModels': {
+                                        'string': 'string'
+                                    }
+                                }
+                            },
+                            'methodIntegration': {
+                                'type': 'AWS_PROXY',
+                                'httpMethod': 'string',
+                                'uri': 'string',
+                                'credentials': 'string',
+                                'requestParameters': {
+                                    'string': 'string'
+                                },
+                                'requestTemplates': {
+                                    'string': 'string'
+                                },
+                                'passthroughBehavior': 'string',
+                                'contentHandling': 'CONVERT_TO_TEXT',
+                                'cacheNamespace': 'string',
+                                'cacheKeyParameters': [
+                                    'string',
+                                ],
+                                'integrationResponses': {
+                                    'string': {
+                                        'statusCode': 'string',
+                                        'selectionPattern': 'string',
+                                        'responseParameters': {
+                                            'string': 'string'
+                                        },
+                                        'responseTemplates': {
+                                            'string': 'string'
+                                        },
+                                        'contentHandling': 'CONVERT_TO_TEXT'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+
+    resources_api3 = [{'items': []}]
+
+    get_resources = {
+        'api1': resources_api1,
+        'api2': resources_api2,
+        'api3': resources_api3
+    }
+
+    doc_parts = {
+        'api1': [
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'API',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            },
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'AUTHORIZER',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            },
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'MODEL',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            },
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'RESPONSE_BODY',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            },
+        ],
+        'api2': [
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'API',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            }
+        ],
+        'api3': [
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'API',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            },
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'RESPONSE_BODY',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            }
+        ]
+    }
+
+    stages = {
+        'api1': {'item': [
+            {
+                'deploymentId': 'string',
+                'clientCertificateId': 'string',
+                'stageName': 'string',
+                'description': 'string',
+                'cacheClusterEnabled': True,
+                'cacheClusterSize': '0.5',
+                'cacheClusterStatus': 'AVAILABLE',
+                'methodSettings': {
+                    'string': {
+                        'metricsEnabled': True,
+                        'loggingLevel': 'string',
+                        'dataTraceEnabled': True,
+                        'throttlingBurstLimit': 123,
+                        'throttlingRateLimit': 123.0,
+                        'cachingEnabled': True,
+                        'cacheTtlInSeconds': 123,
+                        'cacheDataEncrypted': True,
+                        'requireAuthorizationForCacheControl': True,
+                        'unauthorizedCacheControlHeaderStrategy': 'FAIL_WITH_40'
+                    }
+                },
+                'variables': {
+                    'string': 'string'
+                },
+                'documentationVersion': 'string',
+                'createdDate': datetime(2015, 1, 1),
+                'lastUpdatedDate': datetime(2015, 1, 1)
+            },
+            {
+                'deploymentId': 'foo'
+            },
+            {
+                'deploymentId': 'bar'
+            }
+        ]},
+        'api2': {
+            'item': [
+                {'deploymentId': 'baz'}
+            ]
+        },
+        'api3': {
+            'item': [
+                {'deploymentId': 'blam'},
+                {'deploymentId': 'blarg'}
+            ]
+        }
+    }
+
+    authorizers = {
+        'api1': [
+            {
+                'id': 'string',
+                'name': 'string',
+                'type': 'TOKEN',
+                'providerARNs': [
+                    'string',
+                ],
+                'authType': 'string',
+                'authorizerUri': 'string',
+                'authorizerCredentials': 'string',
+                'identitySource': 'string',
+                'identityValidationExpression': 'string',
+                'authorizerResultTtlInSeconds': 123
+            }
+        ],
+        'api2': [
+            {
+                'id': 'string',
+                'name': 'string',
+                'type': 'REQUEST',
+                'providerARNs': [
+                    'string',
+                ],
+                'authType': 'string',
+                'authorizerUri': 'string',
+                'authorizerCredentials': 'string',
+                'identitySource': 'string',
+                'identityValidationExpression': 'string',
+                'authorizerResultTtlInSeconds': 123
+            },
+            {
+                'id': 'string',
+                'name': 'string',
+                'type': 'TOKEN',
+                'providerARNs': [
+                    'string',
+                ],
+                'authType': 'string',
+                'authorizerUri': 'string',
+                'authorizerCredentials': 'string',
+                'identitySource': 'string',
+                'identityValidationExpression': 'string',
+                'authorizerResultTtlInSeconds': 123
+            }
+        ],
+        'api3': []
+    }
+
+    plans = [
+        {
+            'items': [
+                {
+                    'id': 'string',
+                    'name': 'string',
+                    'description': 'string',
+                    'apiStages': [
+                        {
+                            'apiId': 'string',
+                            'stage': 'string'
+                        },
+                    ],
+                    'throttle': {
+                        'burstLimit': 123,
+                        'rateLimit': 123.0
+                    },
+                    'quota': {
+                        'limit': 123,
+                        'offset': 123,
+                        'period': 'DAY'
+                    },
+                    'productCode': 'string'
+                },
+                {
+                    'id': 'string',
+                    'name': 'string',
+                    'description': 'string',
+                    'apiStages': [
+                        {
+                            'apiId': 'string',
+                            'stage': 'string'
+                        },
+                    ],
+                    'throttle': {
+                        'burstLimit': 123,
+                        'rateLimit': 123.0
+                    },
+                    'quota': {
+                        'limit': 123,
+                        'offset': 123,
+                        'period': 'WEEK'
+                    },
+                    'productCode': 'string'
+                },
+                {
+                    'id': 'string',
+                    'name': 'string',
+                    'description': 'string',
+                    'apiStages': [
+                        {
+                            'apiId': 'string',
+                            'stage': 'string'
+                        },
+                    ],
+                    'throttle': {
+                        'burstLimit': 123,
+                        'rateLimit': 123.0
+                    },
+                    'quota': {
+                        'limit': 123,
+                        'offset': 123,
+                        'period': 'MONTH'
+                    },
+                    'productCode': 'string'
+                }
+            ],
+            'NextToken': 'foo'
+        },
+        {
+            'items': [
+                {
+                    'id': 'string',
+                    'name': 'string',
+                    'description': 'string',
+                    'apiStages': [
+                        {
+                            'apiId': 'string',
+                            'stage': 'string'
+                        },
+                    ],
+                    'throttle': {
+                        'burstLimit': 123,
+                        'rateLimit': 123.0
+                    },
+                    'quota': {
+                        'limit': 123,
+                        'offset': 123,
+                        'period': 'DAY'
+                    },
+                    'productCode': 'string'
+                }
+            ]
+        }
+    ]
+
+    certs = [
+        {
+            'items': [
+                {
+                    'clientCertificateId': 'string',
+                    'description': 'string',
+                    'pemEncodedCertificate': 'string',
+                    'createdDate': datetime(2015, 1, 1),
+                    'expirationDate': datetime(2015, 1, 1)
+                },
+            ],
+            'NextToken': 'string'
+        },
+        {
+            'items': [
+                {
+                    'clientCertificateId': 'string',
+                    'description': 'string',
+                    'pemEncodedCertificate': 'string',
+                    'createdDate': datetime(2015, 1, 1),
+                    'expirationDate': datetime(2015, 1, 1)
+                },
+            ]
+        }
+    ]
+
+    api_keys = [
+        {
+            'warnings': [
+                'string',
+            ],
+            'items': [
+                {
+                    'id': 'string',
+                    'value': 'string',
+                    'name': 'string',
+                    'customerId': 'string',
+                    'description': 'string',
+                    'enabled': True,
+                    'createdDate': datetime(2015, 1, 1),
+                    'lastUpdatedDate': datetime(2015, 1, 1),
+                    'stageKeys': [
+                        'string',
+                    ]
+                },
+                {
+                    'id': 'string',
+                    'value': 'string',
+                    'name': 'string',
+                    'customerId': 'string',
+                    'description': 'string',
+                    'enabled': True,
+                    'createdDate': datetime(2015, 1, 1),
+                    'lastUpdatedDate': datetime(2015, 1, 1),
+                    'stageKeys': [
+                        'string',
+                    ]
+                }
+            ],
+            'NextToken': 'string'
+        },
+        {
+            'warnings': [
+                'string',
+            ],
+            'items': [
+                {
+                    'id': 'string',
+                    'value': 'string',
+                    'name': 'string',
+                    'customerId': 'string',
+                    'description': 'string',
+                    'enabled': False,
+                    'createdDate': datetime(2015, 1, 1),
+                    'lastUpdatedDate': datetime(2015, 1, 1),
+                    'stageKeys': [
+                        'string',
+                    ]
+                },
+            ],
+            'NextToken': 'string'
+        },
+        {
+            'warnings': [
+                'string',
+            ],
+            'items': [
+                {
+                    'id': 'string',
+                    'value': 'string',
+                    'name': 'string',
+                    'customerId': 'string',
+                    'description': 'string',
+                    'enabled': True,
+                    'createdDate': datetime(2015, 1, 1),
+                    'lastUpdatedDate': datetime(2015, 1, 1),
+                    'stageKeys': [
+                        'string',
+                    ]
+                },
+            ]
+        }
+    ]
+
+
+class DynamoDB(object):
+
+    test_update_limits_from_api = {
+        'AccountMaxReadCapacityUnits': 111,
+        'AccountMaxWriteCapacityUnits': 222,
+        'TableMaxReadCapacityUnits': 333,
+        'TableMaxWriteCapacityUnits': 444
+    }
+
+    test_find_usage_dynamodb = [
+        Mock(
+            name='table1',
+            global_secondary_indexes=[
+                {
+                    'IndexName': 't1gi1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexStatus': 'ACTIVE',
+                    'Backfilling': False,
+                    'ProvisionedThroughput': {
+                        'LastIncreaseDateTime': datetime(2015, 1, 1),
+                        'LastDecreaseDateTime': datetime(2016, 1, 1),
+                        'NumberOfDecreasesToday': 0,
+                        'ReadCapacityUnits': 10,
+                        'WriteCapacityUnits': 20
+                    },
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1gi1arn'
+                },
+                {
+                    'IndexName': 't1gi2',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexStatus': 'ACTIVE',
+                    'Backfilling': False,
+                    'ProvisionedThroughput': {
+                        'LastIncreaseDateTime': datetime(2015, 1, 1),
+                        'LastDecreaseDateTime': datetime(2016, 1, 1),
+                        'NumberOfDecreasesToday': 0,
+                        'ReadCapacityUnits': 44,
+                        'WriteCapacityUnits': 66
+                    },
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1gi2arn'
+                }
+            ],
+            local_secondary_indexes=[
+                {
+                    'IndexName': 't1li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                },
+                {
+                    'IndexName': 't1li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                },
+                {
+                    'IndexName': 't1li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                }
+            ],
+            provisioned_throughput={
+                'LastIncreaseDateTime': datetime(2015, 1, 1),
+                'LastDecreaseDateTime': datetime(2016, 1, 1),
+                'NumberOfDecreasesToday': 0,
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 20
+            }
+        ),
+        Mock(
+            name='table2',
+            global_secondary_indexes=[
+                {
+                    'IndexName': 't2gi1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexStatus': 'ACTIVE',
+                    'Backfilling': False,
+                    'ProvisionedThroughput': {
+                        'LastIncreaseDateTime': datetime(2015, 1, 1),
+                        'LastDecreaseDateTime': datetime(2016, 1, 1),
+                        'NumberOfDecreasesToday': 0,
+                        'ReadCapacityUnits': 3,
+                        'WriteCapacityUnits': 5
+                    },
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1gi1arn'
+                }
+            ],
+            local_secondary_indexes=[
+                {
+                    'IndexName': 't2li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                }
+            ],
+            provisioned_throughput={
+                'LastIncreaseDateTime': datetime(2015, 1, 1),
+                'LastDecreaseDateTime': datetime(2016, 1, 1),
+                'NumberOfDecreasesToday': 0,
+                'ReadCapacityUnits': 333,
+                'WriteCapacityUnits': 444
+            }
+        ),
+        Mock(
+            name='table3',
+            global_secondary_indexes=None,
+            local_secondary_indexes=None,
+            provisioned_throughput={
+                'LastIncreaseDateTime': datetime(2015, 1, 1),
+                'LastDecreaseDateTime': datetime(2016, 1, 1),
+                'NumberOfDecreasesToday': 0,
+                'ReadCapacityUnits': 600,
+                'WriteCapacityUnits': 800
+            }
+        )
+    ]
+    type(test_find_usage_dynamodb[0]).name = 'table1'
+    type(test_find_usage_dynamodb[1]).name = 'table2'
+    type(test_find_usage_dynamodb[2]).name = 'table3'

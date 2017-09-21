@@ -70,6 +70,7 @@ class _VpcService(_AwsService):
         self._find_usage_route_tables()
         self._find_usage_gateways()
         self._find_usage_nat_gateways(subnet_to_az)
+        self._find_usages_vpn_gateways()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -166,6 +167,12 @@ class _VpcService(_AwsService):
                                     alc_data_path=['NatGateways'],
                                     alc_marker_param='NextToken'
                                     )['NatGateways']:
+                if gw['State'] not in ['pending', 'available']:
+                    logger.debug(
+                        'Skipping NAT Gateway %s in state: %s',
+                        gw['NatGatewayId'], gw['State']
+                    )
+                    continue
                 if gw['SubnetId'] not in subnet_to_az:
                     logger.error('ERROR: NAT Gateway %s in SubnetId %s, but '
                                  'SubnetId not found in subnet_to_az; Gateway '
@@ -183,6 +190,25 @@ class _VpcService(_AwsService):
             logger.error('Caught exception when trying to list NAT Gateways; '
                          'perhaps NAT service does not exist in this region?',
                          exc_info=1)
+
+    def _find_usages_vpn_gateways(self):
+        """find usage of vpn gateways"""
+
+        # do not include deleting and deleted in the results
+        vpngws = self.conn.describe_vpn_gateways(Filters=[
+            {
+                'Name': 'state',
+                'Values': [
+                    'available',
+                    'pending'
+                ]
+            }
+        ])['VpnGateways']
+
+        self.limits['Virtual private gateways']._add_current_usage(
+            len(vpngws),
+            aws_type='AWS::EC2::VPNGateway'
+        )
 
     def get_limits(self):
         """
@@ -272,6 +298,15 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::NatGateway',
         )
+
+        limits['Virtual private gateways'] = AwsLimit(
+            'Virtual private gateways',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::VPNGateway'
+        )
         self.limits = limits
         return limits
 
@@ -290,4 +325,5 @@ class _VpcService(_AwsService):
             'ec2:DescribeRouteTables',
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
+            'ec2:DescribeVpnGateways',
         ]

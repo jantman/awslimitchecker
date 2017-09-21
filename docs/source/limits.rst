@@ -72,6 +72,8 @@ updated from Trusted Advisor:
 
   * Running On-Demand m4.2xlarge instances
 
+  * Running On-Demand m4.4xlarge instances
+
   * Running On-Demand m4.large instances
 
   * Running On-Demand m4.xlarge instances
@@ -179,6 +181,16 @@ precedence than anything other than explicit limit overrides:
 
   * Stacks
 
+* DynamoDB
+
+  * Account Max Read Capacity Units
+
+  * Account Max Write Capacity Units
+
+  * Table Max Read Capacity Units
+
+  * Table Max Write Capacity Units
+
 * EC2
 
   * Elastic IP addresses (EIPs)
@@ -262,6 +274,24 @@ The section below lists every limit that this version of awslimitchecker knows
 how to check, and its hard-coded default value (per AWS documentation). Limits
 marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 
+.. _limits.ApiGateway:
+
+ApiGateway
++++++++++++
+
+=============================== ====
+Limit                           Default
+=============================== ====
+API keys per account            500 
+APIs per account                60  
+Client certificates per account 60  
+Custom authorizers per API      10  
+Documentation parts per API     2000
+Resources per API               300 
+Stages per API                  10  
+Usage plans per account         300 
+=============================== ====
+
 .. _limits.AutoScaling:
 
 AutoScaling
@@ -284,6 +314,23 @@ Limit                           Default
 =============================== ===
 Stacks :sup:`(TA)` :sup:`(API)` 200
 =============================== ===
+
+.. _limits.DynamoDB:
+
+DynamoDB
++++++++++
+
+============================================= =====
+Limit                                         Default
+============================================= =====
+Account Max Read Capacity Units :sup:`(API)`  80000
+Account Max Write Capacity Units :sup:`(API)` 80000
+Global Secondary Indexes                      5    
+Local Secondary Indexes                       5    
+Table Max Read Capacity Units :sup:`(API)`    40000
+Table Max Write Capacity Units :sup:`(API)`   40000
+Tables Per Region                             256  
+============================================= =====
 
 .. _limits.EBS:
 
@@ -378,7 +425,7 @@ Running On-Demand m3.xlarge instances :sup:`(TA)`              20
 Running On-Demand m4.10xlarge instances                        5   
 Running On-Demand m4.16xlarge instances                        5   
 Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand m4.4xlarge instances                         10  
+Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
 Running On-Demand m4.large instances :sup:`(TA)`               20  
 Running On-Demand m4.xlarge instances :sup:`(TA)`              20  
 Running On-Demand p2.16xlarge instances                        1   
@@ -568,6 +615,7 @@ Route tables per VPC          200
 Rules per network ACL         20 
 Subnets per VPC               200
 VPCs :sup:`(TA)`              5  
+Virtual private gateways      5  
 ============================= ===
 
 

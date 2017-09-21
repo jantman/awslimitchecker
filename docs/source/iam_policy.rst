@@ -18,11 +18,17 @@ permissions required for it to function correctly:
       "Statement": [
         {
           "Action": [
+            "apigateway:GET", 
+            "apigateway:HEAD", 
+            "apigateway:OPTIONS", 
             "autoscaling:DescribeAccountLimits", 
             "autoscaling:DescribeAutoScalingGroups", 
             "autoscaling:DescribeLaunchConfigurations", 
             "cloudformation:DescribeAccountLimits", 
             "cloudformation:DescribeStacks", 
+            "dynamodb:DescribeLimits", 
+            "dynamodb:DescribeTable", 
+            "dynamodb:ListTables", 
             "ec2:DescribeAccountAttributes", 
             "ec2:DescribeAddresses", 
             "ec2:DescribeInstances", 
@@ -43,6 +49,7 @@ permissions required for it to function correctly:
             "ec2:DescribeSubnets", 
             "ec2:DescribeVolumes", 
             "ec2:DescribeVpcs", 
+            "ec2:DescribeVpnGateways", 
             "elasticache:DescribeCacheClusters", 
             "elasticache:DescribeCacheParameterGroups", 
             "elasticache:DescribeCacheSecurityGroups", 

@@ -81,7 +81,6 @@ class TestAwsLimitChecker(object):
             tag='mytag',
             version_str='1.2.3@mytag'
         )
-
         self.mock_svc1 = Mock(spec_set=_AwsService)
         self.mock_svc2 = Mock(spec_set=ApiServiceSpec)
         self.mock_foo = Mock(spec_set=_AwsService)
@@ -96,14 +95,17 @@ class TestAwsLimitChecker(object):
                     logger=DEFAULT,
                     _get_version_info=DEFAULT,
                     TrustedAdvisor=DEFAULT,
+                    _get_latest_version=DEFAULT,
                     autospec=True,
             ) as mocks:
                 self.mock_logger = mocks['logger']
                 self.mock_version = mocks['_get_version_info']
                 self.mock_ta_constr = mocks['TrustedAdvisor']
+                self.mock_glv = mocks['_get_latest_version']
                 mocks['TrustedAdvisor'].return_value = self.mock_ta
+                mocks['_get_latest_version'].return_value = None
                 self.mock_version.return_value = self.mock_ver_info
-                self.cls = AwsLimitChecker()
+                self.cls = AwsLimitChecker(check_version=False)
 
     def test_init(self):
         # dict should be of _AwsService instances
@@ -128,6 +130,7 @@ class TestAwsLimitChecker(object):
         assert self.cls.ta == self.mock_ta
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
+        assert self.mock_glv.mock_calls == []
         assert self.mock_logger.mock_calls == [
             call.debug('Connecting to region %s', None)
         ]
@@ -147,6 +150,44 @@ class TestAwsLimitChecker(object):
             "all users have a right to the full source code of "
             "this version. See <http://myurl>\n")
 
+    def test_check_version_old(self):
+        with patch.multiple(
+            'awslimitchecker.checker',
+            logger=DEFAULT,
+            _get_version_info=DEFAULT,
+            TrustedAdvisor=DEFAULT,
+            _get_latest_version=DEFAULT,
+            autospec=True,
+        ) as mocks:
+            mocks['_get_version_info'].return_value = self.mock_ver_info
+            mocks['_get_latest_version'].return_value = '3.4.5'
+            AwsLimitChecker()
+        assert mocks['_get_latest_version'].mock_calls == [call()]
+        assert mocks['logger'].mock_calls == [
+            call.warning(
+                'You are running awslimitchecker %s, but the latest version'
+                ' is %s; please consider upgrading.', '1.2.3', '3.4.5'
+            ),
+            call.debug('Connecting to region %s', None)
+        ]
+
+    def test_check_version_not_old(self):
+        with patch.multiple(
+            'awslimitchecker.checker',
+            logger=DEFAULT,
+            _get_version_info=DEFAULT,
+            TrustedAdvisor=DEFAULT,
+            _get_latest_version=DEFAULT,
+            autospec=True,
+        ) as mocks:
+            mocks['_get_version_info'].return_value = self.mock_ver_info
+            mocks['_get_latest_version'].return_value = None
+            AwsLimitChecker()
+        assert mocks['_get_latest_version'].mock_calls == [call()]
+        assert mocks['logger'].mock_calls == [
+            call.debug('Connecting to region %s', None)
+        ]
+
     def test_init_thresholds(self):
         mock_svc1 = Mock(spec_set=_AwsService)
         mock_svc2 = Mock(spec_set=_AwsService)
@@ -162,12 +203,14 @@ class TestAwsLimitChecker(object):
                     logger=DEFAULT,
                     _get_version_info=DEFAULT,
                     TrustedAdvisor=DEFAULT,
+                    _get_latest_version=DEFAULT,
                     autospec=True,
             ) as mocks:
                 mock_version = mocks['_get_version_info']
                 mock_version.return_value = self.mock_ver_info
                 mock_ta_constr = mocks['TrustedAdvisor']
                 mocks['TrustedAdvisor'].return_value = mock_ta
+                mocks['_get_latest_version'].return_value = None
                 cls = AwsLimitChecker(
                     warning_threshold=5,
                     critical_threshold=22,
@@ -210,12 +253,14 @@ class TestAwsLimitChecker(object):
                         logger=DEFAULT,
                         _get_version_info=DEFAULT,
                         TrustedAdvisor=DEFAULT,
+                        _get_latest_version=DEFAULT,
                         autospec=True,
                 ) as mocks:
                     mock_boto3.Session.return_value._session = Mock()
                     mock_version = mocks['_get_version_info']
                     mock_version.return_value = self.mock_ver_info
                     mocks['TrustedAdvisor'].return_value = mock_ta
+                    mocks['_get_latest_version'].return_value = None
                     cls = AwsLimitChecker(region='regionX', profile_name='foo')
         # dict should be of _AwsService instances
         services = {
@@ -246,11 +291,13 @@ class TestAwsLimitChecker(object):
                     logger=DEFAULT,
                     _get_version_info=DEFAULT,
                     TrustedAdvisor=DEFAULT,
+                    _get_latest_version=DEFAULT,
                     autospec=True,
                 ) as mocks:
                     mock_version = mocks['_get_version_info']
                     mock_version.return_value = self.mock_ver_info
                     mocks['TrustedAdvisor'].return_value = mock_ta
+                    mocks['_get_latest_version'].return_value = None
                     cls = AwsLimitChecker(
                         account_id='123456789012',
                         account_role='myrole',
@@ -283,11 +330,13 @@ class TestAwsLimitChecker(object):
                         logger=DEFAULT,
                         _get_version_info=DEFAULT,
                         TrustedAdvisor=DEFAULT,
+                        _get_latest_version=DEFAULT,
                         autospec=True,
                 ) as mocks:
                     mock_version = mocks['_get_version_info']
                     mock_version.return_value = self.mock_ver_info
                     mocks['TrustedAdvisor'].return_value = mock_ta
+                    mocks['_get_latest_version'].return_value = None
                     cls = AwsLimitChecker(
                         account_id='123456789012',
                         account_role='myrole',
@@ -327,7 +376,11 @@ class TestAwsLimitChecker(object):
 
     def test_boto3_connection_kwargs_profile(self):
         with patch('%s.boto3' % pbm):
-            cls = AwsLimitChecker(profile_name='myprof')
+            with patch(
+                'awslimitchecker.services.dynamodb._DynamodbService'
+                '.get_limits'
+            ):
+                cls = AwsLimitChecker(profile_name='myprof')
         m_creds = Mock()
         type(m_creds).access_key = 'ak'
         type(m_creds).secret_key = 'sk'
@@ -373,9 +426,13 @@ class TestAwsLimitChecker(object):
 
     def test_boto3_connection_kwargs_sts(self):
         with patch('%s.boto3' % pbm):
-            cls = AwsLimitChecker(account_id='123',
-                                  account_role='myrole',
-                                  region='myregion')
+            with patch(
+                'awslimitchecker.services.dynamodb._DynamodbService'
+                '.get_limits'
+            ):
+                cls = AwsLimitChecker(account_id='123',
+                                      account_role='myrole',
+                                      region='myregion')
         mock_creds = Mock()
         type(mock_creds).access_key = 'sts_ak'
         type(mock_creds).secret_key = 'sts_sk'

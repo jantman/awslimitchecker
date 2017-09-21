@@ -100,10 +100,10 @@ class _AwsService(Connectable):
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self._boto3_connection_kwargs = boto_connection_kwargs
-        self.limits = {}
-        self.limits = self.get_limits()
         self.conn = None
         self.resource_conn = None
+        self.limits = {}
+        self.limits = self.get_limits()
         self._have_usage = False
 
     @abc.abstractmethod
