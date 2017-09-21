@@ -60,8 +60,6 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.xlarge instances
 
-  * Running On-Demand m1.small instances
-
   * Running On-Demand m3.2xlarge instances
 
   * Running On-Demand m3.large instances
@@ -155,6 +153,8 @@ updated from Trusted Advisor:
   * Internet gateways
 
   * VPCs
+
+  * Virtual Private Gateways
 
 
 
@@ -262,6 +262,24 @@ The section below lists every limit that this version of awslimitchecker knows
 how to check, and its hard-coded default value (per AWS documentation). Limits
 marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
 
+.. _limits.ApiGateway:
+
+ApiGateway
++++++++++++
+
+=============================== ====
+Limit                           Default
+=============================== ====
+API keys per account            500 
+APIs per account                60  
+Client certificates per account 60  
+Custom authorizers per API      10  
+Documentation parts per API     2000
+Resources per API               300 
+Stages per API                  10  
+Usage plans per account         300 
+=============================== ====
+
 .. _limits.AutoScaling:
 
 AutoScaling
@@ -366,7 +384,7 @@ Running On-Demand i3.large instances                           2
 Running On-Demand i3.xlarge instances                          2   
 Running On-Demand m1.large instances                           20  
 Running On-Demand m1.medium instances                          20  
-Running On-Demand m1.small instances :sup:`(TA)`               20  
+Running On-Demand m1.small instances                           20  
 Running On-Demand m1.xlarge instances                          20  
 Running On-Demand m2.2xlarge instances                         20  
 Running On-Demand m2.4xlarge instances                         20  
@@ -567,7 +585,8 @@ Network ACLs per VPC          200
 Route tables per VPC          200
 Rules per network ACL         20 
 Subnets per VPC               200
-VPCs :sup:`(TA)`              5  
+VPCs :sup:`(TA)`              5
+Virtual Private Gateways      5
 ============================= ===
 
 
