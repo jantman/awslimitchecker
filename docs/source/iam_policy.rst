@@ -18,6 +18,9 @@ permissions required for it to function correctly:
       "Statement": [
         {
           "Action": [
+            "apigateway:GET", 
+            "apigateway:HEAD", 
+            "apigateway:OPTIONS", 
             "autoscaling:DescribeAccountLimits", 
             "autoscaling:DescribeAutoScalingGroups", 
             "autoscaling:DescribeLaunchConfigurations", 
