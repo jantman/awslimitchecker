@@ -156,6 +156,8 @@ updated from Trusted Advisor:
 
   * VPCs
 
+  * Virtual Private Gateways
+
 
 
 .. _limits.api:
@@ -567,7 +569,8 @@ Network ACLs per VPC          200
 Route tables per VPC          200
 Rules per network ACL         20 
 Subnets per VPC               200
-VPCs :sup:`(TA)`              5  
+VPCs :sup:`(TA)`              5
+Virtual Private Gateways      5
 ============================= ===
 
 
