@@ -39,7 +39,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import logging
-from collections import defaultdict
 
 from .base import _AwsService
 from ..limit import AwsLimit
