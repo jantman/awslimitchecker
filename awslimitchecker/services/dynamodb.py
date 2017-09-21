@@ -76,11 +76,14 @@ class _DynamodbService(_AwsService):
             table_count += 1
             gsi_write = 0
             gsi_read = 0
-            for gsi in table.global_secondary_indexes:
-                gsi_read += gsi['ProvisionedThroughput'][
-                    'ReadCapacityUnits']
-                gsi_write += gsi['ProvisionedThroughput'][
-                    'WriteCapacityUnits']
+            gsi_count = 0
+            if table.global_secondary_indexes is not None:
+                for gsi in table.global_secondary_indexes:
+                    gsi_count += 1
+                    gsi_read += gsi['ProvisionedThroughput'][
+                        'ReadCapacityUnits']
+                    gsi_write += gsi['ProvisionedThroughput'][
+                        'WriteCapacityUnits']
             table_write_capacity = table.provisioned_throughput[
                                        'WriteCapacityUnits'] + gsi_write
             table_read_capacity = table.provisioned_throughput[
@@ -89,13 +92,14 @@ class _DynamodbService(_AwsService):
             region_read_capacity += table_read_capacity
 
             self.limits['Global Secondary Indexes']._add_current_usage(
-                len(table.global_secondary_indexes),
+                gsi_count,
                 resource_id=table.name,
                 aws_type='AWS::DynamoDB::Table'
             )
 
             self.limits['Local Secondary Indexes']._add_current_usage(
-                len(table.local_secondary_indexes),
+                len(table.local_secondary_indexes)
+                if table.local_secondary_indexes is not None else 0,
                 resource_id=table.name,
                 aws_type='AWS::DynamoDB::Table'
             )

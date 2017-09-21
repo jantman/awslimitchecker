@@ -3330,8 +3330,8 @@ class DynamoDB(object):
         ),
         Mock(
             name='table3',
-            global_secondary_indexes=[],
-            local_secondary_indexes=[],
+            global_secondary_indexes=None,
+            local_secondary_indexes=None,
             provisioned_throughput={
                 'LastIncreaseDateTime': datetime(2015, 1, 1),
                 'LastDecreaseDateTime': datetime(2016, 1, 1),
