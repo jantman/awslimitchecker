@@ -91,19 +91,25 @@ class _DynamodbService(_AwsService):
             table_read_capacity = table_desc['ProvisionedThroughput']['ReadCapacityUnits'] + gsi_read
             region_write_capacity += table_write_capacity
             region_read_capacity += table_read_capacity
+            gsi_count = 0
+            lsi_count = 0
+
+            if 'GlobalSecondaryIndexes' in table_desc:
+                gsi_count = len(table_desc['GlobalSecondaryIndexes'])
+
+            if 'LocalSecondaryIndexes' in table_desc:
+                lsi_count = len(table_desc['LocalSecondaryIndexes'])
 
             self.limits['Global Secondary Indexes'
             ]._add_current_usage(
-                len(table_desc['GlobalSecondaryIndexes']
-                    if 'GlobalSecondaryIndexes' in table_desc else 0),
+                gsi_count,
                 resource_id=table_desc['TableArn'],
                 aws_type='AWS::DynamoDB::Table'
             )
 
             self.limits['Local Secondary Indexes'
             ]._add_current_usage(
-                len(table_desc['LocalSecondaryIndexes']
-                    if 'LocalSecondaryIndexes' in table_desc else 0),
+                lsi_count,
                 resource_id=table_desc['TableArn'],
                 aws_type='AWS::DynamoDB::Table'
             )
