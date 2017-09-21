@@ -282,6 +282,7 @@ class Test_DynamodbService(object):
     def test_required_iam_permissions(self):
         cls = _DynamodbService(21, 43)
         assert cls.required_iam_permissions() == [
+            "dynamodb:DescribeLimits",
             "dynamodb:DescribeTable",
-            "dynamodb:DescribeLimits"
+            "dynamodb:ListTables"
         ]

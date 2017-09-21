@@ -10,8 +10,9 @@ This release **requires new IAM permissions**:
 * ``apigateway:HEAD``
 * ``apigateway:OPTIONS``
 * ``ec2:DescribeVpnGateways``
-* ``dynamodb:DescribeTable``
 * ``dynamodb:DescribeLimits``
+* ``dynamodb:DescribeTable``
+* ``dynamodb:ListTables``
 
 Changes in this release:
 

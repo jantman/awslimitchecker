@@ -243,6 +243,7 @@ class _DynamodbService(_AwsService):
         :rtype: list
         """
         return [
+            "dynamodb:DescribeLimits",
             "dynamodb:DescribeTable",
-            "dynamodb:DescribeLimits"
+            "dynamodb:ListTables"
         ]
