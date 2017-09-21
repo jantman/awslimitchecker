@@ -109,7 +109,7 @@ class _ApigatewayService(_AwsService):
             )
             # note that per the boto3 docs, there's no pagination of this...
             stages = self.conn.get_stages(restApiId=api_id)
-            if stages.keys() != ['item']:
+            if len(set(stages.keys()) - set(['item', 'ResponseMetadata'])) > 0:
                 warn_stages_paginated = stages.keys()
             self.limits['Stages per API']._add_current_usage(
                 len(stages['item']), resource_id=api_id,
