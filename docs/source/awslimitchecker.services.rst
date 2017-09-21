@@ -11,6 +11,7 @@ Submodules
 
 .. toctree::
 
+   awslimitchecker.services.apigateway
    awslimitchecker.services.autoscaling
    awslimitchecker.services.base
    awslimitchecker.services.cloudformation
