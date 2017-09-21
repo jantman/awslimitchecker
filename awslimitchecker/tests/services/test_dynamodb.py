@@ -53,15 +53,16 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-pb = 'awslimitchecker.services.dynamodb._DynamodbService' #class patch pase
+pb = 'awslimitchecker.services.dynamodb._DynamodbService'  # class patch pase
 pbm = 'awslimitchecker.services.dynamodb'  # module patch base
+
 
 class Test_DynamodbService(object):
 
     def test_init(self):
         """test __init__()"""
         cls = _DynamodbService(21, 43)
-        assert cls.service_name == 'Dynamodb'
+        assert cls.service_name == 'DynamoDB'
         assert cls.api_name == 'dynamodb'
         assert cls.conn is None
         assert cls.warning_threshold == 21
@@ -105,7 +106,6 @@ class Test_DynamodbService(object):
             assert read_capacity_region.default_limit == 20000
             assert read_capacity_table.default_limit == 10000
 
-
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)
@@ -114,31 +114,32 @@ class Test_DynamodbService(object):
         res = cls.get_limits()
         assert res == mock_limits
 
-    # def test_update_limits_from_api(self):
-    #     response = result_fixtures.Dynamodb.test_update_limits_from_api
-    #
-    #     mock_conn = Mock()
-    #     mock_conn.describe_account_attributes.return_value = response
-    #     with patch('%s.logger' % pbm) as mock_logger:
-    #         with patch('%s.connect' % pb) as mock_connect:
-    #             cls = _DynamodbService(21, 43)
-    #             cls.conn = mock_conn
+    """
+    def test_update_limits_from_api(self):
+        response = result_fixtures.Dynamodb.test_update_limits_from_api
+        mock_conn = Mock()
+        mock_conn.describe_account_attributes.return_value = response
+        with patch('%s.logger' % pbm) as mock_logger:
+            with patch('%s.connect' % pb) as mock_connect:
+                cls = _DynamodbService(21, 43)
+                cls.conn = mock_conn
 
-
-    # def test_find_usage(self):
-    #     mock_conn = Mock()
-    #     mock_conn.some_method.return_value =   # some logical return value
-    #     with patch('%s.connect' % pb) as mock_connect:
-    #         cls = _DynamodbService(21, 43)
-    #         cls.conn = mock_conn
-    #         assert cls._have_usage is False
-    #         cls.find_usage()
-    #     assert mock_connect.mock_calls == [call()]
-    #     assert cls._have_usage is True
-    #     assert mock_conn.mock_calls == [call.some_method()]
+    def test_find_usage(self):
+        mock_conn = Mock()
+        mock_conn.some_method.return_value =   # some logical return value
+        with patch('%s.connect' % pb) as mock_connect:
+            cls = _DynamodbService(21, 43)
+            cls.conn = mock_conn
+            assert cls._have_usage is False
+            cls.find_usage()
+        assert mock_connect.mock_calls == [call()]
+        assert cls._have_usage is True
+        assert mock_conn.mock_calls == [call.some_method()]
+    """
 
     def test_required_iam_permissions(self):
         cls = _DynamodbService(21, 43)
         assert cls.required_iam_permissions() == [
-            "dynamodb:DescribeTable"
+            "dynamodb:DescribeTable",
+            "dynamodb:DescribeLimits"
         ]

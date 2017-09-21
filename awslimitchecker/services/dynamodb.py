@@ -48,8 +48,8 @@ logger = logging.getLogger(__name__)
 
 class _DynamodbService(_AwsService):
 
-    service_name = 'Dynamodb'
-    api_name = 'dynamodb'  # AWS API name to connect to (boto3.client)
+    service_name = 'DynamoDB'
+    api_name = 'dynamodb'
 
     def find_usage(self):
         """
@@ -61,7 +61,6 @@ class _DynamodbService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-
         self._find_usage_dynamodb()
         self._have_usage = True
         logger.debug("Done checking usage.")
@@ -71,75 +70,61 @@ class _DynamodbService(_AwsService):
         table_count = 0
         region_read_capacity = 0
         region_write_capacity = 0
-        dynamodb_client = self.conn
 
-        for table in dynamodb_client.list_tables()['TableNames']:
+        for table in self.conn.list_tables()['TableNames']:
             table_count += 1
             gsi_write = 0
             gsi_read = 0
-
-            table_desc = dynamodb_client.describe_table(TableName=table)['Table']
-
+            table_desc = self.conn.describe_table(TableName=table)['Table']
             logger.debug("Getting usage for DynamoDB tables")
-
             if 'GlobalSecondaryIndexes' in table_desc:
                 for gsi in table_desc['GlobalSecondaryIndexes']:
-                    gsi_read += gsi['ProvisionedThroughput']['ReadCapacityUnits']
-                    gsi_write += gsi['ProvisionedThroughput']['WriteCapacityUnits']
-
-            table_write_capacity = table_desc['ProvisionedThroughput']['WriteCapacityUnits'] + gsi_write
-            table_read_capacity = table_desc['ProvisionedThroughput']['ReadCapacityUnits'] + gsi_read
+                    gsi_read += gsi['ProvisionedThroughput'][
+                        'ReadCapacityUnits']
+                    gsi_write += gsi['ProvisionedThroughput'][
+                        'WriteCapacityUnits']
+            table_write_capacity = table_desc['ProvisionedThroughput'][
+                                       'WriteCapacityUnits'] + gsi_write
+            table_read_capacity = table_desc['ProvisionedThroughput'][
+                                      'ReadCapacityUnits'] + gsi_read
             region_write_capacity += table_write_capacity
             region_read_capacity += table_read_capacity
-            gsi_count = 0
-            lsi_count = 0
 
-            if 'GlobalSecondaryIndexes' in table_desc:
-                gsi_count = len(table_desc['GlobalSecondaryIndexes'])
-
-            if 'LocalSecondaryIndexes' in table_desc:
-                lsi_count = len(table_desc['LocalSecondaryIndexes'])
-
-            self.limits['Global Secondary Indexes'
-            ]._add_current_usage(
-                gsi_count,
+            self.limits['Global Secondary Indexes']._add_current_usage(
+                len(table_desc.get('GlobalSecondaryIndexes', [])),
                 resource_id=table_desc['TableArn'],
                 aws_type='AWS::DynamoDB::Table'
             )
 
-            self.limits['Local Secondary Indexes'
-            ]._add_current_usage(
-                lsi_count,
+            self.limits['Local Secondary Indexes']._add_current_usage(
+                len(table_desc.get('LocalSecondaryIndexes', [])),
                 resource_id=table_desc['TableArn'],
                 aws_type='AWS::DynamoDB::Table'
             )
 
-            self.limits['Write Capacity (table)'
-            ]._add_current_usage(
+            self.limits['Write Capacity (table)']._add_current_usage(
                 table_write_capacity,
-                resource_id=table_desc['TableArn']
+                resource_id=table_desc['TableArn'],
+                aws_type='AWS::DynamoDB::Table'
             )
 
-            self.limits['Read Capacity (table)'
-            ]._add_current_usage(
+            self.limits['Read Capacity (table)']._add_current_usage(
                 table_read_capacity,
-                resource_id=table_desc['TableArn']
+                resource_id=table_desc['TableArn'],
+                aws_type='AWS::DynamoDB::Table'
             )
 
-        self.limits['Table Count (region)'
-        ]._add_current_usage(
+        self.limits['Table Count (region)']._add_current_usage(
             table_count,
             aws_type='AWS::DynamoDB::Table'
         )
 
-        self.limits['Write Capacity (region)'
-        ]._add_current_usage(
+        self.limits['Write Capacity (region)']._add_current_usage(
             region_write_capacity,
             aws_type='AWS::DynamoDB::Table'
         )
 
-        self.limits['Read Capacity (region)'
-        ]._add_current_usage(
+        self.limits['Read Capacity (region)']._add_current_usage(
             region_read_capacity,
             aws_type='AWS::DynamoDB::Table'
         )
@@ -232,10 +217,18 @@ class _DynamodbService(_AwsService):
         logger.info("Querying DynamoDB DescribeLimits for limits")
         # no need to paginate
         lims = self.conn.describe_limits()
-        self.limits['Read Capacity (region)']._set_api_limit(lims['AccountMaxReadCapacityUnits'])
-        self.limits['Write Capacity (region)']._set_api_limit(lims['AccountMaxWriteCapacityUnits'])
-        self.limits['Read Capacity (table)']._set_api_limit(lims['TableMaxReadCapacityUnits'])
-        self.limits['Write Capacity (table)']._set_api_limit(lims['TableMaxWriteCapacityUnits'])
+        self.limits['Read Capacity (region)']._set_api_limit(
+            lims['AccountMaxReadCapacityUnits']
+        )
+        self.limits['Write Capacity (region)']._set_api_limit(
+            lims['AccountMaxWriteCapacityUnits']
+        )
+        self.limits['Read Capacity (table)']._set_api_limit(
+            lims['TableMaxReadCapacityUnits']
+        )
+        self.limits['Write Capacity (table)']._set_api_limit(
+            lims['TableMaxWriteCapacityUnits']
+        )
         logger.debug("Done setting limits from API")
 
     def required_iam_permissions(self):
@@ -250,4 +243,5 @@ class _DynamodbService(_AwsService):
 
         return [
             "dynamodb:DescribeTable",
+            "dynamodb:DescribeLimits"
         ]
