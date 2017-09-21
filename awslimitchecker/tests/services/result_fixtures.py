@@ -3205,3 +3205,142 @@ class ApiGateway(object):
             ]
         }
     ]
+
+
+class DynamoDB(object):
+
+    test_update_limits_from_api = {
+        'AccountMaxReadCapacityUnits': 111,
+        'AccountMaxWriteCapacityUnits': 222,
+        'TableMaxReadCapacityUnits': 333,
+        'TableMaxWriteCapacityUnits': 444
+    }
+
+    test_find_usage_dynamodb = [
+        Mock(
+            name='table1',
+            global_secondary_indexes=[
+                {
+                    'IndexName': 't1gi1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexStatus': 'ACTIVE',
+                    'Backfilling': False,
+                    'ProvisionedThroughput': {
+                        'LastIncreaseDateTime': datetime(2015, 1, 1),
+                        'LastDecreaseDateTime': datetime(2016, 1, 1),
+                        'NumberOfDecreasesToday': 0,
+                        'ReadCapacityUnits': 10,
+                        'WriteCapacityUnits': 20
+                    },
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1gi1arn'
+                },
+                {
+                    'IndexName': 't1gi2',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexStatus': 'ACTIVE',
+                    'Backfilling': False,
+                    'ProvisionedThroughput': {
+                        'LastIncreaseDateTime': datetime(2015, 1, 1),
+                        'LastDecreaseDateTime': datetime(2016, 1, 1),
+                        'NumberOfDecreasesToday': 0,
+                        'ReadCapacityUnits': 44,
+                        'WriteCapacityUnits': 66
+                    },
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1gi2arn'
+                }
+            ],
+            local_secondary_indexes=[
+                {
+                    'IndexName': 't1li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                },
+                {
+                    'IndexName': 't1li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                },
+                {
+                    'IndexName': 't1li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                }
+            ],
+            provisioned_throughput={
+                'LastIncreaseDateTime': datetime(2015, 1, 1),
+                'LastDecreaseDateTime': datetime(2016, 1, 1),
+                'NumberOfDecreasesToday': 0,
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 20
+            }
+        ),
+        Mock(
+            name='table2',
+            global_secondary_indexes=[
+                {
+                    'IndexName': 't2gi1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexStatus': 'ACTIVE',
+                    'Backfilling': False,
+                    'ProvisionedThroughput': {
+                        'LastIncreaseDateTime': datetime(2015, 1, 1),
+                        'LastDecreaseDateTime': datetime(2016, 1, 1),
+                        'NumberOfDecreasesToday': 0,
+                        'ReadCapacityUnits': 3,
+                        'WriteCapacityUnits': 5
+                    },
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1gi1arn'
+                }
+            ],
+            local_secondary_indexes=[
+                {
+                    'IndexName': 't2li1',
+                    'KeySchema': [],
+                    'Projection': {},
+                    'IndexSizeBytes': 100,
+                    'ItemCount': 99,
+                    'IndexArn': 't1li1arn'
+                }
+            ],
+            provisioned_throughput={
+                'LastIncreaseDateTime': datetime(2015, 1, 1),
+                'LastDecreaseDateTime': datetime(2016, 1, 1),
+                'NumberOfDecreasesToday': 0,
+                'ReadCapacityUnits': 333,
+                'WriteCapacityUnits': 444
+            }
+        ),
+        Mock(
+            name='table3',
+            global_secondary_indexes=None,
+            local_secondary_indexes=None,
+            provisioned_throughput={
+                'LastIncreaseDateTime': datetime(2015, 1, 1),
+                'LastDecreaseDateTime': datetime(2016, 1, 1),
+                'NumberOfDecreasesToday': 0,
+                'ReadCapacityUnits': 600,
+                'WriteCapacityUnits': 800
+            }
+        )
+    ]
+    type(test_find_usage_dynamodb[0]).name = 'table1'
+    type(test_find_usage_dynamodb[1]).name = 'table2'
+    type(test_find_usage_dynamodb[2]).name = 'table3'

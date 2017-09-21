@@ -10,6 +10,11 @@ This release **requires new IAM permissions**:
 * ``apigateway:HEAD``
 * ``apigateway:OPTIONS``
 * ``ec2:DescribeVpnGateways``
+* ``dynamodb:DescribeLimits``
+* ``dynamodb:DescribeTable``
+* ``dynamodb:ListTables``
+
+Changes in this release:
 
 * `Issue #254 <https://github.com/jantman/awslimitchecker/issues/254>`_ - Officially adopt SemVer for this project, and document our :ref:`versioning policy <development.versioning_policy>`.
 * `Issue #294 <https://github.com/jantman/awslimitchecker/issues/294>`_ - Ignore NAT Gateways that are not in "available" or "pending" state.
@@ -17,6 +22,7 @@ This release **requires new IAM permissions**:
 * Pin `tox <https://tox.readthedocs.io/>`_ version to 2.7.0 as workaround for parsing change.
 * `Issue #292 <https://github.com/jantman/awslimitchecker/issues/292>`_ - Add support for API Gateway limits.
 * `PR #302 <https://github.com/jantman/awslimitchecker/pull/302>`_ - Add support for VPC VPN Gateways limit. (Thanks to `andrewmichael <https://github.com/andrewmichael>`_ for the contribution.)
+* `Issue #280 <https://github.com/jantman/awslimitchecker/issues/280>`_ / `PR #297 <https://github.com/jantman/awslimitchecker/pull/297>`_ - Add support for DynamoDB limits. (Thanks to `saratlingamarla <https://github.com/saratlingamarla>`_ for the contribution.)
 
 0.11.0 (2017-08-06)
 -------------------

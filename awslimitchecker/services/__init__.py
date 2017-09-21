@@ -53,6 +53,7 @@ from awslimitchecker.services.ses import _SesService
 from awslimitchecker.services.cloudformation import _CloudformationService
 from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.redshift import _RedshiftService
+from awslimitchecker.services.dynamodb import _DynamodbService
 from awslimitchecker.services.apigateway import _ApigatewayService
 
 # dynamically generate the service name to class dict
