@@ -192,7 +192,7 @@ class _VpcService(_AwsService):
                          exc_info=1)
 
     def _find_usages_vpn_gateways(self):
-        """describe usage of vpn gateways"""
+        """find usage of vpn gateways"""
 
         # do not include deleting and deleted in the results
         vpngws = self.conn.describe_vpn_gateways(Filters=[
