@@ -376,7 +376,11 @@ class TestAwsLimitChecker(object):
 
     def test_boto3_connection_kwargs_profile(self):
         with patch('%s.boto3' % pbm):
-            cls = AwsLimitChecker(profile_name='myprof')
+            with patch(
+                'awslimitchecker.services.dynamodb._DynamodbService'
+                '.get_limits'
+            ):
+                cls = AwsLimitChecker(profile_name='myprof')
         m_creds = Mock()
         type(m_creds).access_key = 'ak'
         type(m_creds).secret_key = 'sk'
@@ -422,9 +426,13 @@ class TestAwsLimitChecker(object):
 
     def test_boto3_connection_kwargs_sts(self):
         with patch('%s.boto3' % pbm):
-            cls = AwsLimitChecker(account_id='123',
-                                  account_role='myrole',
-                                  region='myregion')
+            with patch(
+                'awslimitchecker.services.dynamodb._DynamodbService'
+                '.get_limits'
+            ):
+                cls = AwsLimitChecker(account_id='123',
+                                      account_role='myrole',
+                                      region='myregion')
         mock_creds = Mock()
         type(mock_creds).access_key = 'sts_ak'
         type(mock_creds).secret_key = 'sts_sk'
