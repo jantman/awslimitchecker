@@ -61,10 +61,12 @@ class Test_DynamodbService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _DynamodbService(21, 43)
+        with patch('%s.get_limits' % pb):
+            cls = _DynamodbService(21, 43)
         assert cls.service_name == 'DynamoDB'
         assert cls.api_name == 'dynamodb'
         assert cls.conn is None
+        assert cls.resource_conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
@@ -77,16 +79,16 @@ class Test_DynamodbService(object):
             assert x == limits[x].name
             assert limits[x].service == cls
         assert len(limits) == 7
-        table_count = limits['Table Count (region)']
+        table_count = limits['Tables Per Region']
         assert table_count.limit_type == 'AWS::DynamoDB::Table'
         assert table_count.default_limit == 256
-        write_capacity_region = limits['Write Capacity (region)']
+        write_capacity_region = limits['Account Max Write Capacity Units']
         assert write_capacity_region.limit_type == 'AWS::DynamoDB::Table'
-        write_capacity_table = limits['Write Capacity (table)']
+        write_capacity_table = limits['Table Max Write Capacity Units']
         assert write_capacity_table.limit_type == 'AWS::DynamoDB::Table'
-        read_capacity_region = limits['Read Capacity (region)']
+        read_capacity_region = limits['Account Max Read Capacity Units']
         assert read_capacity_region.limit_type == 'AWS::DynamoDB::Table'
-        read_capacity_table = limits['Read Capacity (table)']
+        read_capacity_table = limits['Table Max Read Capacity Units']
         assert read_capacity_table.limit_type == 'AWS::DynamoDB::Table'
         global_secondary_index = limits['Global Secondary Indexes']
         assert global_secondary_index.limit_type == 'AWS::DynamoDB::Table'

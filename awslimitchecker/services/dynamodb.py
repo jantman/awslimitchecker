@@ -102,29 +102,29 @@ class _DynamodbService(_AwsService):
                 aws_type='AWS::DynamoDB::Table'
             )
 
-            self.limits['Write Capacity (table)']._add_current_usage(
+            self.limits['Table Max Write Capacity Units']._add_current_usage(
                 table_write_capacity,
                 resource_id=table_desc['TableArn'],
                 aws_type='AWS::DynamoDB::Table'
             )
 
-            self.limits['Read Capacity (table)']._add_current_usage(
+            self.limits['Table Max Read Capacity Units']._add_current_usage(
                 table_read_capacity,
                 resource_id=table_desc['TableArn'],
                 aws_type='AWS::DynamoDB::Table'
             )
 
-        self.limits['Table Count (region)']._add_current_usage(
+        self.limits['Tables Per Region']._add_current_usage(
             table_count,
             aws_type='AWS::DynamoDB::Table'
         )
 
-        self.limits['Write Capacity (region)']._add_current_usage(
+        self.limits['Account Max Write Capacity Units']._add_current_usage(
             region_write_capacity,
             aws_type='AWS::DynamoDB::Table'
         )
 
-        self.limits['Read Capacity (region)']._add_current_usage(
+        self.limits['Account Max Read Capacity Units']._add_current_usage(
             region_read_capacity,
             aws_type='AWS::DynamoDB::Table'
         )
@@ -143,8 +143,8 @@ class _DynamodbService(_AwsService):
             return self.limits
         limits = {}
 
-        limits['Table Count (region)'] = AwsLimit(
-            'Table Count (region)',
+        limits['Tables Per Region'] = AwsLimit(
+            'Tables Per Region',
             self,
             256,
             self.warning_threshold,
@@ -152,16 +152,16 @@ class _DynamodbService(_AwsService):
             limit_type='AWS::DynamoDB::Table',
         )
 
-        limits['Write Capacity (region)'] = AwsLimit(
-            'Write Capacity (region)',
+        limits['Account Max Write Capacity Units'] = AwsLimit(
+            'Account Max Write Capacity Units',
             self,
             80000 if region_name == 'us-east-1' else 20000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DynamoDB::Table', )
 
-        limits['Write Capacity (table)'] = AwsLimit(
-            'Write Capacity (table)',
+        limits['Table Max Write Capacity Units'] = AwsLimit(
+            'Table Max Write Capacity Units',
             self,
             40000 if region_name == 'us-east-1' else 10000,
             self.warning_threshold,
@@ -169,8 +169,8 @@ class _DynamodbService(_AwsService):
             limit_type='AWS::DynamoDB::Table',
         )
 
-        limits['Read Capacity (region)'] = AwsLimit(
-            'Read Capacity (region)',
+        limits['Account Max Read Capacity Units'] = AwsLimit(
+            'Account Max Read Capacity Units',
             self,
             80000 if region_name == 'us-east-1' else 20000,
             self.warning_threshold,
@@ -178,8 +178,8 @@ class _DynamodbService(_AwsService):
             limit_type='AWS::DynamoDB::Table',
         )
 
-        limits['Read Capacity (table)'] = AwsLimit(
-            'Read Capacity (table)',
+        limits['Table Max Read Capacity Units'] = AwsLimit(
+            'Table Max Read Capacity Units',
             self,
             40000 if region_name == 'us-east-1' else 10000,
             self.warning_threshold,
@@ -217,16 +217,16 @@ class _DynamodbService(_AwsService):
         logger.info("Querying DynamoDB DescribeLimits for limits")
         # no need to paginate
         lims = self.conn.describe_limits()
-        self.limits['Read Capacity (region)']._set_api_limit(
+        self.limits['Account Max Read Capacity Units']._set_api_limit(
             lims['AccountMaxReadCapacityUnits']
         )
-        self.limits['Write Capacity (region)']._set_api_limit(
+        self.limits['Account Max Write Capacity Units']._set_api_limit(
             lims['AccountMaxWriteCapacityUnits']
         )
-        self.limits['Read Capacity (table)']._set_api_limit(
+        self.limits['Table Max Read Capacity Units']._set_api_limit(
             lims['TableMaxReadCapacityUnits']
         )
-        self.limits['Write Capacity (table)']._set_api_limit(
+        self.limits['Table Max Write Capacity Units']._set_api_limit(
             lims['TableMaxWriteCapacityUnits']
         )
         logger.debug("Done setting limits from API")
@@ -240,7 +240,6 @@ class _DynamodbService(_AwsService):
         :returns: list of IAM Action strings
         :rtype: list
         """
-
         return [
             "dynamodb:DescribeTable",
             "dynamodb:DescribeLimits"
