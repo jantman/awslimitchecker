@@ -130,7 +130,7 @@ class _ApigatewayService(_AwsService):
         if warn_stages_paginated is not None:
             logger.warning(
                 'APIGateway get_stages returned more keys than present in '
-                'boto3 docs: %s', warn_stages_paginated
+                'boto3 docs: %s', sorted(warn_stages_paginated)
             )
 
     def _find_usage_api_keys(self):
