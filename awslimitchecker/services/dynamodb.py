@@ -58,7 +58,7 @@ class _DynamodbService(_AwsService):
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service %s", self.service_name)
-        self.connect()
+        self.connect_resource()
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_dynamodb()
@@ -71,46 +71,44 @@ class _DynamodbService(_AwsService):
         region_read_capacity = 0
         region_write_capacity = 0
 
-        for table in self.conn.list_tables()['TableNames']:
+        logger.debug("Getting usage for DynamoDB tables")
+        for table in self.resource_conn.tables.all():
             table_count += 1
             gsi_write = 0
             gsi_read = 0
-            table_desc = self.conn.describe_table(TableName=table)['Table']
-            logger.debug("Getting usage for DynamoDB tables")
-            if 'GlobalSecondaryIndexes' in table_desc:
-                for gsi in table_desc['GlobalSecondaryIndexes']:
-                    gsi_read += gsi['ProvisionedThroughput'][
-                        'ReadCapacityUnits']
-                    gsi_write += gsi['ProvisionedThroughput'][
-                        'WriteCapacityUnits']
-            table_write_capacity = table_desc['ProvisionedThroughput'][
+            for gsi in table.global_secondary_indexes:
+                gsi_read += gsi['ProvisionedThroughput'][
+                    'ReadCapacityUnits']
+                gsi_write += gsi['ProvisionedThroughput'][
+                    'WriteCapacityUnits']
+            table_write_capacity = table.provisioned_throughput[
                                        'WriteCapacityUnits'] + gsi_write
-            table_read_capacity = table_desc['ProvisionedThroughput'][
+            table_read_capacity = table.provisioned_throughput[
                                       'ReadCapacityUnits'] + gsi_read
             region_write_capacity += table_write_capacity
             region_read_capacity += table_read_capacity
 
             self.limits['Global Secondary Indexes']._add_current_usage(
-                len(table_desc.get('GlobalSecondaryIndexes', [])),
-                resource_id=table_desc['TableArn'],
+                len(table.global_secondary_indexes),
+                resource_id=table.name,
                 aws_type='AWS::DynamoDB::Table'
             )
 
             self.limits['Local Secondary Indexes']._add_current_usage(
-                len(table_desc.get('LocalSecondaryIndexes', [])),
-                resource_id=table_desc['TableArn'],
+                len(table.local_secondary_indexes),
+                resource_id=table.name,
                 aws_type='AWS::DynamoDB::Table'
             )
 
             self.limits['Table Max Write Capacity Units']._add_current_usage(
                 table_write_capacity,
-                resource_id=table_desc['TableArn'],
+                resource_id=table.name,
                 aws_type='AWS::DynamoDB::Table'
             )
 
             self.limits['Table Max Read Capacity Units']._add_current_usage(
                 table_read_capacity,
-                resource_id=table_desc['TableArn'],
+                resource_id=table.name,
                 aws_type='AWS::DynamoDB::Table'
             )
 

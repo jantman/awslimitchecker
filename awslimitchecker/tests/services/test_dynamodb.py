@@ -198,19 +198,86 @@ class Test_DynamodbService(object):
 
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             with patch('%s._find_usage_dynamodb' % pb, autospec=True) as m_fud:
-                mock_connect.side_effect = se_conn
-                cls = _DynamodbService(21, 43)
-                cls.conn = mock_conn
-                assert cls._have_usage is False
-                cls.find_usage()
-        assert mock_connect.mock_calls == [
-            call(cls),
-            call(cls)
-        ]
+                with patch(
+                    '%s.connect_resource' % pb, autospec=True
+                ) as mock_conn_res:
+                    mock_connect.side_effect = se_conn
+                    cls = _DynamodbService(21, 43)
+                    cls.conn = mock_conn
+                    assert cls._have_usage is False
+                    cls.find_usage()
+        assert mock_connect.mock_calls == [call(cls)]
+        assert mock_conn_res.mock_calls == [call(cls)]
         assert mock_conn.mock_calls == []
         assert m_client.mock_calls == []
         assert m_fud.mock_calls == [call(cls)]
         assert cls._have_usage is True
+
+    def test_find_usage_dynamodb(self):
+        response = result_fixtures.DynamoDB.test_find_usage_dynamodb
+        mock_conn = Mock()
+        mock_conn.describe_limits.return_value = response
+        m_client = Mock()
+        type(m_client).region_name = 'foo'
+        type(mock_conn)._client_config = m_client
+
+        def se_conn(cls):
+            cls.conn = mock_conn
+
+        mock_tables = Mock()
+        mock_tables.all.return_value = response
+        mock_res_conn = Mock()
+        type(mock_res_conn).tables = mock_tables
+
+        with patch('%s.connect' % pb, autospec=True) as mock_connect:
+            mock_connect.side_effect = se_conn
+            cls = _DynamodbService(21, 43)
+            cls.conn = mock_conn
+            cls.resource_conn = mock_res_conn
+            cls._find_usage_dynamodb()
+        # Account/Region wide limits
+        u = cls.limits['Tables Per Region'].get_current_usage()
+        assert len(u) == 1
+        assert u[0].get_value() == 3
+        u = cls.limits['Account Max Write Capacity Units'].get_current_usage()
+        assert len(u) == 1
+        assert u[0].get_value() == 1355
+        u = cls.limits['Account Max Read Capacity Units'].get_current_usage()
+        assert len(u) == 1
+        assert u[0].get_value() == 1000
+        # Per Table Limits
+        u = cls.limits['Global Secondary Indexes'].get_current_usage()
+        assert len(u) == 3
+        assert u[0].resource_id == 'table1'
+        assert u[0].get_value() == 2
+        assert u[1].resource_id == 'table2'
+        assert u[1].get_value() == 1
+        assert u[2].resource_id == 'table3'
+        assert u[2].get_value() == 0
+        u = cls.limits['Local Secondary Indexes'].get_current_usage()
+        assert len(u) == 3
+        assert u[0].resource_id == 'table1'
+        assert u[0].get_value() == 3
+        assert u[1].resource_id == 'table2'
+        assert u[1].get_value() == 1
+        assert u[2].resource_id == 'table3'
+        assert u[2].get_value() == 0
+        u = cls.limits['Table Max Write Capacity Units'].get_current_usage()
+        assert len(u) == 3
+        assert u[0].resource_id == 'table1'
+        assert u[0].get_value() == 106
+        assert u[1].resource_id == 'table2'
+        assert u[1].get_value() == 449
+        assert u[2].resource_id == 'table3'
+        assert u[2].get_value() == 800
+        u = cls.limits['Table Max Read Capacity Units'].get_current_usage()
+        assert len(u) == 3
+        assert u[0].resource_id == 'table1'
+        assert u[0].get_value() == 64
+        assert u[1].resource_id == 'table2'
+        assert u[1].get_value() == 336
+        assert u[2].resource_id == 'table3'
+        assert u[2].get_value() == 600
 
     def test_required_iam_permissions(self):
         cls = _DynamodbService(21, 43)
