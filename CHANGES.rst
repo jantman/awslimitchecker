@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+1.0.0 (2017-09-21)
 ------------------
 
 This release **requires new IAM permissions**:
