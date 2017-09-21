@@ -79,8 +79,7 @@ Full project documentation for the latest release is available at `http://awslim
 Status
 ------
 
-It's gotten a bunch of downloads on PyPi (when the download counters used to work). As far as I know,
-it's stable and in use by some pretty large organizations.
+awslimitchecker is mature software, with approximately 9,000 downloads per month and in daily use at numerous organizations.
 
 Development status is being tracked on a board at waffle.io: https://waffle.io/jantman/awslimitchecker
 
