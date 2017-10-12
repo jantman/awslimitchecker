@@ -60,7 +60,7 @@ updated from Trusted Advisor:
 
   * Running On-Demand c4.xlarge instances
 
-  * Running On-Demand m1.small instances
+  * Running On-Demand m1.medium instances
 
   * Running On-Demand m3.2xlarge instances
 
@@ -89,6 +89,8 @@ updated from Trusted Advisor:
   * Running On-Demand r4.large instances
 
   * Running On-Demand t1.micro instances
+
+  * Running On-Demand t2.2xlarge instances
 
   * Running On-Demand t2.large instances
 
@@ -412,8 +414,8 @@ Running On-Demand i3.8xlarge instances                         2
 Running On-Demand i3.large instances                           2   
 Running On-Demand i3.xlarge instances                          2   
 Running On-Demand m1.large instances                           20  
-Running On-Demand m1.medium instances                          20  
-Running On-Demand m1.small instances :sup:`(TA)`               20  
+Running On-Demand m1.medium instances :sup:`(TA)`              20  
+Running On-Demand m1.small instances                           20  
 Running On-Demand m1.xlarge instances                          20  
 Running On-Demand m2.2xlarge instances                         20  
 Running On-Demand m2.4xlarge instances                         20  
@@ -443,7 +445,7 @@ Running On-Demand r4.8xlarge instances                         20
 Running On-Demand r4.large instances :sup:`(TA)`               20  
 Running On-Demand r4.xlarge instances                          20  
 Running On-Demand t1.micro instances :sup:`(TA)`               20  
-Running On-Demand t2.2xlarge instances                         20  
+Running On-Demand t2.2xlarge instances :sup:`(TA)`             20  
 Running On-Demand t2.large instances :sup:`(TA)`               20  
 Running On-Demand t2.medium instances :sup:`(TA)`              20  
 Running On-Demand t2.micro instances :sup:`(TA)`               20  
