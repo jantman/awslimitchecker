@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+2.0.0 (2017-10-12)
 ------------------
 
 * Update README with correct boto version requirement. (Thanks to `nadlerjessie <https://github.com/nadlerjessie>`_ for the contribution.)
