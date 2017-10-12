@@ -322,7 +322,7 @@ class Test_Ec2Service(object):
                 mock_res_inst_count.return_value = ri_count
                 cls._find_usage_instances()
         assert mock_t2_micro.mock_calls == [call._add_current_usage(
-            35,
+            36,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_r3_2xlarge.mock_calls == [call._add_current_usage(
@@ -334,11 +334,11 @@ class Test_Ec2Service(object):
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_c4_large.mock_calls == [call._add_current_usage(
-            0,
+            4,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_all_ec2.mock_calls == [call._add_current_usage(
-            48,
+            53,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_inst_usage.mock_calls == [call(cls)]
