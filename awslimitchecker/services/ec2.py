@@ -83,6 +83,8 @@ class _Ec2Service(_AwsService):
         inst_usage = self._instance_usage()
         res_usage = self._get_reserved_instance_count()
         logger.debug('Reserved instance count: %s', res_usage)
+        total_ris = 0
+        running_ris = 0
         # subtract reservations from instance usage
         ondemand_usage = defaultdict(int)
         for az in inst_usage:
@@ -97,24 +99,19 @@ class _Ec2Service(_AwsService):
                     ondemand_usage[i_type] += count
                     continue
                 od = count - res_usage[az][i_type]
-                if od < 1:
+                total_ris += res_usage[az][i_type]
+                if count < res_usage[az][i_type]:
+                    running_ris += count
+                else:
+                    running_ris += res_usage[az][i_type]
+                if od < 0:
                     # we have unused reservations
                     continue
                 ondemand_usage[i_type] += od
-        # subtract any "Regional Benefit" AZ-less reservations
-        for i_type in ondemand_usage.keys():
-            if RI_NO_AZ in res_usage and i_type in res_usage[RI_NO_AZ]:
-                logger.debug('Subtracting %d AZ-less "Regional Benefit" '
-                             'Reserved Instances from %d running %s instances',
-                             res_usage[RI_NO_AZ][i_type],
-                             ondemand_usage[i_type], i_type)
-                # we have Regional Benefit reservations for this type;
-                # we don't want to show negative usage, even if we're
-                #  over-reserved
-                ondemand_usage[i_type] = max(
-                    ondemand_usage[i_type] - res_usage[RI_NO_AZ][i_type],
-                    0
-                )
+        logger.debug(
+            'Found %d total RIs and %d running/used RIs',
+            total_ris, running_ris
+        )
         total_instances = 0
         for i_type, usage in ondemand_usage.items():
             key = 'Running On-Demand {t} instances'.format(
