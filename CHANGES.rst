@@ -4,8 +4,8 @@ Changelog
 Unreleased Changes
 ------------------
 
-* Add ``pytest-html`` plugin to tox test environment.
 * Fix test failures caused by dependency updates.
+* Pin ``pytest`` development to 3.2.5 to continue python 2.6 and 3.3 support.
 
 2.0.0 (2017-10-12)
 ------------------
