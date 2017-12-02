@@ -13,6 +13,7 @@ after development was ceased. The test framework used by awslimitchecker, pytest
 * Fix test failures caused by dependency updates.
 * Pin ``pytest`` development to 3.2.5 to continue python 2.6 and 3.3 support.
 * `Issue #314 <https://github.com/jantman/awslimitchecker/issues/314>`_ - Update RDS service default limits; ``DB snapshots per user`` default limit increased from 50 to 100 and ``Subnet Groups`` limit increased from 20 to 50. This should not have affected any users, as these limits are retrieved in realtime via the RDS API.
+* `Issue #293 <https://github.com/jantman/awslimitchecker/issues/293>`_ - Increase maximum number of retries (boto3/botocore) for ``elbv2`` API calls, to attempt to deal with the large number of calls we have to make in order to count the ALB listeners and rules. This requires botocore >= 1.6.0, which requires boto3 >= 1.4.6.
 
 2.0.0 (2017-10-12)
 ------------------

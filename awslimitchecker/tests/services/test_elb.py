@@ -183,20 +183,26 @@ class Test_ElbService(object):
                     with patch(
                         '%s._update_usage_for_elbv2' % pb, autospec=True
                     ) as mock_u:
-                        mock_paginate.side_effect = [
-                            tgs_res,
-                            lbs_res
-                        ]
-                        cls = _ElbService(21, 43)
-                        cls._boto3_connection_kwargs = {
-                            'foo': 'bar',
-                            'baz': 'blam'
-                        }
-                        res = cls._find_usage_elbv2()
+                        with patch(
+                            '%s.Config' % pbm, autospec=True
+                        ) as mock_conf:
+                            mock_paginate.side_effect = [
+                                tgs_res,
+                                lbs_res
+                            ]
+                            cls = _ElbService(21, 43)
+                            cls._boto3_connection_kwargs = {
+                                'foo': 'bar',
+                                'baz': 'blam'
+                            }
+                            res = cls._find_usage_elbv2()
         assert res == 2
+        assert mock_conf.mock_calls == [
+            call(retries={'max_attempts': 12})
+        ]
         assert mock_connect.mock_calls == []
         assert mock_client.mock_calls == [
-            call('elbv2', foo='bar', baz='blam'),
+            call('elbv2', foo='bar', baz='blam', config=mock_conf.return_value),
         ]
         assert mock_paginate.mock_calls == [
             call(
