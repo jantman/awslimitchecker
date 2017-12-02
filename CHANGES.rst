@@ -4,6 +4,14 @@ Changelog
 Unreleased Changes
 ------------------
 
+**Important Notice for python 2.6 and 3.3 users**:
+
+Python 2.6 reached its end of life in `October 2013 <https://mail.python.org/pipermail/python-dev/2013-September/128287.html>`_.
+Python 3.3 officially reached its end of life in `September 2017 <https://www.python.org/dev/peps/pep-0398/#lifespan>`_, five years
+after development was ceased. The test framework used by awslimitchecker, pytest, has `dropped support <https://github.com/pytest-dev/pytest/blob/master/CHANGELOG.rst#pytest-330-2017-11-23>`_ for Python 2.6 and 3.3 in its latest release. According to the `PyPI download statistics <http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/awslimitchecker/index.html#graph_by-implementation>`_ (which unfortunately don't take into account mirrors or caching proxies), awslimitchecker has only ever had one download reported as Python 3.3 and has a very, very small number reporting as Python 2.6 (likely only a handful of users).
+
+**The next release of awslimitchecker will officially drop support for Python 2.6 and 3.3**, changing the required Python version to 2.7 or >= 3.4. If you are one of the very few (perhaps only one) users running on Python 2.6, you can either run with a newer Python version or see `Issue 301 <https://github.com/jantman/awslimitchecker/issues/301>`_ for information on building a Docker container based on Python 3.5.
+
 * Fix test failures caused by dependency updates.
 * Pin ``pytest`` development to 3.2.5 to continue python 2.6 and 3.3 support.
 
