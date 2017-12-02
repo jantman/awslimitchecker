@@ -315,6 +315,7 @@ linkcheck_ignore = [
     r'https?://.*readthedocs\.org.*',
     r'https?://.*readthedocs\.io.*',
     r'https?://waffle\.io.*',
+    r'https?://github\.com/pytest-dev/pytest/blob/master/CHANGELOG\.rst'
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734
