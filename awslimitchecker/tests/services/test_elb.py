@@ -47,9 +47,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock
+    from mock import patch, call, Mock, PropertyMock
 else:
-    from unittest.mock import patch, call, Mock
+    from unittest.mock import patch, call, Mock, PropertyMock
 
 
 pbm = 'awslimitchecker.services.elb'  # patch base path - module
@@ -100,6 +100,9 @@ class Test_ElbService(object):
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.client' % pbm) as mock_client:
                 m_cli = mock_client.return_value
+                m_cli._client_config.region_name = PropertyMock(
+                    return_value='rname'
+                )
                 m_cli.describe_account_limits.return_value = r2
                 cls = _ElbService(21, 43)
                 cls.conn = mock_conn
@@ -174,6 +177,8 @@ class Test_ElbService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.client' % pbm) as mock_client:
+                mock_client.return_value._client_config.region_name = \
+                    PropertyMock(return_value='rname')
                 with patch('%s.paginate_dict' % pbm) as mock_paginate:
                     with patch(
                         '%s._update_usage_for_elbv2' % pb, autospec=True

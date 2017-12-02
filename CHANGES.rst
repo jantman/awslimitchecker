@@ -5,6 +5,7 @@ Unreleased Changes
 ------------------
 
 * Add ``pytest-html`` plugin to tox test environment.
+* Fix test failures caused by dependency updates.
 
 2.0.0 (2017-10-12)
 ------------------
