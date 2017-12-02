@@ -15,6 +15,7 @@ after development was ceased. The test framework used by awslimitchecker, pytest
 * `Issue #314 <https://github.com/jantman/awslimitchecker/issues/314>`_ - Update RDS service default limits; ``DB snapshots per user`` default limit increased from 50 to 100 and ``Subnet Groups`` limit increased from 20 to 50. This should not have affected any users, as these limits are retrieved in realtime via the RDS API.
 * `Issue #293 <https://github.com/jantman/awslimitchecker/issues/293>`_ - Increase maximum number of retries (boto3/botocore) for ``elbv2`` API calls, to attempt to deal with the large number of calls we have to make in order to count the ALB listeners and rules. This requires botocore >= 1.6.0, which requires boto3 >= 1.4.6.
 * `Issue #315 <https://github.com/jantman/awslimitchecker/issues/315>`_ - Add new instance types: 'c5.18xlarge', 'c5.2xlarge', 'c5.4xlarge', 'c5.9xlarge', 'c5.large', 'c5.xlarge', 'g3.16xlarge', 'g3.4xlarge', 'g3.8xlarge', 'h1.16xlarge', 'h1.2xlarge', 'h1.4xlarge', 'h1.8xlarge', 'm5.12xlarge', 'm5.24xlarge', 'm5.2xlarge', 'm5.4xlarge', 'm5.large', 'm5.xlarge', 'p3.16xlarge', 'p3.2xlarge', 'p3.8xlarge', 'x1e.32xlarge', 'x1e.xlarge'
+* `Issue #316 <https://github.com/jantman/awslimitchecker/issues/316>`_ - Automate release process.
 
 2.0.0 (2017-10-12)
 ------------------
