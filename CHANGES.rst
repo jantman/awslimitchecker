@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* Add ``pytest-html`` plugin to tox test environment.
+
 2.0.0 (2017-10-12)
 ------------------
 
