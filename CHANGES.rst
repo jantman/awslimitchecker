@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+3.0.0 (2017-12-02)
 ------------------
 
 **Important Notice for python 2.6 and 3.3 users**:
