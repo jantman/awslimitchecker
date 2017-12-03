@@ -40,12 +40,16 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import abc  # noqa
 import logging
 from boto3 import client
+from botocore.config import Config
 
 from .base import _AwsService
 from ..limit import AwsLimit
 from ..utils import paginate_dict
 
 logger = logging.getLogger(__name__)
+
+#: Override the elbv2 API maximum retry attempts
+ELBV2_MAX_RETRY_ATTEMPTS = 12
 
 
 class _ElbService(_AwsService):
@@ -109,9 +113,14 @@ class _ElbService(_AwsService):
         :rtype: int
         """
         logger.debug('Checking usage for ELBv2')
-        conn2 = client('elbv2', **self._boto3_connection_kwargs)
-        logger.debug("Connected to %s in region %s",
-                     'elbv2', conn2._client_config.region_name)
+        conn2 = client(
+            'elbv2',
+            config=Config(retries={'max_attempts': ELBV2_MAX_RETRY_ATTEMPTS}),
+            **self._boto3_connection_kwargs
+        )
+        logger.debug("Connected to %s in region %s (with max retry attempts "
+                     "overridden to %d)", 'elbv2',
+                     conn2._client_config.region_name, ELBV2_MAX_RETRY_ATTEMPTS)
         # Target groups
         tgroups = paginate_dict(
             conn2.describe_target_groups,

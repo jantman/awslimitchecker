@@ -317,12 +317,20 @@ class _Ec2Service(_AwsService):
         special_limits = {
             'c4.4xlarge': (10, 20, 5),
             'c4.8xlarge': (5, 20, 5),
+            'c5.4xlarge': (10, 20, 5),
+            'c5.9xlarge': (5, 20, 5),
+            'c5.18xlarge': (5, 20, 5),
             'cg1.4xlarge': (2, 20, 5),
             'cr1.8xlarge': (2, 20, 5),
             'd2.4xlarge': (10, 20, 5),
             'd2.8xlarge': (5, 20, 5),
             'g2.2xlarge': (5, 20, 5),
             'g2.8xlarge': (2, 20, 5),
+            'g3.4xlarge': (1, 20, 5),
+            'g3.8xlarge': (1, 20, 5),
+            'g3.16xlarge': (1, 20, 5),
+            'h1.8xlarge': (10, 20, 5),
+            'h1.16xlarge': (5, 20, 5),
             'hi1.4xlarge': (2, 20, 5),
             'hs1.8xlarge': (2, 20, 0),
             'i2.xlarge': (8, 20, 0),
@@ -338,11 +346,20 @@ class _Ec2Service(_AwsService):
             'm4.4xlarge': (10, 20, 5),
             'm4.10xlarge': (5, 20, 5),
             'm4.16xlarge': (5, 20, 5),
+            'm5.4xlarge': (10, 20, 5),
+            'm5.12xlarge': (5, 20, 5),
+            'm5.24xlarge': (5, 20, 5),
             'p2.xlarge': (1, 20, 5),
             'p2.8xlarge': (1, 20, 5),
             'p2.16xlarge': (1, 20, 5),
+            'p3.2xlarge': (1, 20, 5),
+            'p3.8xlarge': (1, 20, 5),
+            'p3.16xlarge': (1, 20, 5),
             'r3.4xlarge': (10, 20, 5),
             'r3.8xlarge': (5, 20, 5),
+            'r4.4xlarge': (10, 20, 5),
+            'r4.8xlarge': (5, 20, 5),
+            'r4.16xlarge': (1, 20, 5),
         }
         limits = {}
         for i_type in self._instance_types():
@@ -588,7 +605,13 @@ class _Ec2Service(_AwsService):
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
-            'm4.16xlarge'
+            'm4.16xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.large',
+            'm5.xlarge',
         ]
 
         PREV_GENERAL_TYPES = [
@@ -612,7 +635,9 @@ class _Ec2Service(_AwsService):
             'r4.8xlarge',
             'r4.16xlarge',
             'x1.16xlarge',
-            'x1.32xlarge'
+            'x1.32xlarge',
+            'x1e.32xlarge',
+            'x1e.xlarge',
         ]
 
         PREV_MEMORY_TYPES = [
@@ -633,6 +658,12 @@ class _Ec2Service(_AwsService):
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.18xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.large',
+            'c5.xlarge',
         ]
 
         PREV_COMPUTE_TYPES = [
@@ -644,7 +675,10 @@ class _Ec2Service(_AwsService):
         ACCELERATED_COMPUTE_TYPES = [
             'p2.xlarge',
             'p2.8xlarge',
-            'p2.16xlarge'
+            'p2.16xlarge',
+            'p3.16xlarge',
+            'p3.2xlarge',
+            'p3.8xlarge',
         ]
 
         STORAGE_TYPES = [
@@ -658,9 +692,15 @@ class _Ec2Service(_AwsService):
             'i3.4xlarge',
             'i3.8xlarge',
             'i3.16xlarge',
+            'h1.16xlarge',
+            'h1.2xlarge',
+            'h1.4xlarge',
+            'h1.8xlarge',
         ]
 
         PREV_STORAGE_TYPES = [
+            # NOTE hi1.4xlarge is no longer in the instance type listings,
+            # but some accounts might still have a limit for it
             'hi1.4xlarge',
             'hs1.8xlarge',
         ]
@@ -675,6 +715,9 @@ class _Ec2Service(_AwsService):
         GPU_TYPES = [
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.16xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
         ]
 
         PREV_GPU_TYPES = [
@@ -686,7 +729,7 @@ class _Ec2Service(_AwsService):
             # there isn't a published instance limit yet, so we'll assume
             # it's the default...
             'f1.2xlarge',
-            'f1.16xlarge'
+            'f1.16xlarge',
         ]
 
         return (

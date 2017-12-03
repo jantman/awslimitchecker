@@ -1,6 +1,22 @@
 Changelog
 =========
 
+3.0.0 (2017-12-02)
+------------------
+
+**Important Notice for python 2.6 and 3.3 users**:
+
+Python 2.6 reached its end of life in `October 2013 <https://mail.python.org/pipermail/python-dev/2013-September/128287.html>`_.
+Python 3.3 officially reached its end of life in `September 2017 <https://www.python.org/dev/peps/pep-0398/#lifespan>`_, five years
+after development was ceased. The test framework used by awslimitchecker, pytest, has `dropped support <https://github.com/pytest-dev/pytest/blob/master/CHANGELOG.rst#pytest-330-2017-11-23>`_ for Python 2.6 and 3.3 in its latest release. According to the `PyPI download statistics <http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/awslimitchecker/index.html#graph_by-implementation>`_ (which unfortunately don't take into account mirrors or caching proxies), awslimitchecker has only ever had one download reported as Python 3.3 and has a very, very small number reporting as Python 2.6 (likely only a handful of users). **The next release of awslimitchecker will officially drop support for Python 2.6 and 3.3**, changing the required Python version to 2.7 or >= 3.4. If you are one of the very few (perhaps only one) users running on Python 2.6, you can either run with a newer Python version or see `Issue 301 <https://github.com/jantman/awslimitchecker/issues/301>`_ for information on building a Docker container based on Python 3.5.
+
+* Fix test failures caused by dependency updates.
+* Pin ``pytest`` development to 3.2.5 to continue python 2.6 and 3.3 support.
+* `Issue #314 <https://github.com/jantman/awslimitchecker/issues/314>`_ - Update RDS service default limits; ``DB snapshots per user`` default limit increased from 50 to 100 and ``Subnet Groups`` limit increased from 20 to 50. This should not have affected any users, as these limits are retrieved in realtime via the RDS API.
+* `Issue #293 <https://github.com/jantman/awslimitchecker/issues/293>`_ - Increase maximum number of retries (boto3/botocore) for ``elbv2`` API calls, to attempt to deal with the large number of calls we have to make in order to count the ALB listeners and rules. This requires botocore >= 1.6.0, which requires boto3 >= 1.4.6.
+* `Issue #315 <https://github.com/jantman/awslimitchecker/issues/315>`_ - Add new instance types: 'c5.18xlarge', 'c5.2xlarge', 'c5.4xlarge', 'c5.9xlarge', 'c5.large', 'c5.xlarge', 'g3.16xlarge', 'g3.4xlarge', 'g3.8xlarge', 'h1.16xlarge', 'h1.2xlarge', 'h1.4xlarge', 'h1.8xlarge', 'm5.12xlarge', 'm5.24xlarge', 'm5.2xlarge', 'm5.4xlarge', 'm5.large', 'm5.xlarge', 'p3.16xlarge', 'p3.2xlarge', 'p3.8xlarge', 'x1e.32xlarge', 'x1e.xlarge'
+* `Issue #316 <https://github.com/jantman/awslimitchecker/issues/316>`_ - Automate release process.
+
 2.0.0 (2017-10-12)
 ------------------
 

@@ -168,7 +168,7 @@ class _RDSService(_AwsService):
         limits['DB snapshots per user'] = AwsLimit(
             'DB snapshots per user',
             self,
-            50,
+            100,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSnapshot',
@@ -200,7 +200,7 @@ class _RDSService(_AwsService):
         limits['Subnet Groups'] = AwsLimit(
             'Subnet Groups',
             self,
-            20,
+            50,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSubnetGroup',
