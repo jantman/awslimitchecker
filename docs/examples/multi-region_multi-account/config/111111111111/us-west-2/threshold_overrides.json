@@ -1,0 +1,10 @@
+{
+  "VPC": {
+    "VPCs": {
+      "warning": {"percent": 95}
+    },
+    "Internet gateways": {
+      "warning": {"percent": 100}
+    }
+  }
+}
