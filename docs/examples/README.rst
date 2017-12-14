@@ -1,6 +1,11 @@
 awslimitchecker example scripts
 ===============================
 
+multi-region_multi-account/
+---------------------------
+
+Example of a multi-account, multi-region wrapper script. See [multi-region_multi-account/README.rst](multi-region_multi-account/README.rst) for more information.
+
 check_aws_limits.py
 -------------------
 
@@ -17,7 +22,7 @@ Feel free to use this as a starting point for your own wrapper.
 Jenkins-AWS_Limit_Check.xml
 ----------------------------
 
-This is a sample Jenkins job to run ``check_aws_limits.py`` every 6 hours, 
+This is a sample Jenkins job to run ``check_aws_limits.py`` every 6 hours,
 
 prometheus.py
 -------------
