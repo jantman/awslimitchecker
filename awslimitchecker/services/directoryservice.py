@@ -92,7 +92,7 @@ class _DirectoryserviceService(_AwsService):
         limits['CloudOnlyDirectories'] = AwsLimit(
             'CloudOnlyDirectories',
             self,
-            200,
+            10,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DirectoryService',
@@ -100,7 +100,7 @@ class _DirectoryserviceService(_AwsService):
         limits['CloudOnlyMicrosoftAD'] = AwsLimit(
             'CloudOnlyMicrosoftAD',
             self,
-            200,
+            10,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DirectoryService',
@@ -108,7 +108,7 @@ class _DirectoryserviceService(_AwsService):
         limits['ConnectedDirectories'] = AwsLimit(
             'ConnectedDirectories',
             self,
-            200,
+            10,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DirectoryService',
