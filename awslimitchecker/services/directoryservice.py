@@ -63,7 +63,6 @@ class _DirectoryserviceService(_AwsService):
             lim._reset_usage()
         resp = self.conn.get_directory_limits()
         directoryLimits = resp['DirectoryLimits']
-        print(self.limits)
         self.limits['CloudOnlyDirectories']._add_current_usage(
             directoryLimits['CloudOnlyDirectoriesCurrentCount'],
             aws_type='AWS::DirectoryService'
