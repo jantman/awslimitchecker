@@ -46,10 +46,10 @@ from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
-class _DirectoryserviceService(_AwsService):
+class _EcsService(_AwsService):
 
-    service_name = 'Directory Service'
-    api_name = 'ds'  # AWS API name to connect to (boto3.client)
+    service_name = 'ECS'
+    api_name = 'ecs'  # AWS API name to connect to (boto3.client)
 
     def find_usage(self):
         """
@@ -61,22 +61,36 @@ class _DirectoryserviceService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        resp = self.conn.get_directory_limits()
-        directoryLimits = resp['DirectoryLimits']
-        self.limits['CloudOnlyDirectories']._add_current_usage(
-            directoryLimits['CloudOnlyDirectoriesCurrentCount'],
-            aws_type='AWS::DirectoryService'
-        )
-        self.limits['CloudOnlyMicrosoftAD']._add_current_usage(
-            directoryLimits['CloudOnlyMicrosoftADCurrentCount'],
-            aws_type='AWS::DirectoryService'
-        )
-        self.limits['ConnectedDirectories']._add_current_usage(
-            directoryLimits['ConnectedDirectoriesCurrentCount'],
-            aws_type='AWS::DirectoryService'
-            )
+        self._find_usage_clusters()
         self._have_usage = True
         logger.debug("Done checking usage.")
+    
+    def _find_usage_clusters(self):
+        count = 0
+        paginator = self.conn.get_paginator('list_clusters')
+        iter = paginator.paginate()
+        for page in iter:
+            for clusterArn in page['clusterArns']:
+                count += 1
+                resp = self.conn.describe_clusters(
+                    clusters = [
+                        clusterArn,
+                    ]
+                )
+                cluster = resp['clusters'][0]
+                self.limits['Container Instances per Cluster']._add_current_usage(
+                    cluster['registeredContainerInstancesCount'],
+                    aws_type='AWS::ECS',
+                    resource_id=clusterArn
+                )
+                self.limits['Services per Cluster']._add_current_usage(
+                    cluster['activeServicesCount'],
+                    aws_type='AWS::ECS',
+                    resource_id=clusterArn
+                )
+        self.limits['Clusters']._add_current_usage(
+            count, aws_type='AWS::ECS'
+        )
 
     def get_limits(self):
         """
@@ -89,51 +103,44 @@ class _DirectoryserviceService(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
-        limits['CloudOnlyDirectories'] = AwsLimit(
-            'CloudOnlyDirectories',
+        limits['Clusters'] = AwsLimit(
+            'Clusters',
             self,
-            10,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DirectoryService',
+            limit_type='AWS::ECS',
         )
-        limits['CloudOnlyMicrosoftAD'] = AwsLimit(
-            'CloudOnlyMicrosoftAD',
+        limits['Container Instances per Cluster'] = AwsLimit(
+            'Container Instances per Cluster',
             self,
-            10,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DirectoryService',
+            limit_type='AWS::ECS',
+            limit_subtype='ContainerInstance'
         )
-        limits['ConnectedDirectories'] = AwsLimit(
-            'ConnectedDirectories',
+        limits['Services per Cluster'] = AwsLimit(
+            'Services per Cluster',
             self,
-            10,
+            500,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DirectoryService',
+            limit_type='AWS::ECS',
+            limit_subtype='ContainerService'
         )
+        # TODO: need to implement this later
+        # limits['EC2 Tasks per Service (desired count)'] = AwsLimit(
+        #     'EC2 Tasks per Service (desired count)',
+        #     self,
+        #     1000,
+        #     self.warning_threshold,
+        #     self.critical_threshold,
+        #     limit_type='AWS::ECS',
+        #     limit_subtype='EcsTask'
+        # )
         self.limits = limits
         return limits
-
-    def _update_limits_from_api(self):
-        """
-        Call the service's API action to retrieve limit/quota information, and
-        update AwsLimit objects in ``self.limits`` with this information.
-        """
-        logger.debug('Setting DirectoryService limits from API')
-        self.connect()
-        resp = self.conn.get_directory_limits()
-        directoryLimits = resp['DirectoryLimits']
-        self.limits['CloudOnlyDirectories']._set_api_limit(
-            directoryLimits['CloudOnlyDirectoriesLimit']
-        )
-        self.limits['CloudOnlyMicrosoftAD']._set_api_limit(
-            directoryLimits['CloudOnlyMicrosoftADLimit']
-        )
-        self.limits['ConnectedDirectories']._set_api_limit(
-            directoryLimits['ConnectedDirectoriesLimit']
-        )
 
     def required_iam_permissions(self):
         """
@@ -144,6 +151,8 @@ class _DirectoryserviceService(_AwsService):
         :returns: list of IAM Action strings
         :rtype: list
         """
+        # TODO: update this to be all IAM permissions required for find_usage() to work
         return [
-            "ds:GetDirectoryLimits",
+            "ecs:Describe*",
+            "ecs:List*",
         ]

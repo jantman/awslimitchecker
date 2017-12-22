@@ -38,8 +38,7 @@ Di Zou <zou@pythian.com>
 """
 
 import sys
-from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.XXnewserviceXX import _XXNewServiceXXService
+from awslimitchecker.services.ecs import _EcsService
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -52,28 +51,30 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-pbm = 'awslimitchecker.services.XXnewserviceXX'  # module patch base
-pb = '%s._XXNewServiceXXService' % pbm  # class patch pase
+pbm = 'awslimitchecker.services.ecs'  # module patch base
+pb = '%s._EcsService' % pbm  # class patch pase
 
 
-class Test_XXNewServiceXXService(object):
+class Test_EcsService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _XXNewServiceXXService(21, 43)
-        assert cls.service_name == 'XXNewServiceXX'
-        assert cls.api_name == 'XXnewserviceXX'
+        cls = _EcsService(21, 43)
+        assert cls.service_name == 'ECS'
+        assert cls.api_name == 'ecs'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _EcsService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            # TODO fill in limits here
-            'SomeLimitNameHere',
+            'Clusters',
+            'Container Instances per Cluster',
+            'Services per Cluster',
+            # 'EC2 Tasks per Service (desired count)',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -83,28 +84,69 @@ class Test_XXNewServiceXXService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _EcsService(21, 43)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
 
     def test_find_usage(self):
-        # put boto3 responses in response_fixtures.py, then do something like:
-        # response = result_fixtures.EBS.test_find_usage_ebs
         mock_conn = Mock()
-        mock_conn.some_method.return_value =  # some logical return value
+        mock_conn.describe_clusters.return_value = {
+            'clusters': [
+                {
+                    'clusterArn': 'string',
+                    'clusterName': 'string',
+                    'status': 'string',
+                    'registeredContainerInstancesCount': 123,
+                    'runningTasksCount': 123,
+                    'pendingTasksCount': 123,
+                    'activeServicesCount': 123,
+                    'statistics': [
+                        {
+                            'name': 'string',
+                            'value': 'string'
+                        },
+                    ]
+                },
+            ],
+            'failures': [
+                {
+                    'arn': 'string',
+                    'reason': 'string'
+                },
+            ]
+        }
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = [{
+            'clusterArns': [
+                'string',
+            ],
+            'nextToken': 'string'
+        }]
+
+        mock_conn.get_paginator.return_value = mock_paginator
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _XXNewServiceXXService(21, 43)
+            cls = _EcsService(21, 43)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
-        assert mock_conn.mock_calls == [call.some_method()]
-        # TODO - assert about usage
+        assert mock_conn.mock_calls == [
+            call.get_paginator('list_clusters'),
+            call.get_paginator().paginate(),
+            call.describe_clusters(
+                clusters=['string'],
+                include=[
+                    'registeredContainerInstancesCount',
+                    'activeEC2ServiceCount'
+                ]
+            )
+        ]
 
     def test_required_iam_permissions(self):
-        cls = _XXNewServiceXXService(21, 43)
+        cls = _EcsService(21, 43)
         assert cls.required_iam_permissions() == [
-            # TODO - permissions here
+            "ecs:Describe*",
+            "ecs:List*"
         ]

@@ -56,6 +56,7 @@ from awslimitchecker.services.redshift import _RedshiftService
 from awslimitchecker.services.dynamodb import _DynamodbService
 from awslimitchecker.services.apigateway import _ApigatewayService
 from awslimitchecker.services.directoryservice import _DirectoryserviceService
+from awslimitchecker.services.ecs import _EcsService
 
 # dynamically generate the service name to class dict
 _services = {}
