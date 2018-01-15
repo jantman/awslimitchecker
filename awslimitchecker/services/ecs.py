@@ -149,7 +149,6 @@ class _EcsService(_AwsService):
         :returns: list of IAM Action strings
         :rtype: list
         """
-        # TODO: update this to be all IAM permissions required for find_usage() to work
         return [
             "ecs:Describe*",
             "ecs:List*",
