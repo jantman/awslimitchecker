@@ -64,7 +64,7 @@ class _EcsService(_AwsService):
         self._find_usage_clusters()
         self._have_usage = True
         logger.debug("Done checking usage.")
-    
+
     def _find_usage_clusters(self):
         count = 0
         paginator = self.conn.get_paginator('list_clusters')
@@ -73,9 +73,7 @@ class _EcsService(_AwsService):
             for clusterArn in page['clusterArns']:
                 count += 1
                 resp = self.conn.describe_clusters(
-                    clusters = [
-                        clusterArn,
-                    ]
+                    clusters = [clusterArn,]
                 )
                 cluster = resp['clusters'][0]
                 self.limits['Container Instances per Cluster']._add_current_usage(
