@@ -15,9 +15,11 @@ Submodules
    awslimitchecker.services.autoscaling
    awslimitchecker.services.base
    awslimitchecker.services.cloudformation
+   awslimitchecker.services.directoryservice
    awslimitchecker.services.dynamodb
    awslimitchecker.services.ebs
    awslimitchecker.services.ec2
+   awslimitchecker.services.ecs
    awslimitchecker.services.efs
    awslimitchecker.services.elasticache
    awslimitchecker.services.elasticbeanstalk
