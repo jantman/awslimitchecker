@@ -111,7 +111,8 @@ class Test_DirectoryserviceService(object):
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
         assert mock_conn.mock_calls == [call.get_directory_limits()]
-        assert cls.limits['CloudOnlyDirectories'].get_current_usage()[
+        assert cls.limits[
+            'CloudOnlyDirectories'].get_current_usage()[
             0].get_value() == 123
 
     def test_required_iam_permissions(self):
