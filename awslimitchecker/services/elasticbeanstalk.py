@@ -105,7 +105,7 @@ class _ElasticBeanstalkService(_AwsService):
         limits['Applications'] = AwsLimit(
             'Applications',
             self,
-            25,
+            75,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticBeanstalk::Application',
@@ -113,7 +113,7 @@ class _ElasticBeanstalkService(_AwsService):
         limits['Application versions'] = AwsLimit(
             'Application versions',
             self,
-            500,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticBeanstalk::ApplicationVersion',
