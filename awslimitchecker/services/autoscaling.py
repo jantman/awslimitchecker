@@ -104,7 +104,7 @@ class _AutoscalingService(_AwsService):
         limits['Auto Scaling groups'] = AwsLimit(
             'Auto Scaling groups',
             self,
-            20,
+            200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::AutoScaling::AutoScalingGroup',
@@ -113,7 +113,7 @@ class _AutoscalingService(_AwsService):
         limits['Launch configurations'] = AwsLimit(
             'Launch configurations',
             self,
-            100,
+            200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::AutoScaling::LaunchConfiguration',
