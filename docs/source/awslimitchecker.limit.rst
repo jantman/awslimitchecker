@@ -1,5 +1,5 @@
-awslimitchecker\.limit module
-=============================
+awslimitchecker.limit module
+============================
 
 .. automodule:: awslimitchecker.limit
     :members:

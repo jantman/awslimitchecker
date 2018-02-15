@@ -1,5 +1,5 @@
-awslimitchecker\.version module
-===============================
+awslimitchecker.version module
+==============================
 
 .. automodule:: awslimitchecker.version
     :members:

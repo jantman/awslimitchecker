@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* Fix various docstring problems causing documentation build to fail.
+
 3.0.0 (2017-12-02)
 ------------------
 

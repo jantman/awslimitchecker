@@ -1,5 +1,5 @@
-awslimitchecker\.trustedadvisor module
-======================================
+awslimitchecker.trustedadvisor module
+=====================================
 
 .. automodule:: awslimitchecker.trustedadvisor
     :members:

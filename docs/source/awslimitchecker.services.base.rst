@@ -1,5 +1,5 @@
-awslimitchecker\.services\.base module
-======================================
+awslimitchecker.services.base module
+====================================
 
 .. automodule:: awslimitchecker.services.base
     :members:
