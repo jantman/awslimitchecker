@@ -63,7 +63,7 @@ class AwsLimit(object):
 
         :param name: the name of this limit (may contain spaces);
           if possible, this should be the name used by AWS, i.e. TrustedAdvisor
-        :type name: string
+        :type name: str
         :param service: the :py:class:`~._AwsService` class that
           this limit is for
         :type service: :py:class:`~._AwsService`
@@ -237,7 +237,7 @@ class AwsLimit(object):
         instances in ascending order.
 
         :returns: representation of current usage
-        :rtype: string
+        :rtype: str
         """
         if len(self._current_usage) == 0:
             return '<unknown>'
@@ -266,12 +266,12 @@ class AwsLimit(object):
         :type value: :py:obj:`int` or :py:obj:`float`
         :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type resource_id: string
+        :type resource_id: str
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
           `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
-        :type aws_type: string
+        :type aws_type: str
         """
         self._current_usage.append(
             AwsLimitUsage(
@@ -458,12 +458,12 @@ class AwsLimitUsage(object):
         :type value: :py:obj:`int` or :py:obj:`float`
         :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type resource_id: string
+        :type resource_id: str
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
           `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
-        :type aws_type: string
+        :type aws_type: str
         """
         self.limit = limit
         self.value = value
@@ -486,7 +486,7 @@ class AwsLimitUsage(object):
         If ``id`` is not set, return ``value`` formatted as a string;
         otherwise, return a string of the format ``id=value``.
 
-        :rtype: string
+        :rtype: str
         """
         s = '{v}'.format(v=self.value)
         if self.resource_id is not None:

@@ -1,5 +1,5 @@
-awslimitchecker\.services\.elb module
-=====================================
+awslimitchecker.services.elb module
+===================================
 
 .. automodule:: awslimitchecker.services.elb
     :members:

@@ -156,7 +156,7 @@ class _ElbService(_AwsService):
         Update usage for a single ALB.
 
         :param conn: elbv2 API connection
-        :type conn: boto3.client
+        :type conn: :py:class:`ElasticLoadBalancing.Client`
         :param alb_arn: Load Balancer ARN
         :type alb_arn: str
         :param alb_name: Load Balancer Name

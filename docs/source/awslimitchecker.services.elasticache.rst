@@ -1,5 +1,5 @@
-awslimitchecker\.services\.elasticache module
-=============================================
+awslimitchecker.services.elasticache module
+===========================================
 
 .. automodule:: awslimitchecker.services.elasticache
     :members:

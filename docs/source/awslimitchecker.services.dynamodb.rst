@@ -1,5 +1,5 @@
-awslimitchecker\.services\.dynamodb module
-==========================================
+awslimitchecker.services.dynamodb module
+========================================
 
 .. automodule:: awslimitchecker.services.dynamodb
     :members:

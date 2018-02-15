@@ -83,7 +83,7 @@ def dict2cols(d, spaces=2, separator=' '):
     :param spaces: number of spaces to separate columns by
     :type spaces: int
     :param separator: character to fill in between columns
-    :type separator: string
+    :type separator: str
     """
     if len(d) == 0:
         return ''
@@ -116,7 +116,7 @@ def paginate_dict(function_ref, *argv, **kwargs):
     :py:func:`~._get_dict_value_by_path`.
 
     :param function_ref: the function to call
-    :type function_ref: function
+    :type function_ref: ``function``
     :param argv: the parameters to pass to the function
     :type argv: tuple
     :param kwargs: keyword arguments to pass to the function

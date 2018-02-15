@@ -1,5 +1,5 @@
-awslimitchecker\.services\.autoscaling module
-=============================================
+awslimitchecker.services.autoscaling module
+===========================================
 
 .. automodule:: awslimitchecker.services.autoscaling
     :members:

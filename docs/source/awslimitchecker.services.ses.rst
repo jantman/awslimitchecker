@@ -1,5 +1,5 @@
-awslimitchecker\.services\.ses module
-=====================================
+awslimitchecker.services.ses module
+===================================
 
 .. automodule:: awslimitchecker.services.ses
     :members:
