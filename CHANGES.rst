@@ -5,6 +5,24 @@ Unreleased Changes
 ------------------
 
 * Fix various docstring problems causing documentation build to fail.
+* Update numerous no-longer-correct default limits (thanks to `KingRogue <https://github.com/KingRogue>`_).
+  * AutoScaling
+    * Auto Scaling groups - 20 to 200
+    * Launch configurations - 100 to 200
+  * EBS
+    * Provisioned IOPS - 40000 to 200000
+    * Provisioned IOPS (SSD) storage (GiB) - 20480 to 102400 (100 TiB)
+    * General Purpose (SSD) volume storage (GiB) - 20480 to 102400 (100 TiB)
+    * Throughput Optimized (HDD) volume storage (GiB) - 20480 to 307200 (300 TiB)
+    * Cold (HDD) volume storage (GiB) - 20480 to 307200 (300 TiB)
+  * ElasticBeanstalk
+    * Applications - 25 to 75
+    * Application versions - 500 to 1000
+  * IAM
+    * Groups - 100 to 300
+    * Roles - 250 to 1000
+    * Instance profiles - 100 to 1000
+    * Policies - 1000 to 1500
 
 3.0.0 (2017-12-02)
 ------------------
