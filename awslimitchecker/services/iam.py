@@ -89,7 +89,7 @@ class _IamService(_AwsService):
         limits['Groups'] = AwsLimit(
             'Groups',
             self,
-            100,
+            300,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Group',
@@ -105,7 +105,7 @@ class _IamService(_AwsService):
         limits['Roles'] = AwsLimit(
             'Roles',
             self,
-            250,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Role',
@@ -113,7 +113,7 @@ class _IamService(_AwsService):
         limits['Instance profiles'] = AwsLimit(
             'Instance profiles',
             self,
-            100,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::InstanceProfile',
@@ -129,7 +129,7 @@ class _IamService(_AwsService):
         limits['Policies'] = AwsLimit(
             'Policies',
             self,
-            1000,
+            1500,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Policy',
