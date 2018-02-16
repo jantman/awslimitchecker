@@ -1,5 +1,5 @@
-awslimitchecker\.services\.elasticbeanstalk module
-==================================================
+awslimitchecker.services.elasticbeanstalk module
+================================================
 
 .. automodule:: awslimitchecker.services.elasticbeanstalk
     :members:

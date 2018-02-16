@@ -1,5 +1,5 @@
-awslimitchecker\.services\.efs module
-=====================================
+awslimitchecker.services.efs module
+===================================
 
 .. automodule:: awslimitchecker.services.efs
     :members:

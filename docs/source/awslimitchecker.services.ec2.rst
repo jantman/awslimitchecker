@@ -1,5 +1,5 @@
-awslimitchecker\.services\.ec2 module
-=====================================
+awslimitchecker.services.ec2 module
+===================================
 
 .. automodule:: awslimitchecker.services.ec2
     :members:

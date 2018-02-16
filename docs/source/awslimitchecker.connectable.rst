@@ -1,5 +1,5 @@
-awslimitchecker\.connectable module
-===================================
+awslimitchecker.connectable module
+==================================
 
 .. automodule:: awslimitchecker.connectable
     :members:

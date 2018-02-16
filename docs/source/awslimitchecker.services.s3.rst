@@ -1,5 +1,5 @@
-awslimitchecker\.services\.s3 module
-====================================
+awslimitchecker.services.s3 module
+==================================
 
 .. automodule:: awslimitchecker.services.s3
     :members:

@@ -1,5 +1,5 @@
-awslimitchecker\.utils module
-=============================
+awslimitchecker.utils module
+============================
 
 .. automodule:: awslimitchecker.utils
     :members:

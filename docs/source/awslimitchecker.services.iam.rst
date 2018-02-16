@@ -1,5 +1,5 @@
-awslimitchecker\.services\.iam module
-=====================================
+awslimitchecker.services.iam module
+===================================
 
 .. automodule:: awslimitchecker.services.iam
     :members:
