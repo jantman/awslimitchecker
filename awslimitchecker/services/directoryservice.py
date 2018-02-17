@@ -1,11 +1,11 @@
 """
-awslimitchecker/services/ecs.py
+awslimitchecker/services/directoryservice.py
 
 The latest version of this package is available at:
-<https://github.com/di1214/awslimitchecker>
+<https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Di Zou <zou@pythian.com>
+Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,13 +27,14 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/di1214/pydnstest> or
+bugs please submit them at <https://github.com/jantman/pydnstest> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
 
 AUTHORS:
 Di Zou <zou@pythian.com>
+Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
@@ -62,19 +63,19 @@ class _DirectoryserviceService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         resp = self.conn.get_directory_limits()
-        directoryLimits = resp['DirectoryLimits']
+        directory_limits = resp['DirectoryLimits']
         self.limits['CloudOnlyDirectories']._add_current_usage(
-            directoryLimits['CloudOnlyDirectoriesCurrentCount'],
+            directory_limits['CloudOnlyDirectoriesCurrentCount'],
             aws_type='AWS::DirectoryService'
         )
         self.limits['CloudOnlyMicrosoftAD']._add_current_usage(
-            directoryLimits['CloudOnlyMicrosoftADCurrentCount'],
+            directory_limits['CloudOnlyMicrosoftADCurrentCount'],
             aws_type='AWS::DirectoryService'
         )
         self.limits['ConnectedDirectories']._add_current_usage(
-            directoryLimits['ConnectedDirectoriesCurrentCount'],
+            directory_limits['ConnectedDirectoriesCurrentCount'],
             aws_type='AWS::DirectoryService'
-            )
+        )
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -95,7 +96,7 @@ class _DirectoryserviceService(_AwsService):
             10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DirectoryService',
+            limit_type='AWS::DirectoryService::CloudOnly',
         )
         limits['CloudOnlyMicrosoftAD'] = AwsLimit(
             'CloudOnlyMicrosoftAD',
@@ -103,7 +104,7 @@ class _DirectoryserviceService(_AwsService):
             10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DirectoryService',
+            limit_type='AWS::DirectoryService::MicrosoftAD',
         )
         limits['ConnectedDirectories'] = AwsLimit(
             'ConnectedDirectories',
@@ -111,7 +112,7 @@ class _DirectoryserviceService(_AwsService):
             10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DirectoryService',
+            limit_type='AWS::DirectoryService::Connected',
         )
         self.limits = limits
         return limits
@@ -124,15 +125,15 @@ class _DirectoryserviceService(_AwsService):
         logger.debug('Setting DirectoryService limits from API')
         self.connect()
         resp = self.conn.get_directory_limits()
-        directoryLimits = resp['DirectoryLimits']
+        directory_limits = resp['DirectoryLimits']
         self.limits['CloudOnlyDirectories']._set_api_limit(
-            directoryLimits['CloudOnlyDirectoriesLimit']
+            directory_limits['CloudOnlyDirectoriesLimit']
         )
         self.limits['CloudOnlyMicrosoftAD']._set_api_limit(
-            directoryLimits['CloudOnlyMicrosoftADLimit']
+            directory_limits['CloudOnlyMicrosoftADLimit']
         )
         self.limits['ConnectedDirectories']._set_api_limit(
-            directoryLimits['ConnectedDirectoriesLimit']
+            directory_limits['ConnectedDirectoriesLimit']
         )
 
     def required_iam_permissions(self):
