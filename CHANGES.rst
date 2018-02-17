@@ -44,6 +44,9 @@ This release **requires new IAM permissions**:
     * Instance profiles - 100 to 1000
     * Policies - 1000 to 1500
 
+* Fix ``dev/terraform.py`` and ``dev/integration_test_iam.tf`` for integration tests.
+* Fix date and incorrect project name in some file/copyright headers.
+
 3.0.0 (2017-12-02)
 ------------------
 
