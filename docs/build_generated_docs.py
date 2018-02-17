@@ -93,18 +93,14 @@ def build_iam_policy(checker):
 
 def build_limits(checker):
     logger.info("Beginning build of limits.rst")
-    ta_limits = {}
-    api_limits = {}
     logger.info("Getting Limits")
     limit_info = ''
     limits = checker.get_limits()
     # this is a bit of a pain, because we need to know string lengths to build the table
     for svc_name in sorted(limits):
-        ta_limits[svc_name] = []
-        api_limits[svc_name] = []
         limit_info += '.. _limits.%s:\n\n' % svc_name
         limit_info += svc_name + "\n"
-        limit_info += ('+' * (len(svc_name)+1)) + "\n"
+        limit_info += ('-' * (len(svc_name)+1)) + "\n"
         if svc_name == 'EC2':
             limit_info += "\n" + dedent("""
             **Note on On-Demand vs Reserved Instances:** The EC2 limits for
@@ -122,64 +118,35 @@ def build_limits(checker):
         max_name = 0
         max_default_limit = 0
         for limit in limits[svc_name].values():
-            lname = limit.name
-            if limit.ta_limit is not None:
-                lname += ' :sup:`(TA)`'
-                ta_limits[svc_name].append(limit.name)
-            if limit.api_limit is not None:
-                lname += ' :sup:`(API)`'
-                api_limits[svc_name].append(limit.name)
-            slimits[lname] = str(limit.default_limit)
+            slimits[limit.name] = limit
             # update max string length for table formatting
-            if len(lname) > max_name:
-                max_name = len(lname)
+            if len(limit.name) > max_name:
+                max_name = len(limit.name)
             if len(str(limit.default_limit)) > max_default_limit:
                 max_default_limit = len(str(limit.default_limit))
         # create the format string
         sformat = '{name: <' + str(max_name) + '} ' \
+                  '{ta: <15} {api: <7} ' \
                   '{limit: <' + str(max_default_limit) + '}\n'
         # separator lines
-        sep = ('=' * max_name) + ' ' + ('=' * max_default_limit) + "\n"
+        sep = ('=' * max_name) + ' =============== ======= ' + \
+              ('=' * max_default_limit) + "\n"
         # header
         limit_info += sep
-        limit_info += sformat.format(name='Limit', limit='Default')
+        limit_info += sformat.format(
+            name='Limit', limit='Default', api='API', ta='Trusted Advisor'
+        )
         limit_info += sep
         # limit lines
         for lname, limit in sorted(slimits.iteritems()):
-            limit_info += sformat.format(name=lname, limit=limit)
+            limit_info += sformat.format(
+                name=lname, limit=str(limit.default_limit),
+                ta='|check|' if limit.ta_limit is not None else '',
+                api='|check|' if limit.api_limit is not None else ''
+            )
         # footer
         limit_info += sep
         limit_info += "\n"
-
-    # TA limit list
-    ta_info = """
-    So long as the Service and Limit names used by Trusted Advisor (and returned
-    in its API responses) exactly match those shown below, all limits listed in
-    Trusted Advisor "Service Limit" checks should be automatically used by
-    awslimitchecker. The following service limits have been confirmed as being
-    updated from Trusted Advisor:
-    """
-    ta_info = dedent(ta_info) + "\n\n"
-    for sname in sorted(ta_limits.keys()):
-        if len(ta_limits[sname]) < 1:
-            continue
-        ta_info += '* {s}\n\n'.format(s=sname)
-        for lname in sorted(ta_limits[sname]):
-            ta_info += '  * {l}\n\n'.format(l=lname)
-
-    # API limit list
-    api_info = """
-    The limits listed below can be retrieved directly from their Service's
-    API; this information should be the most accurate, and is used with higher
-    precedence than anything other than explicit limit overrides:
-    """
-    api_info = dedent(api_info) + "\n\n"
-    for sname in sorted(api_limits.keys()):
-        if len(api_limits[sname]) < 1:
-            continue
-        api_info += '* {s}\n\n'.format(s=sname)
-        for lname in sorted(api_limits[sname]):
-            api_info += '  * {l}\n\n'.format(l=lname)
 
     doc = """
     .. -- WARNING -- WARNING -- WARNING
@@ -192,34 +159,30 @@ def build_limits(checker):
     Supported Limits
     ================
 
-    .. _limits.trusted_advisor:
-
-    Trusted Advisor Data
-    ---------------------
-
-    {ta_info}
-
-    .. _limits.api:
-
-    Limits Retrieved from Service APIs
-    ----------------------------------
-
-    {api_info}
-
-    .. _limits.checks:
-
-    Current Checks
-    ---------------
-
     The section below lists every limit that this version of awslimitchecker knows
-    how to check, and its hard-coded default value (per AWS documentation). Limits
-    marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
+    how to check, and its hard-coded default value (per AWS documentation).
+
+    **Limits with a** |check| **in the "Trusted Advisor" column are comfirmed as being
+    updated by Trusted Advisor.** Note that so long as the Service and Limit names used by
+    Trusted Advisor (and returned in its API responses) exactly match those
+    shown below, all limits listed in Trusted Advisor "Service Limit" checks
+    should be automatically used by awslimitchecker. However, limits marked here
+    with a |check| were detected as being returned by Trusted Advisor as of the
+    last release. Note that not all accounts can access Trusted Advisor, or can
+    access all limits known by Trusted Advisor.
+
+    **Limits with a** |check| **in the "API" column can be retrieved directly from
+    the corresponding Service API**; this information should be the most accurate
+    and up-to-date, as it is retrieved directly from the service that evaluates
+    and enforces limits. Limits retrieved via service API take precedence over
+    Trusted Advisor and default limits.
 
     {limit_info}
 
+    .. |check| unicode:: 0x2714 .. heavy check mark
     """
     doc = dedent(doc)
-    doc = doc.format(ta_info=ta_info, limit_info=limit_info, api_info=api_info)
+    doc = doc.format(limit_info=limit_info)
     fname = os.path.join(my_dir, 'source', 'limits.rst')
     logger.info("Writing %s", fname)
     with open(fname, 'w') as fh:

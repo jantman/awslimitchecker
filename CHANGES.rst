@@ -46,6 +46,7 @@ This release **requires new IAM permissions**:
 
 * Fix ``dev/terraform.py`` and ``dev/integration_test_iam.tf`` for integration tests.
 * Fix date and incorrect project name in some file/copyright headers.
+* `Issue #331 <https://github.com/jantman/awslimitchecker/issues/331>`_ - Change layout of the generated `Supported Limits <http://awslimitchecker.readthedocs.io/en/latest/limits.html>`_ documentation page to be more clear about which limits are supported, and include API and Trusted Advisor data in the same table as the limits and their defaults.
 
 3.0.0 (2017-12-02)
 ------------------
