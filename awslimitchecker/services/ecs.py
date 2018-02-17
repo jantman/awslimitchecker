@@ -101,7 +101,10 @@ class _EcsService(_AwsService):
                     aws_type='AWS::ECS::Service',
                     resource_id=cluster['clusterName']
                 )
-                for stat in cluster['statistics']:
+                # Note: 'statistics' is not always present in API responses,
+                # even if requested. As far as I can tell, it's omitted if
+                # a cluster has no Fargate tasks.
+                for stat in cluster.get('statistics', []):
                     if stat['name'] != 'runningFargateTasksCount':
                         continue
                     logger.debug(

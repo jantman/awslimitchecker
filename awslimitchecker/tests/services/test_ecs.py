@@ -143,19 +143,7 @@ class Test_EcsService(object):
                             'registeredContainerInstancesCount': 3,
                             'runningTasksCount': 8,
                             'pendingTasksCount': 22,
-                            'activeServicesCount': 2,
-                            'statistics': [
-                                {'name': 'runningEC2TasksCount', 'value': '0'},
-                                {
-                                    'name': 'runningFargateTasksCount',
-                                    'value': '5'
-                                },
-                                {'name': 'pendingEC2TasksCount', 'value': '0'},
-                                {
-                                    'name': 'pendingFargateTasksCount',
-                                    'value': '1'
-                                }
-                            ]
+                            'activeServicesCount': 2
                         }
                     ]
                 }
@@ -205,7 +193,7 @@ class Test_EcsService(object):
         assert u[0].resource_id is None
         f = cls.limits['Fargate Tasks'].get_current_usage()
         assert len(f) == 1
-        assert f[0].get_value() == 9
+        assert f[0].get_value() == 4
         assert f[0].resource_id is None
         assert m_fuoc.mock_calls == [
             call(cls, 'c1name'),
