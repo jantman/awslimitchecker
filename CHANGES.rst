@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+4.0.0 (2018-02-17)
 ------------------
 
 This release **requires new IAM permissions**:
