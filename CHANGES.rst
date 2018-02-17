@@ -4,8 +4,20 @@ Changelog
 Unreleased Changes
 ------------------
 
+This release **requires new IAM permissions**:
+
+* ``ds:GetDirectoryLimits``
+* ``ecs:DescribeClusters``
+* ``ecs:DescribeServices``
+* ``ecs:ListClusters``
+* ``ecs:ListServices``
+
 * Fix various docstring problems causing documentation build to fail.
-* Update numerous no-longer-correct default limits (thanks to `KingRogue <https://github.com/KingRogue>`_).
+* `PR #328 <https://github.com/jantman/awslimitchecker/pull/328>`_ - Add support for Directory Service and ECS (thanks to `di1214 <https://github.com/di1214>`_).
+
+  * _NOTE_ the "EC2 Tasks per Service (desired count)" limit uses non-standard resource IDs, as service names and ARNs aren't unique by account or region, but only by cluster. i.e. the only way to uniquely identify an ECS Service is by the combination of service and cluster. As such, the ``resource_id`` field for usage values of the "EC2 Tasks per Service (desired count)" limit is a string of the form ``cluster=CLUSTER-NAME; service=SERVICE-NAME``.
+
+* `PR #330 <https://github.com/jantman/awslimitchecker/pull/330>`_ - Update numerous no-longer-correct default limits (thanks to `KingRogue <https://github.com/KingRogue>`_).
 
   * AutoScaling
 
