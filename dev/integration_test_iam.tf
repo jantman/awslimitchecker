@@ -41,6 +41,15 @@
 # Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
 
+terraform {
+  required_version = "0.11.1"
+  backend "s3" {
+    bucket = "jantman-personal"
+    key    = "terraform/awslimitchecker-integration-iam"
+    region = "us-east-1"
+  }
+}
+
 provider "aws" {
   region = "us-west-2"
 }
