@@ -72,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'awslimitchecker'
-copyright = u'2015-2017 Jason Antman'
+copyright = u'2015-2018 Jason Antman'
 author = u'Jason Antman'
 
 # The version info for the project you're documenting, acts as replacement for

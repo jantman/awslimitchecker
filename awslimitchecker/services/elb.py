@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -156,7 +156,7 @@ class _ElbService(_AwsService):
         Update usage for a single ALB.
 
         :param conn: elbv2 API connection
-        :type conn: boto3.client
+        :type conn: :py:class:`ElasticLoadBalancing.Client`
         :param alb_arn: Load Balancer ARN
         :type alb_arn: str
         :param alb_name: Load Balancer Name

@@ -1,7 +1,7 @@
-awslimitchecker.services.elasticbeanstalk module
+awslimitchecker.services.directoryservice module
 ================================================
 
-.. automodule:: awslimitchecker.services.elasticbeanstalk
+.. automodule:: awslimitchecker.services.directoryservice
     :members:
     :undoc-members:
     :show-inheritance:

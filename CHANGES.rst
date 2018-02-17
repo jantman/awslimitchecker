@@ -1,6 +1,53 @@
 Changelog
 =========
 
+4.0.0 (2018-02-17)
+------------------
+
+This release **requires new IAM permissions**:
+
+* ``ds:GetDirectoryLimits``
+* ``ecs:DescribeClusters``
+* ``ecs:DescribeServices``
+* ``ecs:ListClusters``
+* ``ecs:ListServices``
+
+* Fix various docstring problems causing documentation build to fail.
+* `PR #328 <https://github.com/jantman/awslimitchecker/pull/328>`_ - Add support for Directory Service and ECS (thanks to `di1214 <https://github.com/di1214>`_).
+
+  * *NOTE* the "EC2 Tasks per Service (desired count)" limit uses non-standard resource IDs, as service names and ARNs aren't unique by account or region, but only by cluster. i.e. the only way to uniquely identify an ECS Service is by the combination of service and cluster. As such, the ``resource_id`` field for usage values of the "EC2 Tasks per Service (desired count)" limit is a string of the form ``cluster=CLUSTER-NAME; service=SERVICE-NAME``.
+
+* `PR #330 <https://github.com/jantman/awslimitchecker/pull/330>`_ - Update numerous no-longer-correct default limits (thanks to `KingRogue <https://github.com/KingRogue>`_).
+
+  * AutoScaling
+
+    * Auto Scaling groups - 20 to 200
+    * Launch configurations - 100 to 200
+
+  * EBS
+
+    * Provisioned IOPS - 40000 to 200000
+    * Provisioned IOPS (SSD) storage (GiB) - 20480 to 102400 (100 TiB)
+    * General Purpose (SSD) volume storage (GiB) - 20480 to 102400 (100 TiB)
+    * Throughput Optimized (HDD) volume storage (GiB) - 20480 to 307200 (300 TiB)
+    * Cold (HDD) volume storage (GiB) - 20480 to 307200 (300 TiB)
+
+  * ElasticBeanstalk
+
+    * Applications - 25 to 75
+    * Application versions - 500 to 1000
+
+  * IAM
+
+    * Groups - 100 to 300
+    * Roles - 250 to 1000
+    * Instance profiles - 100 to 1000
+    * Policies - 1000 to 1500
+
+* Fix ``dev/terraform.py`` and ``dev/integration_test_iam.tf`` for integration tests.
+* Fix date and incorrect project name in some file/copyright headers.
+* `Issue #331 <https://github.com/jantman/awslimitchecker/issues/331>`_ - Change layout of the generated `Supported Limits <http://awslimitchecker.readthedocs.io/en/latest/limits.html>`_ documentation page to be more clear about which limits are supported, and include API and Trusted Advisor data in the same table as the limits and their defaults.
+
 3.0.0 (2017-12-02)
 ------------------
 

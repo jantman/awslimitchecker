@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -179,7 +179,7 @@ class _AwsService(Connectable):
         method of the underlying :py:class:`~.AwsLimit` instance.
 
         :param limit_name: the name of the limit to override the value for
-        :type limit_name: string
+        :type limit_name: str
         :param value: the new value to set for the limit
         :type value: int
         :param override_ta: whether or not to also override Trusted
@@ -212,7 +212,7 @@ class _AwsService(Connectable):
         This method should only be called by :py:class:`~.TrustedAdvisor`.
 
         :param limit_name: the name of the limit to override the value for
-        :type limit_name: string
+        :type limit_name: str
         :param value: the Trusted Advisor limit value
         :type value: int
         :raises: ValueError if limit_name is not known to this service

@@ -1,5 +1,5 @@
 """
-awslimitchecker/services/iam.py
+awslimitchecker/services/directoryservice.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -33,6 +33,7 @@ either as a pull request on GitHub, or to me via email.
 ################################################################################
 
 AUTHORS:
+Di Zou <zou@pythian.com>
 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
@@ -46,21 +47,10 @@ from ..limit import AwsLimit
 logger = logging.getLogger(__name__)
 
 
-class _IamService(_AwsService):
+class _DirectoryserviceService(_AwsService):
 
-    service_name = 'IAM'
-    api_name = 'iam'
-
-    # mapping of iam.AccountSummary() key to limit name
-    API_TO_LIMIT_NAME = {
-        'Groups': 'Groups',
-        'Users': 'Users',
-        'Roles': 'Roles',
-        'InstanceProfiles': 'Instance profiles',
-        'ServerCertificates': 'Server certificates',
-        'Policies': 'Policies',
-        'PolicyVersionsInUse': 'Policy Versions In Use',
-    }
+    service_name = 'Directory Service'
+    api_name = 'ds'  # AWS API name to connect to (boto3.client)
 
     def find_usage(self):
         """
@@ -69,9 +59,23 @@ class _IamService(_AwsService):
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service %s", self.service_name)
+        self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        self._update_limits_from_api()
+        resp = self.conn.get_directory_limits()
+        directory_limits = resp['DirectoryLimits']
+        self.limits['CloudOnlyDirectories']._add_current_usage(
+            directory_limits['CloudOnlyDirectoriesCurrentCount'],
+            aws_type='AWS::DirectoryService'
+        )
+        self.limits['CloudOnlyMicrosoftAD']._add_current_usage(
+            directory_limits['CloudOnlyMicrosoftADCurrentCount'],
+            aws_type='AWS::DirectoryService'
+        )
+        self.limits['ConnectedDirectories']._add_current_usage(
+            directory_limits['ConnectedDirectoriesCurrentCount'],
+            aws_type='AWS::DirectoryService'
+        )
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -86,61 +90,29 @@ class _IamService(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
-        limits['Groups'] = AwsLimit(
-            'Groups',
+        limits['CloudOnlyDirectories'] = AwsLimit(
+            'CloudOnlyDirectories',
             self,
-            300,
+            10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::IAM::Group',
+            limit_type='AWS::DirectoryService::CloudOnly',
         )
-        limits['Users'] = AwsLimit(
-            'Users',
+        limits['CloudOnlyMicrosoftAD'] = AwsLimit(
+            'CloudOnlyMicrosoftAD',
             self,
-            5000,
+            10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::IAM::User',
+            limit_type='AWS::DirectoryService::MicrosoftAD',
         )
-        limits['Roles'] = AwsLimit(
-            'Roles',
+        limits['ConnectedDirectories'] = AwsLimit(
+            'ConnectedDirectories',
             self,
-            1000,
+            10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::IAM::Role',
-        )
-        limits['Instance profiles'] = AwsLimit(
-            'Instance profiles',
-            self,
-            1000,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::IAM::InstanceProfile',
-        )
-        limits['Server certificates'] = AwsLimit(
-            'Server certificates',
-            self,
-            20,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::IAM::ServerCertificate',
-        )
-        limits['Policies'] = AwsLimit(
-            'Policies',
-            self,
-            1500,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::IAM::Policy',
-        )
-        limits['Policy Versions In Use'] = AwsLimit(
-            'Policy Versions In Use',
-            self,
-            10000,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::IAM::ServerCertificate',
+            limit_type='AWS::DirectoryService::Connected',
         )
         self.limits = limits
         return limits
@@ -150,20 +122,19 @@ class _IamService(_AwsService):
         Call the service's API action to retrieve limit/quota information, and
         update AwsLimit objects in ``self.limits`` with this information.
         """
-        self.connect_resource()
-        summary = self.resource_conn.AccountSummary()
-        for k, v in sorted(summary.summary_map.items()):
-            if k in self.API_TO_LIMIT_NAME:
-                # this is a usage for one of our limits
-                lname = self.API_TO_LIMIT_NAME[k]
-                # if len(self.limits[lname].get_current_usage()) < 1:
-                self.limits[lname]._add_current_usage(v)
-            elif k.endswith('Quota') and k[:-5] in self.API_TO_LIMIT_NAME:
-                # quota for one of our limits
-                lname = self.API_TO_LIMIT_NAME[k[:-5]]
-                self.limits[lname]._set_api_limit(v)
-            else:
-                logger.debug("Ignoring IAM AccountSummary attribute: %s", k)
+        logger.debug('Setting DirectoryService limits from API')
+        self.connect()
+        resp = self.conn.get_directory_limits()
+        directory_limits = resp['DirectoryLimits']
+        self.limits['CloudOnlyDirectories']._set_api_limit(
+            directory_limits['CloudOnlyDirectoriesLimit']
+        )
+        self.limits['CloudOnlyMicrosoftAD']._set_api_limit(
+            directory_limits['CloudOnlyMicrosoftADLimit']
+        )
+        self.limits['ConnectedDirectories']._set_api_limit(
+            directory_limits['ConnectedDirectoriesLimit']
+        )
 
     def required_iam_permissions(self):
         """
@@ -175,5 +146,5 @@ class _IamService(_AwsService):
         :rtype: list
         """
         return [
-            "iam:GetAccountSummary",
+            "ds:GetDirectoryLimits",
         ]

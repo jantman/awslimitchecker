@@ -10,7 +10,7 @@
 # <https://github.com/jantman/awslimitchecker>
 #
 ##############################################################################
-# Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+# Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 #
 #    This file is part of awslimitchecker, also known as awslimitchecker.
 #
@@ -40,6 +40,15 @@
 # AUTHORS:
 # Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
+
+terraform {
+  required_version = "0.11.1"
+  backend "s3" {
+    bucket = "jantman-personal"
+    key    = "terraform/awslimitchecker-integration-iam"
+    region = "us-east-1"
+  }
+}
 
 provider "aws" {
   region = "us-west-2"

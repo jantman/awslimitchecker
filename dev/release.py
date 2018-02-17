@@ -54,6 +54,7 @@ from release_utils import (
     StepRegistry, prompt_user, BaseStep, fail, is_git_dirty, TravisChecker
 )
 from awslimitchecker.version import _VERSION as VERSION
+from terraform import TerraformIAM
 
 if sys.version_info[0:2] != (3, 6):
     raise SystemExit('ERROR: release.py can only run under py 3.6')
@@ -134,22 +135,8 @@ class RunToxLocaldocs(BaseStep):
 class RunDevTerraform(BaseStep):
 
     def run(self):
-        projdir = self.projdir
-        env = deepcopy(os.environ)
-        env['PATH'] = self._fixed_path(projdir)
-        cmd = os.path.join(projdir, 'dev', 'terraform.py')
-        logger.info('Running %s in cwd %s', cmd, projdir)
-        res = subprocess.run(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            cwd=projdir
-        )
-        logger.info('dev/terraform.py process exited %d', res.returncode)
-        if res.returncode != 0:
-            logger.error('ERROR: terraform exitcode %d', res.returncode)
-            logger.error(
-                'dev/terraform.py output:\n%s', res.stdout.decode()
-            )
-            res.check_returncode()
+        logger.info('Running dev/terraform.py')
+        TerraformIAM().run()
         self._ensure_committed()
         if not prompt_user(
                 'Are any IAM permission changes clearly documented in the '

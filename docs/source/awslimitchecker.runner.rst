@@ -1,5 +1,5 @@
-awslimitchecker\.runner module
-==============================
+awslimitchecker.runner module
+=============================
 
 .. automodule:: awslimitchecker.runner
     :members:

@@ -1,7 +1,7 @@
-awslimitchecker.services.ses module
+awslimitchecker.services.ecs module
 ===================================
 
-.. automodule:: awslimitchecker.services.ses
+.. automodule:: awslimitchecker.services.ecs
     :members:
     :undoc-members:
     :show-inheritance:
