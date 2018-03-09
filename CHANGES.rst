@@ -1,6 +1,13 @@
 Changelog
 =========
 
+4.0.1 (2018-03-09)
+------------------
+
+This is a minor bugfix release for a few issues that users have reported recently.
+
+* Fix `Issue #337 <https://github.com/jantman/awslimitchecker/issues/337>`_ where sometimes an account even with Business-level support will not have a Trusted Advisor result for the Service Limits check, and will return a result with ``status: not_available`` or a missing ``flaggedResources`` key.
+
 4.0.0 (2018-02-17)
 ------------------
 
