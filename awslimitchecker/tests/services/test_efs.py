@@ -40,7 +40,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import sys
 from awslimitchecker.services.efs import _EfsService
 from awslimitchecker.limit import AwsLimit
-from botocore.exceptions import EndpointConnectionError
+from botocore.exceptions import EndpointConnectionError, ClientError
+from botocore.vendored.requests.exceptions import ConnectTimeout
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -123,6 +124,63 @@ class Test_EfsService(object):
         exc = EndpointConnectionError(
             endpoint_url='https://efs.bad-region.amazonaws.com/'
         )
+        mock_conn = Mock()
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.paginate_dict' % pbm) as mock_paginate:
+                mock_paginate.side_effect = exc
+                cls = _EfsService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert cls._have_usage is True
+        assert mock_connect.mock_calls == [call()]
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_file_systems,
+                alc_marker_path=['NextMarker'],
+                alc_data_path=['FileSystems'],
+                alc_marker_param='Marker'
+            )
+        ]
+        assert len(cls.limits) == 1
+        usage = cls.limits['File systems'].get_current_usage()
+        assert len(usage) == 0
+
+    def test_find_usage_access_denied(self):
+        exc = ClientError(
+            {
+                'Error': {
+                    'Code': 'AccessDeniedException',
+                    'Message': 'This account does not have permission '
+                               'to access this service',
+                }
+            },
+            'DescribeFileSystems'
+        )
+        mock_conn = Mock()
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.paginate_dict' % pbm) as mock_paginate:
+                mock_paginate.side_effect = exc
+                cls = _EfsService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert cls._have_usage is True
+        assert mock_connect.mock_calls == [call()]
+        assert mock_paginate.mock_calls == [
+            call(
+                mock_conn.describe_file_systems,
+                alc_marker_path=['NextMarker'],
+                alc_data_path=['FileSystems'],
+                alc_marker_param='Marker'
+            )
+        ]
+        assert len(cls.limits) == 1
+        usage = cls.limits['File systems'].get_current_usage()
+        assert len(usage) == 0
+
+    def test_find_usage_connect_timeout(self):
+        exc = ConnectTimeout()
         mock_conn = Mock()
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.paginate_dict' % pbm) as mock_paginate:

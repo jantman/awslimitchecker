@@ -39,7 +39,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import logging
-from botocore.exceptions import EndpointConnectionError
+from botocore.exceptions import EndpointConnectionError, ClientError
+from botocore.vendored.requests.exceptions import ConnectTimeout
 
 from .base import _AwsService
 from ..limit import AwsLimit
@@ -65,7 +66,7 @@ class _EfsService(_AwsService):
             lim._reset_usage()
         try:
             self._find_usage_filesystems()
-        except EndpointConnectionError as ex:
+        except (EndpointConnectionError, ClientError, ConnectTimeout) as ex:
             logger.warning(
                 'Caught exception when trying to use EFS ('
                 'perhaps the EFS service is not available in this '
