@@ -54,6 +54,7 @@ from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.iam import _IamService
 from awslimitchecker.services.rds import _RDSService
 from awslimitchecker.services.redshift import _RedshiftService
+from awslimitchecker.services.route53 import _Route53Service
 from awslimitchecker.services.s3 import _S3Service
 from awslimitchecker.services.ses import _SesService
 from awslimitchecker.services.vpc import _VpcService
