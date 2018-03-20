@@ -134,9 +134,6 @@ class _Route53Service(_AwsService):
         )
 
         self._hosted_zone_cache = results["HostedZones"]
-
-        print("HostedZones")
-        print(results["HostedZones"])
         return self._hosted_zone_cache
 
     def _get_hosted_zone_limit(self, limit_type, hosted_zone_id):
@@ -159,8 +156,6 @@ class _Route53Service(_AwsService):
             HostedZoneId=hosted_zone_id
         )
 
-        print("results")
-        print(result)
         self._hosted_zone_type_cache[limit_type][hosted_zone_id] = result
         return result
 
@@ -229,8 +224,6 @@ class _Route53Service(_AwsService):
             count = self._get_hosted_zone_limit(limit_type["type"],
                                                 hosted_zone['Id'])
 
-            print("The Count")
-            print(count)
             self.limits[key]._add_current_usage(
                 int(count["Count"]),
                 aws_type='AWS::Route53::HostedZone',
