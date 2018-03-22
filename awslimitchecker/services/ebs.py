@@ -202,6 +202,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
+            ta_limit_name='General Purpose SSD (gp2) volume storage (GiB)'
         )
         limits['Magnetic volume storage (GiB)'] = AwsLimit(
             'Magnetic volume storage (GiB)',
@@ -211,6 +212,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
+            ta_limit_name='Magnetic (standard) volume storage (GiB)'
         )
         limits['Throughput Optimized (HDD) volume storage (GiB)'] = AwsLimit(
             'Throughput Optimized (HDD) volume storage (GiB)',
