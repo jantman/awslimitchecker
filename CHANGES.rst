@@ -32,7 +32,7 @@ This release **requires new IAM permissions**:
 
   * *NOTE* the "EC2 Tasks per Service (desired count)" limit uses non-standard resource IDs, as service names and ARNs aren't unique by account or region, but only by cluster. i.e. the only way to uniquely identify an ECS Service is by the combination of service and cluster. As such, the ``resource_id`` field for usage values of the "EC2 Tasks per Service (desired count)" limit is a string of the form ``cluster=CLUSTER-NAME; service=SERVICE-NAME``.
 
-* `PR #330 <https://github.com/jantman/awslimitchecker/pull/330>`_ - Update numerous no-longer-correct default limits (thanks to `KingRogue <https://github.com/KingRogue>`_).
+* `PR #330 <https://github.com/jantman/awslimitchecker/pull/330>`_ - Update numerous no-longer-correct default limits (thanks to GitHub user KingRogue).
 
   * AutoScaling
 
