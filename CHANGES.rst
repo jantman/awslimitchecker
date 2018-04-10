@@ -1,6 +1,13 @@
 Changelog
 =========
 
+4.0.2 (2018-03-22)
+------------------
+
+This is a minor bugfix release for one issue:
+
+* `Issue #341 <https://github.com/jantman/awslimitchecker/issues/341>`_ - The Trusted Advisor EBS checks for ``General Purpose (SSD) volume storage (GiB)`` and ``Magnetic volume storage (GiB)`` have been renamed to to ``General Purpose SSD (gp2) volume storage (GiB)`` and ``Magnetic (standard) volume storage (GiB)``, respectively, to provide more unified naming. This change was made on March 19th or 20th without any public announcement, and resulted in awslimitchecker being unable to determine the current values for these limits from Trusted Advisor. Users relying on Trusted Advisor for these values saw the limit values incorrectly revert to the global default. This is an internal-only change to map the new Trusted Advisor check names to the awslimitchecker limit names.
+
 4.0.1 (2018-03-09)
 ------------------
 
@@ -25,7 +32,7 @@ This release **requires new IAM permissions**:
 
   * *NOTE* the "EC2 Tasks per Service (desired count)" limit uses non-standard resource IDs, as service names and ARNs aren't unique by account or region, but only by cluster. i.e. the only way to uniquely identify an ECS Service is by the combination of service and cluster. As such, the ``resource_id`` field for usage values of the "EC2 Tasks per Service (desired count)" limit is a string of the form ``cluster=CLUSTER-NAME; service=SERVICE-NAME``.
 
-* `PR #330 <https://github.com/jantman/awslimitchecker/pull/330>`_ - Update numerous no-longer-correct default limits (thanks to `KingRogue <https://github.com/KingRogue>`_).
+* `PR #330 <https://github.com/jantman/awslimitchecker/pull/330>`_ - Update numerous no-longer-correct default limits (thanks to GitHub user KingRogue).
 
   * AutoScaling
 
