@@ -56,6 +56,17 @@ pb = '%s._Route53Service' % pbm  # class patch pase
 
 
 class Test_Route53Service(object):
+    def _mock_get_hosted_zone_limit(self, Type, HostedZoneId):
+        if HostedZoneId in result_fixtures.Route53.test_get_hosted_zone_limit:
+            return result_fixtures.Route53.test_get_hosted_zone_limit[
+                HostedZoneId][Type]
+
+    def _mock_reponse_init(self, cls):
+        response = result_fixtures.Route53.test_get_hosted_zones
+        mock_conn = Mock()
+        mock_conn.list_hosted_zones.return_value = response
+        mock_conn.get_hosted_zone_limit = self._mock_get_hosted_zone_limit
+        cls.conn = mock_conn
 
     def test_init(self):
         """test __init__()"""
@@ -68,29 +79,8 @@ class Test_Route53Service(object):
 
     def test_get_limits(self):
         cls = _Route53Service(21, 43)
-        cls.limits = {}
         res = cls.get_limits()
-        assert sorted(res.keys()) == sorted([
-            'Hosted Zone RecordSets',
-            'Hosted Zone VPC Associations',
-        ])
-        for name, limit in res.items():
-            assert limit.service == cls
-            assert limit.def_warning_threshold == 21
-            assert limit.def_critical_threshold == 43
-
-    def test_get_limits_again(self):
-        """test that existing limits dict is returned on subsequent calls"""
-        mock_limits = Mock()
-        cls = _Route53Service(21, 43)
-        cls.limits = mock_limits
-        res = cls.get_limits()
-        assert res == mock_limits
-
-    def mock_get_hosted_zone_limit(self, Type, HostedZoneId):
-        if HostedZoneId in result_fixtures.Route53.test_get_hosted_zone_limit:
-            return result_fixtures.Route53.test_get_hosted_zone_limit[
-                HostedZoneId][Type]
+        assert res == {}
 
     def test_find_usage(self):
         """test find usage method calls other methods"""
@@ -120,14 +110,17 @@ class Test_Route53Service(object):
         cls._find_usage_recordsets()
 
         limit_key = cls.MAX_RRSETS_BY_ZONE["name"]
-        assert cls.limits[limit_key].get_current_usage()[0].get_value() == 7500
-        assert cls.limits[limit_key].get_current_usage()[1].get_value() == 2500
-        assert cls.limits[limit_key].get_current_usage()[2].get_value() == 5678
+        key1 = "abc.example.com. {}".format(limit_key)
+        assert cls.limits[key1].get_current_usage()[0].get_value() == 7500
+        assert cls.limits[key1].default_limit == 10000
 
-        # retest to validate cache
-        cls._find_usage_recordsets()
-        assert cls.limits[limit_key].get_current_usage()[0].get_value() == 7500
-        assert cls.limits[limit_key].get_current_usage()[1].get_value() == 2500
+        key2 = "def.example.com. {}".format(limit_key)
+        assert cls.limits[key2].get_current_usage()[0].get_value() == 2500
+        assert cls.limits[key2].default_limit == 10001
+
+        key3 = "ghi.example.com. {}".format(limit_key)
+        assert cls.limits[key3].get_current_usage()[0].get_value() == 5678
+        assert cls.limits[key3].default_limit == 10002
 
     def test_find_usage_vpc_associations(self):
         cls = _Route53Service(21, 43)
@@ -135,31 +128,13 @@ class Test_Route53Service(object):
         cls._find_usage_vpc_associations()
 
         limit_key = cls.MAX_VPCS_ASSOCIATED_BY_ZONE["name"]
-        assert cls.limits[limit_key].get_current_usage()[0].get_value() == 10
-        assert cls.limits[limit_key].get_current_usage()[1].get_value() == 2
+        key1 = "abc.example.com. {}".format(limit_key)
+        assert cls.limits[key1].get_current_usage()[0].get_value() == 10
+        assert cls.limits[key1].default_limit == 100
 
-        # retest to validate cache
-        cls._find_usage_vpc_associations()
-        assert cls.limits[limit_key].get_current_usage()[0].get_value() == 10
-        assert cls.limits[limit_key].get_current_usage()[1].get_value() == 2
-
-    def _mock_reponse_init(self, cls):
-        response = result_fixtures.Route53.test_get_hosted_zones
-        mock_conn = Mock()
-        mock_conn.list_hosted_zones.return_value = response
-        mock_conn.get_hosted_zone_limit = self.mock_get_hosted_zone_limit
-        cls.conn = mock_conn
-
-    def test_update_limits_from_api(self):
-        cls = _Route53Service(21, 43)
-        self._mock_reponse_init(cls)
-        cls._update_limits_from_api()
-
-        limit_key = cls.MAX_RRSETS_BY_ZONE["name"]
-        assert cls.limits[limit_key].get_limit() == 10000
-
-        limit_key = cls.MAX_VPCS_ASSOCIATED_BY_ZONE["name"]
-        assert cls.limits[limit_key].get_limit() == 100
+        key2 = "def.example.com. {}".format(limit_key)
+        assert cls.limits[key2].get_current_usage()[0].get_value() == 2
+        assert cls.limits[key2].default_limit == 101
 
     def test_required_iam_permissions(self):
         cls = _Route53Service(21, 43)

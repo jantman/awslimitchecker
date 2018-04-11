@@ -3395,14 +3395,14 @@ class Route53(object):
                 'Count': 2500,
                 'Limit': {
                     'Type': 'MAX_RRSETS_BY_ZONE',
-                    'Value': 10000
+                    'Value': 10001
                 }
             },
             'MAX_VPCS_ASSOCIATED_BY_ZONE': {
                 'Count': 2,
                 'Limit': {
                     'Type': 'MAX_VPCS_ASSOCIATED_BY_ZONE',
-                    'Value': 100
+                    'Value': 101
                 }
             }
         },
@@ -3411,7 +3411,7 @@ class Route53(object):
                 'Count': 5678,
                 'Limit': {
                     'Type': 'MAX_RRSETS_BY_ZONE',
-                    'Value': 10000
+                    'Value': 10002
                 }
             }
         }
