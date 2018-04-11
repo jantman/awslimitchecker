@@ -87,7 +87,9 @@ class _Route53Service(_AwsService):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
-        return {}
+        if not self.limits:
+            self.limits = {}
+        return self.limits
 
     def _get_hosted_zones(self):
         """

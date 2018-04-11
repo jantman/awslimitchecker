@@ -79,8 +79,14 @@ class Test_Route53Service(object):
 
     def test_get_limits(self):
         cls = _Route53Service(21, 43)
+        self._mock_reponse_init(cls)
+
         res = cls.get_limits()
         assert res == {}
+
+        cls.find_usage()
+        res = cls.get_limits()
+        assert len(res) > 0
 
     def test_find_usage(self):
         """test find usage method calls other methods"""
