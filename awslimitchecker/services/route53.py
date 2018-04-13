@@ -67,14 +67,7 @@ class _Route53Service(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
-        logger.debug("Checking usage for service %s", self.service_name)
-        self.connect()
-
-        self._find_usage_recordsets()
-        self._find_usage_vpc_associations()
-
         self._have_usage = True
-        logger.debug("Done checking usage.")
 
     def get_limits(self):
         """
@@ -89,7 +82,18 @@ class _Route53Service(_AwsService):
         """
         if not self.limits:
             self.limits = {}
+
         return self.limits
+
+    def _update_limits_from_api(self):
+        """
+        Query Route53's GetHostedZoneLimit API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
+        logger.info("Querying Route53 GetHostedZoneLimits for limits")
+        self.connect()
+        self._find_limit_hosted_zone()
+        logger.debug('Done setting limits from API.')
 
     def _get_hosted_zones(self):
         """
@@ -98,7 +102,6 @@ class _Route53Service(_AwsService):
         :returns: dict of hosted zones
         :rtype: dict
         """
-        self.connect()
         results = paginate_dict(
             self.conn.list_hosted_zones,
             alc_marker_path=['NextMarker'],
@@ -111,8 +114,6 @@ class _Route53Service(_AwsService):
     def _get_hosted_zone_limit(self, limit_type, hosted_zone_id):
         """
         Return a hosted zone limit [recordsets|vpc_associations]
-        This method should only be used internally by
-        :py:meth:~._get_limits_hosted_zones`.
 
         :rtype: dict
         """
@@ -124,47 +125,39 @@ class _Route53Service(_AwsService):
 
         return result
 
-    def _find_usage_hosted_zone(self, limit_type):
+    def _find_limit_hosted_zone(self):
         """
-        Calculate the max [recordsets|vpc associations] per hosted zone
+        Calculate the max recordsets and vpc associations and the current values
+        per hosted zone
         """
         for hosted_zone in self._get_hosted_zones():
-            if limit_type == self.MAX_VPCS_ASSOCIATED_BY_ZONE and \
-                    not hosted_zone["Config"]["PrivateZone"]:
-                continue
+            for limit_type in [self.MAX_RRSETS_BY_ZONE,
+                               self.MAX_VPCS_ASSOCIATED_BY_ZONE]:
 
-            key = "{} {}".format(hosted_zone["Name"], limit_type["name"])
+                if limit_type == self.MAX_VPCS_ASSOCIATED_BY_ZONE and \
+                        not hosted_zone["Config"]["PrivateZone"]:
+                    continue
 
-            limit = self._get_hosted_zone_limit(limit_type["type"],
-                                                hosted_zone['Id'])
+                key = "{} {}".format(hosted_zone["Name"], limit_type["name"])
 
-            self.limits[key] = AwsLimit(
-                limit_type["name"],
-                self,
-                int(limit["Limit"]["Value"]),
-                self.warning_threshold,
-                self.critical_threshold,
-                limit_type='AWS::Route53::HostedZone',
-                limit_subtype=hosted_zone["Name"]
-            )
+                limit = self._get_hosted_zone_limit(limit_type["type"],
+                                                    hosted_zone['Id'])
 
-            self.limits[key]._add_current_usage(
-                int(limit["Count"]),
-                aws_type='AWS::Route53::HostedZone',
-                resource_id=hosted_zone["Name"]
-            )
+                self.limits[key] = AwsLimit(
+                    limit_type["name"],
+                    self,
+                    int(limit["Limit"]["Value"]),
+                    self.warning_threshold,
+                    self.critical_threshold,
+                    limit_type='AWS::Route53::HostedZone',
+                    limit_subtype=hosted_zone["Name"]
+                )
 
-    def _find_usage_recordsets(self):
-        """
-        Calculate the max recordsets per hosted zone
-        """
-        self._find_usage_hosted_zone(self.MAX_RRSETS_BY_ZONE)
-
-    def _find_usage_vpc_associations(self):
-        """
-        Calculate the max vpc associations per hosted zone
-        """
-        self._find_usage_hosted_zone(self.MAX_VPCS_ASSOCIATED_BY_ZONE)
+                self.limits[key]._add_current_usage(
+                    int(limit["Count"]),
+                    aws_type='AWS::Route53::HostedZone',
+                    resource_id=hosted_zone["Name"]
+                )
 
     def required_iam_permissions(self):
         """
