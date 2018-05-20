@@ -79,28 +79,23 @@ class Test_Route53Service(object):
 
     def test_get_limits(self):
         """
-        Test that limits returns the internal dictionary that is updated
-        by _update_limits_from_api
+        Test that get_limits returns AwsLimits
         """
         cls = _Route53Service(21, 43)
-        self._mock_reponse_init(cls)
-
+        cls.limits = {}
         res = cls.get_limits()
-        assert res == {}
-
-        cls._update_limits_from_api()
-        res = cls.get_limits()
-        assert len(res) > 0
+        assert sorted(res.keys()) == sorted([
+            'Record sets per hosted zone',
+            'VPC associations per hosted zone',
+        ])
+        for name, limit in res.items():
+            assert limit.service == cls
+            assert limit.def_warning_threshold == 21
+            assert limit.def_critical_threshold == 43
 
     def test_find_usage(self):
-        cls = _Route53Service(21, 43)
+        """test find_usage method calls other methods"""
 
-        assert cls._have_usage is False
-        cls.find_usage()
-        assert cls._have_usage is True
-
-    def test_update_limits_from_api(self):
-        """test _update_limits_from_api method calls other methods"""
         mock_conn = Mock()
         with patch('%s.connect' % pb) as mock_connect:
             with patch.multiple(
@@ -108,8 +103,10 @@ class Test_Route53Service(object):
                     _find_limit_hosted_zone=DEFAULT,
             ) as mocks:
                 cls = _Route53Service(21, 43)
+                assert cls._have_usage is False
                 cls.conn = mock_conn
-                cls._update_limits_from_api()
+                cls.find_usage()
+                assert cls._have_usage is True
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == []
         for x in [
@@ -123,17 +120,22 @@ class Test_Route53Service(object):
         cls._find_limit_hosted_zone()
 
         limit_key = cls.MAX_RRSETS_BY_ZONE["name"]
-        key1 = "abc.example.com. {}".format(limit_key)
-        assert cls.limits[key1].get_current_usage()[0].get_value() == 7500
-        assert cls.limits[key1].default_limit == 10000
+        assert cls.limits[limit_key].default_limit == 10000
 
-        key2 = "def.example.com. {}".format(limit_key)
-        assert cls.limits[key2].get_current_usage()[0].get_value() == 2500
-        assert cls.limits[key2].default_limit == 10001
+        usage1 = cls.limits[limit_key].get_current_usage()[0]
+        assert usage1.get_value() == 7500
+        assert usage1.resource_id == "abc.example.com."
+        assert usage1.get_maximum() == 10000
 
-        key3 = "ghi.example.com. {}".format(limit_key)
-        assert cls.limits[key3].get_current_usage()[0].get_value() == 5678
-        assert cls.limits[key3].default_limit == 10002
+        usage2 = cls.limits[limit_key].get_current_usage()[1]
+        assert usage2.get_value() == 2500
+        assert usage2.resource_id == "def.example.com."
+        assert usage2.get_maximum() == 10001
+
+        usage2 = cls.limits[limit_key].get_current_usage()[2]
+        assert usage2.get_value() == 5678
+        assert usage2.resource_id == "ghi.example.com."
+        assert usage2.get_maximum() == 10002
 
     def test_find_limit_hosted_zone_vpc_associations(self):
         cls = _Route53Service(21, 43)
@@ -141,13 +143,17 @@ class Test_Route53Service(object):
         cls._find_limit_hosted_zone()
 
         limit_key = cls.MAX_VPCS_ASSOCIATED_BY_ZONE["name"]
-        key1 = "abc.example.com. {}".format(limit_key)
-        assert cls.limits[key1].get_current_usage()[0].get_value() == 10
-        assert cls.limits[key1].default_limit == 100
+        assert cls.limits[limit_key].default_limit == 100
 
-        key2 = "def.example.com. {}".format(limit_key)
-        assert cls.limits[key2].get_current_usage()[0].get_value() == 2
-        assert cls.limits[key2].default_limit == 101
+        usage1 = cls.limits[limit_key].get_current_usage()[0]
+        assert usage1.get_value() == 10
+        assert usage1.resource_id == "abc.example.com."
+        assert usage1.get_maximum() == 100
+
+        usage2 = cls.limits[limit_key].get_current_usage()[1]
+        assert usage2.get_value() == 2
+        assert usage2.resource_id == "def.example.com."
+        assert usage2.get_maximum() == 101
 
     def test_required_iam_permissions(self):
         cls = _Route53Service(21, 43)

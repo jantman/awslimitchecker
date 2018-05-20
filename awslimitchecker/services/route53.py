@@ -54,11 +54,13 @@ class _Route53Service(_AwsService):
     # Route53 limit types
     MAX_RRSETS_BY_ZONE = {
         "type": "MAX_RRSETS_BY_ZONE",
-        "name": "Record Sets"
+        "name": "Record sets per hosted zone",
+        "default_limit": 10000
     }
     MAX_VPCS_ASSOCIATED_BY_ZONE = {
         "type": "MAX_VPCS_ASSOCIATED_BY_ZONE",
-        "name": "VPC Associations"
+        "name": "VPC associations per hosted zone",
+        "default_limit": 100
     }
 
     def find_usage(self):
@@ -67,7 +69,11 @@ class _Route53Service(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
+        logger.info("Querying Route53 GetHostedZoneLimits for limits")
+        self.connect()
+        self._find_limit_hosted_zone()
         self._have_usage = True
+        logger.debug("Done checking usage.")
 
     def get_limits(self):
         """
@@ -82,18 +88,19 @@ class _Route53Service(_AwsService):
         """
         if not self.limits:
             self.limits = {}
+            for item in [self.MAX_RRSETS_BY_ZONE,
+                         self.MAX_VPCS_ASSOCIATED_BY_ZONE]:
+                self.limits[item["name"]] = AwsLimit(
+                    item["name"],
+                    self,
+                    item["default_limit"],
+                    self.warning_threshold,
+                    self.critical_threshold,
+                    limit_type='AWS::Route53::HostedZone',
+                    limit_subtype=item["name"]
+                )
 
         return self.limits
-
-    def _update_limits_from_api(self):
-        """
-        Query Route53's GetHostedZoneLimit API action, and update limits
-        with the quotas returned. Updates ``self.limits``.
-        """
-        logger.info("Querying Route53 GetHostedZoneLimits for limits")
-        self.connect()
-        self._find_limit_hosted_zone()
-        logger.debug('Done setting limits from API.')
 
     def _get_hosted_zones(self):
         """
@@ -130,6 +137,10 @@ class _Route53Service(_AwsService):
         Calculate the max recordsets and vpc associations and the current values
         per hosted zone
         """
+        for limit_type in [self.MAX_RRSETS_BY_ZONE,
+                           self.MAX_VPCS_ASSOCIATED_BY_ZONE]:
+            self.limits[limit_type["name"]]._reset_usage()
+
         for hosted_zone in self._get_hosted_zones():
             for limit_type in [self.MAX_RRSETS_BY_ZONE,
                                self.MAX_VPCS_ASSOCIATED_BY_ZONE]:
@@ -138,23 +149,12 @@ class _Route53Service(_AwsService):
                         not hosted_zone["Config"]["PrivateZone"]:
                     continue
 
-                key = "{} {}".format(hosted_zone["Name"], limit_type["name"])
-
                 limit = self._get_hosted_zone_limit(limit_type["type"],
                                                     hosted_zone['Id'])
 
-                self.limits[key] = AwsLimit(
-                    limit_type["name"],
-                    self,
-                    int(limit["Limit"]["Value"]),
-                    self.warning_threshold,
-                    self.critical_threshold,
-                    limit_type='AWS::Route53::HostedZone',
-                    limit_subtype=hosted_zone["Name"]
-                )
-
-                self.limits[key]._add_current_usage(
+                self.limits[limit_type["name"]]._add_current_usage(
                     int(limit["Count"]),
+                    maximum=int(limit["Limit"]["Value"]),
                     aws_type='AWS::Route53::HostedZone',
                     resource_id=hosted_zone["Name"]
                 )

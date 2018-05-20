@@ -250,7 +250,8 @@ class AwsLimit(object):
         )
         return s
 
-    def _add_current_usage(self, value, resource_id=None, aws_type=None):
+    def _add_current_usage(self, value, maximum=None, resource_id=None,
+                           aws_type=None):
         """
         Add a new current usage value for this limit.
 
@@ -277,6 +278,7 @@ class AwsLimit(object):
             AwsLimitUsage(
                 self,
                 value,
+                maximum=maximum,
                 resource_id=resource_id,
                 aws_type=aws_type
             )
@@ -361,14 +363,13 @@ class AwsLimit(object):
         :returns: False if any thresholds were crossed, True otherwise
         :rtype: bool
         """
-        limit = self.get_limit()
-        if limit is None:
-            # our limit is explicitly unlimited
-            return True
         (warn_int, warn_pct, crit_int, crit_pct) = self._get_thresholds()
         all_ok = True
         for u in self._current_usage:
             usage = u.get_value()
+            limit = u.get_maximum() or self.get_limit()
+            if limit is None:
+                continue
             pct = (usage / (limit * 1.0)) * 100
             if crit_int is not None and usage >= crit_int:
                 self._criticals.append(u)
@@ -435,7 +436,8 @@ class AwsLimit(object):
 
 class AwsLimitUsage(object):
 
-    def __init__(self, limit, value, resource_id=None, aws_type=None):
+    def __init__(self, limit, value, maximum=None, resource_id=None,
+                 aws_type=None):
         """
         This object describes the usage of an AWS resource, with the capability
         of containing information about the resource beyond an integer usage.
@@ -456,6 +458,8 @@ class AwsLimitUsage(object):
         :type limit: :py:class:`~.AwsLimit`
         :param value: the numeric usage value
         :type value: :py:obj:`int` or :py:obj:`float`
+        :param maximum: the numeric maximum value
+        :type maximum: :py:obj:`int` or :py:obj:`float`
         :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
         :type resource_id: str
@@ -467,6 +471,7 @@ class AwsLimitUsage(object):
         """
         self.limit = limit
         self.value = value
+        self.maximum = maximum
         self.resource_id = resource_id
         self.aws_type = aws_type
 
@@ -478,6 +483,15 @@ class AwsLimitUsage(object):
         :rtype: :py:obj:`int` or :py:obj:`float`
         """
         return self.value
+
+    def get_maximum(self):
+        """
+        Get the current maximum value
+
+        :returns: current maximum value
+        :rtype: :py:obj:`int` or :py:obj:`float`
+        """
+        return self.maximum
 
     def __str__(self):
         """
