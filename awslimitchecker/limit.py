@@ -209,6 +209,17 @@ class AwsLimit(object):
             return self.ta_limit
         return self.default_limit
 
+    def has_resource_limits(self):
+        """
+        Determines if this limit contains usages with a specified maximum.
+        Some AWS resources have a limit that is a different for each item.
+
+        :returns: whether of not some resources have a defined maximum
+        :rtype: bool
+        """
+        return any(usage for usage in self._current_usage if
+                   usage.get_maximum())
+
     def get_current_usage(self):
         """
         Get the current usage for this limit, as a list of

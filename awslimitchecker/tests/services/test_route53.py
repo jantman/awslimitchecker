@@ -94,7 +94,14 @@ class Test_Route53Service(object):
             assert limit.def_critical_threshold == 43
 
     def test_find_usage(self):
-        """test find_usage method calls other methods"""
+        cls = _Route53Service(21, 43)
+
+        assert cls._have_usage is False
+        cls.find_usage()
+        assert cls._have_usage is True
+
+    def test_update_limits_from_api(self):
+        """test _update_limits_from_api method calls other methods"""
 
         mock_conn = Mock()
         with patch('%s.connect' % pb) as mock_connect:
@@ -103,10 +110,8 @@ class Test_Route53Service(object):
                     _find_limit_hosted_zone=DEFAULT,
             ) as mocks:
                 cls = _Route53Service(21, 43)
-                assert cls._have_usage is False
                 cls.conn = mock_conn
-                cls.find_usage()
-                assert cls._have_usage is True
+                cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == []
         for x in [

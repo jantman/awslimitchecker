@@ -69,11 +69,17 @@ class _Route53Service(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
+        self._have_usage = True
+
+    def _update_limits_from_api(self):
+        """
+        Query Route53's GetHostedZoneLimit API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
+        """
         logger.info("Querying Route53 GetHostedZoneLimits for limits")
         self.connect()
         self._find_limit_hosted_zone()
-        self._have_usage = True
-        logger.debug("Done checking usage.")
+        logger.debug('Done setting limits from API.')
 
     def get_limits(self):
         """
