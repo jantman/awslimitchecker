@@ -142,4 +142,6 @@ class _ElasticBeanstalkService(_AwsService):
             "elasticbeanstalk:DescribeApplications",
             "elasticbeanstalk:DescribeApplicationVersions",
             "elasticbeanstalk:DescribeEnvironments",
+            "s3:GetBucketLocation",
+            "s3:ListBucket",
         ]
