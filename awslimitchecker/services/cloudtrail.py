@@ -18,17 +18,17 @@ class _CloudTrailService(_AwsService):
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
         logger.debug("Checking usage for service %s", self.service_name)
+
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
+
         self._find_usage_cloudtrail()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
     def _find_usage_cloudtrail(self):
-        """Calculate current usage for CloudTrail non-API call related limits"""
-
-        logger.debug("Getting usage for CloudTrail trails")
+        """Calculate current usage for CloudTrail related metrics"""
 
         trail_list = self.conn.describe_trails()['trailList']
         trail_count = len(trail_list) if trail_list else 0
