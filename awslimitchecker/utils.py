@@ -41,7 +41,7 @@ import argparse
 import logging
 from copy import deepcopy
 import botocore.vendored.requests as requests
-from awslimitchecker.version import _VERSION_TUP
+from awslimitchecker.version import _VERSION_TUP, _VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -228,8 +228,11 @@ def _get_latest_version():
     """
     try:
         r = requests.get(
-            'http://pypi.python.org/pypi/awslimitchecker/json',
-            timeout=4.0,
+            'https://pypi.org/pypi/awslimitchecker/json',
+            timeout=4.0, headers={
+                'User-Agent': 'github.com/jantman/awslimitchecker '
+                              '%s' % _VERSION
+            }
         )
         j = r.json()
         latest = tuple([
