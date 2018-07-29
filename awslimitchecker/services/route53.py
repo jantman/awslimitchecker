@@ -176,5 +176,6 @@ class _Route53Service(_AwsService):
         """
         return [
             "route53:GetHostedZone",
-            "route53:ListHostedZones",
+            "route53:GetHostedZoneLimit",
+            "route53:ListHostedZones"
         ]

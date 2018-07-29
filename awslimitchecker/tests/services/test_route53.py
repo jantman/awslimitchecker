@@ -164,5 +164,6 @@ class Test_Route53Service(object):
         cls = _Route53Service(21, 43)
         assert cls.required_iam_permissions() == [
             "route53:GetHostedZone",
-            "route53:ListHostedZones",
+            "route53:GetHostedZoneLimit",
+            "route53:ListHostedZones"
         ]
