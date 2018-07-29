@@ -3436,7 +3436,7 @@ class CloudTrail(object):
                     'CloudWatchLogsLogGroupArn': 'string',
                     'CloudWatchLogsRoleArn': 'string',
                     'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True | False
+                    'HasCustomEventSelectors': False
                 },
                 {
                     'Name': 'trail2',
@@ -3500,5 +3500,14 @@ class CloudTrail(object):
                         }
                     ]
                 },
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True,
+                    'DataResources': []
+                },
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True
+                }
             ]
     }

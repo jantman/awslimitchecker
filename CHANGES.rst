@@ -6,6 +6,8 @@ Unreleased Changes
 
 This release **requires new IAM permissions**:
 
+* ``cloudtrail:DescribeTrails``
+* ``cloudtrail:GetEventSelectors``
 * ``route53:GetHostedZone``
 * ``route53:ListHostedZones``
 * ``route53:GetHostedZoneLimit``
@@ -16,6 +18,7 @@ This release **officially drops support for Python 2.6 and 3.3.**
 * Support Per-Resource Limits (see below). **Note that this includes some changes to the ``awslimitchecker`` CLI output format and some minor API changes.**
 * `Issue #317 <https://github.com/jantman/awslimitchecker/issues/317>`_ - Officially drop support for Python 2.6 and 3.3. Also, begin testing py37.
 * `Issue #346 <https://github.com/jantman/awslimitchecker/issues/346>`_ - Update documentation for S3 API calls made by ElasticBeanstalk while retrieving EB limits (thanks to `fenichelar <https://github.com/fenichelar>`_ for finding this).
+* `PR #350 <https://github.com/jantman/awslimitchecker/pull/350>`_ - Add support for CloudTrail limits (thanks to `fpiche <https://github.com/fpiche>`_).
 
 Per-Resource Limits
 +++++++++++++++++++
