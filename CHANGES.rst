@@ -8,12 +8,14 @@ This release **requires new IAM permissions**:
 
 * ``route53:GetHostedZone``
 * ``route53:ListHostedZones``
+* ``route53:GetHostedZoneLimit``
 
 This release **officially drops support for Python 2.6 and 3.3.**
 
-* `PR #345 <https://github.com/jantman/awslimitchecker/pull/345>`_ / `Issue #349 <https://github.com/jantman/awslimitchecker/issues/349>`_ - Add Route53 service and checks for "Record sets per hosted zone" and "VPC associations per hosted zone" limits (the latter only for private zones).
+* `PR #345 <https://github.com/jantman/awslimitchecker/pull/345>`_ / `Issue #349 <https://github.com/jantman/awslimitchecker/issues/349>`_ - Add Route53 service and checks for "Record sets per hosted zone" and "VPC associations per hosted zone" limits (the latter only for private zones). (thanks to `julienduchesne <https://github.com/julienduchesne>`_).
 * Support Per-Resource Limits (see below). **Note that this includes some changes to the ``awslimitchecker`` CLI output format and some minor API changes.**
 * `Issue #317 <https://github.com/jantman/awslimitchecker/issues/317>`_ - Officially drop support for Python 2.6 and 3.3. Also, begin testing py37.
+* `Issue #346 <https://github.com/jantman/awslimitchecker/issues/346>`_ - Update documentation for S3 API calls made by ElasticBeanstalk while retrieving EB limits (thanks to `fenichelar <https://github.com/fenichelar>`_ for finding this).
 
 Per-Resource Limits
 +++++++++++++++++++
