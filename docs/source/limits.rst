@@ -155,10 +155,10 @@ Running On-Demand c4.8xlarge instances                                    5
 Running On-Demand c4.large instances              |check|                 20  
 Running On-Demand c4.xlarge instances             |check|                 20  
 Running On-Demand c5.18xlarge instances                                   5   
-Running On-Demand c5.2xlarge instances                                    20  
-Running On-Demand c5.4xlarge instances                                    10  
+Running On-Demand c5.2xlarge instances            |check|                 20  
+Running On-Demand c5.4xlarge instances            |check|                 10  
 Running On-Demand c5.9xlarge instances                                    5   
-Running On-Demand c5.large instances                                      20  
+Running On-Demand c5.large instances              |check|                 20  
 Running On-Demand c5.xlarge instances                                     20  
 Running On-Demand cc2.8xlarge instances                                   20  
 Running On-Demand cg1.4xlarge instances                                   2   
@@ -204,15 +204,15 @@ Running On-Demand m3.xlarge instances             |check|                 20
 Running On-Demand m4.10xlarge instances                                   5   
 Running On-Demand m4.16xlarge instances                                   5   
 Running On-Demand m4.2xlarge instances            |check|                 20  
-Running On-Demand m4.4xlarge instances                                    10  
+Running On-Demand m4.4xlarge instances            |check|                 10  
 Running On-Demand m4.large instances              |check|                 20  
 Running On-Demand m4.xlarge instances             |check|                 20  
 Running On-Demand m5.12xlarge instances                                   5   
 Running On-Demand m5.24xlarge instances                                   5   
 Running On-Demand m5.2xlarge instances                                    20  
 Running On-Demand m5.4xlarge instances                                    10  
-Running On-Demand m5.large instances              |check|                 20  
-Running On-Demand m5.xlarge instances                                     20  
+Running On-Demand m5.large instances                                      20  
+Running On-Demand m5.xlarge instances             |check|                 20  
 Running On-Demand p2.16xlarge instances                                   1   
 Running On-Demand p2.8xlarge instances                                    1   
 Running On-Demand p2.xlarge instances                                     1   
@@ -222,7 +222,7 @@ Running On-Demand p3.8xlarge instances                                    1
 Running On-Demand r3.2xlarge instances            |check|                 20  
 Running On-Demand r3.4xlarge instances            |check|                 10  
 Running On-Demand r3.8xlarge instances                                    5   
-Running On-Demand r3.large instances              |check|                 20  
+Running On-Demand r3.large instances                                      20  
 Running On-Demand r3.xlarge instances             |check|                 20  
 Running On-Demand r4.16xlarge instances                                   1   
 Running On-Demand r4.2xlarge instances                                    20  
@@ -381,6 +381,24 @@ Limit                     Trusted Advisor API     Default
 Redshift manual snapshots                         20
 Redshift subnet groups                            20
 ========================= =============== ======= ==
+
+.. _limits.Route53:
+
+Route53
+--------
+
+
+**Note on Route53 Limits:** The Route53 limit values (maxima) are
+set per-hosted zone, and can be increased by AWS support per-hosted
+zone. As such, each zone may have a different limit value.
+
+
+================================ =============== ======= =====
+Limit                            Trusted Advisor API     Default
+================================ =============== ======= =====
+Record sets per hosted zone                      |check| 10000
+VPC associations per hosted zone                 |check| 100  
+================================ =============== ======= =====
 
 .. _limits.S3:
 

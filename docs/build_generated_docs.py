@@ -111,6 +111,12 @@ def build_limits(checker):
             for Running On-Demand Instances current usage will *not* match the
             number of instances you see in the Console or API.
             """) + "\n"
+        if svc_name == 'Route53':
+            limit_info += "\n" + dedent("""
+            **Note on Route53 Limits:** The Route53 limit values (maxima) are
+            set per-hosted zone, and can be increased by AWS support per-hosted
+            zone. As such, each zone may have a different limit value.
+            """) + "\n"
         limit_info += "\n"
         # build a dict of the limits
         slimits = {}
@@ -142,7 +148,9 @@ def build_limits(checker):
             limit_info += sformat.format(
                 name=lname, limit=str(limit.default_limit),
                 ta='|check|' if limit.ta_limit is not None else '',
-                api='|check|' if limit.api_limit is not None else ''
+                api='|check|' if (
+                    limit.api_limit is not None or limit.has_resource_limits()
+                ) else ''
             )
         # footer
         limit_info += sep

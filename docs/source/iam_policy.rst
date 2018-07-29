@@ -81,6 +81,8 @@ permissions required for it to function correctly:
             "rds:DescribeReservedDBInstances", 
             "redshift:DescribeClusterSnapshots", 
             "redshift:DescribeClusterSubnetGroups", 
+            "route53:GetHostedZone", 
+            "route53:ListHostedZones", 
             "s3:ListAllMyBuckets", 
             "ses:GetSendQuota", 
             "support:*", 
