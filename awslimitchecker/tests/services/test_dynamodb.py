@@ -53,7 +53,7 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-pb = 'awslimitchecker.services.dynamodb._DynamodbService'  # class patch pase
+pb = 'awslimitchecker.services.dynamodb._DynamodbService'  # class patch base
 pbm = 'awslimitchecker.services.dynamodb'  # module patch base
 
 

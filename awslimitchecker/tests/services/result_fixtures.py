@@ -3416,3 +3416,98 @@ class Route53(object):
             }
         }
     }
+
+
+class CloudTrail(object):
+
+    mock_describe_trails = {
+            'trailList': [
+                {
+                    'Name': 'trail1',
+                    'S3BucketName': 'string',
+                    'S3KeyPrefix': 'string',
+                    'SnsTopicName': 'string',
+                    'SnsTopicARN': 'string',
+                    'IncludeGlobalServiceEvents': True,
+                    'IsMultiRegionTrail': True,
+                    'HomeRegion': 'string',
+                    'TrailARN': 'string',
+                    'LogFileValidationEnabled': True,
+                    'CloudWatchLogsLogGroupArn': 'string',
+                    'CloudWatchLogsRoleArn': 'string',
+                    'KmsKeyId': 'string',
+                    'HasCustomEventSelectors': False
+                },
+                {
+                    'Name': 'trail2',
+                    'S3BucketName': 'string',
+                    'S3KeyPrefix': 'string',
+                    'SnsTopicName': 'string',
+                    'SnsTopicARN': 'string',
+                    'IncludeGlobalServiceEvents': True,
+                    'IsMultiRegionTrail': True,
+                    'HomeRegion': 'string',
+                    'TrailARN': 'string',
+                    'LogFileValidationEnabled': True,
+                    'CloudWatchLogsLogGroupArn': 'string',
+                    'CloudWatchLogsRoleArn': 'string',
+                    'KmsKeyId': 'string',
+                    'HasCustomEventSelectors': True
+                },
+                {
+                    'Name': 'trail3',
+                    'S3BucketName': 'string',
+                    'S3KeyPrefix': 'string',
+                    'SnsTopicName': 'string',
+                    'SnsTopicARN': 'string',
+                    'IncludeGlobalServiceEvents': True,
+                    'IsMultiRegionTrail': True,
+                    'HomeRegion': 'string',
+                    'TrailARN': 'string',
+                    'LogFileValidationEnabled': True,
+                    'CloudWatchLogsLogGroupArn': 'string',
+                    'CloudWatchLogsRoleArn': 'string',
+                    'KmsKeyId': 'string',
+                    'HasCustomEventSelectors': True
+                }
+            ],
+    }
+
+    mock_get_event_selectors = {
+            'TrailARN': 'string',
+            'EventSelectors': [
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True,
+                    'DataResources': [
+                        {
+                            'Type': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        },
+                        {
+                            'Type': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        },
+                        {
+                            'Type': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True,
+                    'DataResources': []
+                },
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True
+                }
+            ]
+    }
