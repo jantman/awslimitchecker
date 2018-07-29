@@ -198,7 +198,7 @@ class LogRecordHelper(object):
                                               "" % support_region
         for svc, rname in service_regions.items():
             if svc == 'route53':
-                region_name = 'aws-global'
+                continue
             assert rname == region_name, "Expected service %s to connect to " \
                                          "region %s, but connected to %s" % (
                                              svc, region_name, rname)
