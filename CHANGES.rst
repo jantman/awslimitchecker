@@ -19,6 +19,7 @@ This release **officially drops support for Python 2.6 and 3.3.**
 * `Issue #317 <https://github.com/jantman/awslimitchecker/issues/317>`_ - Officially drop support for Python 2.6 and 3.3. Also, begin testing py37.
 * `Issue #346 <https://github.com/jantman/awslimitchecker/issues/346>`_ - Update documentation for S3 API calls made by ElasticBeanstalk while retrieving EB limits (thanks to `fenichelar <https://github.com/fenichelar>`_ for finding this).
 * `PR #350 <https://github.com/jantman/awslimitchecker/pull/350>`_ - Add support for CloudTrail limits (thanks to `fpiche <https://github.com/fpiche>`_).
+* `Issue #352 <https://github.com/jantman/awslimitchecker/issues/352>`_ - Update version check PyPI URL and set User-Agent when performing version check.
 
 Per-Resource Limits
 +++++++++++++++++++
