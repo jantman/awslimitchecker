@@ -3344,3 +3344,75 @@ class DynamoDB(object):
     type(test_find_usage_dynamodb[0]).name = 'table1'
     type(test_find_usage_dynamodb[1]).name = 'table2'
     type(test_find_usage_dynamodb[2]).name = 'table3'
+
+
+class Route53(object):
+    test_get_hosted_zones = {
+        "HostedZones": [
+            {
+                'Config': {
+                    'PrivateZone': True
+                },
+                'Id': '/hostedzone/ABC',
+                'Name': 'abc.example.com.'
+            },
+            {
+                'Config': {
+                    'PrivateZone': True
+                },
+                'Id': '/hostedzone/DEF',
+                'Name': 'def.example.com.'
+            },
+            {
+                'Config': {
+                    'PrivateZone': False
+                },
+                'Id': '/hostedzone/GHI',
+                'Name': 'ghi.example.com.'
+            }
+        ]
+    }
+
+    test_get_hosted_zone_limit = {
+        '/hostedzone/ABC': {
+            'MAX_RRSETS_BY_ZONE': {
+                'Count': 7500,
+                'Limit': {
+                    'Type': 'MAX_RRSETS_BY_ZONE',
+                    'Value': 10000
+                }
+            },
+            'MAX_VPCS_ASSOCIATED_BY_ZONE': {
+                'Count': 10,
+                'Limit': {
+                    'Type': 'MAX_VPCS_ASSOCIATED_BY_ZONE',
+                    'Value': 100
+                }
+            }
+        },
+        '/hostedzone/DEF': {
+            'MAX_RRSETS_BY_ZONE': {
+                'Count': 2500,
+                'Limit': {
+                    'Type': 'MAX_RRSETS_BY_ZONE',
+                    'Value': 10001
+                }
+            },
+            'MAX_VPCS_ASSOCIATED_BY_ZONE': {
+                'Count': 2,
+                'Limit': {
+                    'Type': 'MAX_VPCS_ASSOCIATED_BY_ZONE',
+                    'Value': 101
+                }
+            }
+        },
+        '/hostedzone/GHI': {
+            'MAX_RRSETS_BY_ZONE': {
+                'Count': 5678,
+                'Limit': {
+                    'Type': 'MAX_RRSETS_BY_ZONE',
+                    'Value': 10002
+                }
+            }
+        }
+    }

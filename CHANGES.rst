@@ -1,6 +1,42 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+This release **requires new IAM permissions**:
+
+* ``route53:GetHostedZone``
+* ``route53:ListHostedZones``
+
+* `PR #345 <https://github.com/jantman/awslimitchecker/pull/345>`_ / `Issue #349 <https://github.com/jantman/awslimitchecker/issues/349>`_ - Add Route53 service and checks for "Record sets per hosted zone" and "VPC associations per hosted zone" limits (the latter only for private zones).
+* Support Per-Resource Limits (see below). **Note that this includes some changes to the ``awslimitchecker`` CLI output format and some minor API changes.**
+
+Per-Resource Limits
++++++++++++++++++++
+
+Some Limits (:py:class:`~.AwsLimit`) now have limits/maxima that are per-resource rather than shared across all resources of a given type. The first limit of this kind that awslimitchecker supports is Route53, where the "Record sets per hosted zone" and "VPC associations per hosted zone" limits are set on a per-resource (per-zone) basis rather than globally to all zones in the account. Limits of this kind are also different since, as they are per-resource, they can only be enumerated at runtime. Supporting limits of this kind required some changes to the internals of awslimitchecker (specifically the :py:class:`~.AwsLimit` and :py:class:`~.AwsLimitUsage` classes) as well as to the output of the command line script/entrypoint.
+
+For limits which support different maxima/limit values per-resource, the command line ``awslimitchecker`` script ``-l`` / ``--list-limits`` functionality will now display them in Service/Limit/ResourceID format, i.e.:
+
+```
+Route53/Record sets per hosted zone/foo.com                  10000 (API)
+Route53/Record sets per hosted zone/bar.com                  10000 (API)
+Route53/Record sets per hosted zone/local.                   15000 (API)
+Route53/VPC associations per hosted zone/local.              100 (API)
+```
+
+As opposed to the Service/Limit format used for all existing limits, i.e.:
+
+```
+IAM/Groups             300 (API)
+IAM/Instance profiles  2000 (API)
+```
+
+If you are relying on the output format of the command line ``awslimitchecker`` script, please use the Python API instead.
+
+For users of the Python API, please take note of the new :py:meth:`.AwsLimit.has_resource_limits` and :py:meth:`~.AwsLimitUsage.get_maximum` methods which assist in how to identify limits that have per-resource maxima. Existing code that only surfaces awslimitchecker's warnings/criticals (the result of :py:meth:`~.AwsLimitChecker.check_thresholds`) will work without modification, but any code that displays or uses the current limit values themselves may need to be updated.
+
 4.0.2 (2018-03-22)
 ------------------
 
