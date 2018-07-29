@@ -112,8 +112,6 @@ class _CloudTrailService(_AwsService):
         """
         logger.debug("Gathering %s's limits from AWS", self.service_name)
 
-        self.connect()
-
         if self.limits:
             return self.limits
         limits = {}

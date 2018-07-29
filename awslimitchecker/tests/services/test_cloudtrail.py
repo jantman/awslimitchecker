@@ -125,7 +125,7 @@ class Test_CloudTrailService(object):
             assert cls._have_usage is False
             cls.find_usage()
 
-        assert len(mock_connect.mock_calls) == 2
+        assert len(mock_connect.mock_calls) == 1
         assert cls._have_usage is True
 
         usage = cls.limits['Trails Per Region'].get_current_usage()
