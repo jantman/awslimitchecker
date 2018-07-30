@@ -105,7 +105,7 @@ What It Does
 Requirements
 ------------
 
-* Python 2.6, 2.7, 3.3+.
+* Python 2.7 or 3.4+. Python 2.6 and 3.3 are no longer supported.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.4.6 and its dependency `botocore <https://botocore.readthedocs.io/en/latest/>`_ >= 1.6.0.
 

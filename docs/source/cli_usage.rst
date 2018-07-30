@@ -132,10 +132,10 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    ApiGateway
    AutoScaling
    CloudFormation
+   CloudTrail
    Directory Service
-   DynamoDB
    (...)
-   Redshift
+   Route53
    S3
    SES
    VPC
@@ -175,17 +175,17 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   ApiGateway/API keys per account                        500
-   ApiGateway/APIs per account                            60
-   ApiGateway/Client certificates per account             60
-   ApiGateway/Custom authorizers per API                  10
-   ApiGateway/Documentation parts per API                 2000
+   ApiGateway/API keys per account                              500
+   ApiGateway/APIs per account                                  60
+   ApiGateway/Client certificates per account                   60
+   ApiGateway/Custom authorizers per API                        10
+   ApiGateway/Documentation parts per API                       2000
    (...)
-   AutoScaling/Auto Scaling groups                        1200 (API)
+   AutoScaling/Auto Scaling groups                              1500 (API)
    (...)
-   VPC/Subnets per VPC                                    200
-   VPC/VPCs                                               1000 (TA)
-   VPC/Virtual private gateways                           5
+   VPC/Subnets per VPC                                          200
+   VPC/VPCs                                                     1000 (TA)
+   VPC/Virtual private gateways                                 5
 
 
 
@@ -198,17 +198,17 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   ApiGateway/API keys per account                        500
-   ApiGateway/APIs per account                            60
-   ApiGateway/Client certificates per account             60
-   ApiGateway/Custom authorizers per API                  10
-   ApiGateway/Documentation parts per API                 2000
+   ApiGateway/API keys per account                              500
+   ApiGateway/APIs per account                                  60
+   ApiGateway/Client certificates per account                   60
+   ApiGateway/Custom authorizers per API                        10
+   ApiGateway/Documentation parts per API                       2000
    (...)
-   AutoScaling/Auto Scaling groups                        1200 (API)
+   AutoScaling/Auto Scaling groups                              1500 (API)
    (...)
-   VPC/Subnets per VPC                                    200
-   VPC/VPCs                                               5
-   VPC/Virtual private gateways                           5
+   VPC/Subnets per VPC                                          200
+   VPC/VPCs                                                     5
+   VPC/Virtual private gateways                                 5
 
 
 

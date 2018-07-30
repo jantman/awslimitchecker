@@ -227,9 +227,15 @@ class Runner(object):
                     src_str = ' (API)'
                 if limits[svc][lim].get_limit_source() == SOURCE_TA:
                     src_str = ' (TA)'
-                data["{s}/{l}".format(s=svc, l=lim)] = '{v}{t}'.format(
-                    v=limits[svc][lim].get_limit(),
-                    t=src_str)
+                if limits[svc][lim].has_resource_limits():
+                    for usage in limits[svc][lim].get_current_usage():
+                        id = "{s}/{l}/{r}".format(s=svc, l=lim,
+                                                  r=usage.resource_id)
+                        data[id] = '{v} (API)'.format(v=usage.get_maximum())
+                else:
+                    data["{s}/{l}".format(s=svc, l=lim)] = '{v}{t}'.format(
+                        v=limits[svc][lim].get_limit(),
+                        t=src_str)
         print(dict2cols(data))
 
     def list_defaults(self):

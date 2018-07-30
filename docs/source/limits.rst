@@ -68,6 +68,19 @@ Limit  Trusted Advisor API     Default
 Stacks |check|         |check| 200
 ====== =============== ======= ===
 
+.. _limits.CloudTrail:
+
+CloudTrail
+-----------
+
+========================= =============== ======= ===
+Limit                     Trusted Advisor API     Default
+========================= =============== ======= ===
+Data Resources Per Trail                          250
+Event Selectors Per Trail                         5  
+Trails Per Region                                 5  
+========================= =============== ======= ===
+
 .. _limits.Directory Service:
 
 Directory Service
@@ -155,11 +168,18 @@ Running On-Demand c4.8xlarge instances                                    5
 Running On-Demand c4.large instances              |check|                 20  
 Running On-Demand c4.xlarge instances             |check|                 20  
 Running On-Demand c5.18xlarge instances                                   5   
-Running On-Demand c5.2xlarge instances                                    20  
-Running On-Demand c5.4xlarge instances                                    10  
+Running On-Demand c5.2xlarge instances            |check|                 20  
+Running On-Demand c5.4xlarge instances            |check|                 10  
 Running On-Demand c5.9xlarge instances                                    5   
-Running On-Demand c5.large instances                                      20  
+Running On-Demand c5.large instances              |check|                 20  
 Running On-Demand c5.xlarge instances                                     20  
+Running On-Demand c5d.18xlarge instances                                  20  
+Running On-Demand c5d.2xlarge instances                                   20  
+Running On-Demand c5d.4xlarge instances                                   20  
+Running On-Demand c5d.9xlarge instances                                   20  
+Running On-Demand c5d.large instances                                     20  
+Running On-Demand c5d.xlarge instances                                    20  
+Running On-Demand cc1.4xlarge instances                                   20  
 Running On-Demand cc2.8xlarge instances                                   20  
 Running On-Demand cg1.4xlarge instances                                   2   
 Running On-Demand cr1.8xlarge instances                                   2   
@@ -189,6 +209,7 @@ Running On-Demand i3.2xlarge instances                                    2
 Running On-Demand i3.4xlarge instances                                    2   
 Running On-Demand i3.8xlarge instances                                    2   
 Running On-Demand i3.large instances                                      2   
+Running On-Demand i3.metal instances                                      20  
 Running On-Demand i3.xlarge instances                                     2   
 Running On-Demand m1.large instances                                      20  
 Running On-Demand m1.medium instances                                     20  
@@ -204,15 +225,21 @@ Running On-Demand m3.xlarge instances             |check|                 20
 Running On-Demand m4.10xlarge instances                                   5   
 Running On-Demand m4.16xlarge instances                                   5   
 Running On-Demand m4.2xlarge instances            |check|                 20  
-Running On-Demand m4.4xlarge instances                                    10  
+Running On-Demand m4.4xlarge instances            |check|                 10  
 Running On-Demand m4.large instances              |check|                 20  
 Running On-Demand m4.xlarge instances             |check|                 20  
 Running On-Demand m5.12xlarge instances                                   5   
 Running On-Demand m5.24xlarge instances                                   5   
 Running On-Demand m5.2xlarge instances                                    20  
 Running On-Demand m5.4xlarge instances                                    10  
-Running On-Demand m5.large instances              |check|                 20  
-Running On-Demand m5.xlarge instances                                     20  
+Running On-Demand m5.large instances                                      20  
+Running On-Demand m5.xlarge instances             |check|                 20  
+Running On-Demand m5d.12xlarge instances                                  20  
+Running On-Demand m5d.24xlarge instances                                  20  
+Running On-Demand m5d.2xlarge instances                                   20  
+Running On-Demand m5d.4xlarge instances                                   20  
+Running On-Demand m5d.large instances                                     20  
+Running On-Demand m5d.xlarge instances                                    20  
 Running On-Demand p2.16xlarge instances                                   1   
 Running On-Demand p2.8xlarge instances                                    1   
 Running On-Demand p2.xlarge instances                                     1   
@@ -222,7 +249,7 @@ Running On-Demand p3.8xlarge instances                                    1
 Running On-Demand r3.2xlarge instances            |check|                 20  
 Running On-Demand r3.4xlarge instances            |check|                 10  
 Running On-Demand r3.8xlarge instances                                    5   
-Running On-Demand r3.large instances              |check|                 20  
+Running On-Demand r3.large instances                                      20  
 Running On-Demand r3.xlarge instances             |check|                 20  
 Running On-Demand r4.16xlarge instances                                   1   
 Running On-Demand r4.2xlarge instances                                    20  
@@ -230,6 +257,24 @@ Running On-Demand r4.4xlarge instances                                    10
 Running On-Demand r4.8xlarge instances                                    5   
 Running On-Demand r4.large instances              |check|                 20  
 Running On-Demand r4.xlarge instances             |check|                 20  
+Running On-Demand r5.12xlarge instances                                   20  
+Running On-Demand r5.16xlarge instances                                   20  
+Running On-Demand r5.24xlarge instances                                   20  
+Running On-Demand r5.2xlarge instances                                    20  
+Running On-Demand r5.4xlarge instances                                    20  
+Running On-Demand r5.8xlarge instances                                    20  
+Running On-Demand r5.large instances                                      20  
+Running On-Demand r5.metal instances                                      20  
+Running On-Demand r5.xlarge instances                                     20  
+Running On-Demand r5d.12xlarge instances                                  20  
+Running On-Demand r5d.16xlarge instances                                  20  
+Running On-Demand r5d.24xlarge instances                                  20  
+Running On-Demand r5d.2xlarge instances                                   20  
+Running On-Demand r5d.4xlarge instances                                   20  
+Running On-Demand r5d.8xlarge instances                                   20  
+Running On-Demand r5d.large instances                                     20  
+Running On-Demand r5d.metal instances                                     20  
+Running On-Demand r5d.xlarge instances                                    20  
 Running On-Demand t1.micro instances              |check|                 20  
 Running On-Demand t2.2xlarge instances                                    20  
 Running On-Demand t2.large instances              |check|                 20  
@@ -240,8 +285,18 @@ Running On-Demand t2.small instances              |check|                 20
 Running On-Demand t2.xlarge instances             |check|                 20  
 Running On-Demand x1.16xlarge instances                                   20  
 Running On-Demand x1.32xlarge instances                                   20  
+Running On-Demand x1e.16xlarge instances                                  20  
+Running On-Demand x1e.2xlarge instances                                   20  
 Running On-Demand x1e.32xlarge instances                                  20  
+Running On-Demand x1e.4xlarge instances                                   20  
+Running On-Demand x1e.8xlarge instances                                   20  
 Running On-Demand x1e.xlarge instances                                    20  
+Running On-Demand z1d.12xlarge instances                                  20  
+Running On-Demand z1d.2xlarge instances                                   20  
+Running On-Demand z1d.3xlarge instances                                   20  
+Running On-Demand z1d.6xlarge instances                                   20  
+Running On-Demand z1d.large instances                                     20  
+Running On-Demand z1d.xlarge instances                                    20  
 Security groups per VPC                                                   500 
 VPC Elastic IP addresses (EIPs)                   |check|         |check| 5   
 VPC security groups per elastic network interface                 |check| 5   
@@ -381,6 +436,24 @@ Limit                     Trusted Advisor API     Default
 Redshift manual snapshots                         20
 Redshift subnet groups                            20
 ========================= =============== ======= ==
+
+.. _limits.Route53:
+
+Route53
+--------
+
+
+**Note on Route53 Limits:** The Route53 limit values (maxima) are
+set per-hosted zone, and can be increased by AWS support per-hosted
+zone. As such, each zone may have a different limit value.
+
+
+================================ =============== ======= =====
+Limit                            Trusted Advisor API     Default
+================================ =============== ======= =====
+Record sets per hosted zone                      |check| 10000
+VPC associations per hosted zone                 |check| 100  
+================================ =============== ======= =====
 
 .. _limits.S3:
 

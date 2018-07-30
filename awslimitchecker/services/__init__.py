@@ -41,6 +41,7 @@ from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.apigateway import _ApigatewayService
 from awslimitchecker.services.autoscaling import _AutoscalingService
 from awslimitchecker.services.cloudformation import _CloudformationService
+from awslimitchecker.services.cloudtrail import _CloudTrailService
 from awslimitchecker.services.directoryservice import _DirectoryserviceService
 from awslimitchecker.services.dynamodb import _DynamodbService
 from awslimitchecker.services.ebs import _EbsService
@@ -54,6 +55,7 @@ from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.iam import _IamService
 from awslimitchecker.services.rds import _RDSService
 from awslimitchecker.services.redshift import _RedshiftService
+from awslimitchecker.services.route53 import _Route53Service
 from awslimitchecker.services.s3 import _S3Service
 from awslimitchecker.services.ses import _SesService
 from awslimitchecker.services.vpc import _VpcService

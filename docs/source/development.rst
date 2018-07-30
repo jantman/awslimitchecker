@@ -126,6 +126,14 @@ added to a limit already in awslimitchecker, you must pass the
 ``ta_service_name`` and ``ta_limit_name`` parameters to the :py:class:`~.AwsLimit`
 constructor, specifying the string values that are returned by Trusted Advisor.
 
+**Note on services with per-resource limits:** Some AWS services, such as Route53,
+set limits on each individual resource (i.e. each Hosted Zone, for Route53) instead
+of globally for all resources in a region or account. When this is done, the per-resource
+limit should be provided as the ``maximum`` argument to the :py:class:`~.AwsLimitUsage`
+class; :py:class:`~.AwsLimit` will then properly determine warnings/criticals for the
+limit. For further information, see the `5.0.0 release notes <https://github.com/jantman/awslimitchecker/releases/tag/5.0.0>`_
+and `PR #345 <https://github.com/jantman/awslimitchecker/pull/345>`_ where this was initially implemented.
+
 .. _development.adding_services:
 
 Adding New Services
