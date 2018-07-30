@@ -106,6 +106,9 @@ class Test_CloudTrailService(object):
 
     def test_find_usage(self):
         mock_trails = Mock()
+        mock_conf = Mock()
+        type(mock_conf).region_name = 'thisregion'
+        type(mock_trails)._client_config = mock_conf
         mock_trails.describe_trails.return_value = \
             result_fixtures.CloudTrail.mock_describe_trails
 
@@ -133,16 +136,14 @@ class Test_CloudTrailService(object):
         assert usage[0].get_value() == 3
 
         usage = cls.limits['Event Selectors Per Trail'].get_current_usage()
-        assert len(usage) == 3
+        assert len(usage) == 2
         assert usage[0].get_value() == 0
         assert usage[1].get_value() == 3
-        assert usage[2].get_value() == 0
 
         usage = cls.limits['Data Resources Per Trail'].get_current_usage()
-        assert len(usage) == 3
+        assert len(usage) == 2
         assert usage[0].get_value() == 0
         assert usage[1].get_value() == 3
-        assert usage[2].get_value() == 0
 
     def test_required_iam_permissions(self):
         cls = _CloudTrailService(21, 43)

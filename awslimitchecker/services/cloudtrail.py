@@ -76,27 +76,30 @@ class _CloudTrailService(_AwsService):
 
         for trail in trail_list:
             data_resource_count = 0
-
-            response = self.conn.get_event_selectors(TrailName=trail['Name'])
-            event_selectors = response['EventSelectors']
-
-            for event_selector in event_selectors:
-                data_resource_count += len(
-                    event_selector.get('DataResources', [])
+            if self.conn._client_config.region_name == trail['HomeRegion']:
+                response = self.conn.get_event_selectors(
+                    TrailName=trail['Name']
                 )
-
-            self.limits['Event Selectors Per Trail']._add_current_usage(
-                len(event_selectors),
-                aws_type='AWS::CloudTrail::EventSelector',
-                resource_id=trail['Name']
-            )
-
-            self.limits['Data Resources Per Trail']._add_current_usage(
-                data_resource_count,
-                aws_type='AWS::CloudTrail::DataResource',
-                resource_id=trail['Name']
-            )
-
+                event_selectors = response['EventSelectors']
+                for event_selector in event_selectors:
+                    data_resource_count += len(
+                        event_selector.get('DataResources', [])
+                    )
+                self.limits['Event Selectors Per Trail']._add_current_usage(
+                    len(event_selectors),
+                    aws_type='AWS::CloudTrail::EventSelector',
+                    resource_id=trail['Name']
+                )
+                self.limits['Data Resources Per Trail']._add_current_usage(
+                    data_resource_count,
+                    aws_type='AWS::CloudTrail::DataResource',
+                    resource_id=trail['Name']
+                )
+            else:
+                logger.debug(
+                    'Ignoring event selectors and data resources for '
+                    'CloudTrail %s in non-home region' % trail['Name']
+                )
         self.limits['Trails Per Region']._add_current_usage(
             trail_count,
             aws_type=self.aws_type
