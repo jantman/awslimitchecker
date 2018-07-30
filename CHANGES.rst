@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+5.0.0 (2018-07-30)
 ------------------
 
 This release **requires new IAM permissions**:
