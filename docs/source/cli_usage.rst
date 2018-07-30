@@ -132,8 +132,8 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    ApiGateway
    AutoScaling
    CloudFormation
+   CloudTrail
    Directory Service
-   DynamoDB
    (...)
    Route53
    S3
