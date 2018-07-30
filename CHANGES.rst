@@ -29,19 +29,19 @@ Some Limits (:py:class:`~.AwsLimit`) now have limits/maxima that are per-resourc
 
 For limits which support different maxima/limit values per-resource, the command line ``awslimitchecker`` script ``-l`` / ``--list-limits`` functionality will now display them in Service/Limit/ResourceID format, i.e.:
 
-```
-Route53/Record sets per hosted zone/foo.com                  10000 (API)
-Route53/Record sets per hosted zone/bar.com                  10000 (API)
-Route53/Record sets per hosted zone/local.                   15000 (API)
-Route53/VPC associations per hosted zone/local.              100 (API)
-```
+.. code-block::
+
+    Route53/Record sets per hosted zone/foo.com                  10000 (API)
+    Route53/Record sets per hosted zone/bar.com                  10000 (API)
+    Route53/Record sets per hosted zone/local.                   15000 (API)
+    Route53/VPC associations per hosted zone/local.              100 (API)
 
 As opposed to the Service/Limit format used for all existing limits, i.e.:
 
-```
-IAM/Groups             300 (API)
-IAM/Instance profiles  2000 (API)
-```
+.. code-block::
+
+    IAM/Groups             300 (API)
+    IAM/Instance profiles  2000 (API)
 
 If you are relying on the output format of the command line ``awslimitchecker`` script, please use the Python API instead.
 
