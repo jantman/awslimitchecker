@@ -283,6 +283,13 @@ Running On-Demand t2.micro instances              |check|                 20
 Running On-Demand t2.nano instances               |check|                 20  
 Running On-Demand t2.small instances              |check|                 20  
 Running On-Demand t2.xlarge instances             |check|                 20  
+Running On-Demand t3.2xlarge instances            |check|                 20  
+Running On-Demand t3.large instances              |check|                 20  
+Running On-Demand t3.medium instances             |check|                 20  
+Running On-Demand t3.micro instances              |check|                 20  
+Running On-Demand t3.nano instances               |check|                 20  
+Running On-Demand t3.small instances              |check|                 20  
+Running On-Demand t3.xlarge instances             |check|                 20  
 Running On-Demand x1.16xlarge instances                                   20  
 Running On-Demand x1.32xlarge instances                                   20  
 Running On-Demand x1e.16xlarge instances                                  20  

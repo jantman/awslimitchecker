@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* Add support for t3 EC2 instance types.
+
 5.0.0 (2018-07-30)
 ------------------
 
