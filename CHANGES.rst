@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+5.1.0 (2018-09-23)
 ------------------
 
 * `Issue #358 <https://github.com/jantman/awslimitchecker/issues/358>`_ - Update EFS with new default limit for number of File systems: 70 in us-east-1 and 125 in other regions.
