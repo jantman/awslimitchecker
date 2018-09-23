@@ -56,8 +56,8 @@ from release_utils import (
 from awslimitchecker.version import _VERSION as VERSION
 from terraform import TerraformIAM
 
-if sys.version_info[0:2] != (3, 6):
-    raise SystemExit('ERROR: release.py can only run under py 3.6')
+if sys.version_info[0:2] < (3, 6):
+    raise SystemExit('ERROR: release.py can only run under py 3.6+')
 
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(name)s.%(funcName)s() ] " \
          "%(message)s"
