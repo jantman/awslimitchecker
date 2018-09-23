@@ -4,7 +4,8 @@ Changelog
 Unreleased Changes
 ------------------
 
-* Add support for t3 EC2 instance types.
+* Add support for ``t3`` EC2 instance types.
+* Switch ``py37`` TravisCI tests from py37-dev to py37 (release).
 
 5.0.0 (2018-07-30)
 ------------------
