@@ -4,7 +4,8 @@ Changelog
 Unreleased Changes
 ------------------
 
-* Add support for ``t3`` EC2 instance types.
+* `Issue #358 <https://github.com/jantman/awslimitchecker/issues/358>`_ - Update EFS with new default limit for number of File systems: 70 in us-east-1 and 125 in other regions.
+* `PR #359 <https://github.com/jantman/awslimitchecker/pull/359>`_ - Add support for ``t3`` EC2 instance types (thanks to `chafouin <https://github.com/chafouin>`_).
 * Switch ``py37`` TravisCI tests from py37-dev to py37 (release).
 
 5.0.0 (2018-07-30)
