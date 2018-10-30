@@ -387,7 +387,7 @@ Firehose
 =========================== =============== ======= ==
 Limit                       Trusted Advisor API     Default
 =========================== =============== ======= ==
-Delivery streams per region                         20
+Delivery streams per region                         50
 =========================== =============== ======= ==
 
 .. _limits.IAM:
