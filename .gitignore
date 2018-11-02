@@ -61,6 +61,8 @@ target/
 bin/
 include/
 
+# IntelliJ
+*.iml
 .idea/
 
 dev/.terraform
