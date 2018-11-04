@@ -1,6 +1,11 @@
 Changelog
 =========
 
+5.2.0 (2018-10-04)
+------------------
+
+* `Issue #363 <https://github.com/jantman/awslimitchecker/issues/363>`_ - Add support for the Lambda limits and usages.
+
 5.1.0 (2018-09-23)
 ------------------
 

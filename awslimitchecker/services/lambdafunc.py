@@ -42,6 +42,7 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
+from botocore.exceptions import EndpointConnectionError
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ logger = logging.getLogger(__name__)
 class _LambdaService(_AwsService):
 
     service_name = 'Lambda'
-    api_name = 'lambda'  # AWS API name to connect to (boto3.client)
+    api_name = 'lambda'
 
     def find_usage(self):
         """
@@ -57,26 +58,38 @@ class _LambdaService(_AwsService):
         and update corresponding Limit via
         :py:meth:`~.AwsLimit._add_current_usage`.
         """
-        logger.debug("Checking usage for service %s", self.service_name)
-        self.connect()
-        for lim in self.limits.values():
-            lim._reset_usage()
-        # TODO: update your usage here, i.e.:
-        """
-        usage = self.conn.method_to_get_usage()
-        # or, if it needs to be paginated,  something like:
-        # remebering to 'from ..utils import paginate_dict'
-        usage = paginate_dict(
-            self.conn.method_to_get_usage,
-            alc_marker_path=['NextToken'],
-            alc_data_path=['ResourceListName'],
-            alc_marker_param='NextToken'
+        logger.debug("Getting usage for Lambda metrics")
+        try:
+            self.connect()
+            resp = self.conn.get_account_settings()
+        except EndpointConnectionError as ex:
+            logger.warn('Skipping Lambda: %s', str(ex))
+            return
+
+        self.limits = {}
+
+        self.limits['Function Count'] = AwsLimit(
+            'Function Count',
+            self,
+            None,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
         )
-        u_id = (resource id from AWS)
-        self.limits['Number of u']._add_current_usage(u, aws_type='U', id=u_id)
-        """
+        self.limits['Function Count']._add_current_usage(
+            resp['AccountUsage']['FunctionCount'])
+
+        self.limits['Total Code Size (MiB)'] = AwsLimit(
+            'Total Code Size (MiB)',
+            self,
+            80530636800/1048576,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function')
+        self.limits['Total Code Size (MiB)']._add_current_usage(
+            int((resp['AccountUsage']['TotalCodeSize'])/1048576))
+
         self._have_usage = True
-        logger.debug("Done checking usage.")
 
     def get_limits(self):
         """
@@ -86,34 +99,84 @@ class _LambdaService(_AwsService):
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
+        logger.debug("Getting limits for Lambda")
         if self.limits != {}:
             return self.limits
-        limits = {}
-        # TODO: declare Limits here, i.e.:
-        """
-        limits['Number of u'] = AwsLimit(
-            'Number of u',
-            self,
-            40000,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='U',
-        )
 
-        """
-        self.limits = limits
-        return limits
+        self._construct_limits()
+
+        return self.limits
 
     def _update_limits_from_api(self):
         """
-        Call the service's API action to retrieve limit/quota information, and
-        update AwsLimit objects in ``self.limits`` with this information.
+        Query Lambda's DescribeLimits API action, and update limits
+        with the quotas returned. Updates ``self.limits``.
         """
-        # TODO: if the service has an API that can retrieve current limit information
-        # i.e. ``DescribeAccountAttributes``, call that action here and update each
-        # relevant AwsLimit object (in ``self.limits``) via its ``._set_api_limit()`` method.
-        # ELSE if the service has no API call for this, remove this method.
-        raise NotImplementedException()
+        logger.debug("Updating limits for Lambda from the AWS API")
+        if len(self.limits) == 2:
+            return
+        self.connect()
+        lims = self.conn.get_account_settings()['AccountLimit']
+        self.limits['Code Size Unzipped (MiB)']._set_api_limit(
+            (lims['CodeSizeUnzipped']/1048576))
+        self.limits['Code Size Zipped (MiB)']._set_api_limit(
+            (lims['CodeSizeZipped']/1048576))
+        self.limits['Total Code Size (GiB)']._set_api_limit(
+            (lims['TotalCodeSize']/1048576/1024))
+        self.limits['Unreserved Concurrent Executions']._set_api_limit(
+            lims['UnreservedConcurrentExecutions'])
+        self.limits['Concurrent Executions']._set_api_limit(
+            lims['ConcurrentExecutions'])
+
+    def _construct_limits(self):
+        self.limits = {}
+        self.limits['Total Code Size (GiB)'] = AwsLimit(
+            'Total Code Size (GiB)',
+            self,
+            80530636800/1048576/1024,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
+        )
+
+        self.limits['Code Size Unzipped (MiB)'] = AwsLimit(
+            'Code Size Unzipped (MiB)',
+            self,
+            262144000/1048576,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
+        )
+
+        # if 'Unreserved Concurrent Executions' in limits:
+        self.limits['Unreserved Concurrent Executions'] = AwsLimit(
+            'Unreserved Concurrent Executions',
+            self,
+            1000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
+        )
+
+        # if 'Concurrent Executions' in limits:
+        self.limits['Concurrent Executions'] = AwsLimit(
+            'Concurrent Executions',
+            self,
+            1000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
+        )
+
+        # if 'Code Size Zipped' in limits:
+        self.limits['Code Size Zipped (MiB)'] = AwsLimit(
+            'Code Size Zipped (MiB)',
+            self,
+            52428800/1048576,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
+        )
 
     def required_iam_permissions(self):
         """
@@ -124,7 +187,6 @@ class _LambdaService(_AwsService):
         :returns: list of IAM Action strings
         :rtype: list
         """
-        # TODO: update this to be all IAM permissions required for find_usage() to work
         return [
-            "Lambda:SomeAction",
+            "lambda:GetAccountSettings"
         ]
