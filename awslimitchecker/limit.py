@@ -68,7 +68,7 @@ class AwsLimit(object):
           this limit is for
         :type service: :py:class:`~._AwsService`
         :param default_limit: the default value of this limit for new accounts
-        :type default_limit: int
+        :type default_limit: :py:obj:`int`, or ``None`` if unlimited
         :param def_warning_threshold: the default warning threshold, as an
           integer percentage.
         :type def_warning_threshold: int
