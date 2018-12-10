@@ -119,13 +119,13 @@ class _LambdaService(_AwsService):
         lims = self.conn.get_account_settings()['AccountLimit']
         self.limits['Total Code Size (GiB)']._set_api_limit(
             (lims['TotalCodeSize']/1073741824))
-        self.limits['Code Size Unzipped (MiB)']._set_api_limit(
+        self.limits['Code Size Unzipped (MiB) per Function']._set_api_limit(
             (lims['CodeSizeUnzipped']/1048576))
         self.limits['Unreserved Concurrent Executions']._set_api_limit(
             lims['UnreservedConcurrentExecutions'])
         self.limits['Concurrent Executions']._set_api_limit(
             lims['ConcurrentExecutions'])
-        self.limits['Code Size Zipped (MiB)']._set_api_limit(
+        self.limits['Code Size Zipped (MiB) per Function']._set_api_limit(
             (lims['CodeSizeZipped']/1048576))
 
     def _construct_limits(self):
@@ -139,8 +139,8 @@ class _LambdaService(_AwsService):
             limit_type='AWS::Lambda::Function'
         )
 
-        self.limits['Code Size Unzipped (MiB)'] = AwsLimit(
-            'Code Size Unzipped (MiB)',
+        self.limits['Code Size Unzipped (MiB) per Function'] = AwsLimit(
+            'Code Size Unzipped (MiB) per Function',
             self,
             250,
             self.warning_threshold,
@@ -169,8 +169,8 @@ class _LambdaService(_AwsService):
         )
 
         # if 'Code Size Zipped' in limits:
-        self.limits['Code Size Zipped (MiB)'] = AwsLimit(
-            'Code Size Zipped (MiB)',
+        self.limits['Code Size Zipped (MiB) per Function'] = AwsLimit(
+            'Code Size Zipped (MiB) per Function',
             self,
             50,
             self.warning_threshold,
