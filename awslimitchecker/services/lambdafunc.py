@@ -65,30 +65,10 @@ class _LambdaService(_AwsService):
         except EndpointConnectionError as ex:
             logger.warn('Skipping Lambda: %s', str(ex))
             return
-
-        self.limits = {}
-
-        self.limits['Function Count'] = AwsLimit(
-            'Function Count',
-            self,
-            None,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::Lambda::Function'
-        )
         self.limits['Function Count']._add_current_usage(
             resp['AccountUsage']['FunctionCount'])
-
-        self.limits['Total Code Size (MiB)'] = AwsLimit(
-            'Total Code Size (MiB)',
-            self,
-            76800,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::Lambda::Function')
         self.limits['Total Code Size (MiB)']._add_current_usage(
             int((resp['AccountUsage']['TotalCodeSize'])/1048576))
-
         self._have_usage = True
 
     def get_limits(self):
@@ -117,8 +97,8 @@ class _LambdaService(_AwsService):
             return
         self.connect()
         lims = self.conn.get_account_settings()['AccountLimit']
-        self.limits['Total Code Size (GiB)']._set_api_limit(
-            (lims['TotalCodeSize']/1073741824))
+        self.limits['Total Code Size (MiB)']._set_api_limit(
+            (lims['TotalCodeSize']/1048576))
         self.limits['Code Size Unzipped (MiB) per Function']._set_api_limit(
             (lims['CodeSizeUnzipped']/1048576))
         self.limits['Unreserved Concurrent Executions']._set_api_limit(
@@ -130,10 +110,10 @@ class _LambdaService(_AwsService):
 
     def _construct_limits(self):
         self.limits = {}
-        self.limits['Total Code Size (GiB)'] = AwsLimit(
-            'Total Code Size (GiB)',
+        self.limits['Total Code Size (MiB)'] = AwsLimit(
+            'Total Code Size (MiB)',
             self,
-            75,
+            76800,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::Lambda::Function'
@@ -148,7 +128,6 @@ class _LambdaService(_AwsService):
             limit_type='AWS::Lambda::Function'
         )
 
-        # if 'Unreserved Concurrent Executions' in limits:
         self.limits['Unreserved Concurrent Executions'] = AwsLimit(
             'Unreserved Concurrent Executions',
             self,
@@ -158,7 +137,6 @@ class _LambdaService(_AwsService):
             limit_type='AWS::Lambda::Function'
         )
 
-        # if 'Concurrent Executions' in limits:
         self.limits['Concurrent Executions'] = AwsLimit(
             'Concurrent Executions',
             self,
@@ -168,11 +146,19 @@ class _LambdaService(_AwsService):
             limit_type='AWS::Lambda::Function'
         )
 
-        # if 'Code Size Zipped' in limits:
         self.limits['Code Size Zipped (MiB) per Function'] = AwsLimit(
             'Code Size Zipped (MiB) per Function',
             self,
             50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::Lambda::Function'
+        )
+
+        self.limits['Function Count'] = AwsLimit(
+            'Function Count',
+            self,
+            None,  # unlimited
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::Lambda::Function'
