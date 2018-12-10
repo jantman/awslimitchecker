@@ -82,7 +82,7 @@ class _LambdaService(_AwsService):
         self.limits['Total Code Size (MiB)'] = AwsLimit(
             'Total Code Size (MiB)',
             self,
-            80530636800/1048576,
+            76800,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::Lambda::Function')
@@ -118,7 +118,7 @@ class _LambdaService(_AwsService):
         self.connect()
         lims = self.conn.get_account_settings()['AccountLimit']
         self.limits['Total Code Size (GiB)']._set_api_limit(
-            (lims['TotalCodeSize']/1048576/1024))
+            (lims['TotalCodeSize']/1073741824))
         self.limits['Code Size Unzipped (MiB)']._set_api_limit(
             (lims['CodeSizeUnzipped']/1048576))
         self.limits['Unreserved Concurrent Executions']._set_api_limit(
@@ -133,7 +133,7 @@ class _LambdaService(_AwsService):
         self.limits['Total Code Size (GiB)'] = AwsLimit(
             'Total Code Size (GiB)',
             self,
-            80530636800/1048576/1024,
+            75,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::Lambda::Function'
@@ -142,7 +142,7 @@ class _LambdaService(_AwsService):
         self.limits['Code Size Unzipped (MiB)'] = AwsLimit(
             'Code Size Unzipped (MiB)',
             self,
-            262144000/1048576,
+            250,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::Lambda::Function'
@@ -172,7 +172,7 @@ class _LambdaService(_AwsService):
         self.limits['Code Size Zipped (MiB)'] = AwsLimit(
             'Code Size Zipped (MiB)',
             self,
-            52428800/1048576,
+            50,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::Lambda::Function'
