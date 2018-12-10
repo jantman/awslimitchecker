@@ -117,16 +117,16 @@ class _LambdaService(_AwsService):
             return
         self.connect()
         lims = self.conn.get_account_settings()['AccountLimit']
-        self.limits['Code Size Unzipped (MiB)']._set_api_limit(
-            (lims['CodeSizeUnzipped']/1048576))
-        self.limits['Code Size Zipped (MiB)']._set_api_limit(
-            (lims['CodeSizeZipped']/1048576))
         self.limits['Total Code Size (GiB)']._set_api_limit(
             (lims['TotalCodeSize']/1048576/1024))
+        self.limits['Code Size Unzipped (MiB)']._set_api_limit(
+            (lims['CodeSizeUnzipped']/1048576))
         self.limits['Unreserved Concurrent Executions']._set_api_limit(
             lims['UnreservedConcurrentExecutions'])
         self.limits['Concurrent Executions']._set_api_limit(
             lims['ConcurrentExecutions'])
+        self.limits['Code Size Zipped (MiB)']._set_api_limit(
+            (lims['CodeSizeZipped']/1048576))
 
     def _construct_limits(self):
         self.limits = {}
