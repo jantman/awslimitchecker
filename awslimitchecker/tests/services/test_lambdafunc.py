@@ -72,13 +72,14 @@ class Test_LambdaService(object):
         cls = _LambdaService(21, 43)
         cls.limits = {}
         res = cls.get_limits()
-        assert sorted(res.keys()) == sorted([
-            'Total Code Size (GiB)',
-            'Code Size Unzipped (MiB)',
-            'Unreserved Concurrent Executions',
+        assert sorted(res.keys()) == [
+            'Code Size Unzipped (MiB) per Function',
+            'Code Size Zipped (MiB) per Function',
             'Concurrent Executions',
-            'Code Size Zipped (MiB)'
-        ])
+            'Function Count',
+            'Total Code Size (MiB)',
+            'Unreserved Concurrent Executions'
+        ]
         for name, limit in res.items():
             assert limit.service == cls
             assert limit.def_warning_threshold == 21
@@ -99,19 +100,19 @@ class Test_LambdaService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             cls = _LambdaService(21, 43)
-            assert len(cls.limits) == 5
+            assert len(cls.limits) == 6
             cls.conn = mock_conn
             cls._update_limits_from_api()
 
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == [call.get_account_settings()]
-        assert len(cls.limits) == 5
-        lim = cls.limits['Code Size Unzipped (MiB)'].get_limit()
+        assert len(cls.limits) == 6
+        lim = cls.limits['Code Size Unzipped (MiB) per Function'].get_limit()
         assert lim == 250
-        lim = cls.limits['Code Size Zipped (MiB)'].get_limit()
+        lim = cls.limits['Code Size Zipped (MiB) per Function'].get_limit()
         assert lim == 50
-        lim = cls.limits['Total Code Size (GiB)'].get_limit()
-        assert lim == 75
+        lim = cls.limits['Total Code Size (MiB)'].get_limit()
+        assert lim == 76800
         lim = cls.limits['Unreserved Concurrent Executions'].get_limit()
         assert lim == 1000
         lim = cls.limits['Concurrent Executions'].get_limit()
@@ -124,7 +125,7 @@ class Test_LambdaService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             cls = _LambdaService(21, 43)
-            assert len(cls.limits) == 5
+            assert len(cls.limits) == 6
             cls.limits = {"a": None, "b": None}
             cls.conn = mock_conn
             cls._update_limits_from_api()
@@ -143,7 +144,7 @@ class Test_LambdaService(object):
                 cls.conn = mock_conn
                 cls.find_usage()
 
-        assert len(cls.limits) == 5
+        assert len(cls.limits) == 6
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == [call.get_account_settings()]
         assert mock_logger.mock_calls == [
@@ -168,7 +169,7 @@ class Test_LambdaService(object):
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == [call.get_account_settings()]
         assert cls._have_usage is True
-        assert len(cls.limits) == 2
+        assert len(cls.limits) == 6
         u = cls.limits['Function Count'].get_current_usage()
         assert len(u) == 1
         assert u[0].get_value() == 12
