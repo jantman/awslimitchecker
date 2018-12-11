@@ -232,7 +232,7 @@ Running On-Demand m5.12xlarge instances                                   5
 Running On-Demand m5.24xlarge instances                                   5   
 Running On-Demand m5.2xlarge instances                                    20  
 Running On-Demand m5.4xlarge instances                                    10  
-Running On-Demand m5.large instances                                      20  
+Running On-Demand m5.large instances              |check|                 20  
 Running On-Demand m5.xlarge instances             |check|                 20  
 Running On-Demand m5d.12xlarge instances                                  20  
 Running On-Demand m5d.24xlarge instances                                  20  
@@ -332,7 +332,7 @@ EFS
 ============ =============== ======= ==
 Limit        Trusted Advisor API     Default
 ============ =============== ======= ==
-File systems                         10
+File systems                         70
 ============ =============== ======= ==
 
 .. _limits.ELB:
@@ -406,6 +406,22 @@ Roles                  |check|         |check| 1000
 Server certificates    |check|         |check| 20   
 Users                  |check|         |check| 5000 
 ====================== =============== ======= =====
+
+.. _limits.Lambda:
+
+Lambda
+-------
+
+===================================== =============== ======= =====
+Limit                                 Trusted Advisor API     Default
+===================================== =============== ======= =====
+Code Size Unzipped (MiB) per Function                 |check| 250  
+Code Size Zipped (MiB) per Function                   |check| 50   
+Concurrent Executions                                 |check| 1000 
+Function Count                                                None 
+Total Code Size (MiB)                                 |check| 76800
+Unreserved Concurrent Executions                      |check| 1000 
+===================================== =============== ======= =====
 
 .. _limits.RDS:
 
