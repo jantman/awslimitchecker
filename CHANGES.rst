@@ -1,6 +1,23 @@
 Changelog
 =========
 
+5.2.0 (2018-10-04)
+------------------
+
+This release **requires new IAM permissions**:
+
+* ``lambda:GetAccountSettings``
+
+* `Issue #363 <https://github.com/jantman/awslimitchecker/issues/363>`_ - Add support for the Lambda limits and usages.
+* Clarify support for "unlimited" limits (limits where :py:meth:`awslimitchecker.limit.AwsLimit.get_limit` returns ``None``).
+
+Important Note on Limit Values
+++++++++++++++++++++++++++++++
+
+awslimitchecker has had documented support for Limits that are unlimited/"infinite" since 0.5.0 by returning ``None`` from :py:meth:`awslimitchecker.limit.AwsLimit.get_limit`. Until now, that edge case was only triggered when Trusted Advisor returned "Unlimited" for a limit. It will now also be returned for the Lambda service's ``Function Count`` Limit. Please be aware of this if you're using the Python API and assuming Limit values are all numeric.
+
+If you are relying on the output format of the command line ``awslimitchecker`` script, please use the Python API instead.
+
 5.1.0 (2018-09-23)
 ------------------
 

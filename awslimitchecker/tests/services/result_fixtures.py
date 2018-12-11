@@ -1329,6 +1329,22 @@ class ELB(object):
     ]
 
 
+class Lambda(object):
+    test_lambda_response = {
+        "AccountLimit": {
+            "CodeSizeUnzipped": 262144000,
+            "UnreservedConcurrentExecutions": 1000,
+            "ConcurrentExecutions": 1000,
+            "CodeSizeZipped": 52428800,
+            "TotalCodeSize": 80530636800
+        },
+        "AccountUsage": {
+            "FunctionCount": 12,
+            "TotalCodeSize": 2167198
+        }
+    }
+
+
 class ElastiCache(object):
     test_find_usage_nodes = []
     # first page of results

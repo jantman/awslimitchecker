@@ -157,6 +157,8 @@ or Trusted Advisor data, run with ``--list-defaults``:
    ApiGateway/Custom authorizers per API                  10
    ApiGateway/Documentation parts per API                 2000
    (...)
+   Lambda/Function Count                                  None
+   (...)
    VPC/Subnets per VPC                                    200
    VPC/VPCs                                               5
    VPC/Virtual private gateways                           5
@@ -183,6 +185,8 @@ and limits followed by ``(API)`` have been obtained from the service's API.
    (...)
    AutoScaling/Auto Scaling groups                              1500 (API)
    (...)
+   Lambda/Function Count                                        None
+   (...)
    VPC/Subnets per VPC                                          200
    VPC/VPCs                                                     1000 (TA)
    VPC/Virtual private gateways                                 5
@@ -205,6 +209,8 @@ from Trusted Advisor for all commands.
    ApiGateway/Documentation parts per API                       2000
    (...)
    AutoScaling/Auto Scaling groups                              1500 (API)
+   (...)
+   Lambda/Function Count                                        None
    (...)
    VPC/Subnets per VPC                                          200
    VPC/VPCs                                                     5
@@ -314,6 +320,15 @@ threshold only, and another has crossed the critical threshold):
 .. code-block:: console
 
    (venv)$ awslimitchecker --no-color
+   ApiGateway/APIs per account                            (limit 60) CRITICAL: 211
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: something-goes-here-index (...)
+   DynamoDB/Tables Per Region                             (limit 256) CRITICAL: 504
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-12345678=674, vpc-c (...)
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-01234567890123456=5,  (...)
+   (...)
+   VPC/Entries per route table                            (limit 50) WARNING: rtb-01234567=40, rtb-6789 (...)
+   VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1c= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 6
 
 
 
@@ -351,10 +366,10 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "apigateway:GET", 
+           "apigateway:GET",
    (...)
        }
-     ], 
+     ],
      "Version": "2012-10-17"
    }
 

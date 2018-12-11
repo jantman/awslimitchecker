@@ -255,18 +255,25 @@ def format_cmd_output(cmd, output, name):
                 lines[idx] = line[:100] + ' (...)'
         if len(lines) > 12:
             tmp_lines = lines[:5] + ['(...)'] + lines[-5:]
-            if ' -l' not in cmd:
-                lines = tmp_lines
-            else:
-                # find a line that uses a limit from the API
-                api_line = '(...)'
+            if ' -l' in cmd or ' --list-defaults' in cmd:
+                # find a line that uses a limit from the API,
+                #  and a line with None (unlimited)
+                api_line = None
+                none_line = None
                 for line in lines:
                     if '(API)' in line:
                         api_line = line
                         break
-                if api_line not in tmp_lines:
-                    tmp_lines = lines[:5] + ['(...)'] + [ api_line ]
-                    tmp_lines = tmp_lines + ['(...)'] + lines[-5:]
+                for line in lines:
+                    if line.strip().endswith('None'):
+                        none_line = line
+                        break
+                tmp_lines = lines[:5]
+                if api_line not in tmp_lines and api_line is not None:
+                    tmp_lines = tmp_lines + ['(...)'] + [api_line]
+                if none_line not in tmp_lines and none_line is not None:
+                    tmp_lines = tmp_lines + ['(...)'] + [none_line]
+                tmp_lines = tmp_lines + ['(...)'] + lines[-5:]
             lines = tmp_lines
     for line in lines:
         if line.strip() == '':
