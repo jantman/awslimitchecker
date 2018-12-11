@@ -355,6 +355,7 @@ class _Ec2Service(_AwsService):
             'p3.2xlarge': (1, 20, 5),
             'p3.8xlarge': (1, 20, 5),
             'p3.16xlarge': (1, 20, 5),
+            'p3dn.24xlarge': (1, 20, 5),
             'r3.4xlarge': (10, 20, 5),
             'r3.8xlarge': (5, 20, 5),
             'r4.4xlarge': (10, 20, 5),
@@ -589,6 +590,11 @@ class _Ec2Service(_AwsService):
         :rtype: list
         """
         GENERAL_TYPES = [
+            'a1.2xlarge',
+            'a1.4xlarge',
+            'a1.large',
+            'a1.medium',
+            'a1.xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -625,6 +631,12 @@ class _Ec2Service(_AwsService):
             'm5d.4xlarge',
             'm5d.large',
             'm5d.xlarge',
+            'm5a.12xlarge',
+            'm5a.24xlarge',
+            'm5a.2xlarge',
+            'm5a.4xlarge',
+            'm5a.large',
+            'm5a.xlarge',
         ]
 
         PREV_GENERAL_TYPES = [
@@ -656,6 +668,12 @@ class _Ec2Service(_AwsService):
             'r5.large',
             'r5.metal',
             'r5.xlarge',
+            'r5a.12xlarge',
+            'r5a.24xlarge',
+            'r5a.2xlarge',
+            'r5a.4xlarge',
+            'r5a.large',
+            'r5a.xlarge',
             'r5d.2xlarge',
             'r5d.4xlarge',
             'r5d.8xlarge',
@@ -711,6 +729,12 @@ class _Ec2Service(_AwsService):
             'c5d.9xlarge',
             'c5d.large',
             'c5d.xlarge',
+            'c5n.18xlarge',
+            'c5n.2xlarge',
+            'c5n.4xlarge',
+            'c5n.9xlarge',
+            'c5n.large',
+            'c5n.xlarge',
         ]
 
         PREV_COMPUTE_TYPES = [
@@ -721,12 +745,14 @@ class _Ec2Service(_AwsService):
         ]
 
         ACCELERATED_COMPUTE_TYPES = [
+            'f1.4xlarge',
             'p2.xlarge',
             'p2.8xlarge',
             'p2.16xlarge',
             'p3.16xlarge',
             'p3.2xlarge',
             'p3.8xlarge',
+            'p3dn.24xlarge',
         ]
 
         STORAGE_TYPES = [
@@ -767,6 +793,7 @@ class _Ec2Service(_AwsService):
             'g3.16xlarge',
             'g3.4xlarge',
             'g3.8xlarge',
+            'g3s.xlarge',
         ]
 
         PREV_GPU_TYPES = [
