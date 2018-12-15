@@ -17,7 +17,10 @@ This release **requires new IAM permissions**:
 * ``ApiGateway`` service now has three ReST API limits (``Regional API keys per account``, ``Private API keys per account``, and ``Edge API keys per account``) in place of the previous single ``APIs per account`` to reflect the current documented service limits.
 * API Gateway service - add support for ``VPC Links per account`` limit.
 * Add support for Network Load Balancer limits ``Network load balancers`` and ``Listeners per network load balancer``.
+* Add support for Application Load Balancer limits ``Certificates per application load balancer``.
 * Add support for Classic ELB (ELBv1) ``Registered instances per load balancer`` limit.
+
+* Note that I've left out the ``Targets per application load balancer`` and ``Targets per network load balancer`` limits. Checking usage for these requires iterating over ``DescribeTargetHealth`` for each target group, so I've opted to leave it out at this time for performance reasons and because I'd guess that the number of people with 500 or 1000 targets per LB is rather small. Please open an issue if you'd like to see usage calculation for these limits.
 
 Important Note on Limit Values
 ++++++++++++++++++++++++++++++

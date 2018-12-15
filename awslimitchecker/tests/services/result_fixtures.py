@@ -1280,7 +1280,7 @@ class ELB(object):
             {'Name': 'target-groups'},  # test no Max
             {'Name': 'listeners-per-network-load-balancer', 'Max': '100'},
             {'Name': 'network-load-balancers', 'Max': '40'},
-            {'Name': 'targets-per-network-load-balancer', 'Max': '2'}
+            {'Name': 'targets-per-network-load-balancer', 'Max': '2'},
         ]
     }
 
@@ -1323,9 +1323,44 @@ class ELB(object):
 
     test_usage_alb_listeners = {
         'Listeners': [
-            {'ListenerArn': 'listener1'},
-            {'ListenerArn': 'listener2'},
-            {'ListenerArn': 'listener3'},
+            {
+                'ListenerArn': 'listener1',
+                'Certificates': []
+            },
+            {
+                'ListenerArn': 'listener2',
+                'Certificates': [
+                    {
+                        'CertificateArn': 'cert1',
+                        'IsDefault': True
+                    },
+                    {
+                        'CertificateArn': 'cert2',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert3',
+                        'IsDefault': True
+                    }
+                ]
+            },
+            {
+                'ListenerArn': 'listener3',
+                'Certificates': [
+                    {
+                        'CertificateArn': 'cert4',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert5',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert6',
+                        'IsDefault': True
+                    }
+                ]
+            },
         ]
     }
 

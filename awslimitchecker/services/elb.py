@@ -188,7 +188,13 @@ class _ElbService(_AwsService):
             alc_marker_param='Marker'
         )['Listeners']
         num_rules = 0
+        num_certs = 0
         for l in listeners:
+            certs = [
+                x for x in l.get('Certificates', [])
+                if x.get('IsDefault', False) is False
+            ]
+            num_certs += len(certs)
             rules = paginate_dict(
                 conn.describe_rules,
                 ListenerArn=l['ListenerArn'],
@@ -207,6 +213,13 @@ class _ElbService(_AwsService):
             num_rules,
             aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
             resource_id=alb_name,
+        )
+        self.limits[
+            'Certificates per application load balancer'
+        ]._add_current_usage(
+            num_certs,
+            aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            resource_id=alb_name
         )
 
     def _update_usage_for_nlb(self, conn, nlb_arn, nlb_name):
@@ -291,6 +304,15 @@ class _ElbService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
             limit_subtype='LoadBalancerListener'
+        )
+        limits['Certificates per application load balancer'] = AwsLimit(
+            'Certificates per application load balancer',
+            self,
+            25,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            limit_subtype='Certificate'
         )
         limits['Rules per application load balancer'] = AwsLimit(
             'Rules per application load balancer',

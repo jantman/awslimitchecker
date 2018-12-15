@@ -72,6 +72,7 @@ class Test_ElbService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Active load balancers',
+            'Certificates per application load balancer',
             'Listeners per application load balancer',
             'Listeners per load balancer',
             'Listeners per network load balancer',
@@ -304,6 +305,13 @@ class Test_ElbService(object):
         assert r[0].get_value() == 7
         assert r[0].aws_type == 'AWS::ElasticLoadBalancingV2::LoadBalancer'
         assert r[0].resource_id == 'albname'
+        certs = cls.limits[
+            'Certificates per application load balancer'
+        ].get_current_usage()
+        assert len(certs) == 1
+        assert certs[0].get_value() == 3
+        assert certs[0].aws_type == 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+        assert certs[0].resource_id == 'albname'
 
     def test_update_usage_for_nlb(self):
         conn = Mock()
