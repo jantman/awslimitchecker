@@ -1,7 +1,7 @@
 Changelog
 =========
 
-5.2.0 (2018-10-04)
+Unreleased Changes
 ------------------
 
 This release **requires new IAM permissions**:
@@ -16,6 +16,7 @@ This release **requires new IAM permissions**:
 * Update default limits for ECS service.
 * ``ApiGateway`` service now has three ReST API limits (``Regional API keys per account``, ``Private API keys per account``, and ``Edge API keys per account``) in place of the previous single ``APIs per account`` to reflect the current documented service limits.
 * API Gateway service - add support for ``VPC Links per account`` limit.
+* Add support for Network Load Balancer limits ``Network load balancers`` and ``Listeners per network load balancer``.
 
 Important Note on Limit Values
 ++++++++++++++++++++++++++++++

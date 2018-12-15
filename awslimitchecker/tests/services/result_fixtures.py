@@ -1264,7 +1264,10 @@ class ELB(object):
             {'Max': '9', 'Name': 'listeners-per-application-load-balancer'},
             {'Max': '10', 'Name': 'rules-per-application-load-balancer'},
             {'Name': 'invalid', 'Max': '99'},  # test invalid name
-            {'Name': 'target-groups'}  # test no Max
+            {'Name': 'target-groups'},  # test no Max
+            {'Name': 'listeners-per-network-load-balancer', 'Max': '100'},
+            {'Name': 'network-load-balancers', 'Max': '40'},
+            {'Name': 'targets-per-network-load-balancer', 'Max': '2'}
         ]
     }
 
@@ -1272,11 +1275,18 @@ class ELB(object):
         'LoadBalancers': [
             {
                 'LoadBalancerName': 'lb1',
-                'LoadBalancerArn': 'lb-arn1'
+                'LoadBalancerArn': 'lb-arn1',
+                'Type': 'application'
+            },
+            {
+                'LoadBalancerName': 'lb3',
+                'LoadBalancerArn': 'lb-arn3',
+                'Type': 'network'
             },
             {
                 'LoadBalancerName': 'lb2',
-                'LoadBalancerArn': 'lb-arn2'
+                'LoadBalancerArn': 'lb-arn2',
+                'Type': 'application'
             }
         ]
     }
@@ -1298,7 +1308,7 @@ class ELB(object):
         ]
     }
 
-    test_usage_elbv2_listeners = {
+    test_usage_alb_listeners = {
         'Listeners': [
             {'ListenerArn': 'listener1'},
             {'ListenerArn': 'listener2'},
@@ -1306,7 +1316,14 @@ class ELB(object):
         ]
     }
 
-    test_usage_elbv2_rules = [
+    test_usage_nlb_listeners = {
+        'Listeners': [
+            {'ListenerArn': 'listenern1'},
+            {'ListenerArn': 'listenern2'}
+        ]
+    }
+
+    test_usage_alb_rules = [
         {
             'Rules': [
                 {'RuleArn': 'listener1rule1'},
