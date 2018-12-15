@@ -11,6 +11,7 @@ This release **requires new IAM permissions**:
 * `Issue #363 <https://github.com/jantman/awslimitchecker/issues/363>`_ - Add support for the Lambda limits and usages.
 * Clarify support for "unlimited" limits (limits where :py:meth:`awslimitchecker.limit.AwsLimit.get_limit` returns ``None``).
 * Add support for 26 new EC2 instance types.
+* Update default limits for ECS service.
 
 Important Note on Limit Values
 ++++++++++++++++++++++++++++++
