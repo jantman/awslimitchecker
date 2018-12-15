@@ -102,6 +102,13 @@ class _ElbService(_AwsService):
                 aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
                 resource_id=lb['LoadBalancerName'],
             )
+            self.limits[
+                'Registered instances per load balancer'
+            ]._add_current_usage(
+                len(lb['Instances']),
+                aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
+                resource_id=lb['LoadBalancerName']
+            )
         logger.debug('Done with ELBv1 usage')
         return len(lbs['LoadBalancerDescriptions'])
 
@@ -142,16 +149,26 @@ class _ElbService(_AwsService):
         logger.debug(
             'Checking usage for each of %d ALBs', len(lbs['LoadBalancers'])
         )
+        alb_count = 0
+        nlb_count = 0
         for lb in lbs['LoadBalancers']:
-            self._update_usage_for_elbv2(
-                conn2,
-                lb['LoadBalancerArn'],
-                lb['LoadBalancerName']
-            )
+            if lb.get('Type') == 'network':
+                nlb_count += 1
+            else:
+                alb_count += 1
+                self._update_usage_for_alb(
+                    conn2,
+                    lb['LoadBalancerArn'],
+                    lb['LoadBalancerName']
+                )
+        self.limits['Network load balancers']._add_current_usage(
+            nlb_count,
+            aws_type='AWS::ElasticLoadBalancing::NetworkLoadBalancer'
+        )
         logger.debug('Done with ELBv2 usage')
-        return len(lbs['LoadBalancers'])
+        return alb_count
 
-    def _update_usage_for_elbv2(self, conn, alb_arn, alb_name):
+    def _update_usage_for_alb(self, conn, alb_arn, alb_name):
         """
         Update usage for a single ALB.
 
@@ -171,7 +188,13 @@ class _ElbService(_AwsService):
             alc_marker_param='Marker'
         )['Listeners']
         num_rules = 0
+        num_certs = 0
         for l in listeners:
+            certs = [
+                x for x in l.get('Certificates', [])
+                if x.get('IsDefault', False) is False
+            ]
+            num_certs += len(certs)
             rules = paginate_dict(
                 conn.describe_rules,
                 ListenerArn=l['ListenerArn'],
@@ -190,6 +213,39 @@ class _ElbService(_AwsService):
             num_rules,
             aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
             resource_id=alb_name,
+        )
+        self.limits[
+            'Certificates per application load balancer'
+        ]._add_current_usage(
+            num_certs,
+            aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            resource_id=alb_name
+        )
+
+    def _update_usage_for_nlb(self, conn, nlb_arn, nlb_name):
+        """
+        Update usage for a single NLB.
+
+        :param conn: elbv2 API connection
+        :type conn: :py:class:`ElasticLoadBalancing.Client`
+        :param nlb_arn: Load Balancer ARN
+        :type nlb_arn: str
+        :param nlb_name: Load Balancer Name
+        :type nlb_name: str
+        """
+        logger.debug('Updating usage for NLB %s', nlb_arn)
+        listeners = paginate_dict(
+            conn.describe_listeners,
+            LoadBalancerArn=nlb_arn,
+            alc_marker_path=['NextMarker'],
+            alc_data_path=['Listeners'],
+            alc_marker_param='Marker'
+        )['Listeners']
+        self.limits[
+            'Listeners per network load balancer']._add_current_usage(
+            len(listeners),
+            aws_type='AWS::ElasticLoadBalancingV2::NetworkLoadBalancer',
+            resource_id=nlb_name
         )
 
     def get_limits(self):
@@ -221,6 +277,15 @@ class _ElbService(_AwsService):
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
             limit_subtype='LoadBalancerListener'
         )
+        limits['Registered instances per load balancer'] = AwsLimit(
+            'Registered instances per load balancer',
+            self,
+            1000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
+            limit_subtype='Instance'
+        )
         # ELBv2 (ALB) limits
         limits['Target groups'] = AwsLimit(
             'Target groups',
@@ -240,6 +305,15 @@ class _ElbService(_AwsService):
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
             limit_subtype='LoadBalancerListener'
         )
+        limits['Certificates per application load balancer'] = AwsLimit(
+            'Certificates per application load balancer',
+            self,
+            25,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            limit_subtype='Certificate'
+        )
         limits['Rules per application load balancer'] = AwsLimit(
             'Rules per application load balancer',
             self,
@@ -248,6 +322,23 @@ class _ElbService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
             limit_subtype='LoadBalancerRule'
+        )
+        limits['Network load balancers'] = AwsLimit(
+            'Network load balancers',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancing::NetworkLoadBalancer',
+        )
+        limits['Listeners per network load balancer'] = AwsLimit(
+            'Listeners per network load balancer',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::NetworkLoadBalancer',
+            limit_subtype='LoadBalancerListener'
         )
         self.limits = limits
         return limits
@@ -262,7 +353,9 @@ class _ElbService(_AwsService):
         attribs = self.conn.describe_account_limits()
         name_to_limits = {
             'classic-load-balancers': 'Active load balancers',
-            'classic-listeners': 'Listeners per load balancer'
+            'classic-listeners': 'Listeners per load balancer',
+            'classic-registered-instances':
+                'Registered instances per load balancer'
         }
         for attrib in attribs['Limits']:
             if int(attrib.get('Max', 0)) == 0:
@@ -282,7 +375,10 @@ class _ElbService(_AwsService):
             'listeners-per-application-load-balancer':
                 'Listeners per application load balancer',
             'rules-per-application-load-balancer':
-                'Rules per application load balancer'
+                'Rules per application load balancer',
+            'network-load-balancers': 'Network load balancers',
+            'listeners-per-network-load-balancer':
+                'Listeners per network load balancer'
         }
         for attrib in attribs['Limits']:
             if int(attrib.get('Max', 0)) == 0:

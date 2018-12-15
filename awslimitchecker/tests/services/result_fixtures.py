@@ -1195,6 +1195,7 @@ class ELB(object):
                     'ListenerDescriptions': [
                         {'foo': 'bar'},
                     ],
+                    'Instances': []
                 },
                 {
                     'LoadBalancerName': 'elb-2',
@@ -1202,6 +1203,12 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
+                    'Instances': [
+                        {'InstanceId': 'i-1'},
+                        {'InstanceId': 'i-2'},
+                        {'InstanceId': 'i-3'},
+                        {'InstanceId': 'i-4'},
+                    ]
                 },
                 {
                     'LoadBalancerName': 'elb-3',
@@ -1210,6 +1217,7 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
+                    'Instances': [{'InstanceId': 'i-5'}]
                 },
                 {
                     'LoadBalancerName': 'elb-4',
@@ -1221,7 +1229,11 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
-                },
+                    'Instances': [
+                        {'InstanceId': 'i-6'},
+                        {'InstanceId': 'i-7'}
+                    ]
+                }
             ],
         }
 
@@ -1241,7 +1253,8 @@ class ELB(object):
             {'Max': '3', 'Name': 'classic-load-balancers'},
             {'Max': '5', 'Name': 'classic-listeners'},
             {'Name': 'invalid', 'Max': '99'},  # test invalid name
-            {'Name': 'classic-listeners'}  # test no Max
+            {'Name': 'classic-listeners'},  # test no Max
+            {'Name': 'classic-registered-instances', 'Max': '1800'}
         ]
     }
 
@@ -1264,7 +1277,10 @@ class ELB(object):
             {'Max': '9', 'Name': 'listeners-per-application-load-balancer'},
             {'Max': '10', 'Name': 'rules-per-application-load-balancer'},
             {'Name': 'invalid', 'Max': '99'},  # test invalid name
-            {'Name': 'target-groups'}  # test no Max
+            {'Name': 'target-groups'},  # test no Max
+            {'Name': 'listeners-per-network-load-balancer', 'Max': '100'},
+            {'Name': 'network-load-balancers', 'Max': '40'},
+            {'Name': 'targets-per-network-load-balancer', 'Max': '2'},
         ]
     }
 
@@ -1272,11 +1288,18 @@ class ELB(object):
         'LoadBalancers': [
             {
                 'LoadBalancerName': 'lb1',
-                'LoadBalancerArn': 'lb-arn1'
+                'LoadBalancerArn': 'lb-arn1',
+                'Type': 'application'
+            },
+            {
+                'LoadBalancerName': 'lb3',
+                'LoadBalancerArn': 'lb-arn3',
+                'Type': 'network'
             },
             {
                 'LoadBalancerName': 'lb2',
-                'LoadBalancerArn': 'lb-arn2'
+                'LoadBalancerArn': 'lb-arn2',
+                'Type': 'application'
             }
         ]
     }
@@ -1298,15 +1321,57 @@ class ELB(object):
         ]
     }
 
-    test_usage_elbv2_listeners = {
+    test_usage_alb_listeners = {
         'Listeners': [
-            {'ListenerArn': 'listener1'},
-            {'ListenerArn': 'listener2'},
-            {'ListenerArn': 'listener3'},
+            {
+                'ListenerArn': 'listener1',
+                'Certificates': []
+            },
+            {
+                'ListenerArn': 'listener2',
+                'Certificates': [
+                    {
+                        'CertificateArn': 'cert1',
+                        'IsDefault': True
+                    },
+                    {
+                        'CertificateArn': 'cert2',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert3',
+                        'IsDefault': True
+                    }
+                ]
+            },
+            {
+                'ListenerArn': 'listener3',
+                'Certificates': [
+                    {
+                        'CertificateArn': 'cert4',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert5',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert6',
+                        'IsDefault': True
+                    }
+                ]
+            },
         ]
     }
 
-    test_usage_elbv2_rules = [
+    test_usage_nlb_listeners = {
+        'Listeners': [
+            {'ListenerArn': 'listenern1'},
+            {'ListenerArn': 'listenern2'}
+        ]
+    }
+
+    test_usage_alb_rules = [
         {
             'Rules': [
                 {'RuleArn': 'listener1rule1'},
