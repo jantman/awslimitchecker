@@ -8,10 +8,14 @@ This release **requires new IAM permissions**:
 
 * ``lambda:GetAccountSettings``
 
+**Important:** This release removes the ApiGateway ``APIs per account`` limit in favor of more-specific limits; see below.
+
 * `Issue #363 <https://github.com/jantman/awslimitchecker/issues/363>`_ - Add support for the Lambda limits and usages.
 * Clarify support for "unlimited" limits (limits where :py:meth:`awslimitchecker.limit.AwsLimit.get_limit` returns ``None``).
 * Add support for 26 new EC2 instance types.
 * Update default limits for ECS service.
+* ``ApiGateway`` service now has three ReST API limits (``Regional API keys per account``, ``Private API keys per account``, and ``Edge API keys per account``) in place of the previous single ``APIs per account`` to reflect the current documented service limits.
+* API Gateway service - add support for ``VPC Links per account`` limit.
 
 Important Note on Limit Values
 ++++++++++++++++++++++++++++++
