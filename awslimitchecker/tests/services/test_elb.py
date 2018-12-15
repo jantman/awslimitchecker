@@ -76,6 +76,7 @@ class Test_ElbService(object):
             'Listeners per load balancer',
             'Listeners per network load balancer',
             'Network load balancers',
+            'Registered instances per load balancer',
             'Rules per application load balancer',
             'Target groups'
         ])
@@ -119,6 +120,8 @@ class Test_ElbService(object):
         ]
         assert cls.limits['Active load balancers'].api_limit == 3
         assert cls.limits['Listeners per load balancer'].api_limit == 5
+        assert cls.limits[
+            'Registered instances per load balancer'].api_limit == 1800
         assert cls.limits['Target groups'].api_limit == 7
         assert cls.limits[
             'Listeners per application load balancer'].api_limit == 9
@@ -164,8 +167,8 @@ class Test_ElbService(object):
                 alc_marker_param='Marker'
             )
         ]
-        entries = sorted(cls.limits['Listeners per load balancer'
-                                    ''].get_current_usage())
+        entries = sorted(cls.limits[
+            'Listeners per load balancer'].get_current_usage())
         assert len(entries) == 4
         assert entries[0].resource_id == 'elb-1'
         assert entries[0].get_value() == 1
@@ -175,6 +178,17 @@ class Test_ElbService(object):
         assert entries[2].get_value() == 3
         assert entries[3].resource_id == 'elb-4'
         assert entries[3].get_value() == 6
+        entries = sorted(cls.limits[
+            'Registered instances per load balancer'].get_current_usage())
+        assert len(entries) == 4
+        assert entries[0].resource_id == 'elb-1'
+        assert entries[0].get_value() == 0
+        assert entries[1].resource_id == 'elb-3'
+        assert entries[1].get_value() == 1
+        assert entries[2].resource_id == 'elb-4'
+        assert entries[2].get_value() == 2
+        assert entries[3].resource_id == 'elb-2'
+        assert entries[3].get_value() == 4
 
     def test_find_usage_elbv2(self):
         lbs_res = result_fixtures.ELB.test_find_usage_elbv2_elbs

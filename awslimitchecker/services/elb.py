@@ -102,6 +102,13 @@ class _ElbService(_AwsService):
                 aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
                 resource_id=lb['LoadBalancerName'],
             )
+            self.limits[
+                'Registered instances per load balancer'
+            ]._add_current_usage(
+                len(lb['Instances']),
+                aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
+                resource_id=lb['LoadBalancerName']
+            )
         logger.debug('Done with ELBv1 usage')
         return len(lbs['LoadBalancerDescriptions'])
 
@@ -257,6 +264,15 @@ class _ElbService(_AwsService):
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
             limit_subtype='LoadBalancerListener'
         )
+        limits['Registered instances per load balancer'] = AwsLimit(
+            'Registered instances per load balancer',
+            self,
+            1000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
+            limit_subtype='Instance'
+        )
         # ELBv2 (ALB) limits
         limits['Target groups'] = AwsLimit(
             'Target groups',
@@ -315,7 +331,9 @@ class _ElbService(_AwsService):
         attribs = self.conn.describe_account_limits()
         name_to_limits = {
             'classic-load-balancers': 'Active load balancers',
-            'classic-listeners': 'Listeners per load balancer'
+            'classic-listeners': 'Listeners per load balancer',
+            'classic-registered-instances':
+                'Registered instances per load balancer'
         }
         for attrib in attribs['Limits']:
             if int(attrib.get('Max', 0)) == 0:

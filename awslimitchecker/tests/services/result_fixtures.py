@@ -1195,6 +1195,7 @@ class ELB(object):
                     'ListenerDescriptions': [
                         {'foo': 'bar'},
                     ],
+                    'Instances': []
                 },
                 {
                     'LoadBalancerName': 'elb-2',
@@ -1202,6 +1203,12 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
+                    'Instances': [
+                        {'InstanceId': 'i-1'},
+                        {'InstanceId': 'i-2'},
+                        {'InstanceId': 'i-3'},
+                        {'InstanceId': 'i-4'},
+                    ]
                 },
                 {
                     'LoadBalancerName': 'elb-3',
@@ -1210,6 +1217,7 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
+                    'Instances': [{'InstanceId': 'i-5'}]
                 },
                 {
                     'LoadBalancerName': 'elb-4',
@@ -1221,7 +1229,11 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
-                },
+                    'Instances': [
+                        {'InstanceId': 'i-6'},
+                        {'InstanceId': 'i-7'}
+                    ]
+                }
             ],
         }
 
@@ -1241,7 +1253,8 @@ class ELB(object):
             {'Max': '3', 'Name': 'classic-load-balancers'},
             {'Max': '5', 'Name': 'classic-listeners'},
             {'Name': 'invalid', 'Max': '99'},  # test invalid name
-            {'Name': 'classic-listeners'}  # test no Max
+            {'Name': 'classic-listeners'},  # test no Max
+            {'Name': 'classic-registered-instances', 'Max': '1800'}
         ]
     }
 
