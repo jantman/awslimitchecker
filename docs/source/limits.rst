@@ -36,13 +36,16 @@ ApiGateway
 Limit                           Trusted Advisor API     Default
 =============================== =============== ======= ====
 API keys per account                                    500 
-APIs per account                                        60  
 Client certificates per account                         60  
 Custom authorizers per API                              10  
 Documentation parts per API                             2000
+Edge APIs per account                                   120 
+Private APIs per account                                600 
+Regional APIs per account                               600 
 Resources per API                                       300 
 Stages per API                                          10  
 Usage plans per account                                 300 
+VPC Links per account                                   5   
 =============================== =============== ======= ====
 
 .. _limits.AutoScaling:
