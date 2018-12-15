@@ -3229,6 +3229,35 @@ class ApiGateway(object):
         }
     ]
 
+    vpc_links = [
+        {
+            'items': [
+                {
+                    'id': 'vpcl-1',
+                    'name': 'link1',
+                    'description': 'desc1',
+                    'status': 'AVAILABLE'
+                }
+            ]
+        },
+        {
+            'items': [
+                {
+                    'id': 'vpcl-2',
+                    'name': 'link2',
+                    'description': 'desc2',
+                    'status': 'AVAILABLE'
+                },
+                {
+                    'id': 'vpcl-3',
+                    'name': 'link3',
+                    'description': 'desc3',
+                    'status': 'PENDING'
+                }
+            ]
+        }
+    ]
+
     api_keys = [
         {
             'warnings': [

@@ -82,7 +82,8 @@ class Test_ApigatewayService(object):
             'Documentation parts per API',
             'Resources per API',
             'Stages per API',
-            'Usage plans per account'
+            'Usage plans per account',
+            'VPC Links per account'
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -106,7 +107,8 @@ class Test_ApigatewayService(object):
                 _find_usage_apis=DEFAULT,
                 _find_usage_api_keys=DEFAULT,
                 _find_usage_certs=DEFAULT,
-                _find_usage_plans=DEFAULT
+                _find_usage_plans=DEFAULT,
+                _find_usage_vpc_links=DEFAULT
             ) as mocks:
                 cls = _ApigatewayService(21, 43)
                 cls.conn = mock_conn
@@ -119,6 +121,7 @@ class Test_ApigatewayService(object):
         assert mocks['_find_usage_api_keys'].mock_calls == [call(cls)]
         assert mocks['_find_usage_certs'].mock_calls == [call(cls)]
         assert mocks['_find_usage_plans'].mock_calls == [call(cls)]
+        assert mocks['_find_usage_vpc_links'].mock_calls == [call(cls)]
 
     def test_find_usage_apis(self):
         mock_conn = Mock()
@@ -436,6 +439,31 @@ class Test_ApigatewayService(object):
         assert mock_paginator.mock_calls == [call.paginate()]
         assert mock_logger.mock_calls == [
             call.debug('Finding usage for API Keys')
+        ]
+
+    def test_find_usage_vpc_links(self):
+        mock_conn = Mock()
+        res = result_fixtures.ApiGateway.vpc_links
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = res
+
+        mock_conn.get_paginator.return_value = mock_paginator
+        cls = _ApigatewayService(21, 43)
+        cls.conn = mock_conn
+        with patch('%s.logger' % pbm) as mock_logger:
+            cls._find_usage_vpc_links()
+        # APIs usage
+        usage = cls.limits[
+            'VPC Links per account'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 3
+        assert mock_conn.mock_calls == [
+            call.get_paginator('get_vpc_links'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [call.paginate()]
+        assert mock_logger.mock_calls == [
+            call.debug('Finding usage for VPC Links')
         ]
 
     def test_required_iam_permissions(self):

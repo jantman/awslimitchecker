@@ -66,6 +66,7 @@ class _ApigatewayService(_AwsService):
         self._find_usage_api_keys()
         self._find_usage_certs()
         self._find_usage_plans()
+        self._find_usage_vpc_links()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -175,6 +176,19 @@ class _ApigatewayService(_AwsService):
             cert_count, aws_type='AWS::ApiGateway::ClientCertificate'
         )
 
+    def _find_usage_vpc_links(self):
+        """
+        Find usage on VPC Links. Update `self.limits`.
+        """
+        logger.debug('Finding usage for VPC Links')
+        link_count = 0
+        paginator = self.conn.get_paginator('get_vpc_links')
+        for resp in paginator.paginate():
+            link_count += len(resp['items'])
+        self.limits['VPC Links per account']._add_current_usage(
+            link_count, aws_type='AWS::ApiGateway::VpcLink'
+        )
+
     def _find_usage_plans(self):
         """
         Find usage on Usage Plans and plans per API Key. Update `self.limits`.
@@ -278,6 +292,14 @@ class _ApigatewayService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ApiGateway::UsagePlan'
+        )
+        limits['VPC Links per account'] = AwsLimit(
+            'VPC Links per account',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ApiGateway::VpcLink'
         )
         self.limits = limits
         return limits
