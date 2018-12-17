@@ -276,7 +276,7 @@ work needed. See the guidelines below for information.
   awslimitchecker via Python's packaging system (i.e. with ``pip``), its current version and source will be automatically detected. This
   suffices for the AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
 * If you wish to modify the source code of awslimitchecker, you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
-  always returns correct and accutate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
+  always returns correct and accurate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
   If you install your modified version directly from an editable (i.e. ``pip install -e``), publicly-accessible Git repository, and ensure
   that changes are available in the repository before they are present in the code running for your users, this should be automatically
   detected by awslimitchecker and the correct URL provided. It is strongly recommended that any such repository is a fork of the
