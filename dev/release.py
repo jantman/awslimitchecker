@@ -54,7 +54,7 @@ from release_utils import (
     StepRegistry, prompt_user, BaseStep, fail, is_git_dirty, TravisChecker
 )
 from awslimitchecker.version import _VERSION as VERSION
-from terraform import TerraformIAM
+from terraform import IntegrationIamPolicyUpdater
 
 if sys.version_info[0:2] < (3, 6):
     raise SystemExit('ERROR: release.py can only run under py 3.6+')
@@ -132,11 +132,11 @@ class RunToxLocaldocs(BaseStep):
 
 
 @steps.register(3)
-class RunDevTerraform(BaseStep):
+class RunDevUpdateIntegrationIamPolicy(BaseStep):
 
     def run(self):
-        logger.info('Running dev/terraform.py')
-        TerraformIAM().run()
+        logger.info('Running dev/update_integration_iam_policy.py')
+        IntegrationIamPolicyUpdater().run()
         self._ensure_committed()
         if not prompt_user(
                 'Are any IAM permission changes clearly documented in the '
