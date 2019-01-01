@@ -54,7 +54,7 @@ from release_utils import (
     StepRegistry, prompt_user, BaseStep, fail, is_git_dirty, TravisChecker
 )
 from awslimitchecker.version import _VERSION as VERSION
-from terraform import IntegrationIamPolicyUpdater
+from update_integration_iam_policy import IntegrationIamPolicyUpdater
 
 if sys.version_info[0:2] < (3, 6):
     raise SystemExit('ERROR: release.py can only run under py 3.6+')
