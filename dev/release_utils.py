@@ -214,11 +214,11 @@ class BaseStep(object):
         pushed = None
         while pushed is not True:
             logger.debug('Running git fetch')
-            subprocess.run(['git', 'fetch'])
+            subprocess.run(['git', 'fetch'], check=True)
             local_ref = self._current_commit
             rmt_ref = subprocess.run(
                 ['git', 'rev-parse', 'origin/%s' % self._current_branch],
-                stdout=subprocess.PIPE
+                stdout=subprocess.PIPE, check=True
             ).stdout.decode().strip()
             pushed = local_ref == rmt_ref
             if not pushed:
