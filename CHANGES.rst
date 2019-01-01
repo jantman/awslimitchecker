@@ -1,7 +1,7 @@
 Changelog
 =========
 
-Unreleased Changes
+6.0.0 (2019-01-01)
 ------------------
 
 This release **requires new IAM permissions**:
