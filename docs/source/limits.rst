@@ -36,13 +36,16 @@ ApiGateway
 Limit                           Trusted Advisor API     Default
 =============================== =============== ======= ====
 API keys per account                                    500 
-APIs per account                                        60  
 Client certificates per account                         60  
 Custom authorizers per API                              10  
 Documentation parts per API                             2000
+Edge APIs per account                                   120 
+Private APIs per account                                600 
+Regional APIs per account                               600 
 Resources per API                                       300 
 Stages per API                                          10  
 Usage plans per account                                 300 
+VPC Links per account                                   5   
 =============================== =============== ======= ====
 
 .. _limits.AutoScaling:
@@ -155,10 +158,15 @@ Max target capacity for all spot fleets in region                         5000
 Max target capacity per spot fleet                                        3000
 Rules per VPC security group                                              50  
 Running On-Demand EC2 instances                                   |check| 20  
+Running On-Demand a1.2xlarge instances                                    20  
+Running On-Demand a1.4xlarge instances                                    20  
+Running On-Demand a1.large instances                                      20  
+Running On-Demand a1.medium instances                                     20  
+Running On-Demand a1.xlarge instances                                     20  
 Running On-Demand c1.medium instances                                     20  
 Running On-Demand c1.xlarge instances                                     20  
 Running On-Demand c3.2xlarge instances            |check|                 20  
-Running On-Demand c3.4xlarge instances            |check|                 20  
+Running On-Demand c3.4xlarge instances                                    20  
 Running On-Demand c3.8xlarge instances                                    20  
 Running On-Demand c3.large instances              |check|                 20  
 Running On-Demand c3.xlarge instances             |check|                 20  
@@ -169,7 +177,7 @@ Running On-Demand c4.large instances              |check|                 20
 Running On-Demand c4.xlarge instances             |check|                 20  
 Running On-Demand c5.18xlarge instances                                   5   
 Running On-Demand c5.2xlarge instances            |check|                 20  
-Running On-Demand c5.4xlarge instances            |check|                 10  
+Running On-Demand c5.4xlarge instances                                    10  
 Running On-Demand c5.9xlarge instances                                    5   
 Running On-Demand c5.large instances              |check|                 20  
 Running On-Demand c5.xlarge instances                                     20  
@@ -179,6 +187,12 @@ Running On-Demand c5d.4xlarge instances                                   20
 Running On-Demand c5d.9xlarge instances                                   20  
 Running On-Demand c5d.large instances                                     20  
 Running On-Demand c5d.xlarge instances                                    20  
+Running On-Demand c5n.18xlarge instances                                  20  
+Running On-Demand c5n.2xlarge instances                                   20  
+Running On-Demand c5n.4xlarge instances                                   20  
+Running On-Demand c5n.9xlarge instances                                   20  
+Running On-Demand c5n.large instances                                     20  
+Running On-Demand c5n.xlarge instances                                    20  
 Running On-Demand cc1.4xlarge instances                                   20  
 Running On-Demand cc2.8xlarge instances                                   20  
 Running On-Demand cg1.4xlarge instances                                   2   
@@ -189,11 +203,13 @@ Running On-Demand d2.8xlarge instances                                    5
 Running On-Demand d2.xlarge instances                                     20  
 Running On-Demand f1.16xlarge instances                                   20  
 Running On-Demand f1.2xlarge instances                                    20  
+Running On-Demand f1.4xlarge instances                                    20  
 Running On-Demand g2.2xlarge instances                                    5   
 Running On-Demand g2.8xlarge instances                                    2   
 Running On-Demand g3.16xlarge instances                                   1   
 Running On-Demand g3.4xlarge instances                                    1   
 Running On-Demand g3.8xlarge instances                                    1   
+Running On-Demand g3s.xlarge instances                                    20  
 Running On-Demand h1.16xlarge instances                                   5   
 Running On-Demand h1.2xlarge instances                                    20  
 Running On-Demand h1.4xlarge instances                                    20  
@@ -232,8 +248,14 @@ Running On-Demand m5.12xlarge instances                                   5
 Running On-Demand m5.24xlarge instances                                   5   
 Running On-Demand m5.2xlarge instances                                    20  
 Running On-Demand m5.4xlarge instances                                    10  
-Running On-Demand m5.large instances                                      20  
+Running On-Demand m5.large instances              |check|                 20  
 Running On-Demand m5.xlarge instances             |check|                 20  
+Running On-Demand m5a.12xlarge instances                                  20  
+Running On-Demand m5a.24xlarge instances                                  20  
+Running On-Demand m5a.2xlarge instances                                   20  
+Running On-Demand m5a.4xlarge instances                                   20  
+Running On-Demand m5a.large instances                                     20  
+Running On-Demand m5a.xlarge instances                                    20  
 Running On-Demand m5d.12xlarge instances                                  20  
 Running On-Demand m5d.24xlarge instances                                  20  
 Running On-Demand m5d.2xlarge instances                                   20  
@@ -246,11 +268,12 @@ Running On-Demand p2.xlarge instances                                     1
 Running On-Demand p3.16xlarge instances                                   1   
 Running On-Demand p3.2xlarge instances                                    1   
 Running On-Demand p3.8xlarge instances                                    1   
+Running On-Demand p3dn.24xlarge instances                                 1   
 Running On-Demand r3.2xlarge instances            |check|                 20  
 Running On-Demand r3.4xlarge instances            |check|                 10  
 Running On-Demand r3.8xlarge instances                                    5   
 Running On-Demand r3.large instances                                      20  
-Running On-Demand r3.xlarge instances             |check|                 20  
+Running On-Demand r3.xlarge instances                                     20  
 Running On-Demand r4.16xlarge instances                                   1   
 Running On-Demand r4.2xlarge instances                                    20  
 Running On-Demand r4.4xlarge instances                                    10  
@@ -266,6 +289,12 @@ Running On-Demand r5.8xlarge instances                                    20
 Running On-Demand r5.large instances                                      20  
 Running On-Demand r5.metal instances                                      20  
 Running On-Demand r5.xlarge instances                                     20  
+Running On-Demand r5a.12xlarge instances                                  20  
+Running On-Demand r5a.24xlarge instances                                  20  
+Running On-Demand r5a.2xlarge instances                                   20  
+Running On-Demand r5a.4xlarge instances                                   20  
+Running On-Demand r5a.large instances                                     20  
+Running On-Demand r5a.xlarge instances                                    20  
 Running On-Demand r5d.12xlarge instances                                  20  
 Running On-Demand r5d.16xlarge instances                                  20  
 Running On-Demand r5d.24xlarge instances                                  20  
@@ -283,13 +312,13 @@ Running On-Demand t2.micro instances              |check|                 20
 Running On-Demand t2.nano instances               |check|                 20  
 Running On-Demand t2.small instances              |check|                 20  
 Running On-Demand t2.xlarge instances             |check|                 20  
-Running On-Demand t3.2xlarge instances            |check|                 20  
+Running On-Demand t3.2xlarge instances                                    20  
 Running On-Demand t3.large instances              |check|                 20  
 Running On-Demand t3.medium instances             |check|                 20  
-Running On-Demand t3.micro instances              |check|                 20  
-Running On-Demand t3.nano instances               |check|                 20  
-Running On-Demand t3.small instances              |check|                 20  
-Running On-Demand t3.xlarge instances             |check|                 20  
+Running On-Demand t3.micro instances                                      20  
+Running On-Demand t3.nano instances                                       20  
+Running On-Demand t3.small instances                                      20  
+Running On-Demand t3.xlarge instances                                     20  
 Running On-Demand x1.16xlarge instances                                   20  
 Running On-Demand x1.32xlarge instances                                   20  
 Running On-Demand x1e.16xlarge instances                                  20  
@@ -317,11 +346,11 @@ ECS
 ===================================== =============== ======= ====
 Limit                                 Trusted Advisor API     Default
 ===================================== =============== ======= ====
-Clusters                                                      1000
-Container Instances per Cluster                               1000
+Clusters                                                      2000
+Container Instances per Cluster                               2000
 EC2 Tasks per Service (desired count)                         1000
-Fargate Tasks                                                 20  
-Services per Cluster                                          500 
+Fargate Tasks                                                 50  
+Services per Cluster                                          1000
 ===================================== =============== ======= ====
 
 .. _limits.EFS:
@@ -332,7 +361,7 @@ EFS
 ============ =============== ======= ==
 Limit        Trusted Advisor API     Default
 ============ =============== ======= ==
-File systems                         10
+File systems                         70
 ============ =============== ======= ==
 
 .. _limits.ELB:
@@ -340,15 +369,19 @@ File systems                         10
 ELB
 ----
 
-======================================= =============== ======= ====
-Limit                                   Trusted Advisor API     Default
-======================================= =============== ======= ====
-Active load balancers                   |check|         |check| 20  
-Listeners per application load balancer                 |check| 50  
-Listeners per load balancer                             |check| 100 
-Rules per application load balancer                     |check| 100 
-Target groups                                           |check| 3000
-======================================= =============== ======= ====
+========================================== =============== ======= ====
+Limit                                      Trusted Advisor API     Default
+========================================== =============== ======= ====
+Active load balancers                      |check|         |check| 20  
+Certificates per application load balancer                         25  
+Listeners per application load balancer                    |check| 50  
+Listeners per load balancer                                |check| 100 
+Listeners per network load balancer                        |check| 50  
+Network load balancers                                     |check| 20  
+Registered instances per load balancer                     |check| 1000
+Rules per application load balancer                        |check| 100 
+Target groups                                              |check| 3000
+========================================== =============== ======= ====
 
 .. _limits.ElastiCache:
 
@@ -387,7 +420,7 @@ Firehose
 =========================== =============== ======= ==
 Limit                       Trusted Advisor API     Default
 =========================== =============== ======= ==
-Delivery streams per region                         20
+Delivery streams per region                         50
 =========================== =============== ======= ==
 
 .. _limits.IAM:
@@ -406,6 +439,22 @@ Roles                  |check|         |check| 1000
 Server certificates    |check|         |check| 20   
 Users                  |check|         |check| 5000 
 ====================== =============== ======= =====
+
+.. _limits.Lambda:
+
+Lambda
+-------
+
+===================================== =============== ======= =====
+Limit                                 Trusted Advisor API     Default
+===================================== =============== ======= =====
+Code Size Unzipped (MiB) per Function                 |check| 250  
+Code Size Zipped (MiB) per Function                   |check| 50   
+Concurrent Executions                                 |check| 1000 
+Function Count                                                None 
+Total Code Size (MiB)                                 |check| 76800
+Unreserved Concurrent Executions                      |check| 1000 
+===================================== =============== ======= =====
 
 .. _limits.RDS:
 

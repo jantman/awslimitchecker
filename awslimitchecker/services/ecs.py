@@ -160,7 +160,7 @@ class _EcsService(_AwsService):
         limits['Clusters'] = AwsLimit(
             'Clusters',
             self,
-            1000,
+            2000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Cluster',
@@ -168,7 +168,7 @@ class _EcsService(_AwsService):
         limits['Container Instances per Cluster'] = AwsLimit(
             'Container Instances per Cluster',
             self,
-            1000,
+            2000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::ContainerInstance'
@@ -176,7 +176,7 @@ class _EcsService(_AwsService):
         limits['Services per Cluster'] = AwsLimit(
             'Services per Cluster',
             self,
-            500,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Service'
@@ -193,7 +193,7 @@ class _EcsService(_AwsService):
         limits['Fargate Tasks'] = AwsLimit(
             'Fargate Tasks',
             self,
-            20,
+            50,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',

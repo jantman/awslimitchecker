@@ -78,7 +78,7 @@ class Test_Ec2Service(object):
         types = cls._instance_types()
         # NOTE hi1.4xlarge is no longer in the instance type listings,
         # but some accounts might still have a limit for it
-        assert len(types) == 149
+        assert len(types) == 175
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -138,7 +138,7 @@ class Test_Ec2Service(object):
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
-        assert len(limits) == 150
+        assert len(limits) == 176
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20

@@ -95,6 +95,18 @@ Guidelines
   `fixes this <https://github.com/isaacs/github/issues/406>`_, we'll live with
   a potentially messy git log in order to keep the history.
 
+.. _development.instance_types:
+
+Adding New EC2 Instance Types
+-----------------------------
+
+1. Run ``dev/missing_instance_types.py`` to find all EC2 Instance types listed in
+   the EC2 Pricing API that aren't present in awslimitchecker and output a list of them.
+2. In ``services/ec2.py`` update the constants in :py:meth:`~._Ec2Service._instance_types` accordingly.
+3. Check the `EC2 Instance Type limits page <https://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2>`__
+   for any new types that have non-default limits, and update :py:meth:`~._Ec2Service._get_limits_instances` accordingly.
+4. Update ``tests/services/test_ec2.py`` as needed.
+
 .. _development.adding_checks:
 
 Adding New Limits and Checks to Existing Services
@@ -264,7 +276,7 @@ work needed. See the guidelines below for information.
   awslimitchecker via Python's packaging system (i.e. with ``pip``), its current version and source will be automatically detected. This
   suffices for the AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
 * If you wish to modify the source code of awslimitchecker, you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
-  always returns correct and accutate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
+  always returns correct and accurate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
   If you install your modified version directly from an editable (i.e. ``pip install -e``), publicly-accessible Git repository, and ensure
   that changes are available in the repository before they are present in the code running for your users, this should be automatically
   detected by awslimitchecker and the correct URL provided. It is strongly recommended that any such repository is a fork of the

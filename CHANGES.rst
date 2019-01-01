@@ -1,6 +1,35 @@
 Changelog
 =========
 
+6.0.0 (2019-01-01)
+------------------
+
+This release **requires new IAM permissions**:
+
+* ``lambda:GetAccountSettings``
+
+**Important:** This release removes the ApiGateway ``APIs per account`` limit in favor of more-specific limits; see below.
+
+* `Issue #363 <https://github.com/jantman/awslimitchecker/issues/363>`_ - Add support for the Lambda limits and usages.
+* Clarify support for "unlimited" limits (limits where :py:meth:`awslimitchecker.limit.AwsLimit.get_limit` returns ``None``).
+* Add support for 26 new EC2 instance types.
+* Update default limits for ECS service.
+* ``ApiGateway`` service now has three ReST API limits (``Regional API keys per account``, ``Private API keys per account``, and ``Edge API keys per account``) in place of the previous single ``APIs per account`` to reflect the current documented service limits.
+* API Gateway service - add support for ``VPC Links per account`` limit.
+* Add support for Network Load Balancer limits ``Network load balancers`` and ``Listeners per network load balancer``.
+* Add support for Application Load Balancer limits ``Certificates per application load balancer``.
+* Add support for Classic ELB (ELBv1) ``Registered instances per load balancer`` limit.
+* Rename ``dev/terraform.py`` to ``dev/update_integration_iam_policy.py`` and move from using terraform to manage integration test IAM policy to pure Python.
+
+* Note that I've left out the ``Targets per application load balancer`` and ``Targets per network load balancer`` limits. Checking usage for these requires iterating over ``DescribeTargetHealth`` for each target group, so I've opted to leave it out at this time for performance reasons and because I'd guess that the number of people with 500 or 1000 targets per LB is rather small. Please open an issue if you'd like to see usage calculation for these limits.
+
+Important Note on Limit Values
+++++++++++++++++++++++++++++++
+
+awslimitchecker has had documented support for Limits that are unlimited/"infinite" since 0.5.0 by returning ``None`` from :py:meth:`awslimitchecker.limit.AwsLimit.get_limit`. Until now, that edge case was only triggered when Trusted Advisor returned "Unlimited" for a limit. It will now also be returned for the Lambda service's ``Function Count`` Limit. Please be aware of this if you're using the Python API and assuming Limit values are all numeric.
+
+If you are relying on the output format of the command line ``awslimitchecker`` script, please use the Python API instead.
+
 5.1.0 (2018-09-23)
 ------------------
 

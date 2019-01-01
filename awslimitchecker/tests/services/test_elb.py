@@ -72,8 +72,12 @@ class Test_ElbService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Active load balancers',
+            'Certificates per application load balancer',
             'Listeners per application load balancer',
             'Listeners per load balancer',
+            'Listeners per network load balancer',
+            'Network load balancers',
+            'Registered instances per load balancer',
             'Rules per application load balancer',
             'Target groups'
         ])
@@ -117,10 +121,15 @@ class Test_ElbService(object):
         ]
         assert cls.limits['Active load balancers'].api_limit == 3
         assert cls.limits['Listeners per load balancer'].api_limit == 5
+        assert cls.limits[
+            'Registered instances per load balancer'].api_limit == 1800
         assert cls.limits['Target groups'].api_limit == 7
         assert cls.limits[
             'Listeners per application load balancer'].api_limit == 9
         assert cls.limits['Rules per application load balancer'].api_limit == 10
+        assert cls.limits[
+            'Listeners per network load balancer'].api_limit == 100
+        assert cls.limits['Network load balancers'].api_limit == 40
 
     def test_find_usage(self):
         with patch('%s._find_usage_elbv1' % pb, autospec=True) as mock_v1:
@@ -159,8 +168,8 @@ class Test_ElbService(object):
                 alc_marker_param='Marker'
             )
         ]
-        entries = sorted(cls.limits['Listeners per load balancer'
-                                    ''].get_current_usage())
+        entries = sorted(cls.limits[
+            'Listeners per load balancer'].get_current_usage())
         assert len(entries) == 4
         assert entries[0].resource_id == 'elb-1'
         assert entries[0].get_value() == 1
@@ -170,6 +179,17 @@ class Test_ElbService(object):
         assert entries[2].get_value() == 3
         assert entries[3].resource_id == 'elb-4'
         assert entries[3].get_value() == 6
+        entries = sorted(cls.limits[
+            'Registered instances per load balancer'].get_current_usage())
+        assert len(entries) == 4
+        assert entries[0].resource_id == 'elb-1'
+        assert entries[0].get_value() == 0
+        assert entries[1].resource_id == 'elb-3'
+        assert entries[1].get_value() == 1
+        assert entries[2].resource_id == 'elb-4'
+        assert entries[2].get_value() == 2
+        assert entries[3].resource_id == 'elb-2'
+        assert entries[3].get_value() == 4
 
     def test_find_usage_elbv2(self):
         lbs_res = result_fixtures.ELB.test_find_usage_elbv2_elbs
@@ -181,7 +201,7 @@ class Test_ElbService(object):
                     PropertyMock(return_value='rname')
                 with patch('%s.paginate_dict' % pbm) as mock_paginate:
                     with patch(
-                        '%s._update_usage_for_elbv2' % pb, autospec=True
+                        '%s._update_usage_for_alb' % pb, autospec=True
                     ) as mock_u:
                         with patch(
                             '%s.Config' % pbm, autospec=True
@@ -226,18 +246,23 @@ class Test_ElbService(object):
         assert len(lim) == 1
         assert lim[0].get_value() == 3
         assert lim[0].aws_type == 'AWS::ElasticLoadBalancingV2::TargetGroup'
+        lim = cls.limits['Network load balancers'].get_current_usage()
+        assert len(lim) == 1
+        assert lim[0].get_value() == 1
+        assert lim[0].aws_type == \
+            'AWS::ElasticLoadBalancing::NetworkLoadBalancer'
 
-    def test_update_usage_for_elbv2(self):
+    def test_update_usage_for_alb(self):
         conn = Mock()
         with patch('%s.paginate_dict' % pbm) as mock_paginate:
             mock_paginate.side_effect = [
-                result_fixtures.ELB.test_usage_elbv2_listeners,
-                result_fixtures.ELB.test_usage_elbv2_rules[0],
-                result_fixtures.ELB.test_usage_elbv2_rules[1],
-                result_fixtures.ELB.test_usage_elbv2_rules[2]
+                result_fixtures.ELB.test_usage_alb_listeners,
+                result_fixtures.ELB.test_usage_alb_rules[0],
+                result_fixtures.ELB.test_usage_alb_rules[1],
+                result_fixtures.ELB.test_usage_alb_rules[2]
             ]
             cls = _ElbService(21, 43)
-            cls._update_usage_for_elbv2(conn, 'myarn', 'albname')
+            cls._update_usage_for_alb(conn, 'myarn', 'albname')
         assert mock_paginate.mock_calls == [
             call(
                 conn.describe_listeners,
@@ -268,18 +293,50 @@ class Test_ElbService(object):
                 alc_marker_param='Marker'
             )
         ]
-        l = cls.limits[
+        lim = cls.limits[
             'Listeners per application load balancer'].get_current_usage()
-        assert len(l) == 1
-        assert l[0].get_value() == 3
-        assert l[0].aws_type == 'AWS::ElasticLoadBalancingV2::LoadBalancer'
-        assert l[0].resource_id == 'albname'
+        assert len(lim) == 1
+        assert lim[0].get_value() == 3
+        assert lim[0].aws_type == 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+        assert lim[0].resource_id == 'albname'
         r = cls.limits[
             'Rules per application load balancer'].get_current_usage()
         assert len(r) == 1
         assert r[0].get_value() == 7
         assert r[0].aws_type == 'AWS::ElasticLoadBalancingV2::LoadBalancer'
         assert r[0].resource_id == 'albname'
+        certs = cls.limits[
+            'Certificates per application load balancer'
+        ].get_current_usage()
+        assert len(certs) == 1
+        assert certs[0].get_value() == 3
+        assert certs[0].aws_type == 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+        assert certs[0].resource_id == 'albname'
+
+    def test_update_usage_for_nlb(self):
+        conn = Mock()
+        with patch('%s.paginate_dict' % pbm) as mock_paginate:
+            mock_paginate.side_effect = [
+                result_fixtures.ELB.test_usage_nlb_listeners
+            ]
+            cls = _ElbService(21, 43)
+            cls._update_usage_for_nlb(conn, 'mynarn', 'nlbname')
+        assert mock_paginate.mock_calls == [
+            call(
+                conn.describe_listeners,
+                LoadBalancerArn='mynarn',
+                alc_marker_path=['NextMarker'],
+                alc_data_path=['Listeners'],
+                alc_marker_param='Marker'
+            )
+        ]
+        lim = cls.limits[
+            'Listeners per network load balancer'].get_current_usage()
+        assert len(lim) == 1
+        assert lim[0].get_value() == 2
+        assert lim[0].aws_type == \
+            'AWS::ElasticLoadBalancingV2::NetworkLoadBalancer'
+        assert lim[0].resource_id == 'nlbname'
 
     def test_required_iam_permissions(self):
         cls = _ElbService(21, 43)

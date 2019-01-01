@@ -53,6 +53,7 @@ from awslimitchecker.services.elasticbeanstalk import _ElasticBeanstalkService
 from awslimitchecker.services.elb import _ElbService
 from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.iam import _IamService
+from awslimitchecker.services.lambdafunc import _LambdaService
 from awslimitchecker.services.rds import _RDSService
 from awslimitchecker.services.redshift import _RedshiftService
 from awslimitchecker.services.route53 import _Route53Service

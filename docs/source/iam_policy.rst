@@ -78,6 +78,7 @@ services that do not affect the results of this program.
             "elasticloadbalancing:DescribeTargetGroups", 
             "firehose:ListDeliveryStreams", 
             "iam:GetAccountSummary", 
+            "lambda:GetAccountSettings", 
             "rds:DescribeAccountAttributes", 
             "rds:DescribeDBInstances", 
             "rds:DescribeDBParameterGroups", 
