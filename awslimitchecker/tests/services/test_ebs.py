@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -87,27 +87,31 @@ class Test_EbsService(object):
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
-        assert piops.default_limit == 40000
+        assert piops.default_limit == 200000
         piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
-        assert piops_tb.default_limit == 20480
+        assert piops_tb.default_limit == 102400
         gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
-        assert gp_tb.default_limit == 20480
+        assert gp_tb.default_limit == 102400
+        assert gp_tb.ta_limit_name == 'General Purpose SSD (gp2) ' \
+                                      'volume storage (GiB)'
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
         assert mag_tb.default_limit == 20480
+        assert mag_tb.ta_limit_name == 'Magnetic (standard) volume ' \
+                                       'storage (GiB)'
         st_tb = limits['Throughput Optimized (HDD) volume storage (GiB)']
         assert st_tb.limit_type == 'AWS::EC2::Volume'
         assert st_tb.limit_subtype == 'st1'
-        assert st_tb.default_limit == 20480
+        assert st_tb.default_limit == 307200
         sc_tb = limits['Cold (HDD) volume storage (GiB)']
         assert sc_tb.limit_type == 'AWS::EC2::Volume'
         assert sc_tb.limit_subtype == 'sc1'
-        assert sc_tb.default_limit == 20480
+        assert sc_tb.default_limit == 307200
         act_snaps = limits['Active snapshots']
         assert act_snaps.limit_type == 'AWS::EC2::VolumeSnapshot'
         act_vols = limits['Active volumes']

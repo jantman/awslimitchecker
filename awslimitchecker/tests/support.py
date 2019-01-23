@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -191,11 +191,14 @@ class LogRecordHelper(object):
                 overall_region = r.args[0]
         assert overall_region == region_name, "Expected overall connection " \
                                               "region to be %s but got %s" \
-                                              "" % (region_name, overall_region)
+                                              "" % (region_name,
+                                                    overall_region)
         assert support_region == 'us-east-1', "Expected Support API region " \
                                               "to be us-east-1 but got %s" \
                                               "" % support_region
         for svc, rname in service_regions.items():
+            if svc == 'route53':
+                continue
             assert rname == region_name, "Expected service %s to connect to " \
                                          "region %s, but connected to %s" % (
                                              svc, region_name, rname)
@@ -295,10 +298,25 @@ def sample_limits_api():
                 limit_type='ltfoo4',
                 limit_subtype='sltfoo4',
             ),
+            'limit with usage maximums': AwsLimit(
+                'limit with usage maximums',
+                'SvcFoo',
+                4,
+                1,
+                5,
+                limit_type='ltfoo5',
+                limit_subtype='sltfoo5',
+            ),
         },
     }
     limits['SvcBar']['bar limit2']._set_api_limit(2)
     limits['SvcBar']['bar limit2'].set_limit_override(99)
     limits['SvcFoo']['foo limit3']._set_ta_limit(10)
     limits['SvcFoo']['zzz limit4']._set_api_limit(34)
+
+    limits['SvcFoo']['limit with usage maximums']._add_current_usage(
+        1,
+        maximum=10,
+        aws_type='res_type',
+        resource_id='res_id')
     return limits

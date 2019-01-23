@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -83,6 +83,8 @@ class _Ec2Service(_AwsService):
         inst_usage = self._instance_usage()
         res_usage = self._get_reserved_instance_count()
         logger.debug('Reserved instance count: %s', res_usage)
+        total_ris = 0
+        running_ris = 0
         # subtract reservations from instance usage
         ondemand_usage = defaultdict(int)
         for az in inst_usage:
@@ -97,24 +99,19 @@ class _Ec2Service(_AwsService):
                     ondemand_usage[i_type] += count
                     continue
                 od = count - res_usage[az][i_type]
-                if od < 1:
+                total_ris += res_usage[az][i_type]
+                if count < res_usage[az][i_type]:
+                    running_ris += count
+                else:
+                    running_ris += res_usage[az][i_type]
+                if od < 0:
                     # we have unused reservations
                     continue
                 ondemand_usage[i_type] += od
-        # subtract any "Regional Benefit" AZ-less reservations
-        for i_type in ondemand_usage.keys():
-            if RI_NO_AZ in res_usage and i_type in res_usage[RI_NO_AZ]:
-                logger.debug('Subtracting %d AZ-less "Regional Benefit" '
-                             'Reserved Instances from %d running %s instances',
-                             res_usage[RI_NO_AZ][i_type],
-                             ondemand_usage[i_type], i_type)
-                # we have Regional Benefit reservations for this type;
-                # we don't want to show negative usage, even if we're
-                #  over-reserved
-                ondemand_usage[i_type] = max(
-                    ondemand_usage[i_type] - res_usage[RI_NO_AZ][i_type],
-                    0
-                )
+        logger.debug(
+            'Found %d total RIs and %d running/used RIs',
+            total_ris, running_ris
+        )
         total_instances = 0
         for i_type, usage in ondemand_usage.items():
             key = 'Running On-Demand {t} instances'.format(
@@ -320,32 +317,50 @@ class _Ec2Service(_AwsService):
         special_limits = {
             'c4.4xlarge': (10, 20, 5),
             'c4.8xlarge': (5, 20, 5),
+            'c5.4xlarge': (10, 20, 5),
+            'c5.9xlarge': (5, 20, 5),
+            'c5.18xlarge': (5, 20, 5),
             'cg1.4xlarge': (2, 20, 5),
             'cr1.8xlarge': (2, 20, 5),
             'd2.4xlarge': (10, 20, 5),
             'd2.8xlarge': (5, 20, 5),
             'g2.2xlarge': (5, 20, 5),
             'g2.8xlarge': (2, 20, 5),
+            'g3.4xlarge': (1, 20, 5),
+            'g3.8xlarge': (1, 20, 5),
+            'g3.16xlarge': (1, 20, 5),
+            'h1.8xlarge': (10, 20, 5),
+            'h1.16xlarge': (5, 20, 5),
             'hi1.4xlarge': (2, 20, 5),
             'hs1.8xlarge': (2, 20, 0),
-            'i2.xlarge': (8, 20, 0),
             'i2.2xlarge': (8, 20, 0),
             'i2.4xlarge': (4, 20, 0),
             'i2.8xlarge': (2, 20, 0),
-            'i3.large': (2, 20, 0),
-            'i3.xlarge': (2, 20, 0),
+            'i2.xlarge': (8, 20, 0),
             'i3.2xlarge': (2, 20, 0),
             'i3.4xlarge': (2, 20, 0),
             'i3.8xlarge': (2, 20, 0),
             'i3.16xlarge': (2, 20, 0),
+            'i3.large': (2, 20, 0),
+            'i3.xlarge': (2, 20, 0),
             'm4.4xlarge': (10, 20, 5),
             'm4.10xlarge': (5, 20, 5),
             'm4.16xlarge': (5, 20, 5),
-            'p2.xlarge': (1, 20, 5),
+            'm5.4xlarge': (10, 20, 5),
+            'm5.12xlarge': (5, 20, 5),
+            'm5.24xlarge': (5, 20, 5),
             'p2.8xlarge': (1, 20, 5),
             'p2.16xlarge': (1, 20, 5),
+            'p2.xlarge': (1, 20, 5),
+            'p3.2xlarge': (1, 20, 5),
+            'p3.8xlarge': (1, 20, 5),
+            'p3.16xlarge': (1, 20, 5),
+            'p3dn.24xlarge': (1, 20, 5),
             'r3.4xlarge': (10, 20, 5),
             'r3.8xlarge': (5, 20, 5),
+            'r4.4xlarge': (10, 20, 5),
+            'r4.8xlarge': (5, 20, 5),
+            'r4.16xlarge': (1, 20, 5),
         }
         limits = {}
         for i_type in self._instance_types():
@@ -575,6 +590,11 @@ class _Ec2Service(_AwsService):
         :rtype: list
         """
         GENERAL_TYPES = [
+            'a1.2xlarge',
+            'a1.4xlarge',
+            'a1.large',
+            'a1.medium',
+            'a1.xlarge',
             't2.nano',
             't2.micro',
             't2.small',
@@ -582,6 +602,13 @@ class _Ec2Service(_AwsService):
             't2.large',
             't2.xlarge',
             't2.2xlarge',
+            't3.nano',
+            't3.micro',
+            't3.small',
+            't3.medium',
+            't3.large',
+            't3.xlarge',
+            't3.2xlarge',
             'm3.medium',
             'm3.large',
             'm3.xlarge',
@@ -591,7 +618,25 @@ class _Ec2Service(_AwsService):
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
-            'm4.16xlarge'
+            'm4.16xlarge',
+            'm5.12xlarge',
+            'm5.24xlarge',
+            'm5.2xlarge',
+            'm5.4xlarge',
+            'm5.large',
+            'm5.xlarge',
+            'm5d.12xlarge',
+            'm5d.24xlarge',
+            'm5d.2xlarge',
+            'm5d.4xlarge',
+            'm5d.large',
+            'm5d.xlarge',
+            'm5a.12xlarge',
+            'm5a.24xlarge',
+            'm5a.2xlarge',
+            'm5a.4xlarge',
+            'm5a.large',
+            'm5a.xlarge',
         ]
 
         PREV_GENERAL_TYPES = [
@@ -603,19 +648,55 @@ class _Ec2Service(_AwsService):
         ]
 
         MEMORY_TYPES = [
-            'r3.large',
-            'r3.xlarge',
             'r3.2xlarge',
             'r3.4xlarge',
             'r3.8xlarge',
-            'r4.large',
-            'r4.xlarge',
+            'r3.large',
+            'r3.xlarge',
             'r4.2xlarge',
             'r4.4xlarge',
             'r4.8xlarge',
             'r4.16xlarge',
+            'r4.large',
+            'r4.xlarge',
+            'r5.2xlarge',
+            'r5.4xlarge',
+            'r5.8xlarge',
+            'r5.12xlarge',
+            'r5.16xlarge',
+            'r5.24xlarge',
+            'r5.large',
+            'r5.metal',
+            'r5.xlarge',
+            'r5a.12xlarge',
+            'r5a.24xlarge',
+            'r5a.2xlarge',
+            'r5a.4xlarge',
+            'r5a.large',
+            'r5a.xlarge',
+            'r5d.2xlarge',
+            'r5d.4xlarge',
+            'r5d.8xlarge',
+            'r5d.12xlarge',
+            'r5d.16xlarge',
+            'r5d.24xlarge',
+            'r5d.large',
+            'r5d.metal',
+            'r5d.xlarge',
             'x1.16xlarge',
-            'x1.32xlarge'
+            'x1.32xlarge',
+            'x1e.2xlarge',
+            'x1e.4xlarge',
+            'x1e.8xlarge',
+            'x1e.16xlarge',
+            'x1e.32xlarge',
+            'x1e.xlarge',
+            'z1d.2xlarge',
+            'z1d.3xlarge',
+            'z1d.6xlarge',
+            'z1d.12xlarge',
+            'z1d.large',
+            'z1d.xlarge',
         ]
 
         PREV_MEMORY_TYPES = [
@@ -636,18 +717,42 @@ class _Ec2Service(_AwsService):
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
+            'c5.18xlarge',
+            'c5.2xlarge',
+            'c5.4xlarge',
+            'c5.9xlarge',
+            'c5.large',
+            'c5.xlarge',
+            'c5d.18xlarge',
+            'c5d.2xlarge',
+            'c5d.4xlarge',
+            'c5d.9xlarge',
+            'c5d.large',
+            'c5d.xlarge',
+            'c5n.18xlarge',
+            'c5n.2xlarge',
+            'c5n.4xlarge',
+            'c5n.9xlarge',
+            'c5n.large',
+            'c5n.xlarge',
         ]
 
         PREV_COMPUTE_TYPES = [
             'c1.medium',
             'c1.xlarge',
             'cc2.8xlarge',
+            'cc1.4xlarge',
         ]
 
         ACCELERATED_COMPUTE_TYPES = [
+            'f1.4xlarge',
             'p2.xlarge',
             'p2.8xlarge',
-            'p2.16xlarge'
+            'p2.16xlarge',
+            'p3.16xlarge',
+            'p3.2xlarge',
+            'p3.8xlarge',
+            'p3dn.24xlarge',
         ]
 
         STORAGE_TYPES = [
@@ -661,9 +766,16 @@ class _Ec2Service(_AwsService):
             'i3.4xlarge',
             'i3.8xlarge',
             'i3.16xlarge',
+            'i3.metal',
+            'h1.16xlarge',
+            'h1.2xlarge',
+            'h1.4xlarge',
+            'h1.8xlarge',
         ]
 
         PREV_STORAGE_TYPES = [
+            # NOTE hi1.4xlarge is no longer in the instance type listings,
+            # but some accounts might still have a limit for it
             'hi1.4xlarge',
             'hs1.8xlarge',
         ]
@@ -678,6 +790,10 @@ class _Ec2Service(_AwsService):
         GPU_TYPES = [
             'g2.2xlarge',
             'g2.8xlarge',
+            'g3.16xlarge',
+            'g3.4xlarge',
+            'g3.8xlarge',
+            'g3s.xlarge',
         ]
 
         PREV_GPU_TYPES = [
@@ -689,7 +805,7 @@ class _Ec2Service(_AwsService):
             # there isn't a published instance limit yet, so we'll assume
             # it's the default...
             'f1.2xlarge',
-            'f1.16xlarge'
+            'f1.16xlarge',
         ]
 
         return (

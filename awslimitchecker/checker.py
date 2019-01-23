@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -218,7 +218,7 @@ class AwsLimitChecker(object):
         Return the version of awslimitchecker currently running.
 
         :returns: current awslimitchecker version
-        :rtype: string
+        :rtype: str
         """
         return self.vinfo.version_str
 
@@ -227,7 +227,7 @@ class AwsLimitChecker(object):
         Return the URL for the awslimitchecker project.
 
         :returns: URL of where to find awslimitchecker
-        :rtype: string
+        :rtype: str
         """
         return self.vinfo.url
 
@@ -411,9 +411,9 @@ class AwsLimitChecker(object):
         is set to ``False``.
 
         :param service_name: the name of the service to override limit for
-        :type service_name: string
+        :type service_name: str
         :param limit_name: the name of the limit to override:
-        :type limit_name: string
+        :type limit_name: str
         :param value: the new (overridden) limit value)
         :type value: int
         :param override_ta: whether or not to use this value even if Trusted
@@ -495,9 +495,9 @@ class AwsLimitChecker(object):
         See :py:meth:`.AwsLimit.set_threshold_override`.
 
         :param service_name: the name of the service to override limit for
-        :type service_name: string
+        :type service_name: str
         :param limit_name: the name of the limit to override:
-        :type limit_name: string
+        :type limit_name: str
         :param warn_percent: new warning threshold, percentage used
         :type warn_percent: int
         :param warn_count: new warning threshold, actual count/number

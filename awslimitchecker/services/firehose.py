@@ -102,7 +102,7 @@ class _FirehoseService(_AwsService):
         limits['Delivery streams per region'] = AwsLimit(
             'Delivery streams per region',
             self,
-            20,
+            50,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::KinesisFirehose::DeliveryStream',

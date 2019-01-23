@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -89,7 +89,7 @@ class _IamService(_AwsService):
         limits['Groups'] = AwsLimit(
             'Groups',
             self,
-            100,
+            300,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Group',
@@ -105,7 +105,7 @@ class _IamService(_AwsService):
         limits['Roles'] = AwsLimit(
             'Roles',
             self,
-            250,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Role',
@@ -113,7 +113,7 @@ class _IamService(_AwsService):
         limits['Instance profiles'] = AwsLimit(
             'Instance profiles',
             self,
-            100,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::InstanceProfile',
@@ -129,7 +129,7 @@ class _IamService(_AwsService):
         limits['Policies'] = AwsLimit(
             'Policies',
             self,
-            1000,
+            1500,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Policy',

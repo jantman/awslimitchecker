@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -179,7 +179,7 @@ class _EbsService(_AwsService):
         limits['Provisioned IOPS'] = AwsLimit(
             'Provisioned IOPS',
             self,
-            40000,
+            200000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -188,7 +188,7 @@ class _EbsService(_AwsService):
         limits['Provisioned IOPS (SSD) storage (GiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) storage (GiB)',
             self,
-            20480,
+            102400,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -197,11 +197,12 @@ class _EbsService(_AwsService):
         limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (GiB)',
             self,
-            20480,
+            102400,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
+            ta_limit_name='General Purpose SSD (gp2) volume storage (GiB)'
         )
         limits['Magnetic volume storage (GiB)'] = AwsLimit(
             'Magnetic volume storage (GiB)',
@@ -211,11 +212,12 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
+            ta_limit_name='Magnetic (standard) volume storage (GiB)'
         )
         limits['Throughput Optimized (HDD) volume storage (GiB)'] = AwsLimit(
             'Throughput Optimized (HDD) volume storage (GiB)',
             self,
-            20480,
+            307200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
@@ -224,7 +226,7 @@ class _EbsService(_AwsService):
         limits['Cold (HDD) volume storage (GiB)'] = AwsLimit(
             'Cold (HDD) volume storage (GiB)',
             self,
-            20480,
+            307200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',

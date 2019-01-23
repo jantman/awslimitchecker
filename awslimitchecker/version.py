@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -47,7 +47,7 @@ try:
 except ImportError:
     logger.error("Unable to import versionfinder", exc_info=True)
 
-_VERSION_TUP = (1, 0, 0)
+_VERSION_TUP = (6, 0, 0)
 _VERSION = '.'.join([str(x) for x in _VERSION_TUP])
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
 
@@ -66,7 +66,7 @@ class AWSLimitCheckerVersion(object):
         The version string for the currently-running awslimitchecker;
         includes git branch and tag information.
 
-        :rtype: string
+        :rtype: str
         """
         vs = str(self.release)
         if self.tag is not None:
@@ -80,7 +80,7 @@ class AWSLimitCheckerVersion(object):
         Human-readable string representation of this version object, in the
         format: "version_str <url>"
 
-        :rtype: string
+        :rtype: str
         """
         return '{s} <{u}>'.format(
             s=self.version_str,
@@ -92,7 +92,7 @@ class AWSLimitCheckerVersion(object):
         Return a representation of this object that is valid Python and will
         create an idential AWSLimitCheckerVersion object.
 
-        :rtype: string
+        :rtype: str
         """
         return 'AWSLimitCheckerVersion({r}, {u}, tag={t}, commit={c})'.format(
             r=repr(self.release),
@@ -109,7 +109,7 @@ def _get_version_info():
     editable git clone.
 
     :returns: awslimitchecker version
-    :rtype: string
+    :rtype: str
     """
     if os.environ.get('VERSIONCHECK_DEBUG', '') != 'true':
         for lname in ['versionfinder', 'pip', 'git']:

@@ -1,5 +1,5 @@
-awslimitchecker\.services\.vpc module
-=====================================
+awslimitchecker.services.vpc module
+===================================
 
 .. automodule:: awslimitchecker.services.vpc
     :members:

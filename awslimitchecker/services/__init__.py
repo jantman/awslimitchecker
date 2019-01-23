@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -38,23 +38,28 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.services.base import _AwsService
-from awslimitchecker.services.ec2 import _Ec2Service
-from awslimitchecker.services.vpc import _VpcService
+from awslimitchecker.services.apigateway import _ApigatewayService
 from awslimitchecker.services.autoscaling import _AutoscalingService
+from awslimitchecker.services.cloudformation import _CloudformationService
+from awslimitchecker.services.cloudtrail import _CloudTrailService
+from awslimitchecker.services.directoryservice import _DirectoryserviceService
+from awslimitchecker.services.dynamodb import _DynamodbService
 from awslimitchecker.services.ebs import _EbsService
+from awslimitchecker.services.ec2 import _Ec2Service
+from awslimitchecker.services.ecs import _EcsService
 from awslimitchecker.services.efs import _EfsService
+from awslimitchecker.services.elasticache import _ElastiCacheService
 from awslimitchecker.services.elasticbeanstalk import _ElasticBeanstalkService
 from awslimitchecker.services.elb import _ElbService
-from awslimitchecker.services.elasticache import _ElastiCacheService
-from awslimitchecker.services.rds import _RDSService
+from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.iam import _IamService
+from awslimitchecker.services.lambdafunc import _LambdaService
+from awslimitchecker.services.rds import _RDSService
+from awslimitchecker.services.redshift import _RedshiftService
+from awslimitchecker.services.route53 import _Route53Service
 from awslimitchecker.services.s3 import _S3Service
 from awslimitchecker.services.ses import _SesService
-from awslimitchecker.services.cloudformation import _CloudformationService
-from awslimitchecker.services.firehose import _FirehoseService
-from awslimitchecker.services.redshift import _RedshiftService
-from awslimitchecker.services.dynamodb import _DynamodbService
-from awslimitchecker.services.apigateway import _ApigatewayService
+from awslimitchecker.services.vpc import _VpcService
 
 # dynamically generate the service name to class dict
 _services = {}

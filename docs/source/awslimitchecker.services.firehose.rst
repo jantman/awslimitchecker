@@ -1,5 +1,5 @@
-awslimitchecker\.services\.firehose module
-==========================================
+awslimitchecker.services.firehose module
+========================================
 
 .. automodule:: awslimitchecker.services.firehose
     :members:

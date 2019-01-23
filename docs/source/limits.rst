@@ -9,351 +9,133 @@
 Supported Limits
 ================
 
-.. _limits.trusted_advisor:
-
-Trusted Advisor Data
----------------------
-
-
-So long as the Service and Limit names used by Trusted Advisor (and returned
-in its API responses) exactly match those shown below, all limits listed in
-Trusted Advisor "Service Limit" checks should be automatically used by
-awslimitchecker. The following service limits have been confirmed as being
-updated from Trusted Advisor:
-
-
-* CloudFormation
-
-  * Stacks
-
-* EBS
-
-  * Active snapshots
-
-  * Active volumes
-
-  * General Purpose (SSD) volume storage (GiB)
-
-  * Magnetic volume storage (GiB)
-
-  * Provisioned IOPS
-
-  * Provisioned IOPS (SSD) storage (GiB)
-
-* EC2
-
-  * Elastic IP addresses (EIPs)
-
-  * Running On-Demand c3.2xlarge instances
-
-  * Running On-Demand c3.4xlarge instances
-
-  * Running On-Demand c3.large instances
-
-  * Running On-Demand c3.xlarge instances
-
-  * Running On-Demand c4.2xlarge instances
-
-  * Running On-Demand c4.4xlarge instances
-
-  * Running On-Demand c4.large instances
-
-  * Running On-Demand c4.xlarge instances
-
-  * Running On-Demand m1.small instances
-
-  * Running On-Demand m3.2xlarge instances
-
-  * Running On-Demand m3.large instances
-
-  * Running On-Demand m3.medium instances
-
-  * Running On-Demand m3.xlarge instances
-
-  * Running On-Demand m4.2xlarge instances
-
-  * Running On-Demand m4.4xlarge instances
-
-  * Running On-Demand m4.large instances
-
-  * Running On-Demand m4.xlarge instances
-
-  * Running On-Demand r3.2xlarge instances
-
-  * Running On-Demand r3.4xlarge instances
-
-  * Running On-Demand r3.large instances
-
-  * Running On-Demand r3.xlarge instances
-
-  * Running On-Demand r4.large instances
-
-  * Running On-Demand t1.micro instances
-
-  * Running On-Demand t2.large instances
-
-  * Running On-Demand t2.medium instances
-
-  * Running On-Demand t2.micro instances
-
-  * Running On-Demand t2.nano instances
-
-  * Running On-Demand t2.small instances
-
-  * Running On-Demand t2.xlarge instances
-
-  * VPC Elastic IP addresses (EIPs)
-
-* ELB
-
-  * Active load balancers
-
-* IAM
-
-  * Groups
-
-  * Instance profiles
-
-  * Policies
-
-  * Roles
-
-  * Server certificates
-
-  * Users
-
-* RDS
-
-  * DB Cluster Parameter Groups
-
-  * DB Clusters
-
-  * DB instances
-
-  * DB parameter groups
-
-  * DB security groups
-
-  * DB snapshots per user
-
-  * Event Subscriptions
-
-  * Max auths per security group
-
-  * Read replicas per master
-
-  * Storage quota (GB)
-
-  * Subnet Groups
-
-  * Subnets per Subnet Group
-
-* SES
-
-  * Daily sending quota
-
-* VPC
-
-  * Internet gateways
-
-  * VPCs
-
-
-
-.. _limits.api:
-
-Limits Retrieved from Service APIs
-----------------------------------
-
-
-The limits listed below can be retrieved directly from their Service's
-API; this information should be the most accurate, and is used with higher
-precedence than anything other than explicit limit overrides:
-
-
-* AutoScaling
-
-  * Auto Scaling groups
-
-  * Launch configurations
-
-* CloudFormation
-
-  * Stacks
-
-* DynamoDB
-
-  * Account Max Read Capacity Units
-
-  * Account Max Write Capacity Units
-
-  * Table Max Read Capacity Units
-
-  * Table Max Write Capacity Units
-
-* EC2
-
-  * Elastic IP addresses (EIPs)
-
-  * Running On-Demand EC2 instances
-
-  * VPC Elastic IP addresses (EIPs)
-
-  * VPC security groups per elastic network interface
-
-* ELB
-
-  * Active load balancers
-
-  * Listeners per application load balancer
-
-  * Listeners per load balancer
-
-  * Rules per application load balancer
-
-  * Target groups
-
-* IAM
-
-  * Groups
-
-  * Instance profiles
-
-  * Policies
-
-  * Policy Versions In Use
-
-  * Roles
-
-  * Server certificates
-
-  * Users
-
-* RDS
-
-  * DB Cluster Parameter Groups
-
-  * DB Clusters
-
-  * DB instances
-
-  * DB parameter groups
-
-  * DB security groups
-
-  * DB snapshots per user
-
-  * Event Subscriptions
-
-  * Max auths per security group
-
-  * Option Groups
-
-  * Read replicas per master
-
-  * Reserved Instances
-
-  * Storage quota (GB)
-
-  * Subnet Groups
-
-  * Subnets per Subnet Group
-
-* SES
-
-  * Daily sending quota
-
-
-
-.. _limits.checks:
-
-Current Checks
----------------
-
 The section below lists every limit that this version of awslimitchecker knows
-how to check, and its hard-coded default value (per AWS documentation). Limits
-marked with :sup:`(TA)` are comfirmed as being updated by Trusted Advisor.
+how to check, and its hard-coded default value (per AWS documentation).
+
+**Limits with a** |check| **in the "Trusted Advisor" column are comfirmed as being
+updated by Trusted Advisor.** Note that so long as the Service and Limit names used by
+Trusted Advisor (and returned in its API responses) exactly match those
+shown below, all limits listed in Trusted Advisor "Service Limit" checks
+should be automatically used by awslimitchecker. However, limits marked here
+with a |check| were detected as being returned by Trusted Advisor as of the
+last release. Note that not all accounts can access Trusted Advisor, or can
+access all limits known by Trusted Advisor.
+
+**Limits with a** |check| **in the "API" column can be retrieved directly from
+the corresponding Service API**; this information should be the most accurate
+and up-to-date, as it is retrieved directly from the service that evaluates
+and enforces limits. Limits retrieved via service API take precedence over
+Trusted Advisor and default limits.
 
 .. _limits.ApiGateway:
 
 ApiGateway
-+++++++++++
+-----------
 
-=============================== ====
-Limit                           Default
-=============================== ====
-API keys per account            500 
-APIs per account                60  
-Client certificates per account 60  
-Custom authorizers per API      10  
-Documentation parts per API     2000
-Resources per API               300 
-Stages per API                  10  
-Usage plans per account         300 
-=============================== ====
+=============================== =============== ======= ====
+Limit                           Trusted Advisor API     Default
+=============================== =============== ======= ====
+API keys per account                                    500 
+Client certificates per account                         60  
+Custom authorizers per API                              10  
+Documentation parts per API                             2000
+Edge APIs per account                                   120 
+Private APIs per account                                600 
+Regional APIs per account                               600 
+Resources per API                                       300 
+Stages per API                                          10  
+Usage plans per account                                 300 
+VPC Links per account                                   5   
+=============================== =============== ======= ====
 
 .. _limits.AutoScaling:
 
 AutoScaling
-++++++++++++
+------------
 
-================================== ===
-Limit                              Default
-================================== ===
-Auto Scaling groups :sup:`(API)`   20 
-Launch configurations :sup:`(API)` 100
-================================== ===
+===================== =============== ======= ===
+Limit                 Trusted Advisor API     Default
+===================== =============== ======= ===
+Auto Scaling groups   |check|         |check| 200
+Launch configurations |check|         |check| 200
+===================== =============== ======= ===
 
 .. _limits.CloudFormation:
 
 CloudFormation
-+++++++++++++++
+---------------
 
-=============================== ===
-Limit                           Default
-=============================== ===
-Stacks :sup:`(TA)` :sup:`(API)` 200
-=============================== ===
+====== =============== ======= ===
+Limit  Trusted Advisor API     Default
+====== =============== ======= ===
+Stacks |check|         |check| 200
+====== =============== ======= ===
+
+.. _limits.CloudTrail:
+
+CloudTrail
+-----------
+
+========================= =============== ======= ===
+Limit                     Trusted Advisor API     Default
+========================= =============== ======= ===
+Data Resources Per Trail                          250
+Event Selectors Per Trail                         5  
+Trails Per Region                                 5  
+========================= =============== ======= ===
+
+.. _limits.Directory Service:
+
+Directory Service
+------------------
+
+==================== =============== ======= ==
+Limit                Trusted Advisor API     Default
+==================== =============== ======= ==
+CloudOnlyDirectories                 |check| 10
+CloudOnlyMicrosoftAD                 |check| 10
+ConnectedDirectories                 |check| 10
+==================== =============== ======= ==
 
 .. _limits.DynamoDB:
 
 DynamoDB
-+++++++++
+---------
 
-============================================= =====
-Limit                                         Default
-============================================= =====
-Account Max Read Capacity Units :sup:`(API)`  80000
-Account Max Write Capacity Units :sup:`(API)` 80000
-Global Secondary Indexes                      5    
-Local Secondary Indexes                       5    
-Table Max Read Capacity Units :sup:`(API)`    40000
-Table Max Write Capacity Units :sup:`(API)`   40000
-Tables Per Region                             256  
-============================================= =====
+================================ =============== ======= =====
+Limit                            Trusted Advisor API     Default
+================================ =============== ======= =====
+Account Max Read Capacity Units                  |check| 80000
+Account Max Write Capacity Units                 |check| 80000
+Global Secondary Indexes                                 5    
+Local Secondary Indexes                                  5    
+Table Max Read Capacity Units                    |check| 40000
+Table Max Write Capacity Units                   |check| 40000
+Tables Per Region                                        256  
+================================ =============== ======= =====
 
 .. _limits.EBS:
 
 EBS
-++++
+----
 
-====================================================== =====
-Limit                                                  Default
-====================================================== =====
-Active snapshots :sup:`(TA)`                           10000
-Active volumes :sup:`(TA)`                             5000 
-Cold (HDD) volume storage (GiB)                        20480
-General Purpose (SSD) volume storage (GiB) :sup:`(TA)` 20480
-Magnetic volume storage (GiB) :sup:`(TA)`              20480
-Provisioned IOPS (SSD) storage (GiB) :sup:`(TA)`       20480
-Provisioned IOPS :sup:`(TA)`                           40000
-Throughput Optimized (HDD) volume storage (GiB)        20480
-====================================================== =====
+=============================================== =============== ======= ======
+Limit                                           Trusted Advisor API     Default
+=============================================== =============== ======= ======
+Active snapshots                                |check|                 10000 
+Active volumes                                  |check|                 5000  
+Cold (HDD) volume storage (GiB)                                         307200
+General Purpose (SSD) volume storage (GiB)      |check|                 102400
+Magnetic volume storage (GiB)                   |check|                 20480 
+Provisioned IOPS                                |check|                 200000
+Provisioned IOPS (SSD) storage (GiB)            |check|                 102400
+Throughput Optimized (HDD) volume storage (GiB)                         307200
+=============================================== =============== ======= ======
 
 .. _limits.EC2:
 
 EC2
-++++
+----
 
 
 **Note on On-Demand vs Reserved Instances:** The EC2 limits for
@@ -365,258 +147,411 @@ for Running On-Demand Instances current usage will *not* match the
 number of instances you see in the Console or API.
 
 
-============================================================== ====
-Limit                                                          Default
-============================================================== ====
-Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`           5   
-Max active spot fleets per region                              1000
-Max launch specifications per spot fleet                       50  
-Max spot instance requests per region                          20  
-Max target capacity for all spot fleets in region              5000
-Max target capacity per spot fleet                             3000
-Rules per VPC security group                                   50  
-Running On-Demand EC2 instances :sup:`(API)`                   20  
-Running On-Demand c1.medium instances                          20  
-Running On-Demand c1.xlarge instances                          20  
-Running On-Demand c3.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand c3.4xlarge instances :sup:`(TA)`             20  
-Running On-Demand c3.8xlarge instances                         20  
-Running On-Demand c3.large instances :sup:`(TA)`               20  
-Running On-Demand c3.xlarge instances :sup:`(TA)`              20  
-Running On-Demand c4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand c4.4xlarge instances :sup:`(TA)`             10  
-Running On-Demand c4.8xlarge instances                         5   
-Running On-Demand c4.large instances :sup:`(TA)`               20  
-Running On-Demand c4.xlarge instances :sup:`(TA)`              20  
-Running On-Demand cc2.8xlarge instances                        20  
-Running On-Demand cg1.4xlarge instances                        2   
-Running On-Demand cr1.8xlarge instances                        2   
-Running On-Demand d2.2xlarge instances                         20  
-Running On-Demand d2.4xlarge instances                         10  
-Running On-Demand d2.8xlarge instances                         5   
-Running On-Demand d2.xlarge instances                          20  
-Running On-Demand f1.16xlarge instances                        20  
-Running On-Demand f1.2xlarge instances                         20  
-Running On-Demand g2.2xlarge instances                         5   
-Running On-Demand g2.8xlarge instances                         2   
-Running On-Demand hi1.4xlarge instances                        2   
-Running On-Demand hs1.8xlarge instances                        2   
-Running On-Demand i2.2xlarge instances                         8   
-Running On-Demand i2.4xlarge instances                         4   
-Running On-Demand i2.8xlarge instances                         2   
-Running On-Demand i2.xlarge instances                          8   
-Running On-Demand i3.16xlarge instances                        2   
-Running On-Demand i3.2xlarge instances                         2   
-Running On-Demand i3.4xlarge instances                         2   
-Running On-Demand i3.8xlarge instances                         2   
-Running On-Demand i3.large instances                           2   
-Running On-Demand i3.xlarge instances                          2   
-Running On-Demand m1.large instances                           20  
-Running On-Demand m1.medium instances                          20  
-Running On-Demand m1.small instances :sup:`(TA)`               20  
-Running On-Demand m1.xlarge instances                          20  
-Running On-Demand m2.2xlarge instances                         20  
-Running On-Demand m2.4xlarge instances                         20  
-Running On-Demand m2.xlarge instances                          20  
-Running On-Demand m3.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand m3.large instances :sup:`(TA)`               20  
-Running On-Demand m3.medium instances :sup:`(TA)`              20  
-Running On-Demand m3.xlarge instances :sup:`(TA)`              20  
-Running On-Demand m4.10xlarge instances                        5   
-Running On-Demand m4.16xlarge instances                        5   
-Running On-Demand m4.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand m4.4xlarge instances :sup:`(TA)`             10  
-Running On-Demand m4.large instances :sup:`(TA)`               20  
-Running On-Demand m4.xlarge instances :sup:`(TA)`              20  
-Running On-Demand p2.16xlarge instances                        1   
-Running On-Demand p2.8xlarge instances                         1   
-Running On-Demand p2.xlarge instances                          1   
-Running On-Demand r3.2xlarge instances :sup:`(TA)`             20  
-Running On-Demand r3.4xlarge instances :sup:`(TA)`             10  
-Running On-Demand r3.8xlarge instances                         5   
-Running On-Demand r3.large instances :sup:`(TA)`               20  
-Running On-Demand r3.xlarge instances :sup:`(TA)`              20  
-Running On-Demand r4.16xlarge instances                        20  
-Running On-Demand r4.2xlarge instances                         20  
-Running On-Demand r4.4xlarge instances                         20  
-Running On-Demand r4.8xlarge instances                         20  
-Running On-Demand r4.large instances :sup:`(TA)`               20  
-Running On-Demand r4.xlarge instances                          20  
-Running On-Demand t1.micro instances :sup:`(TA)`               20  
-Running On-Demand t2.2xlarge instances                         20  
-Running On-Demand t2.large instances :sup:`(TA)`               20  
-Running On-Demand t2.medium instances :sup:`(TA)`              20  
-Running On-Demand t2.micro instances :sup:`(TA)`               20  
-Running On-Demand t2.nano instances :sup:`(TA)`                20  
-Running On-Demand t2.small instances :sup:`(TA)`               20  
-Running On-Demand t2.xlarge instances :sup:`(TA)`              20  
-Running On-Demand x1.16xlarge instances                        20  
-Running On-Demand x1.32xlarge instances                        20  
-Security groups per VPC                                        500 
-VPC Elastic IP addresses (EIPs) :sup:`(TA)` :sup:`(API)`       5   
-VPC security groups per elastic network interface :sup:`(API)` 5   
-============================================================== ====
+================================================= =============== ======= ====
+Limit                                             Trusted Advisor API     Default
+================================================= =============== ======= ====
+Elastic IP addresses (EIPs)                       |check|         |check| 5   
+Max active spot fleets per region                                         1000
+Max launch specifications per spot fleet                                  50  
+Max spot instance requests per region                                     20  
+Max target capacity for all spot fleets in region                         5000
+Max target capacity per spot fleet                                        3000
+Rules per VPC security group                                              50  
+Running On-Demand EC2 instances                                   |check| 20  
+Running On-Demand a1.2xlarge instances                                    20  
+Running On-Demand a1.4xlarge instances                                    20  
+Running On-Demand a1.large instances                                      20  
+Running On-Demand a1.medium instances                                     20  
+Running On-Demand a1.xlarge instances                                     20  
+Running On-Demand c1.medium instances                                     20  
+Running On-Demand c1.xlarge instances                                     20  
+Running On-Demand c3.2xlarge instances            |check|                 20  
+Running On-Demand c3.4xlarge instances                                    20  
+Running On-Demand c3.8xlarge instances                                    20  
+Running On-Demand c3.large instances              |check|                 20  
+Running On-Demand c3.xlarge instances             |check|                 20  
+Running On-Demand c4.2xlarge instances            |check|                 20  
+Running On-Demand c4.4xlarge instances            |check|                 10  
+Running On-Demand c4.8xlarge instances                                    5   
+Running On-Demand c4.large instances              |check|                 20  
+Running On-Demand c4.xlarge instances             |check|                 20  
+Running On-Demand c5.18xlarge instances                                   5   
+Running On-Demand c5.2xlarge instances            |check|                 20  
+Running On-Demand c5.4xlarge instances                                    10  
+Running On-Demand c5.9xlarge instances                                    5   
+Running On-Demand c5.large instances              |check|                 20  
+Running On-Demand c5.xlarge instances                                     20  
+Running On-Demand c5d.18xlarge instances                                  20  
+Running On-Demand c5d.2xlarge instances                                   20  
+Running On-Demand c5d.4xlarge instances                                   20  
+Running On-Demand c5d.9xlarge instances                                   20  
+Running On-Demand c5d.large instances                                     20  
+Running On-Demand c5d.xlarge instances                                    20  
+Running On-Demand c5n.18xlarge instances                                  20  
+Running On-Demand c5n.2xlarge instances                                   20  
+Running On-Demand c5n.4xlarge instances                                   20  
+Running On-Demand c5n.9xlarge instances                                   20  
+Running On-Demand c5n.large instances                                     20  
+Running On-Demand c5n.xlarge instances                                    20  
+Running On-Demand cc1.4xlarge instances                                   20  
+Running On-Demand cc2.8xlarge instances                                   20  
+Running On-Demand cg1.4xlarge instances                                   2   
+Running On-Demand cr1.8xlarge instances                                   2   
+Running On-Demand d2.2xlarge instances                                    20  
+Running On-Demand d2.4xlarge instances                                    10  
+Running On-Demand d2.8xlarge instances                                    5   
+Running On-Demand d2.xlarge instances                                     20  
+Running On-Demand f1.16xlarge instances                                   20  
+Running On-Demand f1.2xlarge instances                                    20  
+Running On-Demand f1.4xlarge instances                                    20  
+Running On-Demand g2.2xlarge instances                                    5   
+Running On-Demand g2.8xlarge instances                                    2   
+Running On-Demand g3.16xlarge instances                                   1   
+Running On-Demand g3.4xlarge instances                                    1   
+Running On-Demand g3.8xlarge instances                                    1   
+Running On-Demand g3s.xlarge instances                                    20  
+Running On-Demand h1.16xlarge instances                                   5   
+Running On-Demand h1.2xlarge instances                                    20  
+Running On-Demand h1.4xlarge instances                                    20  
+Running On-Demand h1.8xlarge instances                                    10  
+Running On-Demand hi1.4xlarge instances                                   2   
+Running On-Demand hs1.8xlarge instances                                   2   
+Running On-Demand i2.2xlarge instances                                    8   
+Running On-Demand i2.4xlarge instances                                    4   
+Running On-Demand i2.8xlarge instances                                    2   
+Running On-Demand i2.xlarge instances                                     8   
+Running On-Demand i3.16xlarge instances                                   2   
+Running On-Demand i3.2xlarge instances                                    2   
+Running On-Demand i3.4xlarge instances                                    2   
+Running On-Demand i3.8xlarge instances                                    2   
+Running On-Demand i3.large instances                                      2   
+Running On-Demand i3.metal instances                                      20  
+Running On-Demand i3.xlarge instances                                     2   
+Running On-Demand m1.large instances                                      20  
+Running On-Demand m1.medium instances                                     20  
+Running On-Demand m1.small instances              |check|                 20  
+Running On-Demand m1.xlarge instances                                     20  
+Running On-Demand m2.2xlarge instances                                    20  
+Running On-Demand m2.4xlarge instances                                    20  
+Running On-Demand m2.xlarge instances                                     20  
+Running On-Demand m3.2xlarge instances            |check|                 20  
+Running On-Demand m3.large instances              |check|                 20  
+Running On-Demand m3.medium instances             |check|                 20  
+Running On-Demand m3.xlarge instances             |check|                 20  
+Running On-Demand m4.10xlarge instances                                   5   
+Running On-Demand m4.16xlarge instances                                   5   
+Running On-Demand m4.2xlarge instances            |check|                 20  
+Running On-Demand m4.4xlarge instances            |check|                 10  
+Running On-Demand m4.large instances              |check|                 20  
+Running On-Demand m4.xlarge instances             |check|                 20  
+Running On-Demand m5.12xlarge instances                                   5   
+Running On-Demand m5.24xlarge instances                                   5   
+Running On-Demand m5.2xlarge instances                                    20  
+Running On-Demand m5.4xlarge instances                                    10  
+Running On-Demand m5.large instances              |check|                 20  
+Running On-Demand m5.xlarge instances             |check|                 20  
+Running On-Demand m5a.12xlarge instances                                  20  
+Running On-Demand m5a.24xlarge instances                                  20  
+Running On-Demand m5a.2xlarge instances                                   20  
+Running On-Demand m5a.4xlarge instances                                   20  
+Running On-Demand m5a.large instances                                     20  
+Running On-Demand m5a.xlarge instances                                    20  
+Running On-Demand m5d.12xlarge instances                                  20  
+Running On-Demand m5d.24xlarge instances                                  20  
+Running On-Demand m5d.2xlarge instances                                   20  
+Running On-Demand m5d.4xlarge instances                                   20  
+Running On-Demand m5d.large instances                                     20  
+Running On-Demand m5d.xlarge instances                                    20  
+Running On-Demand p2.16xlarge instances                                   1   
+Running On-Demand p2.8xlarge instances                                    1   
+Running On-Demand p2.xlarge instances                                     1   
+Running On-Demand p3.16xlarge instances                                   1   
+Running On-Demand p3.2xlarge instances                                    1   
+Running On-Demand p3.8xlarge instances                                    1   
+Running On-Demand p3dn.24xlarge instances                                 1   
+Running On-Demand r3.2xlarge instances            |check|                 20  
+Running On-Demand r3.4xlarge instances            |check|                 10  
+Running On-Demand r3.8xlarge instances                                    5   
+Running On-Demand r3.large instances                                      20  
+Running On-Demand r3.xlarge instances                                     20  
+Running On-Demand r4.16xlarge instances                                   1   
+Running On-Demand r4.2xlarge instances                                    20  
+Running On-Demand r4.4xlarge instances                                    10  
+Running On-Demand r4.8xlarge instances                                    5   
+Running On-Demand r4.large instances              |check|                 20  
+Running On-Demand r4.xlarge instances             |check|                 20  
+Running On-Demand r5.12xlarge instances                                   20  
+Running On-Demand r5.16xlarge instances                                   20  
+Running On-Demand r5.24xlarge instances                                   20  
+Running On-Demand r5.2xlarge instances                                    20  
+Running On-Demand r5.4xlarge instances                                    20  
+Running On-Demand r5.8xlarge instances                                    20  
+Running On-Demand r5.large instances                                      20  
+Running On-Demand r5.metal instances                                      20  
+Running On-Demand r5.xlarge instances                                     20  
+Running On-Demand r5a.12xlarge instances                                  20  
+Running On-Demand r5a.24xlarge instances                                  20  
+Running On-Demand r5a.2xlarge instances                                   20  
+Running On-Demand r5a.4xlarge instances                                   20  
+Running On-Demand r5a.large instances                                     20  
+Running On-Demand r5a.xlarge instances                                    20  
+Running On-Demand r5d.12xlarge instances                                  20  
+Running On-Demand r5d.16xlarge instances                                  20  
+Running On-Demand r5d.24xlarge instances                                  20  
+Running On-Demand r5d.2xlarge instances                                   20  
+Running On-Demand r5d.4xlarge instances                                   20  
+Running On-Demand r5d.8xlarge instances                                   20  
+Running On-Demand r5d.large instances                                     20  
+Running On-Demand r5d.metal instances                                     20  
+Running On-Demand r5d.xlarge instances                                    20  
+Running On-Demand t1.micro instances              |check|                 20  
+Running On-Demand t2.2xlarge instances                                    20  
+Running On-Demand t2.large instances              |check|                 20  
+Running On-Demand t2.medium instances             |check|                 20  
+Running On-Demand t2.micro instances              |check|                 20  
+Running On-Demand t2.nano instances               |check|                 20  
+Running On-Demand t2.small instances              |check|                 20  
+Running On-Demand t2.xlarge instances             |check|                 20  
+Running On-Demand t3.2xlarge instances                                    20  
+Running On-Demand t3.large instances              |check|                 20  
+Running On-Demand t3.medium instances             |check|                 20  
+Running On-Demand t3.micro instances                                      20  
+Running On-Demand t3.nano instances                                       20  
+Running On-Demand t3.small instances                                      20  
+Running On-Demand t3.xlarge instances                                     20  
+Running On-Demand x1.16xlarge instances                                   20  
+Running On-Demand x1.32xlarge instances                                   20  
+Running On-Demand x1e.16xlarge instances                                  20  
+Running On-Demand x1e.2xlarge instances                                   20  
+Running On-Demand x1e.32xlarge instances                                  20  
+Running On-Demand x1e.4xlarge instances                                   20  
+Running On-Demand x1e.8xlarge instances                                   20  
+Running On-Demand x1e.xlarge instances                                    20  
+Running On-Demand z1d.12xlarge instances                                  20  
+Running On-Demand z1d.2xlarge instances                                   20  
+Running On-Demand z1d.3xlarge instances                                   20  
+Running On-Demand z1d.6xlarge instances                                   20  
+Running On-Demand z1d.large instances                                     20  
+Running On-Demand z1d.xlarge instances                                    20  
+Security groups per VPC                                                   500 
+VPC Elastic IP addresses (EIPs)                   |check|         |check| 5   
+VPC security groups per elastic network interface                 |check| 5   
+================================================= =============== ======= ====
+
+.. _limits.ECS:
+
+ECS
+----
+
+===================================== =============== ======= ====
+Limit                                 Trusted Advisor API     Default
+===================================== =============== ======= ====
+Clusters                                                      2000
+Container Instances per Cluster                               2000
+EC2 Tasks per Service (desired count)                         1000
+Fargate Tasks                                                 50  
+Services per Cluster                                          1000
+===================================== =============== ======= ====
 
 .. _limits.EFS:
 
 EFS
-++++
+----
 
-============ ==
-Limit        Default
-============ ==
-File systems 10
-============ ==
+============ =============== ======= ==
+Limit        Trusted Advisor API     Default
+============ =============== ======= ==
+File systems                         70
+============ =============== ======= ==
 
 .. _limits.ELB:
 
 ELB
-++++
+----
 
-==================================================== ====
-Limit                                                Default
-==================================================== ====
-Active load balancers :sup:`(TA)` :sup:`(API)`       20  
-Listeners per application load balancer :sup:`(API)` 50  
-Listeners per load balancer :sup:`(API)`             100 
-Rules per application load balancer :sup:`(API)`     100 
-Target groups :sup:`(API)`                           3000
-==================================================== ====
+========================================== =============== ======= ====
+Limit                                      Trusted Advisor API     Default
+========================================== =============== ======= ====
+Active load balancers                      |check|         |check| 20  
+Certificates per application load balancer                         25  
+Listeners per application load balancer                    |check| 50  
+Listeners per load balancer                                |check| 100 
+Listeners per network load balancer                        |check| 50  
+Network load balancers                                     |check| 20  
+Registered instances per load balancer                     |check| 1000
+Rules per application load balancer                        |check| 100 
+Target groups                                              |check| 3000
+========================================== =============== ======= ====
 
 .. _limits.ElastiCache:
 
 ElastiCache
-++++++++++++
+------------
 
-======================== ===
-Limit                    Default
-======================== ===
-Nodes                    100
-Nodes per Cluster        20 
-Parameter Groups         20 
-Security Groups          50 
-Subnet Groups            50 
-Subnets per subnet group 20 
-======================== ===
+======================== =============== ======= ===
+Limit                    Trusted Advisor API     Default
+======================== =============== ======= ===
+Nodes                                            100
+Nodes per Cluster                                20 
+Parameter Groups                                 20 
+Security Groups                                  50 
+Subnet Groups                                    50 
+Subnets per subnet group                         20 
+======================== =============== ======= ===
 
 .. _limits.ElasticBeanstalk:
 
 ElasticBeanstalk
-+++++++++++++++++
+-----------------
 
-==================== ===
-Limit                Default
-==================== ===
-Application versions 500
-Applications         25 
-Environments         200
-==================== ===
+==================== =============== ======= ====
+Limit                Trusted Advisor API     Default
+==================== =============== ======= ====
+Application versions                         1000
+Applications                                 75  
+Environments                                 200 
+==================== =============== ======= ====
 
 .. _limits.Firehose:
 
 Firehose
-+++++++++
+---------
 
-=========================== ==
-Limit                       Default
-=========================== ==
-Delivery streams per region 20
-=========================== ==
+=========================== =============== ======= ==
+Limit                       Trusted Advisor API     Default
+=========================== =============== ======= ==
+Delivery streams per region                         50
+=========================== =============== ======= ==
 
 .. _limits.IAM:
 
 IAM
-++++
+----
 
-============================================ =====
-Limit                                        Default
-============================================ =====
-Groups :sup:`(TA)` :sup:`(API)`              100  
-Instance profiles :sup:`(TA)` :sup:`(API)`   100  
-Policies :sup:`(TA)` :sup:`(API)`            1000 
-Policy Versions In Use :sup:`(API)`          10000
-Roles :sup:`(TA)` :sup:`(API)`               250  
-Server certificates :sup:`(TA)` :sup:`(API)` 20   
-Users :sup:`(TA)` :sup:`(API)`               5000 
-============================================ =====
+====================== =============== ======= =====
+Limit                  Trusted Advisor API     Default
+====================== =============== ======= =====
+Groups                 |check|         |check| 300  
+Instance profiles      |check|         |check| 1000 
+Policies               |check|         |check| 1500 
+Policy Versions In Use                 |check| 10000
+Roles                  |check|         |check| 1000 
+Server certificates    |check|         |check| 20   
+Users                  |check|         |check| 5000 
+====================== =============== ======= =====
+
+.. _limits.Lambda:
+
+Lambda
+-------
+
+===================================== =============== ======= =====
+Limit                                 Trusted Advisor API     Default
+===================================== =============== ======= =====
+Code Size Unzipped (MiB) per Function                 |check| 250  
+Code Size Zipped (MiB) per Function                   |check| 50   
+Concurrent Executions                                 |check| 1000 
+Function Count                                                None 
+Total Code Size (MiB)                                 |check| 76800
+Unreserved Concurrent Executions                      |check| 1000 
+===================================== =============== ======= =====
 
 .. _limits.RDS:
 
 RDS
-++++
+----
 
-===================================================== ======
-Limit                                                 Default
-===================================================== ======
-DB Cluster Parameter Groups :sup:`(TA)` :sup:`(API)`  50    
-DB Clusters :sup:`(TA)` :sup:`(API)`                  40    
-DB instances :sup:`(TA)` :sup:`(API)`                 40    
-DB parameter groups :sup:`(TA)` :sup:`(API)`          50    
-DB security groups :sup:`(TA)` :sup:`(API)`           25    
-DB snapshots per user :sup:`(TA)` :sup:`(API)`        50    
-Event Subscriptions :sup:`(TA)` :sup:`(API)`          20    
-Max auths per security group :sup:`(TA)` :sup:`(API)` 20    
-Option Groups :sup:`(API)`                            20    
-Read replicas per master :sup:`(TA)` :sup:`(API)`     5     
-Reserved Instances :sup:`(API)`                       40    
-Storage quota (GB) :sup:`(TA)` :sup:`(API)`           100000
-Subnet Groups :sup:`(TA)` :sup:`(API)`                20    
-Subnets per Subnet Group :sup:`(TA)` :sup:`(API)`     20    
-VPC Security Groups                                   5     
-===================================================== ======
+============================ =============== ======= ======
+Limit                        Trusted Advisor API     Default
+============================ =============== ======= ======
+DB Cluster Parameter Groups  |check|         |check| 50    
+DB Clusters                  |check|         |check| 40    
+DB instances                 |check|         |check| 40    
+DB parameter groups          |check|         |check| 50    
+DB security groups           |check|         |check| 25    
+DB snapshots per user        |check|         |check| 100   
+Event Subscriptions          |check|         |check| 20    
+Max auths per security group |check|         |check| 20    
+Option Groups                                |check| 20    
+Read replicas per master     |check|         |check| 5     
+Reserved Instances                           |check| 40    
+Storage quota (GB)           |check|         |check| 100000
+Subnet Groups                |check|         |check| 50    
+Subnets per Subnet Group     |check|         |check| 20    
+VPC Security Groups                                  5     
+============================ =============== ======= ======
 
 .. _limits.Redshift:
 
 Redshift
-+++++++++
+---------
 
-========================= ==
-Limit                     Default
-========================= ==
-Redshift manual snapshots 20
-Redshift subnet groups    20
-========================= ==
+========================= =============== ======= ==
+Limit                     Trusted Advisor API     Default
+========================= =============== ======= ==
+Redshift manual snapshots                         20
+Redshift subnet groups                            20
+========================= =============== ======= ==
+
+.. _limits.Route53:
+
+Route53
+--------
+
+
+**Note on Route53 Limits:** The Route53 limit values (maxima) are
+set per-hosted zone, and can be increased by AWS support per-hosted
+zone. As such, each zone may have a different limit value.
+
+
+================================ =============== ======= =====
+Limit                            Trusted Advisor API     Default
+================================ =============== ======= =====
+Record sets per hosted zone                      |check| 10000
+VPC associations per hosted zone                 |check| 100  
+================================ =============== ======= =====
 
 .. _limits.S3:
 
 S3
-+++
+---
 
-======= ===
-Limit   Default
-======= ===
-Buckets 100
-======= ===
+======= =============== ======= ===
+Limit   Trusted Advisor API     Default
+======= =============== ======= ===
+Buckets                         100
+======= =============== ======= ===
 
 .. _limits.SES:
 
 SES
-++++
+----
 
-============================================ ===
-Limit                                        Default
-============================================ ===
-Daily sending quota :sup:`(TA)` :sup:`(API)` 200
-============================================ ===
+=================== =============== ======= ===
+Limit               Trusted Advisor API     Default
+=================== =============== ======= ===
+Daily sending quota |check|         |check| 200
+=================== =============== ======= ===
 
 .. _limits.VPC:
 
 VPC
-++++
+----
 
-============================= ===
-Limit                         Default
-============================= ===
-Entries per route table       50 
-Internet gateways :sup:`(TA)` 5  
-NAT Gateways per AZ           5  
-Network ACLs per VPC          200
-Route tables per VPC          200
-Rules per network ACL         20 
-Subnets per VPC               200
-VPCs :sup:`(TA)`              5  
-Virtual private gateways      5  
-============================= ===
+======================== =============== ======= ===
+Limit                    Trusted Advisor API     Default
+======================== =============== ======= ===
+Entries per route table                          50 
+Internet gateways        |check|                 5  
+NAT Gateways per AZ                              5  
+Network ACLs per VPC                             200
+Route tables per VPC                             200
+Rules per network ACL                            20 
+Subnets per VPC                                  200
+VPCs                     |check|                 5  
+Virtual private gateways                         5  
+======================== =============== ======= ===
 
 
 
+.. |check| unicode:: 0x2714 .. heavy check mark

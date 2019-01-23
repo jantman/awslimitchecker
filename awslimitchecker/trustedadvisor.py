@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -172,6 +172,18 @@ class TrustedAdvisor(Connectable):
         checks = self._get_refreshed_check_result(check_id)
         region = self.ta_region or self.conn._client_config.region_name
         res = {}
+        if checks['result'].get('status', '') == 'not_available':
+            logger.warning(
+                'Trusted Advisor returned status "not_available" for '
+                'service limit check; cannot retrieve limits from TA.'
+            )
+            return {}
+        if 'flaggedResources' not in checks['result']:
+            logger.warning(
+                'Trusted Advisor returned no results for '
+                'service limit check; cannot retrieve limits from TA.'
+            )
+            return {}
         for check in checks['result']['flaggedResources']:
             if 'region' in check and check['region'] != region:
                 continue

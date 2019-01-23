@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -66,6 +66,7 @@ class _ApigatewayService(_AwsService):
         self._find_usage_api_keys()
         self._find_usage_certs()
         self._find_usage_plans()
+        self._find_usage_vpc_links()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -76,14 +77,30 @@ class _ApigatewayService(_AwsService):
         """
         api_ids = []
         logger.debug('Finding usage for APIs')
+        regional_count = 0
+        private_count = 0
+        edge_count = 0
         paginator = self.conn.get_paginator('get_rest_apis')
         for resp in paginator.paginate():
             for api in resp['items']:
                 api_ids.append(api['id'])
-        logger.debug('Found %d APIs', len(api_ids))
-        self.limits['APIs per account']._add_current_usage(
-            len(api_ids), aws_type='AWS::ApiGateway::RestApi'
+                epconf = api.get('endpointConfiguration', {}).get('types', [])
+                if epconf == ['PRIVATE']:
+                    private_count += 1
+                elif epconf == ['EDGE']:
+                    edge_count += 1
+                else:
+                    regional_count += 1
+        self.limits['Regional APIs per account']._add_current_usage(
+            regional_count, aws_type='AWS::ApiGateway::RestApi'
         )
+        self.limits['Private APIs per account']._add_current_usage(
+            private_count, aws_type='AWS::ApiGateway::RestApi'
+        )
+        self.limits['Edge APIs per account']._add_current_usage(
+            edge_count, aws_type='AWS::ApiGateway::RestApi'
+        )
+        logger.debug('Found %d APIs', len(api_ids))
         # now the per-API limits...
         warn_stages_paginated = None
         logger.debug('Finding usage for per-API limits')
@@ -159,6 +176,19 @@ class _ApigatewayService(_AwsService):
             cert_count, aws_type='AWS::ApiGateway::ClientCertificate'
         )
 
+    def _find_usage_vpc_links(self):
+        """
+        Find usage on VPC Links. Update `self.limits`.
+        """
+        logger.debug('Finding usage for VPC Links')
+        link_count = 0
+        paginator = self.conn.get_paginator('get_vpc_links')
+        for resp in paginator.paginate():
+            link_count += len(resp['items'])
+        self.limits['VPC Links per account']._add_current_usage(
+            link_count, aws_type='AWS::ApiGateway::VpcLink'
+        )
+
     def _find_usage_plans(self):
         """
         Find usage on Usage Plans and plans per API Key. Update `self.limits`.
@@ -183,10 +213,26 @@ class _ApigatewayService(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
-        limits['APIs per account'] = AwsLimit(
-            'APIs per account',
+        limits['Regional APIs per account'] = AwsLimit(
+            'Regional APIs per account',
             self,
-            60,
+            600,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ApiGateway::RestApi'
+        )
+        limits['Edge APIs per account'] = AwsLimit(
+            'Edge APIs per account',
+            self,
+            120,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ApiGateway::RestApi'
+        )
+        limits['Private APIs per account'] = AwsLimit(
+            'Private APIs per account',
+            self,
+            600,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ApiGateway::RestApi'
@@ -246,6 +292,14 @@ class _ApigatewayService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ApiGateway::UsagePlan'
+        )
+        limits['VPC Links per account'] = AwsLimit(
+            'VPC Links per account',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ApiGateway::VpcLink'
         )
         self.limits = limits
         return limits

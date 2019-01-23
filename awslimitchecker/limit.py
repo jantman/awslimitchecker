@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -63,12 +63,12 @@ class AwsLimit(object):
 
         :param name: the name of this limit (may contain spaces);
           if possible, this should be the name used by AWS, i.e. TrustedAdvisor
-        :type name: string
+        :type name: str
         :param service: the :py:class:`~._AwsService` class that
           this limit is for
         :type service: :py:class:`~._AwsService`
         :param default_limit: the default value of this limit for new accounts
-        :type default_limit: int
+        :type default_limit: :py:obj:`int`, or ``None`` if unlimited
         :param def_warning_threshold: the default warning threshold, as an
           integer percentage.
         :type def_warning_threshold: int
@@ -209,6 +209,17 @@ class AwsLimit(object):
             return self.ta_limit
         return self.default_limit
 
+    def has_resource_limits(self):
+        """
+        Determines if this limit contains usages with a specified maximum.
+        Some AWS resources have a limit that is a different for each item.
+
+        :returns: whether of not some resources have a defined maximum
+        :rtype: bool
+        """
+        return any(usage for usage in self._current_usage if
+                   usage.get_maximum())
+
     def get_current_usage(self):
         """
         Get the current usage for this limit, as a list of
@@ -237,7 +248,7 @@ class AwsLimit(object):
         instances in ascending order.
 
         :returns: representation of current usage
-        :rtype: string
+        :rtype: str
         """
         if len(self._current_usage) == 0:
             return '<unknown>'
@@ -250,7 +261,8 @@ class AwsLimit(object):
         )
         return s
 
-    def _add_current_usage(self, value, resource_id=None, aws_type=None):
+    def _add_current_usage(self, value, maximum=None, resource_id=None,
+                           aws_type=None):
         """
         Add a new current usage value for this limit.
 
@@ -266,17 +278,18 @@ class AwsLimit(object):
         :type value: :py:obj:`int` or :py:obj:`float`
         :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type resource_id: string
+        :type resource_id: str
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
           `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
-        :type aws_type: string
+        :type aws_type: str
         """
         self._current_usage.append(
             AwsLimitUsage(
                 self,
                 value,
+                maximum=maximum,
                 resource_id=resource_id,
                 aws_type=aws_type
             )
@@ -361,14 +374,13 @@ class AwsLimit(object):
         :returns: False if any thresholds were crossed, True otherwise
         :rtype: bool
         """
-        limit = self.get_limit()
-        if limit is None:
-            # our limit is explicitly unlimited
-            return True
         (warn_int, warn_pct, crit_int, crit_pct) = self._get_thresholds()
         all_ok = True
         for u in self._current_usage:
             usage = u.get_value()
+            limit = u.get_maximum() or self.get_limit()
+            if limit is None:
+                continue
             pct = (usage / (limit * 1.0)) * 100
             if crit_int is not None and usage >= crit_int:
                 self._criticals.append(u)
@@ -435,7 +447,8 @@ class AwsLimit(object):
 
 class AwsLimitUsage(object):
 
-    def __init__(self, limit, value, resource_id=None, aws_type=None):
+    def __init__(self, limit, value, maximum=None, resource_id=None,
+                 aws_type=None):
         """
         This object describes the usage of an AWS resource, with the capability
         of containing information about the resource beyond an integer usage.
@@ -456,17 +469,20 @@ class AwsLimitUsage(object):
         :type limit: :py:class:`~.AwsLimit`
         :param value: the numeric usage value
         :type value: :py:obj:`int` or :py:obj:`float`
+        :param maximum: the numeric maximum value
+        :type maximum: :py:obj:`int` or :py:obj:`float`
         :param resource_id: If there can be multiple usage values for one limit,
           an AWS ID for the resource this instance describes
-        :type resource_id: string
+        :type resource_id: str
         :param aws_type: if ``id`` is not None, the AWS resource type
           that ID represents. As a convention, we use the AWS Resource
           Type names used by
           `CloudFormation <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_  # noqa
-        :type aws_type: string
+        :type aws_type: str
         """
         self.limit = limit
         self.value = value
+        self.maximum = maximum
         self.resource_id = resource_id
         self.aws_type = aws_type
 
@@ -479,6 +495,15 @@ class AwsLimitUsage(object):
         """
         return self.value
 
+    def get_maximum(self):
+        """
+        Get the current maximum value
+
+        :returns: current maximum value
+        :rtype: :py:obj:`int` or :py:obj:`float`
+        """
+        return self.maximum
+
     def __str__(self):
         """
         Return a string representation of this object.
@@ -486,7 +511,7 @@ class AwsLimitUsage(object):
         If ``id`` is not set, return ``value`` formatted as a string;
         otherwise, return a string of the format ``id=value``.
 
-        :rtype: string
+        :rtype: str
         """
         s = '{v}'.format(v=self.value)
         if self.resource_id is not None:

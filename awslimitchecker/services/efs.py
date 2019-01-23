@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -39,7 +39,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc  # noqa
 import logging
-from botocore.exceptions import EndpointConnectionError
+from botocore.exceptions import EndpointConnectionError, ClientError
+from botocore.vendored.requests.exceptions import ConnectTimeout
 
 from .base import _AwsService
 from ..limit import AwsLimit
@@ -65,7 +66,7 @@ class _EfsService(_AwsService):
             lim._reset_usage()
         try:
             self._find_usage_filesystems()
-        except EndpointConnectionError as ex:
+        except (EndpointConnectionError, ClientError, ConnectTimeout) as ex:
             logger.warning(
                 'Caught exception when trying to use EFS ('
                 'perhaps the EFS service is not available in this '
@@ -91,6 +92,10 @@ class _EfsService(_AwsService):
         Return all known limits for this service, as a dict of their names
         to :py:class:`~.AwsLimit` objects.
 
+        **Note:** we can't make connections to AWS in this method. So, the
+        :py:meth:`~._update_limits_from_api` method fixes this limit if we're
+        in us-east-1, which has a lower default limit.
+
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """
@@ -100,13 +105,30 @@ class _EfsService(_AwsService):
         limits['File systems'] = AwsLimit(
             'File systems',
             self,
-            10,
+            125,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EFS::FileSystem',
         )
         self.limits = limits
         return limits
+
+    def _update_limits_from_api(self):
+        """
+        Call :py:meth:`~.connect` and then check what region we're running in;
+        adjust default limits as required for regions that differ (us-east-1).
+        """
+        region_limits = {
+            'us-east-1': 70
+        }
+        self.connect()
+        rname = self.conn._client_config.region_name
+        if rname in region_limits:
+            self.limits['File systems'].default_limit = region_limits[rname]
+            logger.debug(
+                'Running in region %s; setting EFS "File systems" default '
+                'limit value to: %d', rname, region_limits[rname]
+            )
 
     def required_iam_permissions(self):
         """

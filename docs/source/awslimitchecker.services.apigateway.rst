@@ -1,5 +1,5 @@
-awslimitchecker\.services\.apigateway module
-============================================
+awslimitchecker.services.apigateway module
+==========================================
 
 .. automodule:: awslimitchecker.services.apigateway
     :members:

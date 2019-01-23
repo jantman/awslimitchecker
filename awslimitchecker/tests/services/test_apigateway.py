@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -73,14 +73,17 @@ class Test_ApigatewayService(object):
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
+            'Regional APIs per account',
+            'Private APIs per account',
+            'Edge APIs per account',
             'API keys per account',
-            'APIs per account',
             'Client certificates per account',
             'Custom authorizers per API',
             'Documentation parts per API',
             'Resources per API',
             'Stages per API',
-            'Usage plans per account'
+            'Usage plans per account',
+            'VPC Links per account'
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -104,7 +107,8 @@ class Test_ApigatewayService(object):
                 _find_usage_apis=DEFAULT,
                 _find_usage_api_keys=DEFAULT,
                 _find_usage_certs=DEFAULT,
-                _find_usage_plans=DEFAULT
+                _find_usage_plans=DEFAULT,
+                _find_usage_vpc_links=DEFAULT
             ) as mocks:
                 cls = _ApigatewayService(21, 43)
                 cls.conn = mock_conn
@@ -117,6 +121,7 @@ class Test_ApigatewayService(object):
         assert mocks['_find_usage_api_keys'].mock_calls == [call(cls)]
         assert mocks['_find_usage_certs'].mock_calls == [call(cls)]
         assert mocks['_find_usage_plans'].mock_calls == [call(cls)]
+        assert mocks['_find_usage_vpc_links'].mock_calls == [call(cls)]
 
     def test_find_usage_apis(self):
         mock_conn = Mock()
@@ -156,42 +161,64 @@ class Test_ApigatewayService(object):
                 mock_pd.side_effect = se_paginate_dict
                 cls._find_usage_apis()
         # APIs usage
-        usage = cls.limits['APIs per account'].get_current_usage()
+        usage = cls.limits['Regional APIs per account'].get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 3
+        assert usage[0].get_value() == 2
+        usage = cls.limits['Edge APIs per account'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 2
+        usage = cls.limits['Private APIs per account'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 1
         # Resources usage
         usage = cls.limits['Resources per API'].get_current_usage()
-        assert len(usage) == 3
+        assert len(usage) == 5
         assert usage[0].resource_id == 'api3'
         assert usage[0].get_value() == 0
         assert usage[1].resource_id == 'api2'
         assert usage[1].get_value() == 2
         assert usage[2].resource_id == 'api1'
         assert usage[2].get_value() == 3
+        assert usage[3].resource_id == 'api4'
+        assert usage[3].get_value() == 0
+        assert usage[4].resource_id == 'api5'
+        assert usage[4].get_value() == 0
         usage = cls.limits['Documentation parts per API'].get_current_usage()
-        assert len(usage) == 3
+        assert len(usage) == 5
         assert usage[0].resource_id == 'api3'
         assert usage[0].get_value() == 2
         assert usage[1].resource_id == 'api2'
         assert usage[1].get_value() == 1
         assert usage[2].resource_id == 'api1'
         assert usage[2].get_value() == 4
+        assert usage[3].resource_id == 'api4'
+        assert usage[3].get_value() == 1
+        assert usage[4].resource_id == 'api5'
+        assert usage[4].get_value() == 1
         usage = cls.limits['Stages per API'].get_current_usage()
-        assert len(usage) == 3
+        assert len(usage) == 5
         assert usage[0].resource_id == 'api3'
         assert usage[0].get_value() == 2
         assert usage[1].resource_id == 'api2'
         assert usage[1].get_value() == 1
         assert usage[2].resource_id == 'api1'
         assert usage[2].get_value() == 3
+        assert usage[3].resource_id == 'api4'
+        assert usage[3].get_value() == 1
+        assert usage[4].resource_id == 'api5'
+        assert usage[4].get_value() == 1
         usage = cls.limits['Custom authorizers per API'].get_current_usage()
-        assert len(usage) == 3
+        assert len(usage) == 5
         assert usage[0].resource_id == 'api3'
         assert usage[0].get_value() == 0
         assert usage[1].resource_id == 'api2'
         assert usage[1].get_value() == 2
         assert usage[2].resource_id == 'api1'
         assert usage[2].get_value() == 1
+        assert usage[3].resource_id == 'api4'
+        assert usage[3].get_value() == 0
+        assert usage[4].resource_id == 'api5'
+        assert usage[4].get_value() == 0
         assert mock_conn.mock_calls == [
             call.get_paginator('get_rest_apis'),
             call.get_paginator('get_resources'),
@@ -199,13 +226,19 @@ class Test_ApigatewayService(object):
             call.get_paginator('get_resources'),
             call.get_stages(restApiId='api2'),
             call.get_paginator('get_resources'),
-            call.get_stages(restApiId='api1')
+            call.get_stages(restApiId='api1'),
+            call.get_paginator('get_resources'),
+            call.get_stages(restApiId='api4'),
+            call.get_paginator('get_resources'),
+            call.get_stages(restApiId='api5')
         ]
         assert mock_paginator.mock_calls == [call.paginate()]
         assert mock_res_paginator.mock_calls == [
             call.paginate(restApiId='api3'),
             call.paginate(restApiId='api2'),
-            call.paginate(restApiId='api1')
+            call.paginate(restApiId='api1'),
+            call.paginate(restApiId='api4'),
+            call.paginate(restApiId='api5')
         ]
         assert mock_pd.mock_calls == [
             call(
@@ -250,10 +283,38 @@ class Test_ApigatewayService(object):
                 alc_data_path=['items'],
                 alc_marker_param='position'
             ),
+            call(
+                mock_conn.get_documentation_parts,
+                restApiId='api4',
+                alc_marker_path=['position'],
+                alc_data_path=['items'],
+                alc_marker_param='position'
+            ),
+            call(
+                mock_conn.get_authorizers,
+                restApiId='api4',
+                alc_marker_path=['position'],
+                alc_data_path=['items'],
+                alc_marker_param='position'
+            ),
+            call(
+                mock_conn.get_documentation_parts,
+                restApiId='api5',
+                alc_marker_path=['position'],
+                alc_data_path=['items'],
+                alc_marker_param='position'
+            ),
+            call(
+                mock_conn.get_authorizers,
+                restApiId='api5',
+                alc_marker_path=['position'],
+                alc_data_path=['items'],
+                alc_marker_param='position'
+            )
         ]
         assert mock_logger.mock_calls == [
             call.debug('Finding usage for APIs'),
-            call.debug('Found %d APIs', 3),
+            call.debug('Found %d APIs', 5),
             call.debug('Finding usage for per-API limits')
         ]
 
@@ -298,7 +359,7 @@ class Test_ApigatewayService(object):
                 cls._find_usage_apis()
         assert mock_logger.mock_calls == [
             call.debug('Finding usage for APIs'),
-            call.debug('Found %d APIs', 3),
+            call.debug('Found %d APIs', 5),
             call.debug('Finding usage for per-API limits'),
             call.warning(
                 'APIGateway get_stages returned more keys than present in '
@@ -378,6 +439,31 @@ class Test_ApigatewayService(object):
         assert mock_paginator.mock_calls == [call.paginate()]
         assert mock_logger.mock_calls == [
             call.debug('Finding usage for API Keys')
+        ]
+
+    def test_find_usage_vpc_links(self):
+        mock_conn = Mock()
+        res = result_fixtures.ApiGateway.vpc_links
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = res
+
+        mock_conn.get_paginator.return_value = mock_paginator
+        cls = _ApigatewayService(21, 43)
+        cls.conn = mock_conn
+        with patch('%s.logger' % pbm) as mock_logger:
+            cls._find_usage_vpc_links()
+        # APIs usage
+        usage = cls.limits[
+            'VPC Links per account'].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 3
+        assert mock_conn.mock_calls == [
+            call.get_paginator('get_vpc_links'),
+            call.get_paginator().paginate()
+        ]
+        assert mock_paginator.mock_calls == [call.paginate()]
+        assert mock_logger.mock_calls == [
+            call.debug('Finding usage for VPC Links')
         ]
 
     def test_required_iam_permissions(self):

@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 """
-dev/terraform.py
+dev/update_integration_iam_policy.py
 
-Wrapper script around Terraform, using the TerraformRunner class from
-`webhook2lambda2sqs <https://github.com/jantman/webhook2lambda2sqs>`_
-to update my integration test accounts with the current generated IAM policy.
+Script using boto3 to update my integration test accounts with the current
+generated IAM policy.
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -44,57 +43,52 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import logging
 import json
+import boto3
 import os
-from ConfigParser import SafeConfigParser
 
 from awslimitchecker.checker import AwsLimitChecker
-from webhook2lambda2sqs.terraform_runner import TerraformRunner
 
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(name)s.%(funcName)s() ] " \
          "%(message)s"
-logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+logging.basicConfig(level=logging.INFO, format=FORMAT)
 logger = logging.getLogger()
 
 
-class TerraformIAM(object):
-
-    def __init__(self):
-        logger.debug('Getting credentials')
-        scriptpath = os.path.dirname(os.path.realpath(__file__))
-        logger.debug('cd to scriptpath: %s', scriptpath)
-        os.chdir(scriptpath)
+class IntegrationIamPolicyUpdater(object):
 
     def run(self):
-        """Run the Terraform"""
+        os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
+        acct_id = boto3.client('sts').get_caller_identity()['Account']
+        logger.info('Found Account ID as: %s', acct_id)
+        iam = boto3.client('iam')
+        aliases = iam.list_account_aliases()
+        logger.info('Found account aliases as: %s', aliases)
+        # ensure it's my account, without hard-coding the ID
+        assert aliases['AccountAliases'] == ['jantman']
         pol = self.get_iam_policy()
         logger.info("Got IAM policy:\n%s\n", pol)
-        with open('iam_policy.json', 'w') as fh:
-            fh.write(pol)
-        logger.info('Wrote policy to: iam_policy.json')
-        self.run_tf()
-
-    def run_tf(self):
-        """actually run the terraform"""
-        conf = {
-            'terraform_remote_state': {
-                'backend': 's3',
-                'config': {
-                    'bucket': 'jantman-personal',
-                    'key': 'terraform/awslimitchecker-integration-iam',
-                    'region': 'us-east-1'
-                }
-            }
-        }
-        runner = TerraformRunner(conf, 'terraform')
-        runner._setup_tf(stream=True)
-        runner._run_tf('plan', cmd_args=['-input=false', '-refresh=true', '.'],
-                       stream=True)
-        res = raw_input('Does this look correct? [y|N]')
-        if res.lower().strip() != 'y':
-            logger.error('OK, aborting!')
-            return
-        runner._run_tf('apply', cmd_args=['-input=false', '-refresh=true', '.'],
-                       stream=True)
+        arn = 'arn:aws:iam::%s:policy/awslimitchecker' % acct_id
+        logger.info('Getting versions for policy: %s', arn)
+        curr_versions = iam.list_policy_versions(PolicyArn=arn)['Versions']
+        if len(curr_versions) > 3:
+            logger.info('Policy currently has %d versions; removing old ones')
+            for ver in sorted(
+                curr_versions, key=lambda x: x['CreateDate'], reverse=True
+            )[3:]:
+                if ver['IsDefaultVersion']:
+                    continue
+                logger.info('Removing policy version %s', ver['VersionId'])
+                iam.delete_policy_version(
+                    PolicyArn=arn, VersionId=ver['VersionId']
+                )
+        logger.info('Updating policy')
+        res = iam.create_policy_version(
+            PolicyArn=arn, PolicyDocument=pol, SetAsDefault=True
+        )
+        logger.info(
+            'Create policy version %s as default',
+            res['PolicyVersion']['VersionId']
+        )
 
     def get_iam_policy(self):
         """Return the current IAM policy as a json-serialized string"""
@@ -104,5 +98,4 @@ class TerraformIAM(object):
 
 
 if __name__ == "__main__":
-    t = TerraformIAM()
-    t.run()
+    IntegrationIamPolicyUpdater().run()

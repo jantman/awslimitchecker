@@ -44,7 +44,8 @@ with open('README.rst') as file:
     long_description = file.read()
 
 requires = [
-    'boto3>=1.2.3',
+    'boto3>=1.4.6',
+    'botocore>=1.6.0',
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.2',
     'versionfinder>=0.1.1',
@@ -62,12 +63,12 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 2',
-    'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
     'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Topic :: Internet',
     'Topic :: System :: Monitoring',
 ]

@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -455,6 +455,7 @@ class TestAwsLimitCheckerRunner(object):
                 'SvcBar/barlimit1': '1',
                 'SvcFoo/foo limit3': '10 (TA)',
                 'SvcFoo/zzz limit4': '34 (API)',
+                'SvcFoo/limit with usage maximums/res_id': '10 (API)'
             })
         ]
 
@@ -477,6 +478,7 @@ class TestAwsLimitCheckerRunner(object):
             call({
                 'SvcFoo/foo limit3': '10 (TA)',
                 'SvcFoo/zzz limit4': '34 (API)',
+                'SvcFoo/limit with usage maximums/res_id': '10 (API)'
             })
         ]
 
@@ -1168,7 +1170,8 @@ class TestAwsLimitCheckerRunner(object):
             [c1],
             []
         )
-        assert res == ('svcname/limitname', '(limit 12) ' + red('CRITICAL: 56'))
+        assert res == ('svcname/limitname',
+                       '(limit 12) ' + red('CRITICAL: 56'))
 
     def test_print_issue_crit_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)

@@ -1,5 +1,5 @@
-awslimitchecker\.services\.rds module
-=====================================
+awslimitchecker.services.rds module
+===================================
 
 .. automodule:: awslimitchecker.services.rds
     :members:

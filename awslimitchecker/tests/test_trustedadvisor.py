@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ##############################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -689,6 +689,66 @@ class TestPoll(object):
         assert mock_logger.mock_calls == [
             call.info('Beginning TrustedAdvisor poll'),
             call.info('TrustedAdvisor.have_ta is False; not polling TA')
+        ]
+        assert res == {}
+
+    def test_not_available(self):
+        poll_return_val = {
+            'result': {
+                'checkId': 'xxxxxxx',
+                'status': 'not_available'
+            }
+        }
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            with patch('%s._get_refreshed_check_result' % pb,
+                       autospec=True) as mock_hr:
+                mock_hr.return_value = poll_return_val
+                mock_id.return_value = (
+                    'foo',
+                    [
+                        'Region',
+                        'Service',
+                        'Limit Name',
+                        'Limit Amount',
+                        'Current Usage',
+                        'Status'
+                    ]
+                )
+                res = self.cls._poll()
+        assert self.mock_conn.mock_calls == []
+        assert mock_id.mock_calls == [call(self.cls)]
+        assert mock_hr.mock_calls == [
+            call(self.cls, 'foo')
+        ]
+        assert res == {}
+
+    def test_no_flagged_resources(self):
+        poll_return_val = {
+            'result': {
+                'checkId': 'xxxxxxx',
+                'timestamp': '2015-06-15T20:27:42Z'
+            }
+        }
+        with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
+            with patch('%s._get_refreshed_check_result' % pb,
+                       autospec=True) as mock_hr:
+                mock_hr.return_value = poll_return_val
+                mock_id.return_value = (
+                    'foo',
+                    [
+                        'Region',
+                        'Service',
+                        'Limit Name',
+                        'Limit Amount',
+                        'Current Usage',
+                        'Status'
+                    ]
+                )
+                res = self.cls._poll()
+        assert self.mock_conn.mock_calls == []
+        assert mock_id.mock_calls == [call(self.cls)]
+        assert mock_hr.mock_calls == [
+            call(self.cls, 'foo')
         ]
         assert res == {}
 

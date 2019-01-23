@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -412,7 +412,7 @@ class TestAwsLimit(object):
         assert limit._warnings == []
         assert limit._criticals == []
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_ta_unlimited(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
@@ -431,8 +431,8 @@ class TestAwsLimit(object):
         assert res is True
         assert limit._warnings == []
         assert limit._criticals == []
-        assert mock_get_thresh.mock_calls == []
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_thresh.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_pct_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -451,7 +451,7 @@ class TestAwsLimit(object):
         assert limit._warnings == [u2]
         assert limit._criticals == []
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_int_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -470,7 +470,7 @@ class TestAwsLimit(object):
         assert limit._warnings == [u1]
         assert limit._criticals == []
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_int_warn_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -489,7 +489,7 @@ class TestAwsLimit(object):
         assert limit._warnings == [u1]
         assert limit._criticals == [u3]
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_pct_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -508,7 +508,7 @@ class TestAwsLimit(object):
         assert limit._warnings == []
         assert limit._criticals == [u3]
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_int_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -527,7 +527,7 @@ class TestAwsLimit(object):
         assert limit._warnings == []
         assert limit._criticals == [u1, u3]
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_check_thresholds_pct_warn_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -546,7 +546,7 @@ class TestAwsLimit(object):
         assert limit._warnings == [u1]
         assert limit._criticals == [u3]
         assert mock_get_thresh.mock_calls == [call()]
-        assert mock_get_limit.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
 
     def test_get_warnings(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)

@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -27,7 +27,7 @@ otherwise altered, except to add the Author attribution of a contributor to
 this work. (Additional Terms pursuant to Section 7b of the AGPL v3)
 ################################################################################
 While not legally required, I sincerely request that anyone who finds
-bugs please submit them at <https://github.com/jantman/pydnstest> or
+bugs please submit them at <https://github.com/jantman/awslimitchecker> or
 to me via email, and that you send any contributions or improvements
 either as a pull request on GitHub, or to me via email.
 ################################################################################
@@ -1195,6 +1195,7 @@ class ELB(object):
                     'ListenerDescriptions': [
                         {'foo': 'bar'},
                     ],
+                    'Instances': []
                 },
                 {
                     'LoadBalancerName': 'elb-2',
@@ -1202,6 +1203,12 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
+                    'Instances': [
+                        {'InstanceId': 'i-1'},
+                        {'InstanceId': 'i-2'},
+                        {'InstanceId': 'i-3'},
+                        {'InstanceId': 'i-4'},
+                    ]
                 },
                 {
                     'LoadBalancerName': 'elb-3',
@@ -1210,6 +1217,7 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
+                    'Instances': [{'InstanceId': 'i-5'}]
                 },
                 {
                     'LoadBalancerName': 'elb-4',
@@ -1221,7 +1229,11 @@ class ELB(object):
                         {'foo': 'bar'},
                         {'foo': 'bar'},
                     ],
-                },
+                    'Instances': [
+                        {'InstanceId': 'i-6'},
+                        {'InstanceId': 'i-7'}
+                    ]
+                }
             ],
         }
 
@@ -1241,7 +1253,8 @@ class ELB(object):
             {'Max': '3', 'Name': 'classic-load-balancers'},
             {'Max': '5', 'Name': 'classic-listeners'},
             {'Name': 'invalid', 'Max': '99'},  # test invalid name
-            {'Name': 'classic-listeners'}  # test no Max
+            {'Name': 'classic-listeners'},  # test no Max
+            {'Name': 'classic-registered-instances', 'Max': '1800'}
         ]
     }
 
@@ -1264,7 +1277,10 @@ class ELB(object):
             {'Max': '9', 'Name': 'listeners-per-application-load-balancer'},
             {'Max': '10', 'Name': 'rules-per-application-load-balancer'},
             {'Name': 'invalid', 'Max': '99'},  # test invalid name
-            {'Name': 'target-groups'}  # test no Max
+            {'Name': 'target-groups'},  # test no Max
+            {'Name': 'listeners-per-network-load-balancer', 'Max': '100'},
+            {'Name': 'network-load-balancers', 'Max': '40'},
+            {'Name': 'targets-per-network-load-balancer', 'Max': '2'},
         ]
     }
 
@@ -1272,11 +1288,18 @@ class ELB(object):
         'LoadBalancers': [
             {
                 'LoadBalancerName': 'lb1',
-                'LoadBalancerArn': 'lb-arn1'
+                'LoadBalancerArn': 'lb-arn1',
+                'Type': 'application'
+            },
+            {
+                'LoadBalancerName': 'lb3',
+                'LoadBalancerArn': 'lb-arn3',
+                'Type': 'network'
             },
             {
                 'LoadBalancerName': 'lb2',
-                'LoadBalancerArn': 'lb-arn2'
+                'LoadBalancerArn': 'lb-arn2',
+                'Type': 'application'
             }
         ]
     }
@@ -1298,15 +1321,57 @@ class ELB(object):
         ]
     }
 
-    test_usage_elbv2_listeners = {
+    test_usage_alb_listeners = {
         'Listeners': [
-            {'ListenerArn': 'listener1'},
-            {'ListenerArn': 'listener2'},
-            {'ListenerArn': 'listener3'},
+            {
+                'ListenerArn': 'listener1',
+                'Certificates': []
+            },
+            {
+                'ListenerArn': 'listener2',
+                'Certificates': [
+                    {
+                        'CertificateArn': 'cert1',
+                        'IsDefault': True
+                    },
+                    {
+                        'CertificateArn': 'cert2',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert3',
+                        'IsDefault': True
+                    }
+                ]
+            },
+            {
+                'ListenerArn': 'listener3',
+                'Certificates': [
+                    {
+                        'CertificateArn': 'cert4',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert5',
+                        'IsDefault': False
+                    },
+                    {
+                        'CertificateArn': 'cert6',
+                        'IsDefault': True
+                    }
+                ]
+            },
         ]
     }
 
-    test_usage_elbv2_rules = [
+    test_usage_nlb_listeners = {
+        'Listeners': [
+            {'ListenerArn': 'listenern1'},
+            {'ListenerArn': 'listenern2'}
+        ]
+    }
+
+    test_usage_alb_rules = [
         {
             'Rules': [
                 {'RuleArn': 'listener1rule1'},
@@ -1327,6 +1392,22 @@ class ELB(object):
             ]
         }
     ]
+
+
+class Lambda(object):
+    test_lambda_response = {
+        "AccountLimit": {
+            "CodeSizeUnzipped": 262144000,
+            "UnreservedConcurrentExecutions": 1000,
+            "ConcurrentExecutions": 1000,
+            "CodeSizeZipped": 52428800,
+            "TotalCodeSize": 80530636800
+        },
+        "AccountUsage": {
+            "FunctionCount": 12,
+            "TotalCodeSize": 2167198
+        }
+    }
 
 
 class ElastiCache(object):
@@ -2434,7 +2515,10 @@ class ApiGateway(object):
                     ],
                     'binaryMediaTypes': [
                         'string',
-                    ]
+                    ],
+                    'endpointConfiguration': {
+                        'types': ['PRIVATE']
+                    }
                 },
                 {
                     'id': 'api2',
@@ -2443,7 +2527,10 @@ class ApiGateway(object):
                     'createdDate': datetime(2016, 1, 1),
                     'version': 'api2ver',
                     'warnings': [],
-                    'binaryMediaTypes': []
+                    'binaryMediaTypes': [],
+                    'endpointConfiguration': {
+                        'types': ['REGIONAL']
+                    }
                 }
             ],
             'NextToken': 'string'
@@ -2461,8 +2548,43 @@ class ApiGateway(object):
                     ],
                     'binaryMediaTypes': [
                         'string',
-                    ]
+                    ],
+                    'endpointConfiguration': {
+                        'types': ['REGIONAL']
+                    }
                 },
+                {
+                    'id': 'api4',
+                    'name': 'api4name',
+                    'description': 'api4desc',
+                    'createdDate': datetime(2017, 1, 2),
+                    'version': 'api4ver',
+                    'warnings': [
+                        'string',
+                    ],
+                    'binaryMediaTypes': [
+                        'string',
+                    ],
+                    'endpointConfiguration': {
+                        'types': ['EDGE']
+                    }
+                },
+                {
+                    'id': 'api5',
+                    'name': 'api5name',
+                    'description': 'api5desc',
+                    'createdDate': datetime(2017, 1, 2),
+                    'version': 'api5ver',
+                    'warnings': [
+                        'string',
+                    ],
+                    'binaryMediaTypes': [
+                        'string',
+                    ],
+                    'endpointConfiguration': {
+                        'types': ['EDGE']
+                    }
+                }
             ]
         }
     ]
@@ -2813,10 +2935,16 @@ class ApiGateway(object):
 
     resources_api3 = [{'items': []}]
 
+    resources_api4 = [{'items': []}]
+
+    resources_api5 = [{'items': []}]
+
     get_resources = {
         'api1': resources_api1,
         'api2': resources_api2,
-        'api3': resources_api3
+        'api3': resources_api3,
+        'api4': resources_api4,
+        'api5': resources_api5
     }
 
     doc_parts = {
@@ -2902,7 +3030,33 @@ class ApiGateway(object):
                 },
                 'properties': 'string'
             }
-        ]
+        ],
+        'api4': [
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'API',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            }
+        ],
+        'api5': [
+            {
+                'id': 'string',
+                'location': {
+                    'type': 'API',
+                    'path': 'string',
+                    'method': 'string',
+                    'statusCode': 'string',
+                    'name': 'string'
+                },
+                'properties': 'string'
+            }
+        ],
     }
 
     stages = {
@@ -2952,6 +3106,16 @@ class ApiGateway(object):
             'item': [
                 {'deploymentId': 'blam'},
                 {'deploymentId': 'blarg'}
+            ]
+        },
+        'api4': {
+            'item': [
+                {'deploymentId': 'baz'}
+            ]
+        },
+        'api5': {
+            'item': [
+                {'deploymentId': 'baz'}
             ]
         }
     }
@@ -3003,7 +3167,9 @@ class ApiGateway(object):
                 'authorizerResultTtlInSeconds': 123
             }
         ],
-        'api3': []
+        'api3': [],
+        'api4': [],
+        'api5': []
     }
 
     plans = [
@@ -3124,6 +3290,35 @@ class ApiGateway(object):
                     'createdDate': datetime(2015, 1, 1),
                     'expirationDate': datetime(2015, 1, 1)
                 },
+            ]
+        }
+    ]
+
+    vpc_links = [
+        {
+            'items': [
+                {
+                    'id': 'vpcl-1',
+                    'name': 'link1',
+                    'description': 'desc1',
+                    'status': 'AVAILABLE'
+                }
+            ]
+        },
+        {
+            'items': [
+                {
+                    'id': 'vpcl-2',
+                    'name': 'link2',
+                    'description': 'desc2',
+                    'status': 'AVAILABLE'
+                },
+                {
+                    'id': 'vpcl-3',
+                    'name': 'link3',
+                    'description': 'desc3',
+                    'status': 'PENDING'
+                }
             ]
         }
     ]
@@ -3344,3 +3539,170 @@ class DynamoDB(object):
     type(test_find_usage_dynamodb[0]).name = 'table1'
     type(test_find_usage_dynamodb[1]).name = 'table2'
     type(test_find_usage_dynamodb[2]).name = 'table3'
+
+
+class Route53(object):
+    test_get_hosted_zones = {
+        "HostedZones": [
+            {
+                'Config': {
+                    'PrivateZone': True
+                },
+                'Id': '/hostedzone/ABC',
+                'Name': 'abc.example.com.'
+            },
+            {
+                'Config': {
+                    'PrivateZone': True
+                },
+                'Id': '/hostedzone/DEF',
+                'Name': 'def.example.com.'
+            },
+            {
+                'Config': {
+                    'PrivateZone': False
+                },
+                'Id': '/hostedzone/GHI',
+                'Name': 'ghi.example.com.'
+            }
+        ]
+    }
+
+    test_get_hosted_zone_limit = {
+        '/hostedzone/ABC': {
+            'MAX_RRSETS_BY_ZONE': {
+                'Count': 7500,
+                'Limit': {
+                    'Type': 'MAX_RRSETS_BY_ZONE',
+                    'Value': 10000
+                }
+            },
+            'MAX_VPCS_ASSOCIATED_BY_ZONE': {
+                'Count': 10,
+                'Limit': {
+                    'Type': 'MAX_VPCS_ASSOCIATED_BY_ZONE',
+                    'Value': 100
+                }
+            }
+        },
+        '/hostedzone/DEF': {
+            'MAX_RRSETS_BY_ZONE': {
+                'Count': 2500,
+                'Limit': {
+                    'Type': 'MAX_RRSETS_BY_ZONE',
+                    'Value': 10001
+                }
+            },
+            'MAX_VPCS_ASSOCIATED_BY_ZONE': {
+                'Count': 2,
+                'Limit': {
+                    'Type': 'MAX_VPCS_ASSOCIATED_BY_ZONE',
+                    'Value': 101
+                }
+            }
+        },
+        '/hostedzone/GHI': {
+            'MAX_RRSETS_BY_ZONE': {
+                'Count': 5678,
+                'Limit': {
+                    'Type': 'MAX_RRSETS_BY_ZONE',
+                    'Value': 10002
+                }
+            }
+        }
+    }
+
+
+class CloudTrail(object):
+
+    mock_describe_trails = {
+            'trailList': [
+                {
+                    'Name': 'trail1',
+                    'S3BucketName': 'string',
+                    'S3KeyPrefix': 'string',
+                    'SnsTopicName': 'string',
+                    'SnsTopicARN': 'string',
+                    'IncludeGlobalServiceEvents': True,
+                    'IsMultiRegionTrail': True,
+                    'HomeRegion': 'thisregion',
+                    'TrailARN': 'string',
+                    'LogFileValidationEnabled': True,
+                    'CloudWatchLogsLogGroupArn': 'string',
+                    'CloudWatchLogsRoleArn': 'string',
+                    'KmsKeyId': 'string',
+                    'HasCustomEventSelectors': False
+                },
+                {
+                    'Name': 'trail2',
+                    'S3BucketName': 'string',
+                    'S3KeyPrefix': 'string',
+                    'SnsTopicName': 'string',
+                    'SnsTopicARN': 'string',
+                    'IncludeGlobalServiceEvents': True,
+                    'IsMultiRegionTrail': True,
+                    'HomeRegion': 'thisregion',
+                    'TrailARN': 'string',
+                    'LogFileValidationEnabled': True,
+                    'CloudWatchLogsLogGroupArn': 'string',
+                    'CloudWatchLogsRoleArn': 'string',
+                    'KmsKeyId': 'string',
+                    'HasCustomEventSelectors': True
+                },
+                {
+                    'Name': 'trail3',
+                    'S3BucketName': 'string',
+                    'S3KeyPrefix': 'string',
+                    'SnsTopicName': 'string',
+                    'SnsTopicARN': 'string',
+                    'IncludeGlobalServiceEvents': True,
+                    'IsMultiRegionTrail': True,
+                    'HomeRegion': 'otherRegion',
+                    'TrailARN': 'string',
+                    'LogFileValidationEnabled': True,
+                    'CloudWatchLogsLogGroupArn': 'string',
+                    'CloudWatchLogsRoleArn': 'string',
+                    'KmsKeyId': 'string',
+                    'HasCustomEventSelectors': True
+                }
+            ],
+    }
+
+    mock_get_event_selectors = {
+            'TrailARN': 'string',
+            'EventSelectors': [
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True,
+                    'DataResources': [
+                        {
+                            'Type': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        },
+                        {
+                            'Type': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        },
+                        {
+                            'Type': 'string',
+                            'Values': [
+                                'string',
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True,
+                    'DataResources': []
+                },
+                {
+                    'ReadWriteType': 'ReadOnly',
+                    'IncludeManagementEvents': True
+                }
+            ]
+    }

@@ -95,6 +95,18 @@ Guidelines
   `fixes this <https://github.com/isaacs/github/issues/406>`_, we'll live with
   a potentially messy git log in order to keep the history.
 
+.. _development.instance_types:
+
+Adding New EC2 Instance Types
+-----------------------------
+
+1. Run ``dev/missing_instance_types.py`` to find all EC2 Instance types listed in
+   the EC2 Pricing API that aren't present in awslimitchecker and output a list of them.
+2. In ``services/ec2.py`` update the constants in :py:meth:`~._Ec2Service._instance_types` accordingly.
+3. Check the `EC2 Instance Type limits page <https://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2>`__
+   for any new types that have non-default limits, and update :py:meth:`~._Ec2Service._get_limits_instances` accordingly.
+4. Update ``tests/services/test_ec2.py`` as needed.
+
 .. _development.adding_checks:
 
 Adding New Limits and Checks to Existing Services
@@ -125,6 +137,14 @@ by Trusted Advisor, or legacy cases where Trusted Advisor support is retroactive
 added to a limit already in awslimitchecker, you must pass the
 ``ta_service_name`` and ``ta_limit_name`` parameters to the :py:class:`~.AwsLimit`
 constructor, specifying the string values that are returned by Trusted Advisor.
+
+**Note on services with per-resource limits:** Some AWS services, such as Route53,
+set limits on each individual resource (i.e. each Hosted Zone, for Route53) instead
+of globally for all resources in a region or account. When this is done, the per-resource
+limit should be provided as the ``maximum`` argument to the :py:class:`~.AwsLimitUsage`
+class; :py:class:`~.AwsLimit` will then properly determine warnings/criticals for the
+limit. For further information, see the `5.0.0 release notes <https://github.com/jantman/awslimitchecker/releases/tag/5.0.0>`_
+and `PR #345 <https://github.com/jantman/awslimitchecker/pull/345>`_ where this was initially implemented.
 
 .. _development.adding_services:
 
@@ -256,7 +276,7 @@ work needed. See the guidelines below for information.
   awslimitchecker via Python's packaging system (i.e. with ``pip``), its current version and source will be automatically detected. This
   suffices for the AGPL source code offer provision, so long as it's displayed to users and the currently-running source is unmodified.
 * If you wish to modify the source code of awslimitchecker, you need to do is ensure that :py:meth:`~awslimitchecker.version._get_version_info`
-  always returns correct and accutate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
+  always returns correct and accurate information (a publicly-accessible URL to the exact version of the running source code, and a version number).
   If you install your modified version directly from an editable (i.e. ``pip install -e``), publicly-accessible Git repository, and ensure
   that changes are available in the repository before they are present in the code running for your users, this should be automatically
   detected by awslimitchecker and the correct URL provided. It is strongly recommended that any such repository is a fork of the
@@ -322,74 +342,4 @@ This means that after 1.0.0, major version numbers will likely increase rather q
 Release Checklist
 -----------------
 
-Note that to perform releases, you will need:
-
-* Your Github access token exported as the ``GITHUB_TOKEN`` environment variable.
-* `pandoc <http://pandoc.org/>`_ installed on your local machine and in your ``PATH``.
-
-1. Open an issue for the release (the checklist below may help); cut a branch off ``develop`` for that issue.
-2. Build docs locally (``tox -e localdocs``) and ensure they're current; commit any changes.
-3. Run ``dev/terraform.py`` in the awslimitchecker source directory to update the
-   integration test user's IAM policy with what is actually being reported by the
-   current code.
-4. Ensure that Travis tests are passing in all environments.
-5. Ensure that test coverage is no less than the last release (ideally, 100%).
-6. Build docs for the branch (locally) and ensure they look correct. Commit any changes.
-7. Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned.
-8. Run ``dev/release.py gist`` to convert the CHANGES.rst entry for the current version to Markdown and upload it as a Github Gist. View the gist and ensure that the Markdown rendered properly and all links are valid. Iterate on this until the rendered version looks correct.
-9. Commit all changes, mention the issue in the commit, and push to GitHub.
-10. Confirm that README.rst renders correctly on GitHub.
-11. Upload package to testpypi, confirm that README.rst renders correctly.
-
-   * Make sure your ~/.pypirc file is correct (a repo called ``test`` for https://testpypi.python.org/pypi).
-   * ``rm -Rf dist``
-   * ``python setup.py sdist bdist_wheel``
-   * ``twine upload -r test dist/*``
-   * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
-
-12. Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
-13. Tag the release in Git, push tag to GitHub:
-
-   * tag the release with a signed tag: ``git tag -s -a X.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
-   * Verify the signature on the tag, just to be sure: ``git tag -v X.Y.Z``
-   * push the tag to GitHub: ``git push origin X.Y.Z``
-
-14. Upload package to live pypi:
-
-    * ``twine upload dist/*``
-
-15. make sure any GH issues fixed in the release were closed.
-16. merge master back into develop
-17. Run ``dev/release.py release`` to create the release on GitHub.
-18. Ensure that the issues are moved to Done on the `waffle.io board <https://waffle.io/jantman/awslimitchecker>`_
-19. Blog, tweet, etc. about the new version.
-
-Release Issue Template
-++++++++++++++++++++++
-
-Issue title: ``x.y.z Release``
-
-Issue content:
-
-.. code-block:: none
-
-    * [ ] Cut a branch off ``develop`` for this issue.
-    * [ ] Build docs locally (``tox -e localdocs``) and ensure they're current; commit any changes.
-    * [ ] Run ``dev/terraform.py`` in the awslimitchecker source directory to update the integration test user's IAM policy with what is actually being reported by the current code.
-    * [ ] Ensure that Travis tests are passing in all environments.
-    * [ ] Ensure that test coverage is no less than the last release (ideally, 100%).
-    * [ ] Build docs for the branch (locally) and ensure they look correct. Commit any changes.
-    * [ ] Increment the version number in awslimitchecker/version.py and add version and release date to CHANGES.rst. Ensure that there are CHANGES.rst entries for all major changes since the last release, and that any breaking changes or new required IAM permissions are explicitly mentioned.
-    * [ ] Run ``dev/release.py gist`` to convert the CHANGES.rst entry for the current version to Markdown and upload it as a Github Gist. View the gist and ensure that the Markdown rendered properly and all links are valid. Iterate on this until the rendered version looks correct.
-    * [ ] Commit all changes, mention the issue in the commit, and push to GitHub.
-    * [ ] Confirm that README.rst renders correctly on GitHub.
-    * [ ] Upload package to testpypi, confirm that README.rst renders correctly.
-
-       * Make sure your ~/.pypirc file is correct (a repo called ``test`` for https://testpypi.python.org/pypi).
-       * ``rm -Rf dist``
-       * ``python setup.py sdist bdist_wheel``
-       * ``twine upload -r test dist/*``
-       * Check that the README renders at https://testpypi.python.org/pypi/awslimitchecker
-
-    * [ ] Create a pull request for the release to be merged into master. Upon successful Travis build, merge it.
-    * [ ] Continue at [#13 on the Release Checklist](http://awslimitchecker.readthedocs.io/en/develop/development.html#release-checklist).
+To perform a release, run ``dev/release.py``.

@@ -5,7 +5,7 @@ The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
 
 ################################################################################
-Copyright 2015-2017 Jason Antman <jason@jasonantman.com>
+Copyright 2015-2018 Jason Antman <jason@jasonantman.com>
 
     This file is part of awslimitchecker, also known as awslimitchecker.
 
@@ -76,7 +76,9 @@ class Test_Ec2Service(object):
     def test_instance_types(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
-        assert len(types) == 76
+        # NOTE hi1.4xlarge is no longer in the instance type listings,
+        # but some accounts might still have a limit for it
+        assert len(types) == 175
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -90,6 +92,7 @@ class Test_Ec2Service(object):
         assert 'p2.16xlarge' in types
         assert 'm4.16xlarge' in types
         assert 'x1.32xlarge' in types
+        assert 'z1d.12xlarge' in types
 
     def test_get_limits(self):
         cls = _Ec2Service(21, 43)
@@ -135,7 +138,7 @@ class Test_Ec2Service(object):
     def test_get_limits_instances(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances()
-        assert len(limits) == 77
+        assert len(limits) == 176
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
@@ -322,7 +325,7 @@ class Test_Ec2Service(object):
                 mock_res_inst_count.return_value = ri_count
                 cls._find_usage_instances()
         assert mock_t2_micro.mock_calls == [call._add_current_usage(
-            35,
+            36,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_r3_2xlarge.mock_calls == [call._add_current_usage(
@@ -334,11 +337,11 @@ class Test_Ec2Service(object):
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_c4_large.mock_calls == [call._add_current_usage(
-            0,
+            4,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_all_ec2.mock_calls == [call._add_current_usage(
-            48,
+            53,
             aws_type='AWS::EC2::Instance'
         )]
         assert mock_inst_usage.mock_calls == [call(cls)]

@@ -72,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'awslimitchecker'
-copyright = u'2015-2017 Jason Antman'
+copyright = u'2015-2018 Jason Antman'
 author = u'Jason Antman'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -315,6 +315,8 @@ linkcheck_ignore = [
     r'https?://.*readthedocs\.org.*',
     r'https?://.*readthedocs\.io.*',
     r'https?://waffle\.io.*',
+    r'https?://github\.com/pytest-dev/pytest/blob/master/CHANGELOG\.rst',
+    r'https?://github\.com/jantman/awslimitchecker/releases/tag/.*'
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734
