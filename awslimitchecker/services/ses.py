@@ -119,7 +119,6 @@ class _SesService(_AwsService):
             else:
                 logger.warn('Skipping SES: %s', str(ex))
                 return
-        
         self.limits['Daily sending quota']._set_api_limit(resp['Max24HourSend'])
 
     def required_iam_permissions(self):
