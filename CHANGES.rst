@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.0.1 (2019-01-27)
+------------------
+
+* `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`_ - Fix uncaught ``ClientError`` exception when checking SES Send Quota in certain regions. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`_ for `PR #376 <https://github.com/jantman/awslimitchecker/pull/376>`_.
+
 6.0.0 (2019-01-01)
 ------------------
 
