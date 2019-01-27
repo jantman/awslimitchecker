@@ -66,14 +66,16 @@ class _SesService(_AwsService):
             self.connect()
             resp = self.conn.get_send_quota()
         except EndpointConnectionError as ex:
-            logger.warn('Skipping SES: %s', str(ex))
+            logger.warning('Skipping SES: %s', str(ex))
             return
         except ClientError as ex:
-            if 'AccessDenied' not in str(ex):
-                raise ex
-            else:
-                logger.warn('Skipping SES: %s', str(ex))
+            if (
+                ex.response['Error']['Code'] == 'AccessDenied' and
+                ex.response['Error']['Message'] == 'Unknown'
+            ):
+                logger.warning('Skipping SES: %s', ex)
                 return
+            raise
         self.limits['Daily sending quota']._add_current_usage(
             resp['SentLast24Hours']
         )
@@ -111,14 +113,16 @@ class _SesService(_AwsService):
             self.connect()
             resp = self.conn.get_send_quota()
         except EndpointConnectionError as ex:
-            logger.warn('Skipping SES: %s', str(ex))
+            logger.warning('Skipping SES: %s', str(ex))
             return
         except ClientError as ex:
-            if 'AccessDenied' not in str(ex):
-                raise ex
-            else:
-                logger.warn('Skipping SES: %s', str(ex))
+            if (
+                    ex.response['Error']['Code'] == 'AccessDenied' and
+                    ex.response['Error']['Message'] == 'Unknown'
+            ):
+                logger.warning('Skipping SES: %s', ex)
                 return
+            raise
         self.limits['Daily sending quota']._set_api_limit(resp['Max24HourSend'])
 
     def required_iam_permissions(self):
