@@ -71,6 +71,7 @@ class _VpcService(_AwsService):
         self._find_usage_gateways()
         self._find_usage_nat_gateways(subnet_to_az)
         self._find_usages_vpn_gateways()
+        self._find_usage_network_interfaces()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -210,6 +211,20 @@ class _VpcService(_AwsService):
             aws_type='AWS::EC2::VPNGateway'
         )
 
+    def _find_usage_network_interfaces(self):
+        """find usage of network interfaces"""
+        enis = paginate_dict(
+            self.conn.describe_network_interfaces,
+            alc_marker_path=['NextToken'],
+            alc_data_path=['NetworkInterfaces'],
+            alc_marker_param='NextToken'
+        )
+
+        self.limits['Network interfaces per Region']._add_current_usage(
+            len(enis),
+            aws_type='AWS::EC2::NetworkInterface'
+        )
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -303,6 +318,15 @@ class _VpcService(_AwsService):
             'Virtual private gateways',
             self,
             5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::VPNGateway'
+        )
+
+        limits['Network interfaces per Region'] = AwsLimit(
+            'Network interfaces per Region',
+            self,
+            350,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::VPNGateway'

@@ -81,6 +81,7 @@ class Test_VpcService(object):
             'Rules per network ACL',
             'Route tables per VPC',
             'Virtual private gateways',
+            'Network interfaces per Region',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -111,7 +112,8 @@ class Test_VpcService(object):
                     _find_usage_route_tables=DEFAULT,
                     _find_usage_gateways=DEFAULT,
                     _find_usage_nat_gateways=DEFAULT,
-                    _find_usages_vpn_gateways=DEFAULT
+                    _find_usages_vpn_gateways=DEFAULT,
+                    _find_usage_network_interfaces=DEFAULT,
             ) as mocks:
                 mocks['_find_usage_subnets'].return_value = sn
                 cls = _VpcService(21, 43)
@@ -128,6 +130,7 @@ class Test_VpcService(object):
                 '_find_usage_route_tables',
                 '_find_usage_gateways',
                 '_find_usages_vpn_gateways',
+                '_find_usage_network_interfaces',
         ]:
             assert mocks[x].mock_calls == [call()]
         assert mocks['_find_usage_nat_gateways'].mock_calls == [call(sn)]
@@ -337,6 +340,25 @@ class Test_VpcService(object):
                     ]
                 }
             ]),
+        ]
+
+    def test_find_usage_network_interfaces(self):
+        response = result_fixtures.VPC.test_find_usage_network_interfaces
+
+        mock_conn = Mock()
+        mock_conn.describe_network_interfaces.return_value = response
+
+        cls = _VpcService(21, 43)
+        cls.conn = mock_conn
+
+        cls._find_usage_network_interfaces()
+
+        assert len(cls.limits['Network interfaces per Region']
+                   .get_current_usage()) == 1
+        assert cls.limits['Network interfaces per Region'].get_current_usage()[
+            0].get_value() == 1
+        assert mock_conn.mock_calls == [
+            call.describe_network_interfaces(),
         ]
 
     def test_required_iam_permissions(self):
