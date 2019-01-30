@@ -376,4 +376,5 @@ class _VpcService(_AwsService):
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
             'ec2:DescribeVpnGateways',
+            'ec2:DescribeNetworkInterfaces',
         ]

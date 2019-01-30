@@ -420,4 +420,5 @@ class Test_VpcService(object):
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
             'ec2:DescribeVpnGateways',
+            'ec2:DescribeNetworkInterfaces',
         ]
