@@ -615,6 +615,40 @@ class VPC(object):
         ]
     }
 
+    test_update_limits_from_api_high_max_instances = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'max-instances',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '400'
+                    }
+                ]
+            }
+        ]
+    }
+
+    test_update_limits_from_api_low_max_instances = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'max-instances',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '50'
+                    }
+                ]
+            }
+        ]
+    }
+
 
 class RDS(object):
     test_find_usage_instances = []

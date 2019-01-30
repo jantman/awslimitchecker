@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.vpc import _VpcService
+from awslimitchecker.services.vpc import _VpcService, DEFAULT_ENI_LIMIT
 
 from botocore.exceptions import ClientError
 
@@ -360,6 +360,56 @@ class Test_VpcService(object):
         assert mock_conn.mock_calls == [
             call.describe_network_interfaces(),
         ]
+
+    def test_update_limits_from_api_high_max_instances(self):
+        fixtures = result_fixtures.VPC()
+        response = fixtures.test_update_limits_from_api_high_max_instances
+
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_account_attributes.return_value = response
+
+        cls = _VpcService(21, 43)
+        cls.resource_conn = mock_conn
+        cls.conn = mock_client_conn
+        with patch('awslimitchecker.services.vpc.logger') as mock_logger:
+            cls._update_limits_from_api()
+        assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_account_attributes()
+        ]
+        assert mock_logger.mock_calls == [
+            call.info("Querying EC2 DescribeAccountAttributes for limits"),
+            call.debug('Done setting limits from API')
+        ]
+        assert cls.limits['Network interfaces per Region'].api_limit == 400
+        assert cls.limits['Network interfaces per Region'].get_limit() == 400
+
+    def test_update_limits_from_api_low_max_instances(self):
+        fixtures = result_fixtures.VPC()
+        response = fixtures.test_update_limits_from_api_low_max_instances
+
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_account_attributes.return_value = response
+
+        cls = _VpcService(21, 43)
+        cls.resource_conn = mock_conn
+        cls.conn = mock_client_conn
+        with patch('awslimitchecker.services.vpc.logger') as mock_logger:
+            cls._update_limits_from_api()
+        assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_account_attributes()
+        ]
+        assert mock_logger.mock_calls == [
+            call.info("Querying EC2 DescribeAccountAttributes for limits"),
+            call.debug('Done setting limits from API')
+        ]
+
+        limit_name = 'Network interfaces per Region'
+        assert cls.limits[limit_name].api_limit is None
+        assert cls.limits[limit_name].get_limit() == DEFAULT_ENI_LIMIT
 
     def test_required_iam_permissions(self):
         cls = _VpcService(21, 43)
