@@ -48,6 +48,8 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_ENI_LIMIT = 350
+
 
 class _VpcService(_AwsService):
 
@@ -71,6 +73,7 @@ class _VpcService(_AwsService):
         self._find_usage_gateways()
         self._find_usage_nat_gateways(subnet_to_az)
         self._find_usages_vpn_gateways()
+        self._find_usage_network_interfaces()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -210,6 +213,20 @@ class _VpcService(_AwsService):
             aws_type='AWS::EC2::VPNGateway'
         )
 
+    def _find_usage_network_interfaces(self):
+        """find usage of network interfaces"""
+        enis = paginate_dict(
+            self.conn.describe_network_interfaces,
+            alc_marker_path=['NextToken'],
+            alc_data_path=['NetworkInterfaces'],
+            alc_marker_param='NextToken'
+        )
+
+        self.limits['Network interfaces per Region']._add_current_usage(
+            len(enis),
+            aws_type='AWS::EC2::NetworkInterface'
+        )
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -307,8 +324,41 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::VPNGateway'
         )
+
+        limits['Network interfaces per Region'] = AwsLimit(
+            'Network interfaces per Region',
+            self,
+            DEFAULT_ENI_LIMIT,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::NetworkInterface'
+        )
         self.limits = limits
         return limits
+
+    def _update_limits_from_api(self):
+        """
+        Query EC2's DescribeAccountAttributes API action and
+        update the network interface limit, as needed. Updates ``self.limits``.
+
+        More info on the network interface limit, from the docs:
+        'This limit is the greater of either the default limit (350) or your
+        On-Demand Instance limit multiplied by 5.
+        The default limit for On-Demand Instances is 20.'
+        """
+        self.connect()
+        self.connect_resource()
+        logger.info("Querying EC2 DescribeAccountAttributes for limits")
+        attribs = self.conn.describe_account_attributes()
+        for attrib in attribs['AccountAttributes']:
+            if attrib['AttributeName'] == 'max-instances':
+                val = attrib['AttributeValues'][0]['AttributeValue']
+                if int(val) * 5 > DEFAULT_ENI_LIMIT:
+                    limit_name = 'Network interfaces per Region'
+                    self.limits[limit_name]._set_api_limit(int(val))
+                else:
+                    continue
+        logger.debug("Done setting limits from API")
 
     def required_iam_permissions(self):
         """
@@ -326,4 +376,5 @@ class _VpcService(_AwsService):
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
             'ec2:DescribeVpnGateways',
+            'ec2:DescribeNetworkInterfaces',
         ]
