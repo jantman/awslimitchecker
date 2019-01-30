@@ -538,19 +538,20 @@ Daily sending quota |check|         |check| 200
 VPC
 ----
 
-======================== =============== ======= ===
-Limit                    Trusted Advisor API     Default
-======================== =============== ======= ===
-Entries per route table                          50 
-Internet gateways        |check|                 5  
-NAT Gateways per AZ                              5  
-Network ACLs per VPC                             200
-Route tables per VPC                             200
-Rules per network ACL                            20 
-Subnets per VPC                                  200
-VPCs                     |check|                 5  
-Virtual private gateways                         5  
-======================== =============== ======= ===
+============================= =============== ======= ===
+Limit                         Trusted Advisor API     Default
+============================= =============== ======= ===
+Entries per route table                               50 
+Internet gateways             |check|                 5  
+NAT Gateways per AZ                                   5  
+Network ACLs per VPC                                  200
+Network interfaces per Region                 |check| 350
+Route tables per VPC                                  200
+Rules per network ACL                                 20 
+Subnets per VPC                                       200
+VPCs                          |check|                 5  
+Virtual private gateways                              5  
+============================= =============== ======= ===
 
 
 
