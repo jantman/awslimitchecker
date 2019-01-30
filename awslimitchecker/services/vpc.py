@@ -356,8 +356,6 @@ class _VpcService(_AwsService):
                 if int(val) * 5 > DEFAULT_ENI_LIMIT:
                     limit_name = 'Network interfaces per Region'
                     self.limits[limit_name]._set_api_limit(int(val))
-                else:
-                    continue
         logger.debug("Done setting limits from API")
 
     def required_iam_permissions(self):

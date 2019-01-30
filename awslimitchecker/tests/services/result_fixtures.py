@@ -645,6 +645,14 @@ class VPC(object):
                         'AttributeValue': '50'
                     }
                 ]
+            },
+            {
+                'AttributeName': 'something-else',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '1'
+                    }
+                ]
             }
         ]
     }
