@@ -152,10 +152,10 @@ or Trusted Advisor data, run with ``--list-defaults``:
 
    (venv)$ awslimitchecker --list-defaults
    ApiGateway/API keys per account                        500
-   ApiGateway/APIs per account                            60
    ApiGateway/Client certificates per account             60
    ApiGateway/Custom authorizers per API                  10
    ApiGateway/Documentation parts per API                 2000
+   ApiGateway/Edge APIs per account                       120
    (...)
    Lambda/Function Count                                  None
    (...)
@@ -178,10 +178,10 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 
    (venv)$ awslimitchecker -l
    ApiGateway/API keys per account                              500
-   ApiGateway/APIs per account                                  60
    ApiGateway/Client certificates per account                   60
    ApiGateway/Custom authorizers per API                        10
    ApiGateway/Documentation parts per API                       2000
+   ApiGateway/Edge APIs per account                             120
    (...)
    AutoScaling/Auto Scaling groups                              1500 (API)
    (...)
@@ -203,10 +203,10 @@ from Trusted Advisor for all commands.
 
    (venv)$ awslimitchecker -l --skip-ta
    ApiGateway/API keys per account                              500
-   ApiGateway/APIs per account                                  60
    ApiGateway/Client certificates per account                   60
    ApiGateway/Custom authorizers per API                        10
    ApiGateway/Documentation parts per API                       2000
+   ApiGateway/Edge APIs per account                             120
    (...)
    AutoScaling/Auto Scaling groups                              1500 (API)
    (...)
