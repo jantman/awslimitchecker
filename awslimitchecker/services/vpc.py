@@ -329,7 +329,7 @@ class _VpcService(_AwsService):
             350,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::EC2::VPNGateway'
+            limit_type='AWS::EC2::NetworkInterface'
         )
         self.limits = limits
         return limits
