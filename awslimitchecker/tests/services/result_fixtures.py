@@ -551,6 +551,112 @@ class VPC(object):
         ]
     }
 
+    test_find_usage_network_interfaces = {
+        'NetworkInterfaces': [
+            {
+                'Association': {
+                    'AllocationId': 'allocation-123',
+                    'AssociationId': 'association-123',
+                    'IpOwnerId': '123456789012',
+                    'PublicDnsName': 'string',
+                    'PublicIp': '50.0.0.0'
+                },
+                'Attachment': {
+                    'AttachTime': datetime(2015, 1, 1),
+                    'AttachmentId': 'eni-123',
+                    'DeleteOnTermination': True,
+                    'DeviceIndex': 123,
+                    'InstanceId': 'i-123',
+                    'InstanceOwnerId': '123456789012',
+                    'Status': 'attaching'
+                },
+                'AvailabilityZone': 'us-east-2a',
+                'Description': 'NetworkInface',
+                'Groups': [
+                    {
+                        'GroupName': 'groupName',
+                        'GroupId': 'sg-123'
+                    },
+                ],
+                'InterfaceType': 'interface',
+                'Ipv6Addresses': [],
+                'MacAddress': 'address',
+                'NetworkInterfaceId': 'eni-123',
+                'OwnerId': 'string',
+                'PrivateDnsName': 'string',
+                'PrivateIpAddress': 'string',
+                'PrivateIpAddresses': [
+                    {
+                        'Association': {
+                            'AllocationId': 'allocation-123',
+                            'AssociationId': 'association-123',
+                            'IpOwnerId': '123456789012',
+                            'PublicDnsName': 'string',
+                            'PublicIp': '10.0.0.0'
+                        },
+                        'Primary': True,
+                        'PrivateDnsName': 'string',
+                        'PrivateIpAddress': 'string'
+                    },
+                ],
+                'RequesterId': '123456789012',
+                'RequesterManaged': True,
+                'SourceDestCheck': True,
+                'Status': 'available',
+                'SubnetId': 'subnet-123',
+                'TagSet': [
+                    {
+                        'Key': 'tagkey',
+                        'Value': 'tagvalue'
+                    },
+                ],
+                'VpcId': 'string'
+            },
+        ]
+    }
+
+    test_update_limits_from_api_high_max_instances = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'max-instances',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '400'
+                    }
+                ]
+            }
+        ]
+    }
+
+    test_update_limits_from_api_low_max_instances = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'max-instances',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '50'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'something-else',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '1'
+                    }
+                ]
+            }
+        ]
+    }
+
 
 class RDS(object):
     test_find_usage_instances = []
