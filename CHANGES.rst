@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.1.2 (2019-02-19)
+------------------
+
+* `PR #387 <https://github.com/jantman/awslimitchecker/pull/387>`_ - Fix bug in calculation of VPC "Network interfaces per Region" limit, added in 6.1.0 (`PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__). Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
+
 6.1.1 (2019-02-15)
 ------------------
 
@@ -9,7 +14,7 @@ Changelog
 6.1.0 (2019-01-30)
 ------------------
 
-* `PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`_ - Add support for EC2/VPC ``Network interfaces per Region`` limit. Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
+* `PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__ - Add support for EC2/VPC ``Network interfaces per Region`` limit. Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
 
 6.0.1 (2019-01-27)
 ------------------
