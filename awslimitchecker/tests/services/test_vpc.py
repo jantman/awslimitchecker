@@ -356,7 +356,7 @@ class Test_VpcService(object):
         assert len(cls.limits['Network interfaces per Region']
                    .get_current_usage()) == 1
         assert cls.limits['Network interfaces per Region'].get_current_usage()[
-            0].get_value() == 1
+            0].get_value() == 2
         assert mock_conn.mock_calls == [
             call.describe_network_interfaces(),
         ]

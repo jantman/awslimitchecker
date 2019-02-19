@@ -223,7 +223,7 @@ class _VpcService(_AwsService):
         )
 
         self.limits['Network interfaces per Region']._add_current_usage(
-            len(enis),
+            len(enis['NetworkInterfaces']),
             aws_type='AWS::EC2::NetworkInterface'
         )
 
