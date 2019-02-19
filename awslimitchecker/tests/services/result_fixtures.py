@@ -611,66 +611,7 @@ class VPC(object):
                     },
                 ],
                 'VpcId': 'string'
-            },
-            {
-                'Association': {
-                    'AllocationId': 'allocation-456',
-                    'AssociationId': 'association-456',
-                    'IpOwnerId': '123456789012',
-                    'PublicDnsName': 'string',
-                    'PublicIp': '50.0.0.0'
-                },
-                'Attachment': {
-                    'AttachTime': datetime(2015, 1, 1),
-                    'AttachmentId': 'eni-456',
-                    'DeleteOnTermination': True,
-                    'DeviceIndex': 123,
-                    'InstanceId': 'i-456',
-                    'InstanceOwnerId': '123456789012',
-                    'Status': 'attaching'
-                },
-                'AvailabilityZone': 'us-east-2a',
-                'Description': 'NetworkInface',
-                'Groups': [
-                    {
-                        'GroupName': 'groupName',
-                        'GroupId': 'sg-456'
-                    },
-                ],
-                'InterfaceType': 'interface',
-                'Ipv6Addresses': [],
-                'MacAddress': 'address',
-                'NetworkInterfaceId': 'eni-456',
-                'OwnerId': 'string',
-                'PrivateDnsName': 'string',
-                'PrivateIpAddress': 'string',
-                'PrivateIpAddresses': [
-                    {
-                        'Association': {
-                            'AllocationId': 'allocation-456',
-                            'AssociationId': 'association-456',
-                            'IpOwnerId': '123456789012',
-                            'PublicDnsName': 'string',
-                            'PublicIp': '10.0.0.0'
-                        },
-                        'Primary': True,
-                        'PrivateDnsName': 'string',
-                        'PrivateIpAddress': 'string'
-                    },
-                ],
-                'RequesterId': '123456789012',
-                'RequesterManaged': True,
-                'SourceDestCheck': True,
-                'Status': 'available',
-                'SubnetId': 'subnet-456',
-                'TagSet': [
-                    {
-                        'Key': 'tagkey',
-                        'Value': 'tagvalue'
-                    },
-                ],
-                'VpcId': 'string'
-            },
+            }
         ],
         'ResponseMetadata': {
             'HTTPStatusCode': 200,
