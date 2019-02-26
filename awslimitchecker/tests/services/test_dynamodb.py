@@ -102,7 +102,7 @@ class Test_DynamodbService(object):
         assert read_capacity_table.limit_type == 'AWS::DynamoDB::Table'
         global_secondary_index = limits['Global Secondary Indexes']
         assert global_secondary_index.limit_type == 'AWS::DynamoDB::Table'
-        assert global_secondary_index.default_limit == 5
+        assert global_secondary_index.default_limit == 20
         local_secondary_index = limits['Local Secondary Indexes']
         assert local_secondary_index.limit_type == 'AWS::DynamoDB::Table'
         assert local_secondary_index.default_limit == 5
@@ -144,7 +144,7 @@ class Test_DynamodbService(object):
         assert read_capacity_table.limit_type == 'AWS::DynamoDB::Table'
         global_secondary_index = limits['Global Secondary Indexes']
         assert global_secondary_index.limit_type == 'AWS::DynamoDB::Table'
-        assert global_secondary_index.default_limit == 5
+        assert global_secondary_index.default_limit == 20
         local_secondary_index = limits['Local Secondary Indexes']
         assert local_secondary_index.limit_type == 'AWS::DynamoDB::Table'
         assert local_secondary_index.default_limit == 5

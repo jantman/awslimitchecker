@@ -79,7 +79,7 @@ class Test_EfsService(object):
         assert res['File systems'].service == cls
         assert res['File systems'].def_warning_threshold == 21
         assert res['File systems'].def_critical_threshold == 43
-        assert res['File systems'].default_limit == 125
+        assert res['File systems'].default_limit == 1000
 
     def test_update_limits_from_api(self):
         mock_conn = Mock()
@@ -93,7 +93,7 @@ class Test_EfsService(object):
                 'File systems': AwsLimit(
                     'File systems',
                     cls,
-                    125,
+                    1000,
                     cls.warning_threshold,
                     cls.critical_threshold,
                     limit_type='AWS::EFS::FileSystem',
@@ -102,7 +102,7 @@ class Test_EfsService(object):
             cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
         assert mock_conn.mock_calls == []
-        assert cls.limits['File systems'].default_limit == 125
+        assert cls.limits['File systems'].default_limit == 1000
 
     def test_update_limits_from_api_us_east_1(self):
         mock_conn = Mock()
@@ -116,7 +116,7 @@ class Test_EfsService(object):
                 'File systems': AwsLimit(
                     'File systems',
                     cls,
-                    125,
+                    1000,
                     cls.warning_threshold,
                     cls.critical_threshold,
                     limit_type='AWS::EFS::FileSystem',

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.1.3 (2019-02-26)
+------------------
+
+* `PR #391 <https://github.com/jantman/awslimitchecker/pull/391>`_ / `Issue #390 <https://github.com/jantman/awslimitchecker/issues/390>`_ - Update for some recently-increased DynamoDB and EFS default limits. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`__.
+
 6.1.2 (2019-02-19)
 ------------------
 
