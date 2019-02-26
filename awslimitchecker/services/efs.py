@@ -105,7 +105,7 @@ class _EfsService(_AwsService):
         limits['File systems'] = AwsLimit(
             'File systems',
             self,
-            125,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EFS::FileSystem',
