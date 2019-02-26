@@ -192,7 +192,7 @@ class _DynamodbService(_AwsService):
         limits['Global Secondary Indexes'] = AwsLimit(
             'Global Secondary Indexes',
             self,
-            5,
+            20,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DynamoDB::Table',
