@@ -611,8 +611,12 @@ class VPC(object):
                     },
                 ],
                 'VpcId': 'string'
-            },
-        ]
+            }
+        ],
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '9cc96e79-3ace-43c2-8a5f-fa1e41017dc0'
+        }
     }
 
     test_update_limits_from_api_high_max_instances = {

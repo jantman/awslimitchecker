@@ -1,15 +1,25 @@
 Changelog
 =========
 
+6.1.2 (2019-02-19)
+------------------
+
+* `PR #387 <https://github.com/jantman/awslimitchecker/pull/387>`_ - Fix bug in calculation of VPC "Network interfaces per Region" limit, added in 6.1.0 (`PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__). Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
+
+6.1.1 (2019-02-15)
+------------------
+
+* `PR #381 <https://github.com/jantman/awslimitchecker/pull/381>`_ / `Issue #382 <https://github.com/jantman/awslimitchecker/issues/382>`_ - Revised fix for `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`__, uncaught ``ClientError`` exception when checking SES Send Quota in certain regions. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`__.
+
 6.1.0 (2019-01-30)
 ------------------
 
-* `PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`_ - Add support for EC2/VPC ``Network interfaces per Region`` limit. Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
+* `PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__ - Add support for EC2/VPC ``Network interfaces per Region`` limit. Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
 
 6.0.1 (2019-01-27)
 ------------------
 
-* `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`_ - Fix uncaught ``ClientError`` exception when checking SES Send Quota in certain regions. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`_ for `PR #376 <https://github.com/jantman/awslimitchecker/pull/376>`_.
+* `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`__ - Fix uncaught ``ClientError`` exception when checking SES Send Quota in certain regions. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`__ for `PR #376 <https://github.com/jantman/awslimitchecker/pull/376>`_.
 
 6.0.0 (2019-01-01)
 ------------------

@@ -179,7 +179,7 @@ class Test_SesService(object):
             },
             'Error': {
                 'Message': 'Not Unknown',
-                'Code': 'AccessDenied',
+                'Code': 'NotAccessDenied',
                 'Type': 'Sender'
             }
         }
@@ -284,7 +284,7 @@ class Test_SesService(object):
             },
             'Error': {
                 'Message': 'Not Unknown',
-                'Code': 'AccessDenied',
+                'Code': 'NotAccessDenied',
                 'Type': 'Sender'
             }
         }
