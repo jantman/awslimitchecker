@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.1.4 (2019-03-01)
+------------------
+
+* `PR #394 <https://github.com/jantman/awslimitchecker/pull/394>`_ - Fix bug in calculation of VPC "Network interfaces per Region" limit, added in 6.1.0 (`PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__), that resulted in reporting the limit 5x lower than it actually is in some cases. Thanks to `@TimGebert <https://github.com/TimGebert>`__.
+
 6.1.3 (2019-02-26)
 ------------------
 

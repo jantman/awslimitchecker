@@ -382,8 +382,8 @@ class Test_VpcService(object):
             call.info("Querying EC2 DescribeAccountAttributes for limits"),
             call.debug('Done setting limits from API')
         ]
-        assert cls.limits['Network interfaces per Region'].api_limit == 400
-        assert cls.limits['Network interfaces per Region'].get_limit() == 400
+        assert cls.limits['Network interfaces per Region'].api_limit == 2000
+        assert cls.limits['Network interfaces per Region'].get_limit() == 2000
 
     def test_update_limits_from_api_low_max_instances(self):
         fixtures = result_fixtures.VPC()
