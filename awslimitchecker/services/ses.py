@@ -69,7 +69,7 @@ class _SesService(_AwsService):
             logger.warning('Skipping SES: %s', str(ex))
             return
         except ClientError as ex:
-            if ex.response['Error']['Code'] == 'AccessDenied':
+            if ex.response['Error']['Code'] in ['AccessDenied', '503']:
                 logger.warning('Skipping SES: %s', ex)
                 return
             raise
@@ -113,7 +113,7 @@ class _SesService(_AwsService):
             logger.warning('Skipping SES: %s', str(ex))
             return
         except ClientError as ex:
-            if ex.response['Error']['Code'] == 'AccessDenied':
+            if ex.response['Error']['Code'] in ['AccessDenied', '503']:
                 logger.warning('Skipping SES: %s', ex)
                 return
             raise
