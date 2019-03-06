@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.1.5 (2019-03-06)
+------------------
+
+* `Issue #397 <https://github.com/jantman/awslimitchecker/issues/397>`__ - Fix unhandled exception checking SES in some regions. `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`__ in 6.0.1 handled an uncaught ``ClientError`` when checking SES in some regions, but some regions such as ap-southeast-2 are now returning a 503 Service Unavailable for SES instead. Handle this case as well. Thanks to `@TimGebert <https://github.com/TimGebert>`__ for reporting the issue and `bergkampsliew <https://github.com/bergkampsliew>`__ for verifying.
+
 6.1.4 (2019-03-01)
 ------------------
 

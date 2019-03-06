@@ -171,6 +171,42 @@ class Test_SesService(object):
         assert mock_conn.mock_calls == [call.get_send_quota()]
         assert len(cls.limits['Daily sending quota'].get_current_usage()) == 0
 
+    def test_find_usage_invalid_region_503(self):
+        resp = {
+            'ResponseMetadata': {
+                'HTTPStatusCode': 503,
+                'RequestId': '7d74c6f0-c789-11e5-82fe-a96cdaa6d564'
+            },
+            'Error': {
+                'Message': 'Service Unavailable',
+                'Code': '503'
+            }
+        }
+        ce = ClientError(resp, 'GetSendQuota')
+
+        def se_get():
+            raise ce
+
+        mock_conn = Mock()
+        mock_conn.get_send_quota.side_effect = se_get
+
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.logger' % pbm) as mock_logger:
+                cls = _SesService(21, 43)
+                cls.conn = mock_conn
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert mock_connect.mock_calls == [call()]
+        assert cls._have_usage is False
+        assert mock_logger.mock_calls == [
+            call.debug('Checking usage for service %s', 'SES'),
+            call.warning(
+                'Skipping SES: %s', ce
+            )
+        ]
+        assert mock_conn.mock_calls == [call.get_send_quota()]
+        assert len(cls.limits['Daily sending quota'].get_current_usage()) == 0
+
     def test_find_usage_other_client_error(self):
         resp = {
             'ResponseMetadata': {
@@ -254,6 +290,37 @@ class Test_SesService(object):
                 'Message': 'Unknown',
                 'Code': 'AccessDenied',
                 'Type': 'Sender'
+            }
+        }
+        ce = ClientError(resp, 'GetSendQuota')
+
+        def se_get():
+            raise ce
+
+        mock_conn = Mock()
+        mock_conn.get_send_quota.side_effect = se_get
+
+        with patch('%s.connect' % pb) as mock_connect:
+            with patch('%s.logger' % pbm) as mock_logger:
+                cls = _SesService(21, 43)
+                cls.conn = mock_conn
+                cls._update_limits_from_api()
+        assert mock_connect.mock_calls == [call()]
+        assert mock_conn.mock_calls == [call.get_send_quota()]
+        assert mock_logger.mock_calls == [
+            call.warning('Skipping SES: %s', ce)
+        ]
+        assert cls.limits['Daily sending quota'].api_limit is None
+
+    def test_update_limits_from_api_invalid_region_503(self):
+        resp = {
+            'ResponseMetadata': {
+                'HTTPStatusCode': 503,
+                'RequestId': '7d74c6f0-c789-11e5-82fe-a96cdaa6d564'
+            },
+            'Error': {
+                'Message': 'Service Unavailable',
+                'Code': '503'
             }
         }
         ce = ClientError(resp, 'GetSendQuota')
