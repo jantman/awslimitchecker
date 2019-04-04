@@ -26,6 +26,7 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
                           [--skip-service SKIP_SERVICE] [-s] [-l]
+                          [--skip-check SKIP_CHECK]
                           [--list-defaults] [-L LIMIT] [-u] [--iam-policy]
                           [-W WARNING_THRESHOLD] [-C CRITICAL_THRESHOLD]
                           [-P PROFILE_NAME] [-A STS_ACCOUNT_ID]
@@ -46,6 +47,8 @@ use as a Nagios-compatible plugin).
      --skip-service SKIP_SERVICE
                            avoid performing actions for the specified service
                            name; see -s|--list-services for valid names
+     --skip-check SKIP_CHECK
+                           avoid performing actions for the specified check
      -s, --list-services   print a list of all AWS service types that
                            awslimitchecker knows how to check
      -l, --list-limits     print all AWS effective limits in
@@ -234,6 +237,28 @@ For example, you can check usage of all services _except_ for ``Firehose`` and
     WARNING:awslimitchecker.checker:Skipping service: Firehose
     WARNING:awslimitchecker.checker:Skipping service: EC2
     ... normal output ...
+
+Disabling Specific Checks
++++++++++++++++++++++++++++
+
+The ``--skip-check`` option can be used to completely disable the specified
+check name(s).
+
+For example, you can run all the EC2 service checks except the ``Max launch specifications per spot fleet`` check with  the following command:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --skip-check='EC2/Max launch specifications per spot fleet'
+    ... normal output ...
+    EC2/Max launch specifications per spot fleet  (limit 50) WARNING: sfr-98e516f0-62f8-47ad-ada6-444da23fe6c5=42
+   (venv)$ echo $?
+   2
+
+   # With --skip-check
+   (venv)$ awslimitchecker --skip-check='EC2/Max launch specifications per spot fleet'
+    ... normal output ...
+   (venv)$ echo $?
+   0
 
 Checking Usage
 ++++++++++++++
