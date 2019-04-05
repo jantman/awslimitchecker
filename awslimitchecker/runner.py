@@ -395,7 +395,8 @@ class Runner(object):
             self.checker.remove_services(args.skip_service)
 
         if len(args.skip_check) > 0:
-            self.skip_check = args.skip_check
+            for check in args.skip_check:
+                self.skip_check.append(check)
 
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)

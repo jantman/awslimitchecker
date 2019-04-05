@@ -565,6 +565,56 @@ class TestAwsLimitCheckerRunner(object):
             call().remove_services(['foo', 'bar'])
         ]
 
+    def test_entry_skip_check(self):
+        argv = [
+            'awslimitchecker',
+            '--skip-check=EC2/Max launch specifications per spot fleet'
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True),
+        ]
+        assert self.cls.skip_check == [
+            'EC2/Max launch specifications per spot fleet',
+        ]
+
+    def test_entry_skip_check_multi(self):
+        argv = [
+            'awslimitchecker',
+            '--skip-check=EC2/Max launch specifications per spot fleet',
+            '--skip-check', 'EC2/Running On-Demand i3.large instances',
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True),
+        ]
+        assert self.cls.skip_check == [
+            'EC2/Max launch specifications per spot fleet',
+            'EC2/Running On-Demand i3.large instances',
+        ]
+
     def test_entry_limit(self):
         argv = ['awslimitchecker', '-L', 'foo=bar']
         with patch.object(sys, 'argv', argv):
