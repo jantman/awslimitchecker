@@ -98,6 +98,7 @@ class TestAwsLimitCheckerRunner(object):
         assert self.cls.checker is None
         assert self.cls.skip_ta is False
         assert self.cls.service_name is None
+        assert len(self.cls.skip_check) == 0
 
     def test_parse_args(self):
         argv = ['-V']
@@ -132,6 +133,10 @@ class TestAwsLimitCheckerRunner(object):
                                 help='avoid performing actions for the '
                                      'specified service name; see '
                                      '-s|--list-services for valid names'),
+            call().add_argument('--skip-check', action='append',
+                                dest='skip_check', default=[],
+                                help='avoid performing actions for the '
+                                     'specified check name'),
             call().add_argument('-s', '--list-services',
                                 default=False, action='store_true',
                                 help='print a list of all AWS service types '
@@ -284,6 +289,24 @@ class TestAwsLimitCheckerRunner(object):
         ]
         res = self.cls.parse_args(argv)
         assert res.skip_service == ['foo', 'bar', 'baz']
+
+    def test_parse_args_skip_check(self):
+        argv = [
+            '--skip-check', 'EC2/Running On-Demand x1e.8xlarge instances',
+        ]
+        res = self.cls.parse_args(argv)
+        assert res.skip_check == ['EC2/Running On-Demand x1e.8xlarge instances']
+
+    def test_parse_args_skip_check_multiple(self):
+        argv = [
+            '--skip-check', 'EC2/Running On-Demand x1e.8xlarge instances',
+            '--skip-check', 'EC2/Running On-Demand c5.9xlarge instances',
+        ]
+        res = self.cls.parse_args(argv)
+        assert res.skip_check == [
+            'EC2/Running On-Demand x1e.8xlarge instances',
+            'EC2/Running On-Demand c5.9xlarge instances',
+        ]
 
     def test_entry_version(self, capsys):
         argv = ['awslimitchecker', '-V']
@@ -540,6 +563,56 @@ class TestAwsLimitCheckerRunner(object):
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True),
             call().remove_services(['foo', 'bar'])
+        ]
+
+    def test_entry_skip_check(self):
+        argv = [
+            'awslimitchecker',
+            '--skip-check=EC2/Max launch specifications per spot fleet'
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True),
+        ]
+        assert self.cls.skip_check == [
+            'EC2/Max launch specifications per spot fleet',
+        ]
+
+    def test_entry_skip_check_multi(self):
+        argv = [
+            'awslimitchecker',
+            '--skip-check=EC2/Max launch specifications per spot fleet',
+            '--skip-check', 'EC2/Running On-Demand i3.large instances',
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True),
+        ]
+        assert self.cls.skip_check == [
+            'EC2/Max launch specifications per spot fleet',
+            'EC2/Running On-Demand i3.large instances',
         ]
 
     def test_entry_limit(self):
@@ -1050,6 +1123,54 @@ class TestAwsLimitCheckerRunner(object):
             })
         ]
         assert res == 2
+
+    def test_check_thresholds_when_skip_check(self):
+        """lots of problems"""
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        type(mock_limit1).name = 'limit1'
+        mock_w1 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_warnings.return_value = [mock_w1]
+        mock_c1 = Mock(spec_set=AwsLimitUsage)
+        mock_limit1.get_criticals.return_value = [mock_c1]
+
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        type(mock_limit2).name = 'limit2'
+        mock_w2 = Mock(spec_set=AwsLimitUsage)
+        mock_limit2.get_warnings.return_value = [mock_w2]
+        mock_limit2.get_criticals.return_value = []
+
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.check_thresholds.return_value = {
+            'svc1': {
+                'limit1': mock_limit1,
+                'limit2': mock_limit2,
+            },
+        }
+
+        def se_print(cls, s, l, c, w):
+            return ('{s}/{l}'.format(s=s, l=l.name), '')
+
+        self.cls.checker = mock_checker
+        self.cls.skip_check = ['svc1/limit1']
+        with patch('awslimitchecker.runner.Runner.print_issue',
+                   autospec=True) as mock_print:
+            mock_print.side_effect = se_print
+            with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+                mock_d2c.return_value = 'd2cval'
+                res = self.cls.check_thresholds()
+
+        assert mock_checker.mock_calls == [
+            call.check_thresholds(use_ta=True, service=None)
+        ]
+        assert mock_print.mock_calls == [
+            call(self.cls, 'svc1', mock_limit2, [], [mock_w2]),
+        ]
+        assert mock_d2c.mock_calls == [
+            call({
+                'svc1/limit2': '',
+            })
+        ]
+        assert res == 1
 
     def test_check_thresholds_warn(self):
         """just warnings"""
