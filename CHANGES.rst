@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.1.6 (2019-04-19)
+------------------
+
+* `PR #402 <https://github.com/jantman/awslimitchecker/pull/402>`__ - Add ``--skip-check`` command line option for ignoring specific checks based on service and check name. Thanks to `@ddelnano <https://github.com/ddelnano>`__.
+
 6.1.5 (2019-03-06)
 ------------------
 
