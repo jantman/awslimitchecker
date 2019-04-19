@@ -68,6 +68,7 @@ class Runner(object):
         self.checker = None
         self.skip_ta = False
         self.service_name = None
+        self.skip_check = []
 
     def parse_args(self, argv):
         """
@@ -105,6 +106,10 @@ class Runner(object):
                        dest='skip_service',
                        help='avoid performing actions for the specified service'
                             ' name; see -s|--list-services for valid names')
+        p.add_argument('--skip-check', action='append', default=[],
+                       dest='skip_check',
+                       help='avoid performing actions for the specified check'
+                            ' name')
         p.add_argument('-s', '--list-services', action='store_true',
                        default=False,
                        help='print a list of all AWS service types that '
@@ -311,6 +316,13 @@ class Runner(object):
         columns = {}
         for svc in sorted(problems.keys()):
             for lim_name in sorted(problems[svc].keys()):
+                check_name = "{svc}/{limit}".format(
+                    svc=svc,
+                    limit=lim_name,
+                )
+                if check_name in self.skip_check:
+                    continue
+
                 limit = problems[svc][lim_name]
                 warns = limit.get_warnings()
                 crits = limit.get_criticals()
@@ -381,6 +393,10 @@ class Runner(object):
 
         if len(args.skip_service) > 0:
             self.checker.remove_services(args.skip_service)
+
+        if len(args.skip_check) > 0:
+            for check in args.skip_check:
+                self.skip_check.append(check)
 
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)
