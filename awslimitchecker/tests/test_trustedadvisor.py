@@ -814,6 +814,31 @@ class TestGetRefreshedCheckResult(object):
         ]
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0)
+    def test_mode_int_check_datetime_None(self):
+        """Regression test for Issue #406"""
+        self.cls.refresh_mode = 120  # 2 minutes
+        check_dt = None
+        with patch('%s._get_check_result' % pb, autospec=True) as mock_gcr:
+            with patch('%s._can_refresh_check' % pb, autospec=True) as mock_crc:
+                with patch('%s.logger' % pbm, autospec=True) as mock_logger:
+                    with patch('%s._poll_for_refresh' % pb,
+                               autospec=True) as mock_pfr:
+                        mock_gcr.return_value = ({'mock': 'gcr'}, check_dt)
+                        mock_pfr.return_value = {'mock': 'pfr'}
+                        mock_crc.return_value = True
+                        res = self.cls._get_refreshed_check_result('abc123')
+        assert res == {'mock': 'pfr'}
+        assert mock_gcr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_crc.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_pfr.mock_calls == [call(self.cls, 'abc123')]
+        assert mock_logger.mock_calls == [
+            call.debug('Handling refresh of check: %s', 'abc123'),
+            call.debug('ta_refresh_mode older; check last refresh: %s; '
+                       'threshold=%d seconds', check_dt, 120),
+            call.info('Refreshing Trusted Advisor check: %s', 'abc123')
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0)
     def test_mode_int_within_threshold(self):
         self.cls.refresh_mode = 120  # 2 minutes
         check_dt = datetime(2016, 12, 16, hour=10, minute=40, second=12,
@@ -945,6 +970,37 @@ class TestGetCheckResult(object):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         check_result = {
             'result': {
+                'flaggedResources': [
+                    {
+                        'status': 'ok',
+                        'resourceId': 'resid1',
+                        'isSuppressed': False,
+                        'region': 'us-west-2',
+                        'metadata': [
+                            'us-west-2',
+                            'AutoScaling',
+                            'Auto Scaling groups',
+                            '20',
+                            '2',
+                            'Green'
+                        ]
+                    }
+                ]
+            }
+        }
+        tmp.return_value = check_result
+        res = self.cls._get_check_result('abc123')
+        assert tmp.mock_calls == [
+            call(checkId='abc123', language='en')
+        ]
+        assert res == (check_result, None)
+
+    def test_null_timestamp(self):
+        """Regression test for Issue #406"""
+        tmp = self.mock_conn.describe_trusted_advisor_check_result
+        check_result = {
+            'result': {
+                'timestamp': None,
                 'flaggedResources': [
                     {
                         'status': 'ok',
