@@ -1,6 +1,11 @@
 Changelog
 =========
 
+6.1.7 (2019-05-17)
+------------------
+
+* `Issue #406 <https://github.com/jantman/awslimitchecker/issues/406>`__ - Fix for unhandled exception when a Trusted Advisor check has a ``null`` timestamp.
+
 6.1.6 (2019-04-19)
 ------------------
 

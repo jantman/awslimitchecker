@@ -273,8 +273,12 @@ class TrustedAdvisor(Connectable):
             logger.debug('ta_refresh_mode older; check last refresh: %s; '
                          'threshold=%d seconds', check_datetime,
                          self.refresh_mode)
-            if check_datetime >= datetime.now(utc) - timedelta(
-                    seconds=self.refresh_mode):
+            if (
+                check_datetime is not None and
+                check_datetime >= datetime.now(utc) - timedelta(
+                    seconds=self.refresh_mode
+                )
+            ):
                 logger.warning('Trusted Advisor check %s last refresh time '
                                'of %s is newer than refresh threshold of %d '
                                'seconds.', check_id, check_datetime,
@@ -382,10 +386,12 @@ class TrustedAdvisor(Connectable):
             check_datetime = parser.parse(checks['result']['timestamp'])
             logger.debug("Got TrustedAdvisor data for check %s as of %s",
                          check_id, check_datetime)
-        except KeyError:
+        except (KeyError, TypeError):
             check_datetime = None
             logger.debug("Got TrustedAdvisor data for check %s but unable to "
-                         "parse timestamp", check_id)
+                         "parse timestamp: %s",
+                         check_id,
+                         checks.get('result', {}).get('timestamp', None))
         return checks, check_datetime
 
     def _update_services(self, ta_results):
