@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* `Issue #410 <https://github.com/jantman/awslimitchecker/issues/410>`__ - Documentation fix for missing Trusted Advisor information on Limits page.
+
 6.1.7 (2019-05-17)
 ------------------
 
