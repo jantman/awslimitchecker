@@ -71,8 +71,9 @@ class Test_ElbService(object):
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
-            'Active load balancers',
+            'Application load balancers',
             'Certificates per application load balancer',
+            'Classic load balancers',
             'Listeners per application load balancer',
             'Listeners per load balancer',
             'Listeners per network load balancer',
@@ -119,7 +120,8 @@ class Test_ElbService(object):
             call('elbv2', foo='bar', baz='blam'),
             call().describe_account_limits()
         ]
-        assert cls.limits['Active load balancers'].api_limit == 3
+        assert cls.limits['Classic load balancers'].api_limit == 3
+        assert cls.limits['Application load balancers'].api_limit == 6
         assert cls.limits['Listeners per load balancer'].api_limit == 5
         assert cls.limits[
             'Registered instances per load balancer'].api_limit == 1800
@@ -142,9 +144,14 @@ class Test_ElbService(object):
         assert cls._have_usage is True
         assert mock_v1.mock_calls == [call(cls)]
         assert mock_v2.mock_calls == [call(cls)]
-        assert len(cls.limits['Active load balancers'].get_current_usage()) == 1
-        assert cls.limits['Active load balancers'
-                          ''].get_current_usage()[0].get_value() == 8
+        assert len(cls.limits[
+            'Classic load balancers'].get_current_usage()) == 1
+        assert len(cls.limits[
+            'Application load balancers'].get_current_usage()) == 1
+        assert cls.limits[
+            'Classic load balancers'].get_current_usage()[0].get_value() == 3
+        assert cls.limits['Application load balancers'
+                          ].get_current_usage()[0].get_value() == 5
 
     def test_find_usage_elbv1(self):
         mock_conn = Mock()

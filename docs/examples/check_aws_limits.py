@@ -67,7 +67,7 @@ AWS_LIMIT_OVERRIDES = {
         'Running On-Demand c1.medium instances': 1000,
     },
     'ELB': {
-        'Active load balancers': 100,
+        'Application load balancers': 100,
     },
 }
 
