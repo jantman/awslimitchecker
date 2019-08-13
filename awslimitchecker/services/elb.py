@@ -74,9 +74,13 @@ class _ElbService(_AwsService):
         elb_usage = self._find_usage_elbv1()
         alb_usage = self._find_usage_elbv2()
         logger.debug('ELBs in use: %d, ALBs in use: %d', elb_usage, alb_usage)
-        self.limits['Active load balancers']._add_current_usage(
-            (elb_usage + alb_usage),
+        self.limits['Classic load balancers']._add_current_usage(
+            elb_usage,
             aws_type='AWS::ElasticLoadBalancing::LoadBalancer',
+        )
+        self.limits['Application load balancers']._add_current_usage(
+            alb_usage,
+            aws_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
         )
         self._have_usage = True
         logger.debug("Done checking usage.")
@@ -260,8 +264,8 @@ class _ElbService(_AwsService):
             return self.limits
         limits = {}
         # ELBv1 (Classic ELB) limits
-        limits['Active load balancers'] = AwsLimit(
-            'Active load balancers',
+        limits['Classic load balancers'] = AwsLimit(
+            'Classic load balancers',
             self,
             20,
             self.warning_threshold,
@@ -287,6 +291,14 @@ class _ElbService(_AwsService):
             limit_subtype='Instance'
         )
         # ELBv2 (ALB) limits
+        limits['Application load balancers'] = AwsLimit(
+            'Application load balancers',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+        )
         limits['Target groups'] = AwsLimit(
             'Target groups',
             self,
@@ -352,7 +364,7 @@ class _ElbService(_AwsService):
         logger.debug("Querying ELB DescribeAccountLimits for limits")
         attribs = self.conn.describe_account_limits()
         name_to_limits = {
-            'classic-load-balancers': 'Active load balancers',
+            'classic-load-balancers': 'Classic load balancers',
             'classic-listeners': 'Listeners per load balancer',
             'classic-registered-instances':
                 'Registered instances per load balancer'
@@ -371,6 +383,7 @@ class _ElbService(_AwsService):
         logger.debug("Querying ELBv2 (ALB) DescribeAccountLimits for limits")
         attribs = self.conn2.describe_account_limits()
         name_to_limits = {
+            'application-load-balancers': 'Application load balancers',
             'target-groups': 'Target groups',
             'listeners-per-application-load-balancer':
                 'Listeners per application load balancer',

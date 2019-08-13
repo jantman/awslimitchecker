@@ -372,8 +372,9 @@ ELB
 ========================================== =============== ======= ====
 Limit                                      Trusted Advisor API     Default
 ========================================== =============== ======= ====
-Active load balancers                      |check|         |check| 20  
+Application load balancers                                 |check| 20  
 Certificates per application load balancer                         25  
+Classic load balancers                     |check|         |check| 20  
 Listeners per application load balancer                    |check| 50  
 Listeners per load balancer                                |check| 100 
 Listeners per network load balancer                        |check| 50  
