@@ -25,14 +25,13 @@ use as a Nagios-compatible plugin).
 
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
-                          [--skip-service SKIP_SERVICE] [-s] [-l]
-                          [--skip-check SKIP_CHECK]
-                          [--list-defaults] [-L LIMIT] [-u] [--iam-policy]
-                          [-W WARNING_THRESHOLD] [-C CRITICAL_THRESHOLD]
-                          [-P PROFILE_NAME] [-A STS_ACCOUNT_ID]
-                          [-R STS_ACCOUNT_ROLE] [-E EXTERNAL_ID]
-                          [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN] [-r REGION]
-                          [--skip-ta]
+                          [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
+                          [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
+                          [--iam-policy] [-W WARNING_THRESHOLD]
+                          [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
+                          [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
+                          [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
+                          [-r REGION] [--skip-ta]
                           [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
                           [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
                           [--no-check-version] [-v] [-V]
@@ -48,7 +47,7 @@ use as a Nagios-compatible plugin).
                            avoid performing actions for the specified service
                            name; see -s|--list-services for valid names
      --skip-check SKIP_CHECK
-                           avoid performing actions for the specified check
+                           avoid performing actions for the specified check name
      -s, --list-services   print a list of all AWS service types that
                            awslimitchecker knows how to check
      -l, --list-limits     print all AWS effective limits in
@@ -391,10 +390,10 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "apigateway:GET",
+           "apigateway:GET", 
    (...)
        }
-     ],
+     ], 
      "Version": "2012-10-17"
    }
 

@@ -157,7 +157,7 @@ class TestPaginateDict(object):
             paginate_dict(func)
         ex_str = "alc_marker_path must be specified for queries " \
                  "that return a dict."
-        assert ex_str in str(excinfo)
+        assert ex_str in str(excinfo.value)
 
     def test_no_data_path(self):
         func = Mock()
@@ -166,7 +166,7 @@ class TestPaginateDict(object):
             paginate_dict(func, alc_marker_path=[])
         ex_str = "alc_data_path must be specified for queries " \
                  "that return a dict."
-        assert ex_str in str(excinfo)
+        assert ex_str in str(excinfo.value)
 
     def test_no_marker_param(self):
         func = Mock()
@@ -179,7 +179,7 @@ class TestPaginateDict(object):
             )
         ex_str = "alc_marker_param must be specified for queries " \
                  "that return a dict."
-        assert ex_str in str(excinfo)
+        assert ex_str in str(excinfo.value)
 
     def test_bad_path(self):
         result = {
