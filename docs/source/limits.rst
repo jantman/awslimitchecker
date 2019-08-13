@@ -249,7 +249,7 @@ Running On-Demand m5.24xlarge instances                                   5
 Running On-Demand m5.2xlarge instances                                    20  
 Running On-Demand m5.4xlarge instances                                    10  
 Running On-Demand m5.large instances              |check|                 20  
-Running On-Demand m5.xlarge instances             |check|                 20  
+Running On-Demand m5.xlarge instances                                     20  
 Running On-Demand m5a.12xlarge instances                                  20  
 Running On-Demand m5a.24xlarge instances                                  20  
 Running On-Demand m5a.2xlarge instances                                   20  
@@ -276,7 +276,7 @@ Running On-Demand r3.large instances                                      20
 Running On-Demand r3.xlarge instances                                     20  
 Running On-Demand r4.16xlarge instances                                   1   
 Running On-Demand r4.2xlarge instances                                    20  
-Running On-Demand r4.4xlarge instances                                    10  
+Running On-Demand r4.4xlarge instances            |check|                 10  
 Running On-Demand r4.8xlarge instances                                    5   
 Running On-Demand r4.large instances              |check|                 20  
 Running On-Demand r4.xlarge instances             |check|                 20  
@@ -286,7 +286,7 @@ Running On-Demand r5.24xlarge instances                                   20
 Running On-Demand r5.2xlarge instances                                    20  
 Running On-Demand r5.4xlarge instances                                    20  
 Running On-Demand r5.8xlarge instances                                    20  
-Running On-Demand r5.large instances                                      20  
+Running On-Demand r5.large instances              |check|                 20  
 Running On-Demand r5.metal instances                                      20  
 Running On-Demand r5.xlarge instances                                     20  
 Running On-Demand r5a.12xlarge instances                                  20  
@@ -317,7 +317,7 @@ Running On-Demand t3.large instances              |check|                 20
 Running On-Demand t3.medium instances             |check|                 20  
 Running On-Demand t3.micro instances              |check|                 20  
 Running On-Demand t3.nano instances                                       20  
-Running On-Demand t3.small instances                                      20  
+Running On-Demand t3.small instances              |check|                 20  
 Running On-Demand t3.xlarge instances                                     20  
 Running On-Demand x1.16xlarge instances                                   20  
 Running On-Demand x1.32xlarge instances                                   20  
@@ -374,7 +374,7 @@ Limit                                      Trusted Advisor API     Default
 ========================================== =============== ======= ====
 Application load balancers                                 |check| 20  
 Certificates per application load balancer                         25  
-Classic load balancers                     |check|         |check| 20  
+Classic load balancers                                     |check| 20  
 Listeners per application load balancer                    |check| 50  
 Listeners per load balancer                                |check| 100 
 Listeners per network load balancer                        |check| 50  
@@ -470,7 +470,7 @@ DB Clusters                  |check|         |check| 40
 DB instances                 |check|         |check| 40    
 DB parameter groups          |check|         |check| 50    
 DB security groups           |check|         |check| 25    
-DB snapshots per user        |check|         |check| 100   
+DB snapshots per user                        |check| 100   
 Event Subscriptions          |check|         |check| 20    
 Max auths per security group |check|         |check| 20    
 Option Groups                                |check| 20    
