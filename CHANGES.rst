@@ -8,6 +8,7 @@ This release **removes one limit and adds two new limits**!
 
 * `Issue #412 <https://github.com/jantman/awslimitchecker/issues/412>`__ / `PR #414 <https://github.com/jantman/awslimitchecker/pull/414>`__ - Since some time in June 2019, the former ``ELB`` Service ``Active load balancers`` limit is now two separate limits, ``Classic load balancers`` and ``Application load balancers``. **Anyone who was using the "Active load balancers" limit name (e.g. in overrides or custom code) must update their code accordingly.** This release removes the ``Active load balancers`` limit and adds two new limits, ``Classic load balancers`` and ``Application load balancers``, to match how AWS now calculates and exposes these limits.
 * `Issue #410 <https://github.com/jantman/awslimitchecker/issues/410>`__ - Documentation fix for missing Trusted Advisor information on Limits page.
+* Fix some test failures related to exception objects in pytest 5.0.0.
 
 6.1.7 (2019-05-17)
 ------------------
