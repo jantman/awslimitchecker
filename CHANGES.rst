@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* `Issue #301 <https://github.com/jantman/awslimitchecker/issues/301>`__ - Distribute an official Docker image for awslimitchecker.
+
 7.0.0 (2019-08-13)
 ------------------
 
