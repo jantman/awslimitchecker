@@ -8,4 +8,4 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-docker run -it --rm -e AWS_DEFAULT_REGION=us-east-1 "$1" /usr/local/bin/awslimitchecker --version
+docker run -it --rm -e AWS_DEFAULT_REGION=us-east-1 "$1" --version

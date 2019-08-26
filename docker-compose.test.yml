@@ -2,4 +2,4 @@ sut:
   build: .
   environment:
     AWS_DEFAULT_REGION: us-east-1
-  command: /usr/local/bin/awslimitchecker --version
+  command: --version
