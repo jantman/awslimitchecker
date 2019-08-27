@@ -79,7 +79,7 @@ Full project documentation for the latest release is available at `http://awslim
 Status
 ------
 
-awslimitchecker is mature software, with approximately 9,000 downloads per month and in daily use at numerous organizations.
+awslimitchecker is mature software, with approximately 13,000 downloads per month and in daily use at numerous organizations.
 
 Development status is being tracked on a board at waffle.io: https://waffle.io/jantman/awslimitchecker
 
@@ -104,6 +104,8 @@ What It Does
 
 Requirements
 ------------
+
+**Either Docker in order to run via the** `docker image <http://awslimitchecker.readthedocs.io/en/latest/docker.html>`__, **or:**
 
 * Python 2.7 or 3.4+. Python 2.6 and 3.3 are no longer supported.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)

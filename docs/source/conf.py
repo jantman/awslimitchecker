@@ -558,6 +558,10 @@ def on_doctree_read(_, doctree):
                 [
                     label_ref_node, docname, 'getting_started.trusted_advisor',
                     'Getting Started - Trusted Advisor'
+                ],
+            'http://awslimitchecker.readthedocs.io/en/latest/docker.html':
+                [
+                    label_ref_node, docname, 'docker', 'Docker Usage'
                 ]
         }
         doctree.walk(LinkToRefVisitor(doctree, ref_mapping))
