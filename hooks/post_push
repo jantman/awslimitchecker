@@ -1,0 +1,15 @@
+#!/bin/bash
+# If we're building a X.Y.Z semver tag, also push "X" and "X.Y" tags
+echo "Build of tag: ${DOCKER_TAG}"
+if ! [[ "$DOCKER_TAG" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+    echo "Tag '${DOCKER_TAG}' is not a semver tag; not pushing additional tags."
+    exit 0
+fi
+
+MAJV=${BASH_REMATCH[1]}
+MINV=${BASH_REMATCH[2]}
+PATCHV=${BASH_REMATCH[3]}
+for NEW_TAG in "${MAJV}" "${MAJV}.${MINV}"; do
+  echo docker tag ${DOCKER_REPO}:${DOCKER_TAG} ${DOCKER_REPO}:${NEW_TAG}
+  echo docker push ${DOCKER_REPO}:${NEW_TAG}
+done
