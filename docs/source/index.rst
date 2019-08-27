@@ -10,6 +10,7 @@ Contents
    :maxdepth: 4
 
    Getting Started <getting_started>
+   Docker Usage <docker>
    Command Line Usage <cli_usage>
    Python Usage <python_usage>
    Required IAM Permissions <iam_policy>

@@ -105,7 +105,7 @@ What It Does
 Requirements
 ------------
 
-**Either run via the `jantman/awslimitchecker Docker image <https://hub.docker.com/r/jantman/awslimitchecker>`__** or:
+**Either Docker in order to run via the** `docker image <http://awslimitchecker.readthedocs.io/en/latest/docker.html>`__, **or:**
 
 * Python 2.7 or 3.4+. Python 2.6 and 3.3 are no longer supported.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)

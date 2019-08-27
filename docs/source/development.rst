@@ -254,6 +254,14 @@ Much like the test suite, documentation is build using tox:
 
 Output will be in the ``docs/build/html`` directory under the project root.
 
+.. _development.docker:
+
+Building the Docker Image
+-------------------------
+
+The Docker image is normally built by TravisCI (for testing) and Docker Hub
+Automated Builds (for the release). To build locally, run ``tox -e docker``.
+
 .. _development.agpl:
 
 AGPL License
