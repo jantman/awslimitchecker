@@ -409,10 +409,12 @@ class TestDictFuncs(object):
 class TestGetCurrentVersion(object):
 
     def test_exception(self):
+        mock_http = Mock()
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.side_effect = RuntimeError()
+                    m_pm.return_value = mock_http
+                    mock_http.request.side_effect = RuntimeError()
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == [
@@ -420,40 +422,43 @@ class TestGetCurrentVersion(object):
         ]
 
     def test_older(self):
-        mock_resp = Mock()
-        mock_resp.json.return_value = {
-            'info': {'version': '1.0.1'}
-        }
+        mock_http = Mock()
+        mock_resp = Mock(
+            status=200, data='{"info": {"version": "1.0.1"}}'
+        )
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.return_value = mock_resp
+                    m_pm.return_value = mock_http
+                    mock_http.request.return_value = mock_resp
                     res = _get_latest_version()
         assert res == '1.0.1'
         assert mock_logger.mock_calls == []
 
     def test_equal(self):
-        mock_resp = Mock()
-        mock_resp.json.return_value = {
-            'info': {'version': '0.2.3'}
-        }
+        mock_http = Mock()
+        mock_resp = Mock(
+            status=200, data='{"info": {"version": "0.2.3"}}'
+        )
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.return_value = mock_resp
+                    m_pm.return_value = mock_http
+                    mock_http.request.return_value = mock_resp
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == []
 
     def test_newer(self):
-        mock_resp = Mock()
-        mock_resp.json.return_value = {
-            'info': {'version': '0.1.2'}
-        }
+        mock_http = Mock()
+        mock_resp = Mock(
+            status=200, data='{"info": {"version": "0.1.2"}}'
+        )
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.return_value = mock_resp
+                    m_pm.return_value = mock_http
+                    mock_http.request.return_value = mock_resp
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == []

@@ -40,7 +40,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import argparse
 import logging
 from copy import deepcopy
-import botocore.vendored.requests as requests
+import json
+import urllib3
 from awslimitchecker.version import _VERSION_TUP, _VERSION
 
 logger = logging.getLogger(__name__)
@@ -227,14 +228,16 @@ def _get_latest_version():
     :rtype: `str` or `None`
     """
     try:
-        r = requests.get(
-            'https://pypi.org/pypi/awslimitchecker/json',
+        http = urllib3.PoolManager()
+        r = http.request(
+            'GET', 'https://pypi.org/pypi/awslimitchecker/json',
             timeout=4.0, headers={
                 'User-Agent': 'github.com/jantman/awslimitchecker '
                               '%s' % _VERSION
             }
         )
-        j = r.json()
+        assert r.status == 200, "PyPI responded HTTP %s" % r.status
+        j = json.loads(r.data)
         latest = tuple([
             int(i) for i in j['info']['version'].split('.')[0:3]
         ])
