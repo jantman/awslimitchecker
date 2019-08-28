@@ -5,6 +5,9 @@ Unreleased Changes
 ------------------
 
 * `Issue #301 <https://github.com/jantman/awslimitchecker/issues/301>`__ - Distribute an official Docker image for awslimitchecker.
+* `Issue #421 <https://github.com/jantman/awslimitchecker/issues/421>`__
+
+  * Stop referencing deprecated ``botocore.vendored.requests.exceptions.ConnectTimeout`` in favor of new, and higher-level, ``botocore.exceptions.ConnectionError``
 
 7.0.0 (2019-08-13)
 ------------------
