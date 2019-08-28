@@ -118,16 +118,20 @@ using their IDs).
 
 {show_usage}
 
+.. _cli_usage.limit_overrides:
+
 Overriding Limits
 +++++++++++++++++
 
 In cases where you've been given a limit increase by AWS Support, you can override
 the default limits with custom ones. Currently, to do this from the command line,
-you must specify each limit that you want to override separately (the
+you can either specify each limit that you want to override separately using the
+``-L`` or ``--limit`` options, or you can specify a JSON file at either a local path
+or an S3 URL using the ``--limit-overrides-json`` option (the
 :py:meth:`~.AwsLimitChecker.set_limit_overrides` Python method accepts a dict for
-easy bulk overrides of limits) using the ``-L`` or ``--limit`` options. Limits are
-specified in a ``service_name/limit_name=value`` format, and must be quoted if the
-limit name contains spaces.
+easy bulk overrides of limits). Limits for the ``-L`` / ``--limit`` option are
+specified in a ``service_name/limit_name=value`` format, and must be quoted if
+the limit name contains spaces.
 
 For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 "EC2-VPC Elastic IPs" from their defaults of 5, to 10 and 20, respestively:
@@ -135,6 +139,24 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 {limit_overrides}
 
 This example simply sets the overrides, and then prints the limits for confirmation.
+
+You could also set the same limit overrides using a JSON file stored at ``limit_overrides.json``:
+
+.. code-block:: json
+
+    {
+        "AutoScaling": {
+            "Auto Scaling groups": 321,
+            "Launch configurations": 456
+        }
+    }
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --limit-overrides-json=limit_overrides.json -l
+{limit_overrides-output-only}
 
 Check Limits Against Thresholds
 +++++++++++++++++++++++++++++++

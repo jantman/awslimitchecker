@@ -56,9 +56,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock
+    from mock import patch, call, Mock, mock_open
 else:
-    from unittest.mock import patch, call, Mock
+    from unittest.mock import patch, call, Mock, mock_open
 
 
 def red(s):
@@ -115,6 +115,8 @@ class TestParseArgs(RunnerTester):
         assert isinstance(res, argparse.Namespace)
         assert res.version is True
         assert res.ta_refresh_mode is None
+        assert res.limit == {}
+        assert res.limit_override_json is None
 
     def test_parser(self):
         argv = ['-V']
@@ -162,6 +164,12 @@ class TestParseArgs(RunnerTester):
                                 help='override a single AWS limit, specified in'
                                 ' "service_name/limit_name=value" format; can '
                                 'be specified multiple times.'),
+            call().add_argument('--limit-override-json', action='store',
+                                type=str, default=None,
+                                help='Absolute or relative path, or s3:// URL, '
+                                     'to a JSON file specifying limit '
+                                     'overrides. See docs for expected format.'
+                                ),
             call().add_argument('-u', '--show-usage', action='store_true',
                                 default=False,
                                 help='find and print the current usage of '
@@ -482,6 +490,126 @@ class TestSetLimitOverride(RunnerTester):
             msg = excinfo.value.message
         assert msg == "Limit names must be in " \
             "'service/limit' format; EC2 is invalid."
+
+
+class TestLoadJson(RunnerTester):
+
+    def test_local_file_py27(self):
+        data = u'{"Foo": {"bar": 23, "baz": 6}, "Blam": {"Blarg": 73}}'
+        mock_body = Mock()
+        mock_body.read.return_value = '{"Foo": {"bar": 23, "baz": 6}}'
+        mock_client = Mock()
+        mock_client.get_object.return_value = {'Body': mock_body}
+        with patch(
+            '%s.open' % pb, mock_open(read_data=data), create=True
+        ) as m_open:
+            with patch('%s.boto3.client' % pb) as m_client:
+                m_client.return_value = mock_client
+                res = self.cls.load_json('/foo/bar/baz.json')
+        assert m_open.mock_calls == [
+            call('/foo/bar/baz.json', 'r'),
+            call().__enter__(),
+            call().read(),
+            call().__exit__(None, None, None)
+        ]
+        assert m_client.mock_calls == []
+        assert res == {
+            'Foo': {'bar': 23, 'baz': 6},
+            'Blam': {'Blarg': 73}
+        }
+
+    def test_s3_py27(self):
+        data = '{"Foo": {"bar": 23, "baz": 6}, "Blam": {"Blarg": 73}}'
+        mock_body = Mock()
+        mock_body.read.return_value = data
+        mock_client = Mock()
+        mock_client.get_object.return_value = {'Body': mock_body}
+        with patch(
+            '%s.open' % pb, mock_open(read_data=data), create=True
+        ) as m_open:
+            with patch('%s.boto3.client' % pb) as m_client:
+                m_client.return_value = mock_client
+                res = self.cls.load_json(
+                    's3://bucketname/key/foo/bar/baz.json'
+                )
+        assert m_open.mock_calls == []
+        assert m_client.mock_calls == [
+            call('s3'),
+            call().get_object(Bucket='bucketname', Key='key/foo/bar/baz.json')
+        ]
+        assert res == {
+            'Foo': {'bar': 23, 'baz': 6},
+            'Blam': {'Blarg': 73}
+        }
+
+    def test_local_file_py37(self):
+        data = '{"Foo": {"bar": 23, "baz": 6}, "Blam": {"Blarg": 73}}'
+        mock_body = Mock()
+        mock_body.read.return_value = '{"Foo": {"bar": 23, "baz": 6}}'
+        mock_client = Mock()
+        mock_client.get_object.return_value = {'Body': mock_body}
+        with patch(
+            '%s.open' % pb, mock_open(read_data=data), create=True
+        ) as m_open:
+            with patch('%s.boto3.client' % pb) as m_client:
+                m_client.return_value = mock_client
+                res = self.cls.load_json('/foo/bar/baz.json')
+        assert m_open.mock_calls == [
+            call('/foo/bar/baz.json', 'r'),
+            call().__enter__(),
+            call().read(),
+            call().__exit__(None, None, None)
+        ]
+        assert m_client.mock_calls == []
+        assert res == {
+            'Foo': {'bar': 23, 'baz': 6},
+            'Blam': {'Blarg': 73}
+        }
+
+    def test_s3_py37(self):
+        data = b'{"Foo": {"bar": 23, "baz": 6}, "Blam": {"Blarg": 73}}'
+        mock_body = Mock()
+        mock_body.read.return_value = data
+        mock_client = Mock()
+        mock_client.get_object.return_value = {'Body': mock_body}
+        with patch(
+            '%s.open' % pb, mock_open(read_data=data), create=True
+        ) as m_open:
+            with patch('%s.boto3.client' % pb) as m_client:
+                m_client.return_value = mock_client
+                res = self.cls.load_json(
+                    's3://bucketname/key/foo/bar/baz.json'
+                )
+        assert m_open.mock_calls == []
+        assert m_client.mock_calls == [
+            call('s3'),
+            call().get_object(Bucket='bucketname', Key='key/foo/bar/baz.json')
+        ]
+        assert res == {
+            'Foo': {'bar': 23, 'baz': 6},
+            'Blam': {'Blarg': 73}
+        }
+
+
+class TestSetLimitOverridesFromJson(RunnerTester):
+
+    def test_happy_path(self):
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        self.cls.checker = mock_checker
+        with patch('%s.Runner.load_json' % pb, autospec=True) as m_load:
+            m_load.return_value = {
+                'Foo': {'bar': 23, 'baz': 6},
+                'Blam': {'Blarg': 73}
+            }
+            self.cls.set_limit_overrides_from_json('/foo/bar/baz.json')
+        assert m_load.mock_calls == [
+            call(self.cls, '/foo/bar/baz.json')
+        ]
+        calls = self.cls.checker.mock_calls
+        assert len(calls) == 3
+        assert call.set_limit_override('Foo', 'bar', 23) in calls
+        assert call.set_limit_override('Foo', 'baz', 6) in calls
+        assert call.set_limit_override('Blam', 'Blarg', 73) in calls
 
 
 class TestShowUsage(RunnerTester):
@@ -1116,6 +1244,25 @@ class TestConsoleEntryPoint(RunnerTester):
         assert excinfo.value.code == 0
         assert mock_slo.mock_calls == [
             call(self.cls, {'foo': 'bar', 'baz': 'blam'})
+        ]
+
+    def test_limit_json(self):
+        argv = [
+            'awslimitchecker',
+            '--limit-override-json=/path/to/file.json'
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+                with patch(
+                    '%s.Runner.set_limit_overrides_from_json' % pb,
+                    autospec=True
+                ) as mock_slo:
+                    mock_ct.return_value = 0
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mock_slo.mock_calls == [
+            call(self.cls, '/path/to/file.json')
         ]
 
     def test_show_usage(self):
