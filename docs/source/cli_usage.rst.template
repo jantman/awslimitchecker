@@ -140,7 +140,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 
 This example simply sets the overrides, and then prints the limits for confirmation.
 
-You could also set the same limit overrides using a JSON file stored at ``limit_overrides.json``, following the format documented for :py:meth:`awslimitchecker.checker.Checker.set_limit_overrides`:
+You could also set the same limit overrides using a JSON file stored at ``limit_overrides.json``, following the format documented for :py:meth:`awslimitchecker.checker.AwsLimitChecker.set_limit_overrides`:
 
 .. code-block:: json
 
@@ -195,7 +195,7 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
 You can also set custom thresholds on a per-limit basis using the
 ``--threshold-override-json`` CLI option, which accepts the path to a JSON file
 (local or an s3:// URL) matching the format described in
-:py:meth:`awslimitchecker.checker.Checker.set_threshold_overrides`, for example:
+:py:meth:`awslimitchecker.checker.AwsLimitChecker.set_threshold_overrides`, for example:
 
 .. code-block:: json
 
