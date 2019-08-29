@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+    awslimitchecker.metrics
     awslimitchecker.services
 
 Submodules

@@ -43,10 +43,12 @@ import logging
 import json
 import termcolor
 import boto3
+import time
 
 from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols
 from .limit import SOURCE_TA, SOURCE_API
+from .metrics import MetricsProvider
 
 try:
     from urllib.parse import urlparse
@@ -222,6 +224,19 @@ class Runner(object):
         p.add_argument('-V', '--version', dest='version', action='store_true',
                        default=False,
                        help='print version number and exit.')
+        p.add_argument('--list-metrics-providers',
+                       dest='list_metrics_providers',
+                       action='store_true', default=False,
+                       help='List available metrics providers and exit')
+        p.add_argument('--metrics-provider', dest='metrics_provider', type=str,
+                       action='store', default=None,
+                       help='Metrics provider class name, to enable sending '
+                            'metrics')
+        p.add_argument('--metrics-config', action=StoreKeyValuePair,
+                       dest='metrics_config',
+                       help='Specify key/value parameters for the metrics '
+                            'provider constructor. See documentation for '
+                            'further information.')
         args = p.parse_args(argv)
         args.ta_refresh_mode = None
         if args.ta_refresh_wait:
@@ -323,12 +338,19 @@ class Runner(object):
         )
         return (k, v)
 
-    def check_thresholds(self):
+    def check_thresholds(self, metrics=None):
         have_warn = False
         have_crit = False
         problems = self.checker.check_thresholds(
             use_ta=(not self.skip_ta),
-            service=self.service_name)
+            service=self.service_name
+        )
+        if metrics:
+            for svc, svc_limits in sorted(self.checker.get_limits().items()):
+                if self.service_name and svc not in self.service_name:
+                    continue
+                for _, limit in sorted(svc_limits.items()):
+                    metrics.add_limit(limit)
         columns = {}
         for svc in sorted(problems.keys()):
             for lim_name in sorted(problems[svc].keys()):
@@ -338,7 +360,6 @@ class Runner(object):
                 )
                 if check_name in self.skip_check:
                     continue
-
                 limit = problems[svc][lim_name]
                 warns = limit.get_warnings()
                 crits = limit.get_criticals()
@@ -477,8 +498,25 @@ class Runner(object):
             self.show_usage()
             raise SystemExit(0)
 
+        if args.list_metrics_providers:
+            print('Available metrics providers:')
+            for p in sorted(MetricsProvider.providers_by_name().keys()):
+                print(p)
+            raise SystemExit(0)
+
         # else check
-        res = self.check_thresholds()
+        metrics = None
+        if args.metrics_provider:
+            metrics = MetricsProvider.get_provider_by_name(
+                args.metrics_provider
+            )(self.checker.region_name, **args.metrics_config)
+        start_time = time.time()
+        res = self.check_thresholds(metrics)
+        duration = time.time() - start_time
+        logger.info('Finished checking limits in %s seconds', duration)
+        if metrics:
+            metrics.set_run_duration(duration)
+            metrics.flush()
         raise SystemExit(res)
 
 
