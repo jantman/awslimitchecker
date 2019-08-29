@@ -42,10 +42,16 @@ import argparse
 import logging
 import json
 import termcolor
+import boto3
 
 from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols
 from .limit import SOURCE_TA, SOURCE_API
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
@@ -125,6 +131,16 @@ class Runner(object):
                        help='override a single AWS limit, specified in '
                        '"service_name/limit_name=value" format; can be '
                        'specified multiple times.')
+        p.add_argument('--limit-override-json', action='store', type=str,
+                       default=None,
+                       help='Absolute or relative path, or s3:// URL, to a '
+                            'JSON file specifying limit overrides. See docs '
+                            'for expected format.')
+        p.add_argument('--threshold-override-json', action='store', type=str,
+                       default=None,
+                       help='Absolute or relative path, or s3:// URL, to a '
+                            'JSON file specifying threshold overrides. See '
+                            'docs for expected format.')
         p.add_argument('-u', '--show-usage', action='store_true',
                        default=False,
                        help='find and print the current usage of all AWS '
@@ -349,6 +365,38 @@ class Runner(object):
             svc, limit = key.split('/')
             self.checker.set_limit_override(svc, limit, int(overrides[key]))
 
+    def load_json(self, path):
+        """Load JSON from either a local file or S3"""
+        if path.startswith('s3://'):
+            parsed = urlparse(path)
+            s3key = parsed.path.lstrip('/')
+            logger.debug(
+                'Reading JSON from S3 bucket "%s" key "%s"',
+                parsed.netloc, s3key
+            )
+            client = boto3.client('s3')
+            resp = client.get_object(Bucket=parsed.netloc, Key=s3key)
+            data = resp['Body'].read()
+        else:
+            logger.debug('Reading JSON from: %s', path)
+            with open(path, 'r') as fh:
+                data = fh.read()
+        if isinstance(data, type(b'')):
+            data = data.decode()
+        return json.loads(data)
+
+    def set_limit_overrides_from_json(self, path):
+        j = self.load_json(path)
+        logger.debug('Limit overrides: %s', j)
+        self.checker.set_limit_overrides(j)
+        logger.debug('Done setting limit overrides from JSON.')
+
+    def set_threshold_overrides_from_json(self, path):
+        j = self.load_json(path)
+        logger.debug('Threshold overrides: %s', j)
+        self.checker.set_threshold_overrides(j)
+        logger.debug('Done setting threshold overrides from JSON.')
+
     def console_entry_point(self):
         args = self.parse_args(sys.argv[1:])
         self.service_name = args.service
@@ -397,6 +445,14 @@ class Runner(object):
         if len(args.skip_check) > 0:
             for check in args.skip_check:
                 self.skip_check.append(check)
+
+        if args.limit_override_json is not None:
+            self.set_limit_overrides_from_json(args.limit_override_json)
+
+        if args.threshold_override_json is not None:
+            self.set_threshold_overrides_from_json(
+                args.threshold_override_json
+            )
 
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)

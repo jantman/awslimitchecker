@@ -285,16 +285,20 @@ using their IDs).
 
 
 
+.. _cli_usage.limit_overrides:
+
 Overriding Limits
 +++++++++++++++++
 
 In cases where you've been given a limit increase by AWS Support, you can override
 the default limits with custom ones. Currently, to do this from the command line,
-you must specify each limit that you want to override separately (the
+you can either specify each limit that you want to override separately using the
+``-L`` or ``--limit`` options, or you can specify a JSON file at either a local path
+or an S3 URL using the ``--limit-overrides-json`` option (the
 :py:meth:`~.AwsLimitChecker.set_limit_overrides` Python method accepts a dict for
-easy bulk overrides of limits) using the ``-L`` or ``--limit`` options. Limits are
-specified in a ``service_name/limit_name=value`` format, and must be quoted if the
-limit name contains spaces.
+easy bulk overrides of limits). Limits for the ``-L`` / ``--limit`` option are
+specified in a ``service_name/limit_name=value`` format, and must be quoted if
+the limit name contains spaces.
 
 For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 "EC2-VPC Elastic IPs" from their defaults of 5, to 10 and 20, respestively:
@@ -314,9 +318,36 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    VPC/VPCs                                               1000 (TA)
    VPC/Virtual private gateways                           5
 
-
-
 This example simply sets the overrides, and then prints the limits for confirmation.
+
+You could also set the same limit overrides using a JSON file stored at ``limit_overrides.json``, following the format documented for :py:meth:`awslimitchecker.checker.AwsLimitChecker.set_limit_overrides`:
+
+.. code-block:: json
+
+    {
+        "AutoScaling": {
+            "Auto Scaling groups": 321,
+            "Launch configurations": 456
+        }
+    }
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --limit-overrides-json=limit_overrides.json -l
+   ApiGateway/API keys per account                        500
+   ApiGateway/APIs per account                            60
+   ApiGateway/Client certificates per account             60
+   ApiGateway/Custom authorizers per API                  10
+   ApiGateway/Documentation parts per API                 2000
+   (...)
+   CloudFormation/Stacks                                  2500 (API)
+   (...)
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               1000 (TA)
+   VPC/Virtual private gateways                           5
+
 
 Check Limits Against Thresholds
 +++++++++++++++++++++++++++++++
@@ -354,7 +385,7 @@ threshold only, and another has crossed the critical threshold):
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) CRITICAL: 6
 
-
+.. _cli_usage.threshold_overrides:
 
 Set Custom Thresholds
 +++++++++++++++++++++
@@ -374,7 +405,60 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=7, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
+You can also set custom thresholds on a per-limit basis using the
+``--threshold-override-json`` CLI option, which accepts the path to a JSON file
+(local or an s3:// URL) matching the format described in
+:py:meth:`awslimitchecker.checker.AwsLimitChecker.set_threshold_overrides`, for example:
 
+.. code-block:: json
+
+    {
+        "S3": {
+            "Buckets": {
+                "warning": {
+                    "percent": 97
+                },
+                "critical": {
+                    "percent": 99
+                }
+            }
+        },
+        "EC2": {
+            "Security groups per VPC": {
+                "warning": {
+                    "percent": 80,
+                    "count": 800
+                },
+                "critical": {
+                    "percent": 90,
+                    "count": 900
+                }
+            },
+            "VPC security groups per elastic network interface": {
+                "warning": {
+                    "percent": 101
+                },
+                "critical": {
+                    "percent": 101
+                }
+            }
+        }
+    }
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-overrides-json=s3://bucketname/path/overrides.json
+   ApiGateway/APIs per account                            (limit 60) CRITICAL: 98
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: sale_setup_draft_vehicles (...)
+   DynamoDB/Tables Per Region                             (limit 256) WARNING: 250
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=863
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
+   (...)
+   S3/Buckets                                             (limit 100) CRITICAL: 657
+   VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=7, us-east-1c= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
 Required IAM Policy
 +++++++++++++++++++
@@ -397,10 +481,11 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Version": "2012-10-17"
    }
 
-
-
 For the current IAM Policy required by this version of awslimitchecker,
 see :ref:`IAM Policy <iam_policy>`.
+
+.. important::
+   The required IAM policy output by awslimitchecker includes only the permissions required to check limits and usage. If you are loading :ref:`limit overrides <cli_usage.limit_overrides>` and/or :ref:`threshold overrides <cli_usage.threshold_overrides>` from S3, you will need to run awslimitchecker with additional permissions to access those objects.
 
 Connect to a Specific Region
 ++++++++++++++++++++++++++++

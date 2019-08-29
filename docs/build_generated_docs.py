@@ -237,6 +237,7 @@ def build_runner_examples():
         except subprocess.CalledProcessError as e:
             output = e.output
         results[name] = format_cmd_output(cmd_str, output, name)
+        results['%s-output-only' % name] = format_cmd_output(None, output, name)
     tmpl = tmpl.format(**results)
 
     # write out the final .rst
@@ -246,8 +247,11 @@ def build_runner_examples():
 
 def format_cmd_output(cmd, output, name):
     """format command output for docs"""
-    formatted = '.. code-block:: console\n\n'
-    formatted += '   (venv)$ {c}\n'.format(c=cmd)
+    if cmd is None:
+        formatted = ''
+    else:
+        formatted = '.. code-block:: console\n\n'
+        formatted += '   (venv)$ {c}\n'.format(c=cmd)
     lines = output.split("\n")
     if name != 'help':
         for idx, line in enumerate(lines):
@@ -277,6 +281,11 @@ def format_cmd_output(cmd, output, name):
             lines = tmp_lines
     for line in lines:
         if line.strip() == '':
+            continue
+        if (
+            name == 'check_thresholds_custom' and
+            'VPC security groups per elastic network interface' in line
+        ):
             continue
         formatted += '   ' + line + "\n"
     formatted += '\n'
