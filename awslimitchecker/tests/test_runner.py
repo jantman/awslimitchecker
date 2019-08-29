@@ -117,6 +117,7 @@ class TestParseArgs(RunnerTester):
         assert res.ta_refresh_mode is None
         assert res.limit == {}
         assert res.limit_override_json is None
+        assert res.threshold_override_json is None
 
     def test_parser(self):
         argv = ['-V']
@@ -168,6 +169,12 @@ class TestParseArgs(RunnerTester):
                                 type=str, default=None,
                                 help='Absolute or relative path, or s3:// URL, '
                                      'to a JSON file specifying limit '
+                                     'overrides. See docs for expected format.'
+                                ),
+            call().add_argument('--threshold-override-json', action='store',
+                                type=str, default=None,
+                                help='Absolute or relative path, or s3:// URL,'
+                                     ' to a JSON file specifying threshold '
                                      'overrides. See docs for expected format.'
                                 ),
             call().add_argument('-u', '--show-usage', action='store_true',
@@ -605,11 +612,52 @@ class TestSetLimitOverridesFromJson(RunnerTester):
         assert m_load.mock_calls == [
             call(self.cls, '/foo/bar/baz.json')
         ]
-        calls = self.cls.checker.mock_calls
-        assert len(calls) == 3
-        assert call.set_limit_override('Foo', 'bar', 23) in calls
-        assert call.set_limit_override('Foo', 'baz', 6) in calls
-        assert call.set_limit_override('Blam', 'Blarg', 73) in calls
+        assert self.cls.checker.mock_calls == [
+            call.set_limit_overrides({
+                'Foo': {'bar': 23, 'baz': 6},
+                'Blam': {'Blarg': 73}
+            })
+        ]
+
+
+class TestSetThresholdOverridesFromJson(RunnerTester):
+
+    def test_happy_path(self):
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        self.cls.checker = mock_checker
+        with patch('%s.Runner.load_json' % pb, autospec=True) as m_load:
+            m_load.return_value = {
+                'Foo': {
+                    'bar': {
+                        'warning': {
+                            'percent': 90,
+                            'count': 10
+                        },
+                        'critical': {
+                            'percent': 95
+                        }
+                    }
+                }
+            }
+            self.cls.set_threshold_overrides_from_json('/foo/bar/baz.json')
+        assert m_load.mock_calls == [
+            call(self.cls, '/foo/bar/baz.json')
+        ]
+        assert self.cls.checker.mock_calls == [
+            call.set_threshold_overrides({
+                'Foo': {
+                    'bar': {
+                        'warning': {
+                            'percent': 90,
+                            'count': 10
+                        },
+                        'critical': {
+                            'percent': 95
+                        }
+                    }
+                }
+            })
+        ]
 
 
 class TestShowUsage(RunnerTester):
@@ -1262,6 +1310,25 @@ class TestConsoleEntryPoint(RunnerTester):
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
         assert mock_slo.mock_calls == [
+            call(self.cls, '/path/to/file.json')
+        ]
+
+    def test_threshold_override_json(self):
+        argv = [
+            'awslimitchecker',
+            '--threshold-override-json=/path/to/file.json'
+        ]
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
+                with patch(
+                        '%s.Runner.set_threshold_overrides_from_json' % pb,
+                        autospec=True
+                ) as mock_tlo:
+                    mock_ct.return_value = 0
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mock_tlo.mock_calls == [
             call(self.cls, '/path/to/file.json')
         ]
 

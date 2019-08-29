@@ -136,6 +136,11 @@ class Runner(object):
                        help='Absolute or relative path, or s3:// URL, to a '
                             'JSON file specifying limit overrides. See docs '
                             'for expected format.')
+        p.add_argument('--threshold-override-json', action='store', type=str,
+                       default=None,
+                       help='Absolute or relative path, or s3:// URL, to a '
+                            'JSON file specifying threshold overrides. See '
+                            'docs for expected format.')
         p.add_argument('-u', '--show-usage', action='store_true',
                        default=False,
                        help='find and print the current usage of all AWS '
@@ -382,10 +387,15 @@ class Runner(object):
 
     def set_limit_overrides_from_json(self, path):
         j = self.load_json(path)
-        for svcname, kv in j.items():
-            for limname, value in kv.items():
-                self.checker.set_limit_override(svcname, limname, value)
+        logger.debug('Limit overrides: %s', j)
+        self.checker.set_limit_overrides(j)
         logger.debug('Done setting limit overrides from JSON.')
+
+    def set_threshold_overrides_from_json(self, path):
+        j = self.load_json(path)
+        logger.debug('Threshold overrides: %s', j)
+        self.checker.set_threshold_overrides(j)
+        logger.debug('Done setting threshold overrides from JSON.')
 
     def console_entry_point(self):
         args = self.parse_args(sys.argv[1:])
@@ -438,6 +448,11 @@ class Runner(object):
 
         if args.limit_override_json is not None:
             self.set_limit_overrides_from_json(args.limit_override_json)
+
+        if args.threshold_override_json is not None:
+            self.set_threshold_overrides_from_json(
+                args.threshold_override_json
+            )
 
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)

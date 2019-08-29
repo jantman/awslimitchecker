@@ -282,6 +282,11 @@ def format_cmd_output(cmd, output, name):
     for line in lines:
         if line.strip() == '':
             continue
+        if (
+            name == 'check_thresholds_custom' and
+            'VPC security groups per elastic network interface' in line
+        ):
+            continue
         formatted += '   ' + line + "\n"
     formatted += '\n'
     return formatted
