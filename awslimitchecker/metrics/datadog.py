@@ -76,7 +76,7 @@ class Datadog(MetricsProvider):
         self._prefix = prefix
         self._tags = ['region:%s' % region_name]
         if extra_tags is not None:
-            self._tags.extend(','.split(extra_tags))
+            self._tags.extend(extra_tags.split(','))
         self._api_key = os.environ.get('DATADOG_API_KEY')
         if api_key is not None:
             self._api_key = api_key
