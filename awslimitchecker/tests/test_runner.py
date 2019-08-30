@@ -43,6 +43,7 @@ import sys
 import logging
 import json
 import termcolor
+from freezegun import freeze_time
 
 from awslimitchecker.runner import Runner, console_entry_point
 from awslimitchecker.checker import AwsLimitChecker
@@ -56,9 +57,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, mock_open
+    from mock import patch, call, Mock, mock_open, PropertyMock
 else:
-    from unittest.mock import patch, call, Mock, mock_open
+    from unittest.mock import patch, call, Mock, mock_open, PropertyMock
 
 
 def red(s):
@@ -118,6 +119,9 @@ class TestParseArgs(RunnerTester):
         assert res.limit == {}
         assert res.limit_override_json is None
         assert res.threshold_override_json is None
+        assert res.list_metrics_providers is False
+        assert res.metrics_provider is None
+        assert res.metrics_config == {}
 
     def test_parser(self):
         argv = ['-V']
@@ -269,6 +273,22 @@ class TestParseArgs(RunnerTester):
                                 action='store_true',
                                 default=False,
                                 help='print version number and exit.'),
+            call().add_argument('--list-metrics-providers',
+                                dest='list_metrics_providers',
+                                action='store_true', default=False,
+                                help='List available metrics providers and exit'
+                                ),
+            call().add_argument('--metrics-provider', dest='metrics_provider',
+                                type=str,
+                                action='store', default=None,
+                                help='Metrics provider class name, to enable '
+                                     'sending metrics'
+                                ),
+            call().add_argument('--metrics-config', action=StoreKeyValuePair,
+                                dest='metrics_config',
+                                help='Specify key/value parameters for the '
+                                     'metrics provider constructor. See '
+                                     'documentation for further information.'),
             call().parse_args(argv)
         ]
 
@@ -331,6 +351,19 @@ class TestParseArgs(RunnerTester):
             'EC2/Running On-Demand x1e.8xlarge instances',
             'EC2/Running On-Demand c5.9xlarge instances',
         ]
+
+    def test_list_metrics_providers(self):
+        res = self.cls.parse_args(['--list-metrics-providers'])
+        assert res.list_metrics_providers is True
+
+    def test_metrics_provider(self):
+        res = self.cls.parse_args([
+            '--metrics-provider=ClassName',
+            '--metrics-config=foo=bar',
+            '--metrics-config=baz=blam'
+        ])
+        assert res.metrics_provider == 'ClassName'
+        assert res.metrics_config == {'foo': 'bar', 'baz': 'blam'}
 
 
 class TestListServices(RunnerTester):
@@ -719,6 +752,7 @@ class TestCheckThresholds(RunnerTester):
         """no problems, return 0 and print nothing"""
         mock_checker = Mock(spec_set=AwsLimitChecker)
         mock_checker.check_thresholds.return_value = {}
+        mock_checker.get_limits.return_value = {}
         self.cls.checker = mock_checker
         with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
             mock_d2c.return_value = ''
@@ -729,6 +763,40 @@ class TestCheckThresholds(RunnerTester):
             call.check_thresholds(use_ta=True, service=None)
         ]
         assert res == 0
+
+    def test_metrics(self, capsys):
+        """no problems, return 0 and print nothing; send metrics"""
+        mock_checker = Mock(spec_set=AwsLimitChecker)
+        mock_checker.check_thresholds.return_value = {}
+        mock_lim1 = Mock()
+        mock_lim2 = Mock()
+        mock_lim3 = Mock()
+        mock_checker.get_limits.return_value = {
+            'S1': {
+                'lim1': mock_lim1,
+                'lim2': mock_lim2
+            },
+            'S2': {
+                'lim3': mock_lim3
+            }
+        }
+        mock_metrics = Mock()
+        self.cls.checker = mock_checker
+        self.cls.service_name = ['S1']
+        with patch('awslimitchecker.runner.dict2cols') as mock_d2c:
+            mock_d2c.return_value = ''
+            res = self.cls.check_thresholds(metrics=mock_metrics)
+        out, err = capsys.readouterr()
+        assert out == '\n'
+        assert mock_checker.mock_calls == [
+            call.check_thresholds(use_ta=True, service=['S1']),
+            call.get_limits()
+        ]
+        assert res == 0
+        assert mock_metrics.mock_calls == [
+            call.add_limit(mock_lim1),
+            call.add_limit(mock_lim2)
+        ]
 
     def test_many_problems(self):
         """lots of problems"""
@@ -768,6 +836,7 @@ class TestCheckThresholds(RunnerTester):
                 'limit2': mock_limit2,
             },
         }
+        mock_checker.get_limits.return_value = {}
 
         def se_print(cls, s, l, c, w):
             return ('{s}/{l}'.format(s=s, l=l.name), '')
@@ -820,6 +889,7 @@ class TestCheckThresholds(RunnerTester):
                 'limit2': mock_limit2,
             },
         }
+        mock_checker.get_limits.return_value = {}
 
         def se_print(cls, s, l, c, w):
             return ('{s}/{l}'.format(s=s, l=l.name), '')
@@ -868,6 +938,7 @@ class TestCheckThresholds(RunnerTester):
                 'limit1': mock_limit1,
             },
         }
+        mock_checker.get_limits.return_value = {}
 
         self.cls.checker = mock_checker
         with patch('awslimitchecker.runner.Runner.print_issue',
@@ -904,6 +975,7 @@ class TestCheckThresholds(RunnerTester):
                 'limit2': mock_limit2,
             },
         }
+        mock_checker.get_limits.return_value = {}
 
         self.cls.checker = mock_checker
         self.cls.service_name = ['svc2']
@@ -935,6 +1007,7 @@ class TestCheckThresholds(RunnerTester):
                 'limit1': mock_limit1,
             },
         }
+        mock_checker.get_limits.return_value = {}
 
         self.cls.checker = mock_checker
         self.cls.skip_ta = True
@@ -1636,15 +1709,70 @@ class TestConsoleEntryPoint(RunnerTester):
     def test_check_thresholds(self):
         argv = ['awslimitchecker']
         with patch.object(sys, 'argv', argv):
-            with patch('%s.Runner.check_thresholds' % pb,
-                       autospec=True) as mock_ct:
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
                 with pytest.raises(SystemExit) as excinfo:
                     mock_ct.return_value = 10
                     self.cls.console_entry_point()
         assert excinfo.value.code == 10
         assert mock_ct.mock_calls == [
-            call(self.cls)
+            call(self.cls, None)
         ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_check_thresholds_with_metrics(self):
+        argv = [
+            'awslimitchecker',
+            '--metrics-provider=FooProvider',
+            '--metrics-config=foo=bar',
+            '--metrics-config=baz=blam'
+        ]
+        mock_prov = Mock()
+        mock_rn = PropertyMock(return_value='rname')
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
+                with patch(
+                    '%s.MetricsProvider.get_provider_by_name' % pb
+                ) as m_gpbn:
+                    m_gpbn.return_value = mock_prov
+                    with patch(
+                        '%s.AwsLimitChecker' % pb, spec_set=AwsLimitChecker
+                    ) as mock_alc:
+                        type(mock_alc.return_value).region_name = mock_rn
+                        with pytest.raises(SystemExit) as excinfo:
+                            mock_ct.return_value = 10
+                            self.cls.console_entry_point()
+        assert excinfo.value.code == 10
+        assert mock_ct.mock_calls == [
+            call(self.cls, mock_prov.return_value)
+        ]
+        assert mock_prov.mock_calls == [
+            call('rname', foo='bar', baz='blam'),
+            call().set_run_duration(6),
+            call().flush()
+        ]
+
+    def test_list_metrics_providers(self, capsys):
+        argv = ['awslimitchecker', '--list-metrics-providers']
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.MetricsProvider.providers_by_name' % pb,
+            ) as mock_list:
+                mock_list.return_value = {
+                    'Prov2': None,
+                    'Prov1': None
+                }
+                with pytest.raises(SystemExit) as excinfo:
+                    self.cls.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mock_list.mock_calls == [
+            call()
+        ]
+        out, err = capsys.readouterr()
+        assert out == 'Available metrics providers:\nProv1\nProv2\n'
 
     def test_no_color(self):
         argv = ['awslimitchecker', '--no-color']

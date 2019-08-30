@@ -204,6 +204,28 @@ are needed to support new limit checks from TA.
 
 For further information, see :ref:`Internals / Trusted Advisor <internals.trusted_advisor>`.
 
+.. _development.metrics_providers:
+
+Adding Metrics Providers
+------------------------
+
+Metrics providers are subclasses of :py:class:`~.MetricsProvider` that take key/value
+configuration items via constructor keyword arguments and implement a
+:py:meth:`~.MetricsProvider.flush` method to send all metrics to the configured provider.
+It is probably easiest to look at the other existing providers for an example of how to
+implement a new one, but there are a few important things to keep in mind:
+
+* All configuration must be able to be bassed as keyword arguments to the class
+  constructor (which come from ``--metrics-config=key=value`` CLI arguments).
+  It is recommended that any secrets/API keys also be able to be set via
+  environment variables, but the CLI arguments should have precedence.
+* All dependency imports must be made inside the constructor, not at the module
+  level.
+* If the provider requires additional dependencies, they should be added as
+  extras but installed in the Docker image.
+* The constructor should do as much validation (i.e. authentication test) as
+  possible.
+
 .. _development.tests:
 
 Unit Testing

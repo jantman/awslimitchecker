@@ -53,9 +53,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, DEFAULT
+    from mock import patch, call, Mock, DEFAULT, PropertyMock
 else:
-    from unittest.mock import patch, call, Mock, DEFAULT
+    from unittest.mock import patch, call, Mock, DEFAULT, PropertyMock
 
 pbm = 'awslimitchecker.checker'  # patch base path - module
 pb = '%s.AwsLimitChecker' % pbm  # patch base path
@@ -868,3 +868,16 @@ class TestAwsLimitChecker(object):
             call._update_limits_from_api(),
             call.check_thresholds()
         ]
+
+    def test_region_name(self):
+        mock_client = Mock(
+            _client_config=Mock(region_name='rname')
+        )
+        with patch(
+            '%s._boto_conn_kwargs' % pb, new_callable=PropertyMock
+        ) as mock_bck:
+            mock_bck.return_value = {'foo': 'bar'}
+            with patch('%s.boto3.client' % pbm) as m_client:
+                m_client.return_value = mock_client
+                res = self.cls.region_name
+        assert res == 'rname'

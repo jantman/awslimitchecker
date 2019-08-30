@@ -26,8 +26,10 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
                           [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
-                          [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
-                          [--iam-policy] [-W WARNING_THRESHOLD]
+                          [-s] [-l] [--list-defaults] [-L LIMIT]
+                          [--limit-override-json LIMIT_OVERRIDE_JSON]
+                          [--threshold-override-json THRESHOLD_OVERRIDE_JSON]
+                          [-u] [--iam-policy] [-W WARNING_THRESHOLD]
                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
                           [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
                           [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
@@ -35,6 +37,9 @@ use as a Nagios-compatible plugin).
                           [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
                           [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
                           [--no-check-version] [-v] [-V]
+                          [--list-metrics-providers]
+                          [--metrics-provider METRICS_PROVIDER]
+                          [--metrics-config METRICS_CONFIG]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -58,6 +63,14 @@ use as a Nagios-compatible plugin).
                            override a single AWS limit, specified in
                            "service_name/limit_name=value" format; can be
                            specified multiple times.
+     --limit-override-json LIMIT_OVERRIDE_JSON
+                           Absolute or relative path, or s3:// URL, to a JSON
+                           file specifying limit overrides. See docs for expected
+                           format.
+     --threshold-override-json THRESHOLD_OVERRIDE_JSON
+                           Absolute or relative path, or s3:// URL, to a JSON
+                           file specifying threshold overrides. See docs for
+                           expected format.
      -u, --show-usage      find and print the current usage of all AWS services
                            with known limits
      --iam-policy          output a JSON serialized IAM Policy listing the
@@ -108,6 +121,14 @@ use as a Nagios-compatible plugin).
      --no-check-version    do not check latest version at startup
      -v, --verbose         verbose output. specify twice for debug-level output.
      -V, --version         print version number and exit.
+     --list-metrics-providers
+                           List available metrics providers and exit
+     --metrics-provider METRICS_PROVIDER
+                           Metrics provider class name, to enable sending metrics
+     --metrics-config METRICS_CONFIG
+                           Specify key/value parameters for the metrics provider
+                           constructor. See documentation for further
+                           information.
    awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
    even remotely over a network, is entitled to a copy of the source code. Use
    `--version` for information on the source code location.
@@ -445,6 +466,7 @@ You can also set custom thresholds on a per-limit basis using the
         }
     }
 
+
 Using a command like:
 
 .. code-block:: console
@@ -460,6 +482,48 @@ Using a command like:
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=7, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
+
+
+.. _cli_usage.metrics:
+
+Enable Metrics Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending metrics for the overall runtime of checking
+thresholds, as well as the current limit values and current usage, to various metrics
+stores. The list of metrics providers supported by your version of awslimitchecker
+can be seen with the ``--list-metrics-providers`` option:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --list-metrics-providers
+   Available metrics providers:
+   Datadog
+   Dummy
+
+
+
+The configuration options required by each metrics provider are specified in the
+providers' documentation:
+
+* :py:class:`~.Dummy`
+* :py:class:`~.Datadog`
+
+
+For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+metrics provider which requires an ``api_key`` paramater (also accepted as an
+environment variable) and an optional ``extra_tags`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam
+
+Metrics will be pushed to the provider only when awslimitchecker is done checking
+all limits.
+
 Required IAM Policy
 +++++++++++++++++++
 
@@ -474,12 +538,14 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "apigateway:GET", 
+           "apigateway:GET",
    (...)
        }
-     ], 
+     ],
      "Version": "2012-10-17"
    }
+
+
 
 For the current IAM Policy required by this version of awslimitchecker,
 see :ref:`IAM Policy <iam_policy>`.
