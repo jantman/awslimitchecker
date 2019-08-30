@@ -12,5 +12,6 @@ Submodules
 .. toctree::
 
    awslimitchecker.metrics.base
+   awslimitchecker.metrics.datadog
    awslimitchecker.metrics.dummy
 

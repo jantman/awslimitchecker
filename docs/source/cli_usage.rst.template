@@ -144,12 +144,7 @@ You could also set the same limit overrides using a JSON file stored at ``limit_
 
 .. code-block:: json
 
-    {
-        "AutoScaling": {
-            "Auto Scaling groups": 321,
-            "Launch configurations": 456
-        }
-    }
+{limit-override-json}
 
 Using a command like:
 
@@ -199,38 +194,7 @@ You can also set custom thresholds on a per-limit basis using the
 
 .. code-block:: json
 
-    {
-        "S3": {
-            "Buckets": {
-                "warning": {
-                    "percent": 97
-                },
-                "critical": {
-                    "percent": 99
-                }
-            }
-        },
-        "EC2": {
-            "Security groups per VPC": {
-                "warning": {
-                    "percent": 80,
-                    "count": 800
-                },
-                "critical": {
-                    "percent": 90,
-                    "count": 900
-                }
-            },
-            "VPC security groups per elastic network interface": {
-                "warning": {
-                    "percent": 101
-                },
-                "critical": {
-                    "percent": 101
-                }
-            }
-        }
-    }
+{threshold-override-json}
 
 Using a command like:
 
@@ -238,6 +202,37 @@ Using a command like:
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-overrides-json=s3://bucketname/path/overrides.json
 {check_thresholds_custom-output-only}
+
+.. _cli_usage.metrics:
+
+Enable Metrics Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending metrics for the overall runtime of checking
+thresholds, as well as the current limit values and current usage, to various metrics
+stores. The list of metrics providers supported by your version of awslimitchecker
+can be seen with the ``--list-metrics-providers`` option:
+
+{list_metrics}
+
+The configuration options required by each metrics provider are specified in the
+providers' documentation:
+
+{metrics-providers}
+
+For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+metrics provider which requires an ``api_key`` paramater (also accepted as an
+environment variable) and an optional ``extra_tags`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam
+
+Metrics will be pushed to the provider only when awslimitchecker is done checking
+all limits.
 
 Required IAM Policy
 +++++++++++++++++++
