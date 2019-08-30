@@ -237,6 +237,19 @@ class Runner(object):
                        help='Specify key/value parameters for the metrics '
                             'provider constructor. See documentation for '
                             'further information.')
+        p.add_argument('--list-alert-providers',
+                       dest='list_alert_providers',
+                       action='store_true', default=False,
+                       help='List available alert providers and exit')
+        p.add_argument('--alert-provider', dest='alert_provider', type=str,
+                       action='store', default=None,
+                       help='Alert provider class name, to enable sending '
+                            'notifications')
+        p.add_argument('--alert-config', action=StoreKeyValuePair,
+                       dest='alert_config',
+                       help='Specify key/value parameters for the alert '
+                            'provider constructor. See documentation for '
+                            'further information.')
         args = p.parse_args(argv)
         args.ta_refresh_mode = None
         if args.ta_refresh_wait:

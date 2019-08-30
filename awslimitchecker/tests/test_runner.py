@@ -122,6 +122,9 @@ class TestParseArgs(RunnerTester):
         assert res.list_metrics_providers is False
         assert res.metrics_provider is None
         assert res.metrics_config == {}
+        assert res.list_alert_providers is False
+        assert res.alert_provider is None
+        assert res.alert_config == {}
 
     def test_parser(self):
         argv = ['-V']
@@ -289,6 +292,21 @@ class TestParseArgs(RunnerTester):
                                 help='Specify key/value parameters for the '
                                      'metrics provider constructor. See '
                                      'documentation for further information.'),
+            call().add_argument('--list-alert-providers',
+                                dest='list_alert_providers',
+                                action='store_true', default=False,
+                                help='List available alert providers '
+                                     'and exit'),
+            call().add_argument('--alert-provider', dest='alert_provider',
+                                type=str, action='store', default=None,
+                                help='Alert provider class name, to enable '
+                                     'sending notifications'),
+            call().add_argument('--alert-config', action=StoreKeyValuePair,
+                                dest='alert_config',
+                                help='Specify key/value parameters for the '
+                                     'alert provider constructor. See '
+                                     'documentation for further information.'
+                                ),
             call().parse_args(argv)
         ]
 
@@ -364,6 +382,19 @@ class TestParseArgs(RunnerTester):
         ])
         assert res.metrics_provider == 'ClassName'
         assert res.metrics_config == {'foo': 'bar', 'baz': 'blam'}
+
+    def test_list_alert_providers(self):
+        res = self.cls.parse_args(['--list-alert-providers'])
+        assert res.list_alert_providers is True
+
+    def test_alert_provider(self):
+        res = self.cls.parse_args([
+            '--alert-provider=ClassName',
+            '--alert-config=foo=bar',
+            '--alert-config=baz=blam'
+        ])
+        assert res.alert_provider == 'ClassName'
+        assert res.alert_config == {'foo': 'bar', 'baz': 'blam'}
 
 
 class TestListServices(RunnerTester):
