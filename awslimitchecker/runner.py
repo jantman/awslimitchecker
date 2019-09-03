@@ -49,6 +49,7 @@ from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols
 from .limit import SOURCE_TA, SOURCE_API
 from .metrics import MetricsProvider
+from .alerts import AlertProvider
 
 try:
     from urllib.parse import urlparse
@@ -319,6 +320,9 @@ class Runner(object):
 
     def print_issue(self, service_name, limit, crits, warns):
         """
+        Return a 2-tuple of key (service/limit name)/value (usage) strings
+        describing a limit that has crossed its threshold.
+
         :param service_name: the name of the service
         :type service_name: str
         :param limit: the Limit this relates to
@@ -329,6 +333,10 @@ class Runner(object):
         :param crits: the specific usage values that crossed the warning
           threshold
         :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+        :returns: 2-tuple of strings describing crossed thresholds,
+          first describing the service and limit name and second listing the
+          limit and usage
+        :rtype: tuple
         """
         usage_str = ''
         if len(crits) > 0:
@@ -349,7 +357,7 @@ class Runner(object):
             v=limit.get_limit(),
             u=usage_str,
         )
-        return (k, v)
+        return k, v
 
     def check_thresholds(self, metrics=None):
         have_warn = False
@@ -382,14 +390,15 @@ class Runner(object):
                     have_warn = True
                 k, v = self.print_issue(svc, limit, crits, warns)
                 columns[k] = v
-        print(dict2cols(columns))
+        d2c = dict2cols(columns)
+        print(d2c)
         # might as well use the Nagios exit codes,
         # even though our output doesn't work for that
         if have_crit:
-            return 2
+            return 2, problems, d2c
         if have_warn:
-            return 1
-        return 0
+            return 1, problems, d2c
+        return 0, problems, d2c
 
     def set_limit_overrides(self, overrides):
         for key in sorted(overrides.keys()):
@@ -517,19 +526,48 @@ class Runner(object):
                 print(p)
             raise SystemExit(0)
 
+        if args.list_alert_providers:
+            print('Available alert providers:')
+            for p in sorted(AlertProvider.providers_by_name().keys()):
+                print(p)
+            raise SystemExit(0)
+
         # else check
-        metrics = None
-        if args.metrics_provider:
-            metrics = MetricsProvider.get_provider_by_name(
-                args.metrics_provider
-            )(self.checker.region_name, **args.metrics_config)
+        alerter = None
+        if args.alert_provider:
+            alerter = AlertProvider.get_provider_by_name(
+                args.alert_provider
+            )(self.checker.region_name, **args.alert_config)
         start_time = time.time()
-        res = self.check_thresholds(metrics)
-        duration = time.time() - start_time
-        logger.info('Finished checking limits in %s seconds', duration)
-        if metrics:
-            metrics.set_run_duration(duration)
-            metrics.flush()
+        try:
+            metrics = None
+            if args.metrics_provider:
+                metrics = MetricsProvider.get_provider_by_name(
+                    args.metrics_provider
+                )(self.checker.region_name, **args.metrics_config)
+            res, problems, problem_str = self.check_thresholds(metrics)
+            duration = time.time() - start_time
+            logger.info('Finished checking limits in %s seconds', duration)
+            if metrics:
+                metrics.set_run_duration(duration)
+                metrics.flush()
+        except Exception as ex:
+            if alerter:
+                alerter.on_critical(
+                    None, None, exc=ex, duration=time.time() - start_time
+                )
+            raise
+        if alerter:
+            if res == 2:
+                alerter.on_critical(
+                    problems, problem_str, duration=time.time() - start_time
+                )
+            elif res == 1:
+                alerter.on_warning(
+                    problems, problem_str, duration=time.time() - start_time
+                )
+            else:
+                alerter.on_success(duration=time.time() - start_time)
         raise SystemExit(res)
 
 

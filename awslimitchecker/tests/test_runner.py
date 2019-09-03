@@ -793,7 +793,7 @@ class TestCheckThresholds(RunnerTester):
         assert mock_checker.mock_calls == [
             call.check_thresholds(use_ta=True, service=None)
         ]
-        assert res == 0
+        assert res == (0, {}, '')
 
     def test_metrics(self, capsys):
         """no problems, return 0 and print nothing; send metrics"""
@@ -823,7 +823,7 @@ class TestCheckThresholds(RunnerTester):
             call.check_thresholds(use_ta=True, service=['S1']),
             call.get_limits()
         ]
-        assert res == 0
+        assert res == (0, {}, '')
         assert mock_metrics.mock_calls == [
             call.add_limit(mock_lim1),
             call.add_limit(mock_lim2)
@@ -896,7 +896,16 @@ class TestCheckThresholds(RunnerTester):
                 'svc2/limit4': '',
             })
         ]
-        assert res == 2
+        assert res == (2, {
+            'svc2': {
+                'limit3': mock_limit3,
+                'limit4': mock_limit4,
+            },
+            'svc1': {
+                'limit1': mock_limit1,
+                'limit2': mock_limit2,
+            },
+        }, 'd2cval')
 
     def test_when_skip_check(self):
         """lots of problems"""
@@ -945,7 +954,12 @@ class TestCheckThresholds(RunnerTester):
                 'svc1/limit2': '',
             })
         ]
-        assert res == 1
+        assert res == (1, {
+            'svc1': {
+                'limit1': mock_limit1,
+                'limit2': mock_limit2,
+            },
+        }, 'd2cval')
 
     def test_warn(self):
         """just warnings"""
@@ -985,7 +999,14 @@ class TestCheckThresholds(RunnerTester):
             call(self.cls, 'svc1', mock_limit1, [], [mock_w1, mock_w2]),
             call(self.cls, 'svc2', mock_limit2, [], [mock_w3]),
         ]
-        assert res == 1
+        assert res == (1, {
+            'svc2': {
+                'limit2': mock_limit2,
+            },
+            'svc1': {
+                'limit1': mock_limit1,
+            },
+        }, 'd2cval')
 
     def test_warn_one_service(self):
         """just warnings"""
@@ -1022,7 +1043,11 @@ class TestCheckThresholds(RunnerTester):
         assert mock_print.mock_calls == [
             call(self.cls, 'svc2', mock_limit2, [], [mock_w3]),
         ]
-        assert res == 1
+        assert res == (1, {
+            'svc2': {
+                'limit2': mock_limit2,
+            },
+        }, 'd2cval')
 
     def test_crit(self):
         """only critical"""
@@ -1054,7 +1079,11 @@ class TestCheckThresholds(RunnerTester):
         assert mock_print.mock_calls == [
             call(self.cls, 'svc1', mock_limit1, [mock_c1, mock_c2], []),
         ]
-        assert res == 2
+        assert res == (2, {
+            'svc1': {
+                'limit1': mock_limit1,
+            },
+        }, '  \n')
 
 
 class TestPrintIssue(RunnerTester):
@@ -1264,7 +1293,7 @@ class TestConsoleEntryPoint(RunnerTester):
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_check:
-                mock_check.return_value = 2
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
                 with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
@@ -1282,7 +1311,7 @@ class TestConsoleEntryPoint(RunnerTester):
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_check:
-                mock_check.return_value = 2
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
                 with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
@@ -1305,7 +1334,7 @@ class TestConsoleEntryPoint(RunnerTester):
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_check:
-                mock_check.return_value = 2
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
                 with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
@@ -1327,7 +1356,7 @@ class TestConsoleEntryPoint(RunnerTester):
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_check:
-                mock_check.return_value = 2
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
                 with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
@@ -1352,7 +1381,7 @@ class TestConsoleEntryPoint(RunnerTester):
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_check:
-                mock_check.return_value = 2
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
                 with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
@@ -1375,7 +1404,7 @@ class TestConsoleEntryPoint(RunnerTester):
             with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
                 with patch('%s.Runner.set_limit_overrides'
                            '' % pb, autospec=True) as mock_slo:
-                    mock_ct.return_value = 0
+                    mock_ct.return_value = 0, {}, 'foo'
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
@@ -1390,7 +1419,7 @@ class TestConsoleEntryPoint(RunnerTester):
                        autospec=True) as mock_ct:
                 with patch('%s.Runner.set_limit_overrides'
                            '' % pb, autospec=True) as mock_slo:
-                    mock_ct.return_value = 0
+                    mock_ct.return_value = 0, {}, 'foo'
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
@@ -1409,7 +1438,7 @@ class TestConsoleEntryPoint(RunnerTester):
                     '%s.Runner.set_limit_overrides_from_json' % pb,
                     autospec=True
                 ) as mock_slo:
-                    mock_ct.return_value = 0
+                    mock_ct.return_value = 0, {}, 'foo'
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
@@ -1428,7 +1457,7 @@ class TestConsoleEntryPoint(RunnerTester):
                         '%s.Runner.set_threshold_overrides_from_json' % pb,
                         autospec=True
                 ) as mock_tlo:
-                    mock_ct.return_value = 0
+                    mock_ct.return_value = 0, {}, 'foo'
                     with pytest.raises(SystemExit) as excinfo:
                         self.cls.console_entry_point()
         assert excinfo.value.code == 0
@@ -1453,7 +1482,7 @@ class TestConsoleEntryPoint(RunnerTester):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_ct:
                 with pytest.raises(SystemExit) as excinfo:
-                    mock_ct.return_value = 6
+                    mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'foo'
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1466,7 +1495,7 @@ class TestConsoleEntryPoint(RunnerTester):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_ct:
                 with pytest.raises(SystemExit) as excinfo:
-                    mock_ct.return_value = 6
+                    mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'foo'
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1479,7 +1508,7 @@ class TestConsoleEntryPoint(RunnerTester):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_ct:
                 with pytest.raises(SystemExit) as excinfo:
-                    mock_ct.return_value = 6
+                    mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'foo'
                     self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1494,7 +1523,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.AwsLimitChecker' % pb,
                            spec_set=AwsLimitChecker) as mock_alc:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 6
+                        mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1533,7 +1562,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.AwsLimitChecker' % pb,
                            spec_set=AwsLimitChecker) as mock_alc:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 6
+                        mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1575,7 +1604,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.AwsLimitChecker' % pb,
                            spec_set=AwsLimitChecker) as mock_alc:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 6
+                        mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1606,7 +1635,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('awslimitchecker.runner.logger.setLevel'
                            '') as mock_set_level:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 6
+                        mock_ct.return_value = 6, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1621,7 +1650,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('awslimitchecker.runner.logger.setLevel'
                            '') as mock_set_level:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 7
+                        mock_ct.return_value = 7, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         out, err = capsys.readouterr()
         assert out == ''
@@ -1635,7 +1664,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.Runner.check_thresholds' % pb,
                            autospec=True) as mock_ct:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 8
+                        mock_ct.return_value = 8, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
@@ -1662,7 +1691,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.Runner.check_thresholds' % pb,
                            autospec=True) as mock_ct:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 8
+                        mock_ct.return_value = 8, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         assert excinfo.value.code == 8
         assert mock_alc.mock_calls == [
@@ -1689,7 +1718,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.Runner.check_thresholds' % pb,
                            autospec=True) as mock_ct:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 9
+                        mock_ct.return_value = 9, {'Foo': {'Bar': Mock()}}, 'f'
                         self.cls.console_entry_point()
         assert excinfo.value.code == 9
         assert mock_alc.mock_calls == [
@@ -1717,7 +1746,7 @@ class TestConsoleEntryPoint(RunnerTester):
                 with patch('%s.Runner.check_thresholds' % pb,
                            autospec=True) as mock_ct:
                     with pytest.raises(SystemExit) as excinfo:
-                        mock_ct.return_value = 9
+                        mock_ct.return_value = 9, {'Foo': {}}, 'foo'
                         self.cls.console_entry_point()
         assert excinfo.value.code == 9
         assert mock_alc.mock_calls == [
@@ -1744,11 +1773,171 @@ class TestConsoleEntryPoint(RunnerTester):
                 '%s.Runner.check_thresholds' % pb, autospec=True
             ) as mock_ct:
                 with pytest.raises(SystemExit) as excinfo:
-                    mock_ct.return_value = 10
+                    mock_ct.return_value = 10, {}, 'foo'
                     self.cls.console_entry_point()
         assert excinfo.value.code == 10
         assert mock_ct.mock_calls == [
             call(self.cls, None)
+        ]
+
+    def test_check_thresholds_exception(self):
+        argv = ['awslimitchecker']
+        exc = RuntimeError('foo')
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
+                with pytest.raises(RuntimeError) as excinfo:
+                    mock_ct.side_effect = exc
+                    self.cls.console_entry_point()
+        assert excinfo.value == exc
+        assert mock_ct.mock_calls == [
+            call(self.cls, None)
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_check_thresholds_exception_with_alerter(self):
+        argv = [
+            'awslimitchecker',
+            '--alert-provider=MyAlerter',
+            '--alert-config=foo=bar',
+            '--alert-config=baz=blam'
+        ]
+        mock_alerter = Mock()
+        mock_rn = PropertyMock(return_value='rname')
+        exc = RuntimeError('foo')
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
+                with patch(
+                    '%s.AlertProvider.get_provider_by_name' % pb
+                ) as m_gpbn:
+                    m_gpbn.return_value = mock_alerter
+                    with pytest.raises(RuntimeError) as excinfo:
+                        with patch(
+                                '%s.AwsLimitChecker' % pb,
+                                spec_set=AwsLimitChecker
+                        ) as mock_alc:
+                            type(mock_alc.return_value).region_name = mock_rn
+                            mock_ct.side_effect = exc
+                            self.cls.console_entry_point()
+        assert excinfo.value == exc
+        assert mock_ct.mock_calls == [
+            call(self.cls, None)
+        ]
+        assert m_gpbn.mock_calls == [
+            call('MyAlerter'),
+            call()('rname', foo='bar', baz='blam'),
+            call()().on_critical(None, None, exc=exc, duration=6)
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_check_thresholds_ok_with_alerter(self):
+        argv = [
+            'awslimitchecker',
+            '--alert-provider=MyAlerter',
+            '--alert-config=foo=bar',
+            '--alert-config=baz=blam'
+        ]
+        mock_alerter = Mock()
+        mock_rn = PropertyMock(return_value='rname')
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
+                with patch(
+                    '%s.AlertProvider.get_provider_by_name' % pb
+                ) as m_gpbn:
+                    m_gpbn.return_value = mock_alerter
+                    with pytest.raises(SystemExit) as excinfo:
+                        with patch(
+                                '%s.AwsLimitChecker' % pb,
+                                spec_set=AwsLimitChecker
+                        ) as mock_alc:
+                            type(mock_alc.return_value).region_name = mock_rn
+                            mock_ct.return_value = 0, {}, ''
+                            self.cls.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mock_ct.mock_calls == [
+            call(self.cls, None)
+        ]
+        assert m_gpbn.mock_calls == [
+            call('MyAlerter'),
+            call()('rname', foo='bar', baz='blam'),
+            call()().on_success(duration=12)
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_check_thresholds_warn_with_alerter(self):
+        argv = [
+            'awslimitchecker',
+            '--alert-provider=MyAlerter',
+            '--alert-config=foo=bar',
+            '--alert-config=baz=blam'
+        ]
+        mock_alerter = Mock()
+        mock_rn = PropertyMock(return_value='rname')
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
+                with patch(
+                    '%s.AlertProvider.get_provider_by_name' % pb
+                ) as m_gpbn:
+                    m_gpbn.return_value = mock_alerter
+                    with pytest.raises(SystemExit) as excinfo:
+                        with patch(
+                                '%s.AwsLimitChecker' % pb,
+                                spec_set=AwsLimitChecker
+                        ) as mock_alc:
+                            type(mock_alc.return_value).region_name = mock_rn
+                            mock_ct.return_value = 1, {'Foo': 'bar'}, 'FooBar'
+                            self.cls.console_entry_point()
+        assert excinfo.value.code == 1
+        assert mock_ct.mock_calls == [
+            call(self.cls, None)
+        ]
+        assert m_gpbn.mock_calls == [
+            call('MyAlerter'),
+            call()('rname', foo='bar', baz='blam'),
+            call()().on_warning({'Foo': 'bar'}, 'FooBar', duration=12)
+        ]
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_check_thresholds_crit_with_alerter(self):
+        argv = [
+            'awslimitchecker',
+            '--alert-provider=MyAlerter',
+            '--alert-config=foo=bar',
+            '--alert-config=baz=blam'
+        ]
+        mock_alerter = Mock()
+        mock_rn = PropertyMock(return_value='rname')
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.Runner.check_thresholds' % pb, autospec=True
+            ) as mock_ct:
+                with patch(
+                    '%s.AlertProvider.get_provider_by_name' % pb
+                ) as m_gpbn:
+                    m_gpbn.return_value = mock_alerter
+                    with pytest.raises(SystemExit) as excinfo:
+                        with patch(
+                                '%s.AwsLimitChecker' % pb,
+                                spec_set=AwsLimitChecker
+                        ) as mock_alc:
+                            type(mock_alc.return_value).region_name = mock_rn
+                            mock_ct.return_value = 2, {'Foo': 'bar'}, 'FooBar'
+                            self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_ct.mock_calls == [
+            call(self.cls, None)
+        ]
+        assert m_gpbn.mock_calls == [
+            call('MyAlerter'),
+            call()('rname', foo='bar', baz='blam'),
+            call()().on_critical({'Foo': 'bar'}, 'FooBar', duration=12)
         ]
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
@@ -1774,7 +1963,7 @@ class TestConsoleEntryPoint(RunnerTester):
                     ) as mock_alc:
                         type(mock_alc.return_value).region_name = mock_rn
                         with pytest.raises(SystemExit) as excinfo:
-                            mock_ct.return_value = 10
+                            mock_ct.return_value = 10, {}, 'foo'
                             self.cls.console_entry_point()
         assert excinfo.value.code == 10
         assert mock_ct.mock_calls == [
@@ -1805,12 +1994,31 @@ class TestConsoleEntryPoint(RunnerTester):
         out, err = capsys.readouterr()
         assert out == 'Available metrics providers:\nProv1\nProv2\n'
 
+    def test_list_alert_providers(self, capsys):
+        argv = ['awslimitchecker', '--list-alert-providers']
+        with patch.object(sys, 'argv', argv):
+            with patch(
+                '%s.AlertProvider.providers_by_name' % pb,
+            ) as mock_list:
+                mock_list.return_value = {
+                    'Prov2': None,
+                    'Prov1': None
+                }
+                with pytest.raises(SystemExit) as excinfo:
+                    self.cls.console_entry_point()
+        assert excinfo.value.code == 0
+        assert mock_list.mock_calls == [
+            call()
+        ]
+        out, err = capsys.readouterr()
+        assert out == 'Available alert providers:\nProv1\nProv2\n'
+
     def test_no_color(self):
         argv = ['awslimitchecker', '--no-color']
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_ct:
-                mock_ct.return_value = 0
+                mock_ct.return_value = 0, {}, 'foo'
                 with pytest.raises(SystemExit) as excinfo:
                     self.cls.console_entry_point()
         assert excinfo.value.code == 0
