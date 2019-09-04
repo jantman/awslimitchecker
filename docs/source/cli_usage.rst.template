@@ -234,6 +234,13 @@ environment variable) and an optional ``extra_tags`` parameter:
 Metrics will be pushed to the provider only when awslimitchecker is done checking
 all limits.
 
+.. _cli_usage.alerts:
+
+Enable Alerts Provider
++++++++++++++++++++++++
+
+TBD.
+
 Required IAM Policy
 +++++++++++++++++++
 
