@@ -506,8 +506,8 @@ can be seen with the ``--list-metrics-providers`` option:
 The configuration options required by each metrics provider are specified in the
 providers' documentation:
 
-* :py:class:`~.Dummy`
-* :py:class:`~.Datadog`
+* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
+* :py:class:`~awslimitchecker.metrics.datadog.Datadog`
 
 
 For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`

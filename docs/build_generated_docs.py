@@ -252,7 +252,8 @@ def build_runner_examples():
         results['%s-output-only' % name] = format_cmd_output(None, output, name)
     results['metrics-providers'] = ''
     for m in MetricsProvider.providers_by_name().keys():
-        results['metrics-providers'] += '* :py:class:`~.%s`\n' % m
+        results['metrics-providers'] += '* :py:class:`~awslimitchecker.' \
+                                        'metrics.%s.%s`\n' % (m.lower(), m)
     results['limit-override-json'] = dedent("""
         {
             "AutoScaling": {

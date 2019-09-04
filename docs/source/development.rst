@@ -225,6 +225,7 @@ implement a new one, but there are a few important things to keep in mind:
   extras but installed in the Docker image.
 * The constructor should do as much validation (i.e. authentication test) as
   possible.
+* Metrics provider classes should be in a module with the same name.
 
 .. _development.tests:
 

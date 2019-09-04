@@ -12,4 +12,5 @@ Submodules
 .. toctree::
 
    awslimitchecker.alerts.base
+   awslimitchecker.alerts.dummy
 
