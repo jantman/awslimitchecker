@@ -38,3 +38,4 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from .base import AlertProvider
+from .dummy import Dummy

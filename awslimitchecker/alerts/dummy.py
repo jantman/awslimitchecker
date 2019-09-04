@@ -1,5 +1,5 @@
 """
-awslimitchecker/alerts/base.py
+awslimitchecker/alerts/dummy.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -38,16 +38,18 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import logging
-from abc import ABCMeta, abstractmethod
+from .base import AlertProvider
 
 logger = logging.getLogger(__name__)
 
 
-class AlertProvider(object):
+class Dummy(AlertProvider):
+    """
+    Dummy alert provider that just outputs alerts to STDOUT (this will
+    effectively duplicate awslimitchecker's CLI output).
+    """
 
-    __metaclass__ = ABCMeta
-
-    def __init__(self, region_name):
+    def __init__(self, region_name, **_):
         """
         Initialize an AlertProvider class. This MUST be overridden by
         subclasses. All configuration must be passed as keyword arguments
@@ -58,9 +60,8 @@ class AlertProvider(object):
         :param region_name: the name of the region we're connected to
         :type region_name: str
         """
-        self._region_name = region_name
+        super(Dummy, self).__init__(region_name)
 
-    @abstractmethod
     def on_success(self, duration=None):
         """
         Method called when no thresholds were breached, and run completed
@@ -70,9 +71,10 @@ class AlertProvider(object):
         :param duration: duration of the usage/threshold checking run
         :type duration: float
         """
-        raise NotImplementedError()
+        print('awslimitchecker in %s found no problems' % self._region_name)
+        if duration:
+            print('awslimitchecker run duration: %s' % duration)
 
-    @abstractmethod
     def on_critical(self, problems, problem_str, exc=None, duration=None):
         """
         Method called when the run encountered errors, or at least one critical
@@ -92,9 +94,16 @@ class AlertProvider(object):
         :param duration: duration of the run
         :type duration: float
         """
-        raise NotImplementedError()
+        if exc is not None:
+            print('awslimitchecker in %s failed with exception: %s' % (
+                self._region_name, exc.__repr__()
+            ))
+        else:
+            print('awslimitchecker in %s found CRITICALS:' % self._region_name)
+            print(problem_str)
+        if duration:
+            print('awslimitchecker run duration: %s' % duration)
 
-    @abstractmethod
     def on_warning(self, problems, problem_str, duration=None):
         """
         Method called when one or more warning thresholds were crossed, but no
@@ -110,33 +119,7 @@ class AlertProvider(object):
         :param duration: duration of the run
         :type duration: float
         """
-        raise NotImplementedError()
-
-    @staticmethod
-    def providers_by_name():
-        """
-        Return a dict of available AlertProvider subclass names to the class
-        objects.
-
-        :return: AlertProvider class names to classes
-        :rtype: dict
-        """
-        return {x.__name__: x for x in AlertProvider.__subclasses__()}
-
-    @staticmethod
-    def get_provider_by_name(name):
-        """
-        Get a reference to the provider class with the specified name.
-
-        :param name: name of the AlertProvider subclass
-        :type name: str
-        :return: AlertProvider subclass
-        :rtype: ``class``
-        :raises: RuntimeError
-        """
-        try:
-            return AlertProvider.providers_by_name()[name]
-        except KeyError:
-            raise RuntimeError(
-                'ERROR: "%s" is not a valid AlertProvider class name' % name
-            )
+        print('awslimitchecker in %s found WARNINGS:' % self._region_name)
+        print(problem_str)
+        if duration:
+            print('awslimitchecker run duration: %s' % duration)
