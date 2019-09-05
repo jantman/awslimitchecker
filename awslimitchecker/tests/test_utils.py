@@ -42,9 +42,11 @@ import pytest
 import sys
 import termcolor
 
+from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, paginate_dict, _get_dict_value_by_path,
-    _set_dict_value_by_path, _get_latest_version, color_output
+    _set_dict_value_by_path, _get_latest_version, color_output,
+    issue_string_tuple
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -475,3 +477,163 @@ class TestColorOutput(object):
         assert color_output(
             'foo', 'yellow', colorize=False
         ) == 'foo'
+
+
+class TestIssueStringTuple(object):
+
+    def test_crit_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 56)
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1],
+                []
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXCRITICAL: 56Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 56', 'red', colorize=True)
+        ]
+
+    def test_crit_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 5
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
+        c3 = AwsLimitUsage(mock_limit, 8)
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1, c2, c3],
+                []
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 5) xXCRITICAL: 8, 10, c2id=12Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 8, 10, c2id=12', 'red', colorize=True)
+        ]
+
+    def test_warn_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        w1 = AwsLimitUsage(mock_limit, 11)
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [],
+                [w1]
+            )
+        assert res == ('svcname/limitname', '(limit 12) xXWARNING: 11Xx')
+        assert m_co.mock_calls == [
+            call('WARNING: 11', 'yellow', colorize=True)
+        ]
+
+    def test_warn_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        w1 = AwsLimitUsage(mock_limit, 11)
+        w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [],
+                [w1, w2, w3]
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXWARNING: w2id=10, w3id=10, 11Xx')
+        assert m_co.mock_calls == [
+            call('WARNING: w2id=10, w3id=10, 11', 'yellow', colorize=True)
+        ]
+
+    def test_both_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        w1 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1],
+                [w1],
+                colorize=False
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXCRITICAL: 10Xx xXWARNING: w3id=10Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 10', 'red', colorize=False),
+            call('WARNING: w3id=10', 'yellow', colorize=False)
+        ]
+
+    def test_both_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
+        c3 = AwsLimitUsage(mock_limit, 8)
+        w1 = AwsLimitUsage(mock_limit, 11)
+        w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1, c2, c3],
+                [w1, w2, w3]
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXCRITICAL: 8, 10, c2id=12Xx '
+                       'xXWARNING: w2id=10, w3id=10, 11Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 8, 10, c2id=12', 'red', colorize=True),
+            call('WARNING: w2id=10, w3id=10, 11', 'yellow', colorize=True)
+        ]

@@ -45,7 +45,7 @@ import boto3
 import time
 
 from .checker import AwsLimitChecker
-from .utils import StoreKeyValuePair, dict2cols, color_output
+from .utils import StoreKeyValuePair, dict2cols, issue_string_tuple
 from .limit import SOURCE_TA, SOURCE_API
 from .metrics import MetricsProvider
 from .alerts import AlertProvider
@@ -312,47 +312,6 @@ class Runner(object):
                     v=limits[svc][lim].get_current_usage_str())
         print(dict2cols(data))
 
-    def print_issue(self, service_name, limit, crits, warns):
-        """
-        Return a 2-tuple of key (service/limit name)/value (usage) strings
-        describing a limit that has crossed its threshold.
-
-        :param service_name: the name of the service
-        :type service_name: str
-        :param limit: the Limit this relates to
-        :type limit: :py:class:`~.AwsLimit`
-        :param crits: the specific usage values that crossed the critical
-          threshold
-        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-        :param crits: the specific usage values that crossed the warning
-          threshold
-        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-        :returns: 2-tuple of strings describing crossed thresholds,
-          first describing the service and limit name and second listing the
-          limit and usage
-        :rtype: tuple
-        """
-        usage_str = ''
-        if len(crits) > 0:
-            tmp = 'CRITICAL: '
-            tmp += ', '.join([str(x) for x in sorted(crits)])
-            usage_str += color_output(tmp, 'red', colorize=self.colorize)
-        if len(warns) > 0:
-            if len(crits) > 0:
-                usage_str += ' '
-            tmp = 'WARNING: '
-            tmp += ', '.join([str(x) for x in sorted(warns)])
-            usage_str += color_output(tmp, 'yellow', colorize=self.colorize)
-        k = "{s}/{l}".format(
-            s=service_name,
-            l=limit.name,
-        )
-        v = "(limit {v}) {u}".format(
-            v=limit.get_limit(),
-            u=usage_str,
-        )
-        return k, v
-
     def check_thresholds(self, metrics=None):
         have_warn = False
         have_crit = False
@@ -382,7 +341,9 @@ class Runner(object):
                     have_crit = True
                 if len(warns) > 0:
                     have_warn = True
-                k, v = self.print_issue(svc, limit, crits, warns)
+                k, v = issue_string_tuple(
+                    svc, limit, crits, warns, colorize=self.colorize
+                )
                 columns[k] = v
         d2c = dict2cols(columns)
         print(d2c)
