@@ -1,5 +1,5 @@
 """
-awslimitchecker/alerts/dummy.py
+awslimitchecker/tests/alerts/test_dummy.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/awslimitchecker>
@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.alerts.dummy import Dummy
-from datetime import timedelta
 
 
 class TestDummy(object):
@@ -48,12 +47,10 @@ class TestDummy(object):
         assert cls._region_name == 'foo'
 
     def test_on_success(self, capsys):
-        Dummy('foo').on_success(
-            duration=timedelta(hours=1, minutes=2, seconds=3)
-        )
+        Dummy('foo').on_success(duration=1.2)
         out, _ = capsys.readouterr()
         assert out == 'awslimitchecker in foo found no problems\n' \
-                      'awslimitchecker run duration: 1:02:03\n'
+                      'awslimitchecker run duration: 1.2\n'
 
     def test_on_success_no_duration(self, capsys):
         Dummy('foo').on_success()
@@ -61,13 +58,11 @@ class TestDummy(object):
         assert out == 'awslimitchecker in foo found no problems\n'
 
     def test_on_critical(self, capsys):
-        Dummy('foo').on_critical(
-            None, 'probstr', duration=timedelta(hours=1, minutes=2, seconds=3)
-        )
+        Dummy('foo').on_critical(None, 'probstr', duration=1.2)
         out, _ = capsys.readouterr()
         assert out == 'awslimitchecker in foo found CRITICALS:\n' \
                       'probstr\n' \
-                      'awslimitchecker run duration: 1:02:03\n'
+                      'awslimitchecker run duration: 1.2\n'
 
     def test_on_critical_no_duration(self, capsys):
         Dummy('foo').on_critical(None, 'probstr')
@@ -83,13 +78,11 @@ class TestDummy(object):
                       '%s\n' % exc.__repr__()
 
     def test_on_warning(self, capsys):
-        Dummy('foo').on_warning(
-            None, 'probstr', duration=timedelta(hours=1, minutes=2, seconds=3)
-        )
+        Dummy('foo').on_warning(None, 'probstr', duration=1.2)
         out, _ = capsys.readouterr()
         assert out == 'awslimitchecker in foo found WARNINGS:\n' \
                       'probstr\n' \
-                      'awslimitchecker run duration: 1:02:03\n'
+                      'awslimitchecker run duration: 1.2\n'
 
     def test_on_warning_no_duration(self, capsys):
         Dummy('foo').on_warning(None, 'probstr')

@@ -239,7 +239,31 @@ all limits.
 Enable Alerts Provider
 +++++++++++++++++++++++
 
-TBD.
+awslimitchecker is capable of sending alerts for either warning-level threshold
+breaches, or critical-level threshold breaches and exceptions checking thresholds,
+to various alert providers. The list of alert providers supported by your version
+of awslimitchecker can be seen with the ``--list-alert-providers`` option:
+
+{list_alerts}
+
+The configuration options required by each alert provider are specified in the
+providers' documentation:
+
+{alert-providers}
+
+For example, to use the :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+alert provider which requires a ``critical_service_key`` paramater (also accepted as an
+environment variable) and an optional ``account_alias`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --alert-provider=PagerDutyV1 \
+        --alert-config=critical_service_key=012345 \
+        --alert-config=account_alias=myacct
+
+Alerts will be pushed to the provider only when awslimitchecker is done checking
+all limits, or when an exception is encountered during the checking process.
 
 Required IAM Policy
 +++++++++++++++++++

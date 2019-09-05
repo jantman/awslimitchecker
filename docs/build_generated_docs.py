@@ -52,6 +52,7 @@ sys.path.insert(0, os.path.join(my_dir, '..'))
 
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.metrics import MetricsProvider
+from awslimitchecker.alerts import AlertProvider
 
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
@@ -238,6 +239,7 @@ def build_runner_examples():
                                     '--critical=98', '--no-color'],
         'iam_policy': ['awslimitchecker', '--iam-policy'],
         'list_metrics': ['awslimitchecker', '--list-metrics-providers'],
+        'list_alerts': ['awslimitchecker', '--list-alert-providers'],
     }
     results = {}
     # run the commands
@@ -254,6 +256,10 @@ def build_runner_examples():
     for m in MetricsProvider.providers_by_name().keys():
         results['metrics-providers'] += '* :py:class:`~awslimitchecker.' \
                                         'metrics.%s.%s`\n' % (m.lower(), m)
+    results['alert-providers'] = ''
+    for m in AlertProvider.providers_by_name().keys():
+        results['alert-providers'] += '* :py:class:`~awslimitchecker.' \
+                                        'alerts.%s.%s`\n' % (m.lower(), m)
     results['limit-override-json'] = dedent("""
         {
             "AutoScaling": {

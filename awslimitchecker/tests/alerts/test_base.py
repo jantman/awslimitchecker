@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 from awslimitchecker.alerts.base import AlertProvider
-from awslimitchecker.alerts import Dummy
+from awslimitchecker.alerts import Dummy, PagerDutyV1
 
 import pytest
 
@@ -64,7 +64,8 @@ class TestAlertProvider(object):
     def test_providers_by_name(self):
         assert AlertProvider.providers_by_name() == {
             'APTester': APTester,
-            'Dummy': Dummy
+            'Dummy': Dummy,
+            'PagerDutyV1': PagerDutyV1
         }
 
     def test_get_provider_by_name(self):

@@ -529,7 +529,37 @@ all limits.
 Enable Alerts Provider
 +++++++++++++++++++++++
 
-TBD.
+awslimitchecker is capable of sending alerts for either warning-level threshold
+breaches, or critical-level threshold breaches and exceptions checking thresholds,
+to various alert providers. The list of alert providers supported by your version
+of awslimitchecker can be seen with the ``--list-alert-providers`` option:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --list-metrics-providers
+   Available metrics providers:
+   Datadog
+   Dummy
+
+The configuration options required by each alert provider are specified in the
+providers' documentation:
+
+* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
+* :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+
+For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+metrics provider which requires an ``api_key`` paramater (also accepted as an
+environment variable) and an optional ``extra_tags`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam
+
+Alerts will be pushed to the provider only when awslimitchecker is done checking
+all limits, or when an exception is encountered during the checking process.
 
 Required IAM Policy
 +++++++++++++++++++
