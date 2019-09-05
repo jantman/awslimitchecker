@@ -41,12 +41,11 @@ import sys
 import argparse
 import logging
 import json
-import termcolor
 import boto3
 import time
 
 from .checker import AwsLimitChecker
-from .utils import StoreKeyValuePair, dict2cols
+from .utils import StoreKeyValuePair, dict2cols, color_output
 from .limit import SOURCE_TA, SOURCE_API
 from .metrics import MetricsProvider
 from .alerts import AlertProvider
@@ -313,11 +312,6 @@ class Runner(object):
                     v=limits[svc][lim].get_current_usage_str())
         print(dict2cols(data))
 
-    def color_output(self, s, color):
-        if not self.colorize:
-            return s
-        return termcolor.colored(s, color)
-
     def print_issue(self, service_name, limit, crits, warns):
         """
         Return a 2-tuple of key (service/limit name)/value (usage) strings
@@ -342,13 +336,13 @@ class Runner(object):
         if len(crits) > 0:
             tmp = 'CRITICAL: '
             tmp += ', '.join([str(x) for x in sorted(crits)])
-            usage_str += self.color_output(tmp, 'red')
+            usage_str += color_output(tmp, 'red', colorize=self.colorize)
         if len(warns) > 0:
             if len(crits) > 0:
                 usage_str += ' '
             tmp = 'WARNING: '
             tmp += ', '.join([str(x) for x in sorted(warns)])
-            usage_str += self.color_output(tmp, 'yellow')
+            usage_str += color_output(tmp, 'yellow', colorize=self.colorize)
         k = "{s}/{l}".format(
             s=service_name,
             l=limit.name,

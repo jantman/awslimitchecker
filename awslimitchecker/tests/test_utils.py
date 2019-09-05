@@ -40,10 +40,11 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import argparse
 import pytest
 import sys
+import termcolor
 
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, paginate_dict, _get_dict_value_by_path,
-    _set_dict_value_by_path, _get_latest_version
+    _set_dict_value_by_path, _get_latest_version, color_output
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -462,3 +463,15 @@ class TestGetCurrentVersion(object):
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == []
+
+
+class TestColorOutput(object):
+
+    def test_colored(self):
+        assert color_output('foo', 'yellow') == termcolor.colored(
+            'foo', 'yellow')
+
+    def test_not_colored(self):
+        assert color_output(
+            'foo', 'yellow', colorize=False
+        ) == 'foo'

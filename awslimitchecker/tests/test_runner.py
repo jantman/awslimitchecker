@@ -1095,14 +1095,22 @@ class TestPrintIssue(RunnerTester):
 
         c1 = AwsLimitUsage(mock_limit, 56)
 
-        res = self.cls.print_issue(
-            'svcname',
-            mock_limit,
-            [c1],
-            []
-        )
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pb) as m_co:
+            m_co.side_effect = se_color
+            res = self.cls.print_issue(
+                'svcname',
+                mock_limit,
+                [c1],
+                []
+            )
         assert res == ('svcname/limitname',
-                       '(limit 12) ' + red('CRITICAL: 56'))
+                       '(limit 12) xXCRITICAL: 56Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 56', 'red', colorize=True)
+        ]
 
     def test_crit_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -1113,14 +1121,22 @@ class TestPrintIssue(RunnerTester):
         c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
         c3 = AwsLimitUsage(mock_limit, 8)
 
-        res = self.cls.print_issue(
-            'svcname',
-            mock_limit,
-            [c1, c2, c3],
-            []
-        )
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pb) as m_co:
+            m_co.side_effect = se_color
+            res = self.cls.print_issue(
+                'svcname',
+                mock_limit,
+                [c1, c2, c3],
+                []
+            )
         assert res == ('svcname/limitname',
-                       '(limit 5) ' + red('CRITICAL: 8, 10, c2id=12'))
+                       '(limit 5) xXCRITICAL: 8, 10, c2id=12Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 8, 10, c2id=12', 'red', colorize=True)
+        ]
 
     def test_warn_one(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -1129,14 +1145,21 @@ class TestPrintIssue(RunnerTester):
 
         w1 = AwsLimitUsage(mock_limit, 11)
 
-        res = self.cls.print_issue(
-            'svcname',
-            mock_limit,
-            [],
-            [w1]
-        )
-        assert res == ('svcname/limitname', '(limit 12) ' +
-                       yellow('WARNING: 11'))
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pb) as m_co:
+            m_co.side_effect = se_color
+            res = self.cls.print_issue(
+                'svcname',
+                mock_limit,
+                [],
+                [w1]
+            )
+        assert res == ('svcname/limitname', '(limit 12) xXWARNING: 11Xx')
+        assert m_co.mock_calls == [
+            call('WARNING: 11', 'yellow', colorize=True)
+        ]
 
     def test_warn_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -1147,17 +1170,25 @@ class TestPrintIssue(RunnerTester):
         w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
         w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
 
-        res = self.cls.print_issue(
-            'svcname',
-            mock_limit,
-            [],
-            [w1, w2, w3]
-        )
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pb) as m_co:
+            m_co.side_effect = se_color
+            res = self.cls.print_issue(
+                'svcname',
+                mock_limit,
+                [],
+                [w1, w2, w3]
+            )
         assert res == ('svcname/limitname',
-                       '(limit 12) ' + yellow('WARNING: '
-                                              'w2id=10, w3id=10, 11'))
+                       '(limit 12) xXWARNING: w2id=10, w3id=10, 11Xx')
+        assert m_co.mock_calls == [
+            call('WARNING: w2id=10, w3id=10, 11', 'yellow', colorize=True)
+        ]
 
     def test_both_one(self):
+        self.cls.colorize = False
         mock_limit = Mock(spec_set=AwsLimit)
         type(mock_limit).name = 'limitname'
         mock_limit.get_limit.return_value = 12
@@ -1165,16 +1196,23 @@ class TestPrintIssue(RunnerTester):
         c1 = AwsLimitUsage(mock_limit, 10)
         w1 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
 
-        res = self.cls.print_issue(
-            'svcname',
-            mock_limit,
-            [c1],
-            [w1]
-        )
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pb) as m_co:
+            m_co.side_effect = se_color
+            res = self.cls.print_issue(
+                'svcname',
+                mock_limit,
+                [c1],
+                [w1]
+            )
         assert res == ('svcname/limitname',
-                       '(limit 12) ' +
-                       red('CRITICAL: 10') + ' ' +
-                       yellow('WARNING: w3id=10'))
+                       '(limit 12) xXCRITICAL: 10Xx xXWARNING: w3id=10Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 10', 'red', colorize=False),
+            call('WARNING: w3id=10', 'yellow', colorize=False)
+        ]
 
     def test_both_multi(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -1188,23 +1226,24 @@ class TestPrintIssue(RunnerTester):
         w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
         w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
 
-        res = self.cls.print_issue(
-            'svcname',
-            mock_limit,
-            [c1, c2, c3],
-            [w1, w2, w3]
-        )
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pb) as m_co:
+            m_co.side_effect = se_color
+            res = self.cls.print_issue(
+                'svcname',
+                mock_limit,
+                [c1, c2, c3],
+                [w1, w2, w3]
+            )
         assert res == ('svcname/limitname',
-                       '(limit 12) ' +
-                       red('CRITICAL: 8, 10, c2id=12') + ' ' +
-                       yellow('WARNING: w2id=10, w3id=10, 11'))
-
-
-class TestColorOutput(RunnerTester):
-
-    def test_simple(self):
-        assert self.cls.color_output('foo', 'yellow') == termcolor.colored(
-            'foo', 'yellow')
+                       '(limit 12) xXCRITICAL: 8, 10, c2id=12Xx '
+                       'xXWARNING: w2id=10, w3id=10, 11Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 8, 10, c2id=12', 'red', colorize=True),
+            call('WARNING: w2id=10, w3id=10, 11', 'yellow', colorize=True)
+        ]
 
 
 class TestConsoleEntryPoint(RunnerTester):
@@ -2014,13 +2053,14 @@ class TestConsoleEntryPoint(RunnerTester):
         assert out == 'Available alert providers:\nProv1\nProv2\n'
 
     def test_no_color(self):
+        assert self.cls.colorize is True
         argv = ['awslimitchecker', '--no-color']
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_ct:
                 mock_ct.return_value = 0, {}, 'foo'
-                with pytest.raises(SystemExit) as excinfo:
-                    self.cls.console_entry_point()
-        assert excinfo.value.code == 0
-        assert self.cls.color_output('foo', 'red') == 'foo'
-        self.cls.colorize = True
+                with patch('%s.color_output' % pb) as m_co:
+                    m_co.return_value = 'COLORIZED'
+                    with pytest.raises(SystemExit):
+                        self.cls.console_entry_point()
+        assert self.cls.colorize is False

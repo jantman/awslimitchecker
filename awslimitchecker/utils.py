@@ -42,6 +42,7 @@ import logging
 from copy import deepcopy
 import json
 import urllib3
+import termcolor
 from awslimitchecker.version import _VERSION_TUP, _VERSION
 
 logger = logging.getLogger(__name__)
@@ -246,3 +247,9 @@ def _get_latest_version():
     except Exception:
         logger.debug('Error getting latest version from PyPI', exc_info=True)
     return None
+
+
+def color_output(s, color, colorize=True):
+    if not colorize:
+        return s
+    return termcolor.colored(s, color)
