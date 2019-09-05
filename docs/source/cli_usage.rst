@@ -40,6 +40,9 @@ use as a Nagios-compatible plugin).
                           [--list-metrics-providers]
                           [--metrics-provider METRICS_PROVIDER]
                           [--metrics-config METRICS_CONFIG]
+                          [--list-alert-providers]
+                          [--alert-provider ALERT_PROVIDER]
+                          [--alert-config ALERT_CONFIG]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -127,6 +130,15 @@ use as a Nagios-compatible plugin).
                            Metrics provider class name, to enable sending metrics
      --metrics-config METRICS_CONFIG
                            Specify key/value parameters for the metrics provider
+                           constructor. See documentation for further
+                           information.
+     --list-alert-providers
+                           List available alert providers and exit
+     --alert-provider ALERT_PROVIDER
+                           Alert provider class name, to enable sending
+                           notifications
+     --alert-config ALERT_CONFIG
+                           Specify key/value parameters for the alert provider
                            constructor. See documentation for further
                            information.
    awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
@@ -506,8 +518,8 @@ can be seen with the ``--list-metrics-providers`` option:
 The configuration options required by each metrics provider are specified in the
 providers' documentation:
 
-* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
 * :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
 
 
 For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
@@ -536,27 +548,30 @@ of awslimitchecker can be seen with the ``--list-alert-providers`` option:
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker --list-metrics-providers
-   Available metrics providers:
-   Datadog
+   (venv)$ awslimitchecker --list-alert-providers
+   Available alert providers:
    Dummy
+   PagerDutyV1
+
+
 
 The configuration options required by each alert provider are specified in the
 providers' documentation:
 
-* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
-* :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+* :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+* :py:class:`~awslimitchecker.alerts.dummy.Dummy`
 
-For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
-metrics provider which requires an ``api_key`` paramater (also accepted as an
-environment variable) and an optional ``extra_tags`` parameter:
+
+For example, to use the :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+alert provider which requires a ``critical_service_key`` paramater (also accepted as an
+environment variable) and an optional ``account_alias`` parameter:
 
 .. code-block:: console
 
     (venv)$ awslimitchecker \
-        --metrics-provider=Datadog \
-        --metrics-config=api_key=123456 \
-        --metrics-config=extra_tags=foo,bar,baz:blam
+        --alert-provider=PagerDutyV1 \
+        --alert-config=critical_service_key=012345 \
+        --alert-config=account_alias=myacct
 
 Alerts will be pushed to the provider only when awslimitchecker is done checking
 all limits, or when an exception is encountered during the checking process.

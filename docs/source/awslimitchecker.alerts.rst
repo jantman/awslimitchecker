@@ -13,4 +13,5 @@ Submodules
 
    awslimitchecker.alerts.base
    awslimitchecker.alerts.dummy
+   awslimitchecker.alerts.pagerdutyv1
 
