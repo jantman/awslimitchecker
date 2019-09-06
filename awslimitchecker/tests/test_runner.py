@@ -1683,17 +1683,15 @@ class TestConsoleEntryPoint(RunnerTester):
 
     def test_check_thresholds_exception(self):
         argv = ['awslimitchecker']
-        exc = RuntimeError('foo')
+        exc = RuntimeError()
         with patch.object(sys, 'argv', argv):
-            with patch(
-                '%s.Runner.check_thresholds' % pb, autospec=True
-            ) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
                 with pytest.raises(RuntimeError) as excinfo:
                     mock_ct.side_effect = exc
                     self.cls.console_entry_point()
         assert excinfo.value == exc
         assert mock_ct.mock_calls == [
-            call(self.cls, None)
+            call(None)
         ]
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
@@ -1708,9 +1706,7 @@ class TestConsoleEntryPoint(RunnerTester):
         mock_rn = PropertyMock(return_value='rname')
         exc = RuntimeError('foo')
         with patch.object(sys, 'argv', argv):
-            with patch(
-                '%s.Runner.check_thresholds' % pb, autospec=True
-            ) as mock_ct:
+            with patch('%s.Runner.check_thresholds' % pb) as mock_ct:
                 with patch(
                     '%s.AlertProvider.get_provider_by_name' % pb
                 ) as m_gpbn:
@@ -1725,7 +1721,7 @@ class TestConsoleEntryPoint(RunnerTester):
                             self.cls.console_entry_point()
         assert excinfo.value == exc
         assert mock_ct.mock_calls == [
-            call(self.cls, None)
+            call(None)
         ]
         assert m_gpbn.mock_calls == [
             call('MyAlerter'),
