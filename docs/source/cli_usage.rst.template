@@ -127,7 +127,7 @@ In cases where you've been given a limit increase by AWS Support, you can overri
 the default limits with custom ones. Currently, to do this from the command line,
 you can either specify each limit that you want to override separately using the
 ``-L`` or ``--limit`` options, or you can specify a JSON file at either a local path
-or an S3 URL using the ``--limit-overrides-json`` option (the
+or an S3 URL using the ``--limit-override-json`` option (the
 :py:meth:`~.AwsLimitChecker.set_limit_overrides` Python method accepts a dict for
 easy bulk overrides of limits). Limits for the ``-L`` / ``--limit`` option are
 specified in a ``service_name/limit_name=value`` format, and must be quoted if
@@ -150,7 +150,7 @@ Using a command like:
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker --limit-overrides-json=limit_overrides.json -l
+   (venv)$ awslimitchecker --limit-override-json=limit_overrides.json -l
 {limit_overrides-output-only}
 
 Check Limits Against Thresholds
@@ -200,7 +200,7 @@ Using a command like:
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-overrides-json=s3://bucketname/path/overrides.json
+   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-override-json=s3://bucketname/path/overrides.json
 {check_thresholds_custom-output-only}
 
 .. _cli_usage.metrics:
