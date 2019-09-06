@@ -177,7 +177,7 @@ class PagerDutyV1(AlertProvider):
             data['description'] += self._account_alias + ' '
         data['description'] += self._region_name + ' found no problems'
         if duration:
-            data['description'] += '; run completed in %s seconds' % duration
+            data['description'] += '; run completed in %.2f seconds' % duration
             data['details']['duration_seconds'] = duration
         self._send_event(self._service_key_crit, data)
         if self._service_key_warn is not None:
@@ -239,7 +239,7 @@ class PagerDutyV1(AlertProvider):
             data['description'] += self._account_alias + ' '
         data['description'] += self._region_name
         if duration:
-            data['description'] += ' ran in %s seconds and' % duration
+            data['description'] += ' ran in %.2f seconds and' % duration
             data['details']['duration_seconds'] = duration
         if exc is not None:
             data['description'] += ' failed with an exception:' \
@@ -275,7 +275,7 @@ class PagerDutyV1(AlertProvider):
             data['description'] += self._account_alias + ' '
         data['description'] += self._region_name
         if duration:
-            data['description'] += ' ran in %s seconds and' % duration
+            data['description'] += ' ran in %.2f seconds and' % duration
             data['details']['duration_seconds'] = duration
         w_count, _, pdict = self._problems_dict(problems)
         data['description'] += ' crossed %d WARNING thresholds' % w_count

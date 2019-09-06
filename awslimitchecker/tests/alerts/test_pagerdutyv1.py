@@ -204,27 +204,27 @@ class TestOnSuccess(PagerDutyV1Tester):
         with patch('%s._event_dict' % pb, autospec=True) as m_ed:
             m_ed.return_value = {'event': 'dict', 'details': {}}
             with patch('%s._send_event' % pb, autospec=True) as m_send:
-                self.cls.on_success(duration=12.3)
+                self.cls.on_success(duration=12.34567)
         assert m_ed.mock_calls == [call(self.cls)]
         assert m_send.mock_calls == [
             call(self.cls, 'cKey', {
                 'event': 'dict',
                 'details': {
-                    'duration_seconds': 12.3
+                    'duration_seconds': 12.34567
                 },
                 'event_type': 'resolve',
                 'description': 'awslimitchecker in myAcct rname found '
-                               'no problems; run completed in 12.3 '
+                               'no problems; run completed in 12.35 '
                                'seconds'
             }),
             call(self.cls, 'wKey', {
                 'event': 'dict',
                 'details': {
-                    'duration_seconds': 12.3
+                    'duration_seconds': 12.34567
                 },
                 'event_type': 'resolve',
                 'description': 'awslimitchecker in myAcct rname found '
-                               'no problems; run completed in 12.3 '
+                               'no problems; run completed in 12.35 '
                                'seconds'
             })
         ]
@@ -272,7 +272,7 @@ class TestOnSuccess(PagerDutyV1Tester):
                 'event_type': 'resolve',
                 'description': 'awslimitchecker in rname found '
                                'no problems; run completed in '
-                               '12.3 seconds'
+                               '12.30 seconds'
             }),
             call(self.cls, 'wKey', {
                 'event': 'dict',
@@ -282,7 +282,7 @@ class TestOnSuccess(PagerDutyV1Tester):
                 'event_type': 'resolve',
                 'description': 'awslimitchecker in rname found '
                                'no problems; run completed in '
-                               '12.3 seconds'
+                               '12.30 seconds'
             })
         ]
 
@@ -303,7 +303,7 @@ class TestOnSuccess(PagerDutyV1Tester):
                 'event_type': 'resolve',
                 'description': 'awslimitchecker in myAcct rname found '
                                'no problems; run completed in '
-                               '12.3 seconds'
+                               '12.30 seconds'
             })
         ]
 
@@ -371,10 +371,10 @@ class TestOnCritical(PagerDutyV1Tester):
             'event': 'data',
             'event_type': 'trigger',
             'description': 'awslimitchecker in aAlias rname ran in '
-                           '12.3 seconds and crossed 2 CRITICAL '
+                           '12.35 seconds and crossed 2 CRITICAL '
                            'thresholds and 1 WARNING thresholds',
             'details': {
-                'duration_seconds': 12.3,
+                'duration_seconds': 12.34567,
                 'limits': {'foo': 'bar'}
             }
         }
@@ -389,7 +389,7 @@ class TestOnCritical(PagerDutyV1Tester):
             mocks['_problems_dict'].return_value = (
                 1, 2, {'foo': 'bar'}
             )
-            self.cls.on_critical({'p': 'd'}, '', duration=12.3)
+            self.cls.on_critical({'p': 'd'}, '', duration=12.34567)
         assert mocks['_event_dict'].mock_calls == [call(self.cls)]
         assert mocks['_problems_dict'].mock_calls == [
             call(self.cls, {'p': 'd'})
@@ -439,7 +439,7 @@ class TestOnCritical(PagerDutyV1Tester):
             'event': 'data',
             'event_type': 'trigger',
             'description': 'awslimitchecker in rname ran in '
-                           '12.3 seconds and failed with an '
+                           '12.30 seconds and failed with an '
                            'exception: %s' % exc.__repr__(),
             'details': {
                 'duration_seconds': 12.3,
@@ -474,10 +474,10 @@ class TestOnWarning(PagerDutyV1Tester):
             'event': 'data',
             'event_type': 'trigger',
             'description': 'awslimitchecker in aAlias rname ran in '
-                           '12.3 seconds and crossed 1 WARNING '
+                           '12.35 seconds and crossed 1 WARNING '
                            'thresholds',
             'details': {
-                'duration_seconds': 12.3,
+                'duration_seconds': 12.34567,
                 'limits': {'foo': 'bar'}
             }
         }
@@ -492,7 +492,7 @@ class TestOnWarning(PagerDutyV1Tester):
             mocks['_problems_dict'].return_value = (
                 1, 0, {'foo': 'bar'}
             )
-            self.cls.on_warning({'p': 'd'}, '', duration=12.3)
+            self.cls.on_warning({'p': 'd'}, '', duration=12.34567)
         assert mocks['_event_dict'].mock_calls == [call(self.cls)]
         assert mocks['_problems_dict'].mock_calls == [
             call(self.cls, {'p': 'd'})
