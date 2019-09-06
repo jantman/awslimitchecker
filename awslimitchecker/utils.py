@@ -42,6 +42,7 @@ import logging
 from copy import deepcopy
 import json
 import urllib3
+import termcolor
 from awslimitchecker.version import _VERSION_TUP, _VERSION
 
 logger = logging.getLogger(__name__)
@@ -246,3 +247,54 @@ def _get_latest_version():
     except Exception:
         logger.debug('Error getting latest version from PyPI', exc_info=True)
     return None
+
+
+def color_output(s, color, colorize=True):
+    if not colorize:
+        return s
+    return termcolor.colored(s, color)
+
+
+def issue_string_tuple(service_name, limit, crits, warns, colorize=True):
+    """
+    Return a 2-tuple of key (service/limit name)/value (usage) strings
+    describing a limit that has crossed its threshold.
+
+    :param service_name: the name of the service
+    :type service_name: str
+    :param limit: the Limit this relates to
+    :type limit: :py:class:`~.AwsLimit`
+    :param crits: the specific usage values that crossed the critical
+      threshold
+    :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+    :param crits: the specific usage values that crossed the warning
+      threshold
+    :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
+    :param colorize: whether or not to colorize output; passed through to
+      :py:func:`~.color_output`.
+    :type colorize: bool
+    :returns: 2-tuple of strings describing crossed thresholds,
+      first describing the service and limit name and second listing the
+      limit and usage
+    :rtype: tuple
+    """
+    usage_str = ''
+    if len(crits) > 0:
+        tmp = 'CRITICAL: '
+        tmp += ', '.join([str(x) for x in sorted(crits)])
+        usage_str += color_output(tmp, 'red', colorize=colorize)
+    if len(warns) > 0:
+        if len(crits) > 0:
+            usage_str += ' '
+        tmp = 'WARNING: '
+        tmp += ', '.join([str(x) for x in sorted(warns)])
+        usage_str += color_output(tmp, 'yellow', colorize=colorize)
+    k = "{s}/{l}".format(
+        s=service_name,
+        l=limit.name,
+    )
+    v = "(limit {v}) {u}".format(
+        v=limit.get_limit(),
+        u=usage_str,
+    )
+    return k, v

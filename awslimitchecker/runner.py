@@ -41,14 +41,14 @@ import sys
 import argparse
 import logging
 import json
-import termcolor
 import boto3
 import time
 
 from .checker import AwsLimitChecker
-from .utils import StoreKeyValuePair, dict2cols
+from .utils import StoreKeyValuePair, dict2cols, issue_string_tuple
 from .limit import SOURCE_TA, SOURCE_API
 from .metrics import MetricsProvider
+from .alerts import AlertProvider
 
 try:
     from urllib.parse import urlparse
@@ -237,6 +237,19 @@ class Runner(object):
                        help='Specify key/value parameters for the metrics '
                             'provider constructor. See documentation for '
                             'further information.')
+        p.add_argument('--list-alert-providers',
+                       dest='list_alert_providers',
+                       action='store_true', default=False,
+                       help='List available alert providers and exit')
+        p.add_argument('--alert-provider', dest='alert_provider', type=str,
+                       action='store', default=None,
+                       help='Alert provider class name, to enable sending '
+                            'notifications')
+        p.add_argument('--alert-config', action=StoreKeyValuePair,
+                       dest='alert_config',
+                       help='Specify key/value parameters for the alert '
+                            'provider constructor. See documentation for '
+                            'further information.')
         args = p.parse_args(argv)
         args.ta_refresh_mode = None
         if args.ta_refresh_wait:
@@ -299,45 +312,6 @@ class Runner(object):
                     v=limits[svc][lim].get_current_usage_str())
         print(dict2cols(data))
 
-    def color_output(self, s, color):
-        if not self.colorize:
-            return s
-        return termcolor.colored(s, color)
-
-    def print_issue(self, service_name, limit, crits, warns):
-        """
-        :param service_name: the name of the service
-        :type service_name: str
-        :param limit: the Limit this relates to
-        :type limit: :py:class:`~.AwsLimit`
-        :param crits: the specific usage values that crossed the critical
-          threshold
-        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-        :param crits: the specific usage values that crossed the warning
-          threshold
-        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-        """
-        usage_str = ''
-        if len(crits) > 0:
-            tmp = 'CRITICAL: '
-            tmp += ', '.join([str(x) for x in sorted(crits)])
-            usage_str += self.color_output(tmp, 'red')
-        if len(warns) > 0:
-            if len(crits) > 0:
-                usage_str += ' '
-            tmp = 'WARNING: '
-            tmp += ', '.join([str(x) for x in sorted(warns)])
-            usage_str += self.color_output(tmp, 'yellow')
-        k = "{s}/{l}".format(
-            s=service_name,
-            l=limit.name,
-        )
-        v = "(limit {v}) {u}".format(
-            v=limit.get_limit(),
-            u=usage_str,
-        )
-        return (k, v)
-
     def check_thresholds(self, metrics=None):
         have_warn = False
         have_crit = False
@@ -367,16 +341,19 @@ class Runner(object):
                     have_crit = True
                 if len(warns) > 0:
                     have_warn = True
-                k, v = self.print_issue(svc, limit, crits, warns)
+                k, v = issue_string_tuple(
+                    svc, limit, crits, warns, colorize=self.colorize
+                )
                 columns[k] = v
-        print(dict2cols(columns))
+        d2c = dict2cols(columns)
+        print(d2c)
         # might as well use the Nagios exit codes,
         # even though our output doesn't work for that
         if have_crit:
-            return 2
+            return 2, problems, d2c
         if have_warn:
-            return 1
-        return 0
+            return 1, problems, d2c
+        return 0, problems, d2c
 
     def set_limit_overrides(self, overrides):
         for key in sorted(overrides.keys()):
@@ -504,19 +481,48 @@ class Runner(object):
                 print(p)
             raise SystemExit(0)
 
+        if args.list_alert_providers:
+            print('Available alert providers:')
+            for p in sorted(AlertProvider.providers_by_name().keys()):
+                print(p)
+            raise SystemExit(0)
+
         # else check
-        metrics = None
-        if args.metrics_provider:
-            metrics = MetricsProvider.get_provider_by_name(
-                args.metrics_provider
-            )(self.checker.region_name, **args.metrics_config)
+        alerter = None
+        if args.alert_provider:
+            alerter = AlertProvider.get_provider_by_name(
+                args.alert_provider
+            )(self.checker.region_name, **args.alert_config)
         start_time = time.time()
-        res = self.check_thresholds(metrics)
-        duration = time.time() - start_time
-        logger.info('Finished checking limits in %s seconds', duration)
-        if metrics:
-            metrics.set_run_duration(duration)
-            metrics.flush()
+        try:
+            metrics = None
+            if args.metrics_provider:
+                metrics = MetricsProvider.get_provider_by_name(
+                    args.metrics_provider
+                )(self.checker.region_name, **args.metrics_config)
+            res, problems, problem_str = self.check_thresholds(metrics)
+            duration = time.time() - start_time
+            logger.info('Finished checking limits in %s seconds', duration)
+            if metrics:
+                metrics.set_run_duration(duration)
+                metrics.flush()
+        except Exception as ex:
+            if alerter:
+                alerter.on_critical(
+                    None, None, exc=ex, duration=time.time() - start_time
+                )
+            raise
+        if alerter:
+            if res == 2:
+                alerter.on_critical(
+                    problems, problem_str, duration=time.time() - start_time
+                )
+            elif res == 1:
+                alerter.on_warning(
+                    problems, problem_str, duration=time.time() - start_time
+                )
+            else:
+                alerter.on_success(duration=time.time() - start_time)
         raise SystemExit(res)
 
 

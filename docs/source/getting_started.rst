@@ -24,6 +24,7 @@ What It Does
   :ref:`Getting Started - Trusted Advisor <getting_started.trusted_advisor>`
   for more information.
 - Optionally send current usage and limit metrics to a :ref:`metrics store <cli_usage.metrics>` such as Datadog.
+- Optionally send warning/critical alerts to an :ref:`alert provider <cli_usage.alerts>`, such as PagerDuty.
 
 .. _getting_started.nomenclature:
 

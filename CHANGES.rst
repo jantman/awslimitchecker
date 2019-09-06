@@ -12,6 +12,7 @@ Unreleased Changes
 
 * `Issue #324 <https://github.com/jantman/awslimitchecker/issues/324>`__ - Support loading :ref:`limit overrides <cli_usage.limit_overrides>` and/or :ref:`threshold overrides <cli_usage.threshold_overrides>` from a JSON file either stored locally or in S3 via new ``--limit-override-json`` and ``--threshold-override-json`` CLI options.
 * `Issue #418 <https://github.com/jantman/awslimitchecker/issues/418>`__ - Add support for sending runtime, limits, and usage to :ref:`<metric providers <cli_usage.metrics>` such as Datadog.
+* `Issue #419 <https://github.com/jantman/awslimitchecker/issues/419>`__ - Add support for alerts/notifications of thresholds crossed or failed runs (exceptions) via :ref:`<alert providers <cli_usage.alerts>` such as PagerDuty.
 
 7.0.0 (2019-08-13)
 ------------------

@@ -40,6 +40,9 @@ use as a Nagios-compatible plugin).
                           [--list-metrics-providers]
                           [--metrics-provider METRICS_PROVIDER]
                           [--metrics-config METRICS_CONFIG]
+                          [--list-alert-providers]
+                          [--alert-provider ALERT_PROVIDER]
+                          [--alert-config ALERT_CONFIG]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -127,6 +130,15 @@ use as a Nagios-compatible plugin).
                            Metrics provider class name, to enable sending metrics
      --metrics-config METRICS_CONFIG
                            Specify key/value parameters for the metrics provider
+                           constructor. See documentation for further
+                           information.
+     --list-alert-providers
+                           List available alert providers and exit
+     --alert-provider ALERT_PROVIDER
+                           Alert provider class name, to enable sending
+                           notifications
+     --alert-config ALERT_CONFIG
+                           Specify key/value parameters for the alert provider
                            constructor. See documentation for further
                            information.
    awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
@@ -315,7 +327,7 @@ In cases where you've been given a limit increase by AWS Support, you can overri
 the default limits with custom ones. Currently, to do this from the command line,
 you can either specify each limit that you want to override separately using the
 ``-L`` or ``--limit`` options, or you can specify a JSON file at either a local path
-or an S3 URL using the ``--limit-overrides-json`` option (the
+or an S3 URL using the ``--limit-override-json`` option (the
 :py:meth:`~.AwsLimitChecker.set_limit_overrides` Python method accepts a dict for
 easy bulk overrides of limits). Limits for the ``-L`` / ``--limit`` option are
 specified in a ``service_name/limit_name=value`` format, and must be quoted if
@@ -356,7 +368,7 @@ Using a command like:
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker --limit-overrides-json=limit_overrides.json -l
+   (venv)$ awslimitchecker --limit-override-json=limit_overrides.json -l
    ApiGateway/API keys per account                        500
    ApiGateway/APIs per account                            60
    ApiGateway/Client certificates per account             60
@@ -471,7 +483,7 @@ Using a command like:
 
 .. code-block:: console
 
-   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-overrides-json=s3://bucketname/path/overrides.json
+   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-override-json=s3://bucketname/path/overrides.json
    ApiGateway/APIs per account                            (limit 60) CRITICAL: 98
    DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: sale_setup_draft_vehicles (...)
    DynamoDB/Tables Per Region                             (limit 256) WARNING: 250
@@ -506,8 +518,8 @@ can be seen with the ``--list-metrics-providers`` option:
 The configuration options required by each metrics provider are specified in the
 providers' documentation:
 
-* :py:class:`~.Dummy`
-* :py:class:`~.Datadog`
+* :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
 
 
 For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
@@ -523,6 +535,46 @@ environment variable) and an optional ``extra_tags`` parameter:
 
 Metrics will be pushed to the provider only when awslimitchecker is done checking
 all limits.
+
+.. _cli_usage.alerts:
+
+Enable Alerts Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending alerts for either warning-level threshold
+breaches, or critical-level threshold breaches and exceptions checking thresholds,
+to various alert providers. The list of alert providers supported by your version
+of awslimitchecker can be seen with the ``--list-alert-providers`` option:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --list-alert-providers
+   Available alert providers:
+   Dummy
+   PagerDutyV1
+
+
+
+The configuration options required by each alert provider are specified in the
+providers' documentation:
+
+* :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+* :py:class:`~awslimitchecker.alerts.dummy.Dummy`
+
+
+For example, to use the :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+alert provider which requires a ``critical_service_key`` paramater (also accepted as an
+environment variable) and an optional ``account_alias`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --alert-provider=PagerDutyV1 \
+        --alert-config=critical_service_key=012345 \
+        --alert-config=account_alias=myacct
+
+Alerts will be pushed to the provider only when awslimitchecker is done checking
+all limits, or when an exception is encountered during the checking process.
 
 Required IAM Policy
 +++++++++++++++++++
