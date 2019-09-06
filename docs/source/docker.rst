@@ -38,7 +38,7 @@ Basic Usage
 
 The Docker image uses the ``awslimitchecker`` CLI as an entrypoint, so you need
 only to specify the arguments that you would normally pass to the ``awslimitchecker``
-command. For example, to show help:
+command for :ref:`cli_usage`. For example, to show help:
 
 .. code-block:: console
 
