@@ -202,3 +202,14 @@ For credentials provided via an EC2 Instance Profile (Role) or an ECS Task Role,
 they should be automatically recognized so long as nothing is explicitly blocking
 Docker containers from accessing them. You may still need to set the ``AWS_DEFAULT_REGION``
 environment variable for the container.
+
+.. _docker.fargate:
+
+Deployment on ECS Fargate using Terraform
+-----------------------------------------
+
+An example terraform module, and an example of using the module, to deploy Dockerized
+awslimitchecker on ECS Fargate with the PagerDuty :ref:`alert provider <cli_usage.alerts>`
+and the Datadog :ref:`metrics store <cli_usage.metrics>`, along with an example Datadog
+monitor to detect if awslimitchecker hasn't run in over a day, is available in the
+GitHub repo at: `https://github.com/jantman/awslimitchecker/tree/master/docs/examples/terraform-fargate <https://github.com/jantman/awslimitchecker/tree/master/docs/examples/terraform-fargate>`__
