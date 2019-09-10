@@ -584,3 +584,15 @@ class AwsLimitChecker(object):
             }],
         }
         return policy
+
+    @property
+    def region_name(self):
+        """
+        Return the name of the AWS region that we're checking.
+
+        :return: AWS region name
+        :rtype: str
+        """
+        kwargs = self._boto_conn_kwargs
+        conn = boto3.client('ec2', **kwargs)
+        return conn._client_config.region_name

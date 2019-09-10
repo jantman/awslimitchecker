@@ -9,6 +9,13 @@
 Required IAM Permissions
 ========================
 
+.. important::
+   The required IAM policy output by awslimitchecker includes only the permissions
+   required to check limits and usage. If you are loading
+   :ref:`limit overrides <cli_usage.limit_overrides>` and/or
+   :ref:`threshold overrides <cli_usage.threshold_overrides>` from S3, you will
+   need to run awslimitchecker with additional permissions to access those objects.
+
 Below is the sample IAM policy from this version of awslimitchecker, listing the IAM
 permissions required for it to function correctly. Please note that in some cases
 awslimitchecker may cause AWS services to make additional API calls on your behalf

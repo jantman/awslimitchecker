@@ -23,6 +23,8 @@ What It Does
   an optional maximum time limit). See
   :ref:`Getting Started - Trusted Advisor <getting_started.trusted_advisor>`
   for more information.
+- Optionally send current usage and limit metrics to a :ref:`metrics store <cli_usage.metrics>` such as Datadog.
+- Optionally send warning/critical alerts to an :ref:`alert provider <cli_usage.alerts>`, such as PagerDuty.
 
 .. _getting_started.nomenclature:
 
@@ -207,6 +209,9 @@ information on the implementation of Trusted Advisor polling.
 
 Required Permissions
 --------------------
+
+.. important::
+   The required IAM policy output by awslimitchecker includes only the permissions required to check limits and usage. If you are loading :ref:`limit overrides <cli_usage.limit_overrides>` and/or :ref:`threshold overrides <cli_usage.threshold_overrides>` from S3, you will need to run awslimitchecker with additional permissions to access those objects.
 
 You can view a sample IAM policy listing the permissions required for awslimitchecker to function properly
 either via the CLI client:

@@ -101,6 +101,8 @@ What It Does
   an optional maximum time limit). See
   `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en/latest/getting_started.html#trusted-advisor>`_
   for more information.
+- Optionally send current usage and limit metrics to a metrics store, such as Datadog.
+- Optionally send warning/critical alerts to notification providers, such as PagerDuty.
 
 Requirements
 ------------

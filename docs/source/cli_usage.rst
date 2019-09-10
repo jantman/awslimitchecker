@@ -26,8 +26,10 @@ use as a Nagios-compatible plugin).
    (venv)$ awslimitchecker --help
    usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
                           [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
-                          [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
-                          [--iam-policy] [-W WARNING_THRESHOLD]
+                          [-s] [-l] [--list-defaults] [-L LIMIT]
+                          [--limit-override-json LIMIT_OVERRIDE_JSON]
+                          [--threshold-override-json THRESHOLD_OVERRIDE_JSON]
+                          [-u] [--iam-policy] [-W WARNING_THRESHOLD]
                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
                           [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
                           [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
@@ -35,6 +37,12 @@ use as a Nagios-compatible plugin).
                           [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
                           [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
                           [--no-check-version] [-v] [-V]
+                          [--list-metrics-providers]
+                          [--metrics-provider METRICS_PROVIDER]
+                          [--metrics-config METRICS_CONFIG]
+                          [--list-alert-providers]
+                          [--alert-provider ALERT_PROVIDER]
+                          [--alert-config ALERT_CONFIG]
    Report on AWS service limits and usage via boto3, optionally warn about any
    services with usage nearing or exceeding their limits. For further help, see
    <http://awslimitchecker.readthedocs.org/>
@@ -58,6 +66,14 @@ use as a Nagios-compatible plugin).
                            override a single AWS limit, specified in
                            "service_name/limit_name=value" format; can be
                            specified multiple times.
+     --limit-override-json LIMIT_OVERRIDE_JSON
+                           Absolute or relative path, or s3:// URL, to a JSON
+                           file specifying limit overrides. See docs for expected
+                           format.
+     --threshold-override-json THRESHOLD_OVERRIDE_JSON
+                           Absolute or relative path, or s3:// URL, to a JSON
+                           file specifying threshold overrides. See docs for
+                           expected format.
      -u, --show-usage      find and print the current usage of all AWS services
                            with known limits
      --iam-policy          output a JSON serialized IAM Policy listing the
@@ -108,6 +124,23 @@ use as a Nagios-compatible plugin).
      --no-check-version    do not check latest version at startup
      -v, --verbose         verbose output. specify twice for debug-level output.
      -V, --version         print version number and exit.
+     --list-metrics-providers
+                           List available metrics providers and exit
+     --metrics-provider METRICS_PROVIDER
+                           Metrics provider class name, to enable sending metrics
+     --metrics-config METRICS_CONFIG
+                           Specify key/value parameters for the metrics provider
+                           constructor. See documentation for further
+                           information.
+     --list-alert-providers
+                           List available alert providers and exit
+     --alert-provider ALERT_PROVIDER
+                           Alert provider class name, to enable sending
+                           notifications
+     --alert-config ALERT_CONFIG
+                           Specify key/value parameters for the alert provider
+                           constructor. See documentation for further
+                           information.
    awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
    even remotely over a network, is entitled to a copy of the source code. Use
    `--version` for information on the source code location.
@@ -285,16 +318,20 @@ using their IDs).
 
 
 
+.. _cli_usage.limit_overrides:
+
 Overriding Limits
 +++++++++++++++++
 
 In cases where you've been given a limit increase by AWS Support, you can override
 the default limits with custom ones. Currently, to do this from the command line,
-you must specify each limit that you want to override separately (the
+you can either specify each limit that you want to override separately using the
+``-L`` or ``--limit`` options, or you can specify a JSON file at either a local path
+or an S3 URL using the ``--limit-override-json`` option (the
 :py:meth:`~.AwsLimitChecker.set_limit_overrides` Python method accepts a dict for
-easy bulk overrides of limits) using the ``-L`` or ``--limit`` options. Limits are
-specified in a ``service_name/limit_name=value`` format, and must be quoted if the
-limit name contains spaces.
+easy bulk overrides of limits). Limits for the ``-L`` / ``--limit`` option are
+specified in a ``service_name/limit_name=value`` format, and must be quoted if
+the limit name contains spaces.
 
 For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 "EC2-VPC Elastic IPs" from their defaults of 5, to 10 and 20, respestively:
@@ -314,9 +351,36 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    VPC/VPCs                                               1000 (TA)
    VPC/Virtual private gateways                           5
 
-
-
 This example simply sets the overrides, and then prints the limits for confirmation.
+
+You could also set the same limit overrides using a JSON file stored at ``limit_overrides.json``, following the format documented for :py:meth:`awslimitchecker.checker.AwsLimitChecker.set_limit_overrides`:
+
+.. code-block:: json
+
+    {
+        "AutoScaling": {
+            "Auto Scaling groups": 321,
+            "Launch configurations": 456
+        }
+    }
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --limit-override-json=limit_overrides.json -l
+   ApiGateway/API keys per account                        500
+   ApiGateway/APIs per account                            60
+   ApiGateway/Client certificates per account             60
+   ApiGateway/Custom authorizers per API                  10
+   ApiGateway/Documentation parts per API                 2000
+   (...)
+   CloudFormation/Stacks                                  2500 (API)
+   (...)
+   VPC/Subnets per VPC                                    200
+   VPC/VPCs                                               1000 (TA)
+   VPC/Virtual private gateways                           5
+
 
 Check Limits Against Thresholds
 +++++++++++++++++++++++++++++++
@@ -354,7 +418,7 @@ threshold only, and another has crossed the critical threshold):
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=9, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) CRITICAL: 6
 
-
+.. _cli_usage.threshold_overrides:
 
 Set Custom Thresholds
 +++++++++++++++++++++
@@ -374,7 +438,143 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=7, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
 
+You can also set custom thresholds on a per-limit basis using the
+``--threshold-override-json`` CLI option, which accepts the path to a JSON file
+(local or an s3:// URL) matching the format described in
+:py:meth:`awslimitchecker.checker.AwsLimitChecker.set_threshold_overrides`, for example:
 
+.. code-block:: json
+
+    {
+        "S3": {
+            "Buckets": {
+                "warning": {
+                    "percent": 97
+                },
+                "critical": {
+                    "percent": 99
+                }
+            }
+        },
+        "EC2": {
+            "Security groups per VPC": {
+                "warning": {
+                    "percent": 80,
+                    "count": 800
+                },
+                "critical": {
+                    "percent": 90,
+                    "count": 900
+                }
+            },
+            "VPC security groups per elastic network interface": {
+                "warning": {
+                    "percent": 101
+                },
+                "critical": {
+                    "percent": 101
+                }
+            }
+        }
+    }
+
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-override-json=s3://bucketname/path/overrides.json
+   ApiGateway/APIs per account                            (limit 60) CRITICAL: 98
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: sale_setup_draft_vehicles (...)
+   DynamoDB/Tables Per Region                             (limit 256) WARNING: 250
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-c89074a9=863
+   EC2/VPC security groups per elastic network interface  (limit 5) CRITICAL: eni-8226ce61=5
+   (...)
+   S3/Buckets                                             (limit 100) CRITICAL: 657
+   VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=7, us-east-1c= (...)
+   VPC/Virtual private gateways                           (limit 5) CRITICAL: 5
+
+
+
+.. _cli_usage.metrics:
+
+Enable Metrics Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending metrics for the overall runtime of checking
+thresholds, as well as the current limit values and current usage, to various metrics
+stores. The list of metrics providers supported by your version of awslimitchecker
+can be seen with the ``--list-metrics-providers`` option:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --list-metrics-providers
+   Available metrics providers:
+   Datadog
+   Dummy
+
+
+
+The configuration options required by each metrics provider are specified in the
+providers' documentation:
+
+* :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+* :py:class:`~awslimitchecker.metrics.dummy.Dummy`
+
+
+For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+metrics provider which requires an ``api_key`` paramater (also accepted as an
+environment variable) and an optional ``extra_tags`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam
+
+Metrics will be pushed to the provider only when awslimitchecker is done checking
+all limits.
+
+.. _cli_usage.alerts:
+
+Enable Alerts Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending alerts for either warning-level threshold
+breaches, or critical-level threshold breaches and exceptions checking thresholds,
+to various alert providers. The list of alert providers supported by your version
+of awslimitchecker can be seen with the ``--list-alert-providers`` option:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --list-alert-providers
+   Available alert providers:
+   Dummy
+   PagerDutyV1
+
+
+
+The configuration options required by each alert provider are specified in the
+providers' documentation:
+
+* :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+* :py:class:`~awslimitchecker.alerts.dummy.Dummy`
+
+
+For example, to use the :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+alert provider which requires a ``critical_service_key`` paramater (also accepted as an
+environment variable) and an optional ``account_alias`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --alert-provider=PagerDutyV1 \
+        --alert-config=critical_service_key=012345 \
+        --alert-config=account_alias=myacct
+
+Alerts will be pushed to the provider only when awslimitchecker is done checking
+all limits, or when an exception is encountered during the checking process.
 
 Required IAM Policy
 +++++++++++++++++++
@@ -390,10 +590,10 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "apigateway:GET", 
+           "apigateway:GET",
    (...)
        }
-     ], 
+     ],
      "Version": "2012-10-17"
    }
 
@@ -401,6 +601,9 @@ permissions for it to perform all limit checks. This can be viewed with the
 
 For the current IAM Policy required by this version of awslimitchecker,
 see :ref:`IAM Policy <iam_policy>`.
+
+.. important::
+   The required IAM policy output by awslimitchecker includes only the permissions required to check limits and usage. If you are loading :ref:`limit overrides <cli_usage.limit_overrides>` and/or :ref:`threshold overrides <cli_usage.threshold_overrides>` from S3, you will need to run awslimitchecker with additional permissions to access those objects.
 
 Connect to a Specific Region
 ++++++++++++++++++++++++++++

@@ -316,7 +316,8 @@ linkcheck_ignore = [
     r'https?://.*readthedocs\.io.*',
     r'https?://waffle\.io.*',
     r'https?://github\.com/pytest-dev/pytest/blob/master/CHANGELOG\.rst',
-    r'https?://github\.com/jantman/awslimitchecker/releases/tag/.*'
+    r'https?://github\.com/jantman/awslimitchecker/releases/tag/.*',
+    r'https?://github\.com/jantman/awslimitchecker/tree/master/.*'
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734

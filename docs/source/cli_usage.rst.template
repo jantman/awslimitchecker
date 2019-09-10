@@ -118,16 +118,20 @@ using their IDs).
 
 {show_usage}
 
+.. _cli_usage.limit_overrides:
+
 Overriding Limits
 +++++++++++++++++
 
 In cases where you've been given a limit increase by AWS Support, you can override
 the default limits with custom ones. Currently, to do this from the command line,
-you must specify each limit that you want to override separately (the
+you can either specify each limit that you want to override separately using the
+``-L`` or ``--limit`` options, or you can specify a JSON file at either a local path
+or an S3 URL using the ``--limit-override-json`` option (the
 :py:meth:`~.AwsLimitChecker.set_limit_overrides` Python method accepts a dict for
-easy bulk overrides of limits) using the ``-L`` or ``--limit`` options. Limits are
-specified in a ``service_name/limit_name=value`` format, and must be quoted if the
-limit name contains spaces.
+easy bulk overrides of limits). Limits for the ``-L`` / ``--limit`` option are
+specified in a ``service_name/limit_name=value`` format, and must be quoted if
+the limit name contains spaces.
 
 For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 "EC2-VPC Elastic IPs" from their defaults of 5, to 10 and 20, respestively:
@@ -135,6 +139,19 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 {limit_overrides}
 
 This example simply sets the overrides, and then prints the limits for confirmation.
+
+You could also set the same limit overrides using a JSON file stored at ``limit_overrides.json``, following the format documented for :py:meth:`awslimitchecker.checker.AwsLimitChecker.set_limit_overrides`:
+
+.. code-block:: json
+
+{limit-override-json}
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker --limit-override-json=limit_overrides.json -l
+{limit_overrides-output-only}
 
 Check Limits Against Thresholds
 +++++++++++++++++++++++++++++++
@@ -161,12 +178,92 @@ threshold only, and another has crossed the critical threshold):
 
 {check_thresholds}
 
+.. _cli_usage.threshold_overrides:
+
 Set Custom Thresholds
 +++++++++++++++++++++
 
 To set the warning threshold of 50% and a critical threshold of 75% when checking limits:
 
 {check_thresholds_custom}
+
+You can also set custom thresholds on a per-limit basis using the
+``--threshold-override-json`` CLI option, which accepts the path to a JSON file
+(local or an s3:// URL) matching the format described in
+:py:meth:`awslimitchecker.checker.AwsLimitChecker.set_threshold_overrides`, for example:
+
+.. code-block:: json
+
+{threshold-override-json}
+
+Using a command like:
+
+.. code-block:: console
+
+   (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-override-json=s3://bucketname/path/overrides.json
+{check_thresholds_custom-output-only}
+
+.. _cli_usage.metrics:
+
+Enable Metrics Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending metrics for the overall runtime of checking
+thresholds, as well as the current limit values and current usage, to various metrics
+stores. The list of metrics providers supported by your version of awslimitchecker
+can be seen with the ``--list-metrics-providers`` option:
+
+{list_metrics}
+
+The configuration options required by each metrics provider are specified in the
+providers' documentation:
+
+{metrics-providers}
+
+For example, to use the :py:class:`~awslimitchecker.metrics.datadog.Datadog`
+metrics provider which requires an ``api_key`` paramater (also accepted as an
+environment variable) and an optional ``extra_tags`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam
+
+Metrics will be pushed to the provider only when awslimitchecker is done checking
+all limits.
+
+.. _cli_usage.alerts:
+
+Enable Alerts Provider
++++++++++++++++++++++++
+
+awslimitchecker is capable of sending alerts for either warning-level threshold
+breaches, or critical-level threshold breaches and exceptions checking thresholds,
+to various alert providers. The list of alert providers supported by your version
+of awslimitchecker can be seen with the ``--list-alert-providers`` option:
+
+{list_alerts}
+
+The configuration options required by each alert provider are specified in the
+providers' documentation:
+
+{alert-providers}
+
+For example, to use the :py:class:`~awslimitchecker.alerts.pagerdutyv1.PagerDutyV1`
+alert provider which requires a ``critical_service_key`` paramater (also accepted as an
+environment variable) and an optional ``account_alias`` parameter:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --alert-provider=PagerDutyV1 \
+        --alert-config=critical_service_key=012345 \
+        --alert-config=account_alias=myacct
+
+Alerts will be pushed to the provider only when awslimitchecker is done checking
+all limits, or when an exception is encountered during the checking process.
 
 Required IAM Policy
 +++++++++++++++++++
@@ -179,6 +276,9 @@ permissions for it to perform all limit checks. This can be viewed with the
 
 For the current IAM Policy required by this version of awslimitchecker,
 see :ref:`IAM Policy <iam_policy>`.
+
+.. important::
+   The required IAM policy output by awslimitchecker includes only the permissions required to check limits and usage. If you are loading :ref:`limit overrides <cli_usage.limit_overrides>` and/or :ref:`threshold overrides <cli_usage.threshold_overrides>` from S3, you will need to run awslimitchecker with additional permissions to access those objects.
 
 Connect to a Specific Region
 ++++++++++++++++++++++++++++

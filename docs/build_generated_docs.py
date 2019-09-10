@@ -51,9 +51,12 @@ os.environ['PYTHONPATH'] = os.path.join(my_dir, '..')
 sys.path.insert(0, os.path.join(my_dir, '..'))
 
 from awslimitchecker.checker import AwsLimitChecker
+from awslimitchecker.metrics import MetricsProvider
+from awslimitchecker.alerts import AlertProvider
 
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
+
 
 def build_iam_policy(checker):
     logger.info("Beginning build of iam_policy.rst")
@@ -77,6 +80,13 @@ def build_iam_policy(checker):
     Required IAM Permissions
     ========================
 
+    .. important::
+       The required IAM policy output by awslimitchecker includes only the permissions
+       required to check limits and usage. If you are loading
+       :ref:`limit overrides <cli_usage.limit_overrides>` and/or
+       :ref:`threshold overrides <cli_usage.threshold_overrides>` from S3, you will
+       need to run awslimitchecker with additional permissions to access those objects.
+
     Below is the sample IAM policy from this version of awslimitchecker, listing the IAM
     permissions required for it to function correctly. Please note that in some cases
     awslimitchecker may cause AWS services to make additional API calls on your behalf
@@ -96,6 +106,7 @@ def build_iam_policy(checker):
     logger.info("Writing %s", fname)
     with open(fname, 'w') as fh:
         fh.write(doc)
+
 
 def build_limits(checker):
     logger.info("Beginning build of limits.rst")
@@ -202,6 +213,7 @@ def build_limits(checker):
     with open(fname, 'w') as fh:
         fh.write(doc)
 
+
 def build_runner_examples():
     logger.info("Beginning build of runner examples")
     # read in the template file
@@ -225,7 +237,9 @@ def build_runner_examples():
         'check_thresholds': ['awslimitchecker', '--no-color'],
         'check_thresholds_custom': ['awslimitchecker', '-W', '97',
                                     '--critical=98', '--no-color'],
-        'iam_policy': ['awslimitchecker', '--iam-policy']
+        'iam_policy': ['awslimitchecker', '--iam-policy'],
+        'list_metrics': ['awslimitchecker', '--list-metrics-providers'],
+        'list_alerts': ['awslimitchecker', '--list-alert-providers'],
     }
     results = {}
     # run the commands
@@ -237,6 +251,64 @@ def build_runner_examples():
         except subprocess.CalledProcessError as e:
             output = e.output
         results[name] = format_cmd_output(cmd_str, output, name)
+        results['%s-output-only' % name] = format_cmd_output(None, output, name)
+    results['metrics-providers'] = ''
+    for m in MetricsProvider.providers_by_name().keys():
+        results['metrics-providers'] += '* :py:class:`~awslimitchecker.' \
+                                        'metrics.%s.%s`\n' % (m.lower(), m)
+    results['alert-providers'] = ''
+    for m in AlertProvider.providers_by_name().keys():
+        results['alert-providers'] += '* :py:class:`~awslimitchecker.' \
+                                        'alerts.%s.%s`\n' % (m.lower(), m)
+    results['limit-override-json'] = dedent("""
+        {
+            "AutoScaling": {
+                "Auto Scaling groups": 321,
+                "Launch configurations": 456
+            }
+        }
+    """)
+    results['threshold-override-json'] = dedent("""
+        {
+            "S3": {
+                "Buckets": {
+                    "warning": {
+                        "percent": 97
+                    },
+                    "critical": {
+                        "percent": 99
+                    }
+                }
+            },
+            "EC2": {
+                "Security groups per VPC": {
+                    "warning": {
+                        "percent": 80,
+                        "count": 800
+                    },
+                    "critical": {
+                        "percent": 90,
+                        "count": 900
+                    }
+                },
+                "VPC security groups per elastic network interface": {
+                    "warning": {
+                        "percent": 101
+                    },
+                    "critical": {
+                        "percent": 101
+                    }
+                }
+            }
+        }
+    """)
+    for x in ['limit-override-json', 'threshold-override-json']:
+        tmp = ''
+        for line in results[x].split('\n'):
+            if line.strip() == '':
+                continue
+            tmp += '    %s\n' % line
+        results[x] = tmp
     tmpl = tmpl.format(**results)
 
     # write out the final .rst
@@ -244,10 +316,14 @@ def build_runner_examples():
         fh.write(tmpl)
     logger.critical("WARNING - some output may need to be fixed to provide good examples")
 
+
 def format_cmd_output(cmd, output, name):
     """format command output for docs"""
-    formatted = '.. code-block:: console\n\n'
-    formatted += '   (venv)$ {c}\n'.format(c=cmd)
+    if cmd is None:
+        formatted = ''
+    else:
+        formatted = '.. code-block:: console\n\n'
+        formatted += '   (venv)$ {c}\n'.format(c=cmd)
     lines = output.split("\n")
     if name != 'help':
         for idx, line in enumerate(lines):
@@ -255,7 +331,7 @@ def format_cmd_output(cmd, output, name):
                 lines[idx] = line[:100] + ' (...)'
         if len(lines) > 12:
             tmp_lines = lines[:5] + ['(...)'] + lines[-5:]
-            if ' -l' in cmd or ' --list-defaults' in cmd:
+            if cmd is not None and (' -l' in cmd or ' --list-defaults' in cmd):
                 # find a line that uses a limit from the API,
                 #  and a line with None (unlimited)
                 api_line = None
@@ -278,9 +354,15 @@ def format_cmd_output(cmd, output, name):
     for line in lines:
         if line.strip() == '':
             continue
+        if (
+            name == 'check_thresholds_custom' and
+            'VPC security groups per elastic network interface' in line
+        ):
+            continue
         formatted += '   ' + line + "\n"
     formatted += '\n'
     return formatted
+
 
 def build_docs():
     """
@@ -299,6 +381,7 @@ def build_docs():
     build_iam_policy(c)
     build_limits(c)
     build_runner_examples()
+
 
 if __name__ == "__main__":
     build_docs()

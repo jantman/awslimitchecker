@@ -41,11 +41,19 @@ import sys
 import argparse
 import logging
 import json
-import termcolor
+import boto3
+import time
 
 from .checker import AwsLimitChecker
-from .utils import StoreKeyValuePair, dict2cols
+from .utils import StoreKeyValuePair, dict2cols, issue_string_tuple
 from .limit import SOURCE_TA, SOURCE_API
+from .metrics import MetricsProvider
+from .alerts import AlertProvider
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
@@ -125,6 +133,16 @@ class Runner(object):
                        help='override a single AWS limit, specified in '
                        '"service_name/limit_name=value" format; can be '
                        'specified multiple times.')
+        p.add_argument('--limit-override-json', action='store', type=str,
+                       default=None,
+                       help='Absolute or relative path, or s3:// URL, to a '
+                            'JSON file specifying limit overrides. See docs '
+                            'for expected format.')
+        p.add_argument('--threshold-override-json', action='store', type=str,
+                       default=None,
+                       help='Absolute or relative path, or s3:// URL, to a '
+                            'JSON file specifying threshold overrides. See '
+                            'docs for expected format.')
         p.add_argument('-u', '--show-usage', action='store_true',
                        default=False,
                        help='find and print the current usage of all AWS '
@@ -206,6 +224,32 @@ class Runner(object):
         p.add_argument('-V', '--version', dest='version', action='store_true',
                        default=False,
                        help='print version number and exit.')
+        p.add_argument('--list-metrics-providers',
+                       dest='list_metrics_providers',
+                       action='store_true', default=False,
+                       help='List available metrics providers and exit')
+        p.add_argument('--metrics-provider', dest='metrics_provider', type=str,
+                       action='store', default=None,
+                       help='Metrics provider class name, to enable sending '
+                            'metrics')
+        p.add_argument('--metrics-config', action=StoreKeyValuePair,
+                       dest='metrics_config',
+                       help='Specify key/value parameters for the metrics '
+                            'provider constructor. See documentation for '
+                            'further information.')
+        p.add_argument('--list-alert-providers',
+                       dest='list_alert_providers',
+                       action='store_true', default=False,
+                       help='List available alert providers and exit')
+        p.add_argument('--alert-provider', dest='alert_provider', type=str,
+                       action='store', default=None,
+                       help='Alert provider class name, to enable sending '
+                            'notifications')
+        p.add_argument('--alert-config', action=StoreKeyValuePair,
+                       dest='alert_config',
+                       help='Specify key/value parameters for the alert '
+                            'provider constructor. See documentation for '
+                            'further information.')
         args = p.parse_args(argv)
         args.ta_refresh_mode = None
         if args.ta_refresh_wait:
@@ -268,51 +312,19 @@ class Runner(object):
                     v=limits[svc][lim].get_current_usage_str())
         print(dict2cols(data))
 
-    def color_output(self, s, color):
-        if not self.colorize:
-            return s
-        return termcolor.colored(s, color)
-
-    def print_issue(self, service_name, limit, crits, warns):
-        """
-        :param service_name: the name of the service
-        :type service_name: str
-        :param limit: the Limit this relates to
-        :type limit: :py:class:`~.AwsLimit`
-        :param crits: the specific usage values that crossed the critical
-          threshold
-        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-        :param crits: the specific usage values that crossed the warning
-          threshold
-        :type usage: :py:obj:`list` of :py:class:`~.AwsLimitUsage`
-        """
-        usage_str = ''
-        if len(crits) > 0:
-            tmp = 'CRITICAL: '
-            tmp += ', '.join([str(x) for x in sorted(crits)])
-            usage_str += self.color_output(tmp, 'red')
-        if len(warns) > 0:
-            if len(crits) > 0:
-                usage_str += ' '
-            tmp = 'WARNING: '
-            tmp += ', '.join([str(x) for x in sorted(warns)])
-            usage_str += self.color_output(tmp, 'yellow')
-        k = "{s}/{l}".format(
-            s=service_name,
-            l=limit.name,
-        )
-        v = "(limit {v}) {u}".format(
-            v=limit.get_limit(),
-            u=usage_str,
-        )
-        return (k, v)
-
-    def check_thresholds(self):
+    def check_thresholds(self, metrics=None):
         have_warn = False
         have_crit = False
         problems = self.checker.check_thresholds(
             use_ta=(not self.skip_ta),
-            service=self.service_name)
+            service=self.service_name
+        )
+        if metrics:
+            for svc, svc_limits in sorted(self.checker.get_limits().items()):
+                if self.service_name and svc not in self.service_name:
+                    continue
+                for _, limit in sorted(svc_limits.items()):
+                    metrics.add_limit(limit)
         columns = {}
         for svc in sorted(problems.keys()):
             for lim_name in sorted(problems[svc].keys()):
@@ -322,7 +334,6 @@ class Runner(object):
                 )
                 if check_name in self.skip_check:
                     continue
-
                 limit = problems[svc][lim_name]
                 warns = limit.get_warnings()
                 crits = limit.get_criticals()
@@ -330,16 +341,19 @@ class Runner(object):
                     have_crit = True
                 if len(warns) > 0:
                     have_warn = True
-                k, v = self.print_issue(svc, limit, crits, warns)
+                k, v = issue_string_tuple(
+                    svc, limit, crits, warns, colorize=self.colorize
+                )
                 columns[k] = v
-        print(dict2cols(columns))
+        d2c = dict2cols(columns)
+        print(d2c)
         # might as well use the Nagios exit codes,
         # even though our output doesn't work for that
         if have_crit:
-            return 2
+            return 2, problems, d2c
         if have_warn:
-            return 1
-        return 0
+            return 1, problems, d2c
+        return 0, problems, d2c
 
     def set_limit_overrides(self, overrides):
         for key in sorted(overrides.keys()):
@@ -348,6 +362,38 @@ class Runner(object):
                                  "format; {k} is invalid.".format(k=key))
             svc, limit = key.split('/')
             self.checker.set_limit_override(svc, limit, int(overrides[key]))
+
+    def load_json(self, path):
+        """Load JSON from either a local file or S3"""
+        if path.startswith('s3://'):
+            parsed = urlparse(path)
+            s3key = parsed.path.lstrip('/')
+            logger.debug(
+                'Reading JSON from S3 bucket "%s" key "%s"',
+                parsed.netloc, s3key
+            )
+            client = boto3.client('s3')
+            resp = client.get_object(Bucket=parsed.netloc, Key=s3key)
+            data = resp['Body'].read()
+        else:
+            logger.debug('Reading JSON from: %s', path)
+            with open(path, 'r') as fh:
+                data = fh.read()
+        if isinstance(data, type(b'')):
+            data = data.decode()
+        return json.loads(data)
+
+    def set_limit_overrides_from_json(self, path):
+        j = self.load_json(path)
+        logger.debug('Limit overrides: %s', j)
+        self.checker.set_limit_overrides(j)
+        logger.debug('Done setting limit overrides from JSON.')
+
+    def set_threshold_overrides_from_json(self, path):
+        j = self.load_json(path)
+        logger.debug('Threshold overrides: %s', j)
+        self.checker.set_threshold_overrides(j)
+        logger.debug('Done setting threshold overrides from JSON.')
 
     def console_entry_point(self):
         args = self.parse_args(sys.argv[1:])
@@ -398,6 +444,14 @@ class Runner(object):
             for check in args.skip_check:
                 self.skip_check.append(check)
 
+        if args.limit_override_json is not None:
+            self.set_limit_overrides_from_json(args.limit_override_json)
+
+        if args.threshold_override_json is not None:
+            self.set_threshold_overrides_from_json(
+                args.threshold_override_json
+            )
+
         if len(args.limit) > 0:
             self.set_limit_overrides(args.limit)
 
@@ -421,8 +475,54 @@ class Runner(object):
             self.show_usage()
             raise SystemExit(0)
 
+        if args.list_metrics_providers:
+            print('Available metrics providers:')
+            for p in sorted(MetricsProvider.providers_by_name().keys()):
+                print(p)
+            raise SystemExit(0)
+
+        if args.list_alert_providers:
+            print('Available alert providers:')
+            for p in sorted(AlertProvider.providers_by_name().keys()):
+                print(p)
+            raise SystemExit(0)
+
         # else check
-        res = self.check_thresholds()
+        alerter = None
+        if args.alert_provider:
+            alerter = AlertProvider.get_provider_by_name(
+                args.alert_provider
+            )(self.checker.region_name, **args.alert_config)
+        start_time = time.time()
+        try:
+            metrics = None
+            if args.metrics_provider:
+                metrics = MetricsProvider.get_provider_by_name(
+                    args.metrics_provider
+                )(self.checker.region_name, **args.metrics_config)
+            res, problems, problem_str = self.check_thresholds(metrics)
+            duration = time.time() - start_time
+            logger.info('Finished checking limits in %s seconds', duration)
+            if metrics:
+                metrics.set_run_duration(duration)
+                metrics.flush()
+        except Exception as ex:
+            if alerter:
+                alerter.on_critical(
+                    None, None, exc=ex, duration=time.time() - start_time
+                )
+            raise
+        if alerter:
+            if res == 2:
+                alerter.on_critical(
+                    problems, problem_str, duration=time.time() - start_time
+                )
+            elif res == 1:
+                alerter.on_warning(
+                    problems, problem_str, duration=time.time() - start_time
+                )
+            else:
+                alerter.on_success(duration=time.time() - start_time)
         raise SystemExit(res)
 
 

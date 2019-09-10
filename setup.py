@@ -49,7 +49,8 @@ requires = [
     'termcolor>=1.1.0',
     'python-dateutil>=2.4.2',
     'versionfinder>=0.1.1',
-    'pytz'
+    'pytz',
+    'urllib3'
 ]
 
 classifiers = [

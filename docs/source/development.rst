@@ -204,6 +204,56 @@ are needed to support new limit checks from TA.
 
 For further information, see :ref:`Internals / Trusted Advisor <internals.trusted_advisor>`.
 
+.. _development.metrics_providers:
+
+Adding Metrics Providers
+------------------------
+
+Metrics providers are subclasses of :py:class:`~.MetricsProvider` that take key/value
+configuration items via constructor keyword arguments and implement a
+:py:meth:`~.MetricsProvider.flush` method to send all metrics to the configured provider.
+It is probably easiest to look at the other existing providers for an example of how to
+implement a new one, but there are a few important things to keep in mind:
+
+* All configuration must be able to be passed as keyword arguments to the class
+  constructor (which come from ``--metrics-config=key=value`` CLI arguments).
+  It is recommended that any secrets/API keys also be able to be set via
+  environment variables, but the CLI arguments should have precedence.
+* All dependency imports must be made inside the constructor, not at the module
+  level.
+* If the provider requires additional dependencies, they should be added as
+  extras but installed in the Docker image.
+* The constructor should do as much validation (i.e. authentication test) as
+  possible.
+* Metrics provider classes should be in a module with the same name.
+
+.. _development.alert_providers:
+
+Adding Alert Providers
+------------------------
+
+Alert providers are subclasses of :py:class:`~.AlertProvider` that take key/value
+configuration items via constructor keyword arguments and implement three methods
+for sending alerts depending on the type of situation: :py:meth:`~.AlertProvider.on_warning`
+for runs that resulted in warning thresholds crossed, :py:meth:`~.AlertProvider.on_critical`
+for runs that resulted in critical thresholds crossed or raised an exception, or
+:py:meth:`~.AlertProvider.on_success` for successful runs with no thresholds crossed
+(mainly for automatically resolving incidents, when supported).
+It is probably easiest to look at the other existing providers for an example of how to
+implement a new one, but there are a few important things to keep in mind:
+
+* All configuration must be able to be passed as keyword arguments to the class
+  constructor (which come from ``--alert-config=key=value`` CLI arguments).
+  It is recommended that any secrets/API keys also be able to be set via
+  environment variables, but the CLI arguments should have precedence.
+* All dependency imports must be made inside the constructor, not at the module
+  level.
+* If the provider requires additional dependencies, they should be added as
+  extras but installed in the Docker image.
+* The constructor should do as much validation (i.e. authentication test) as
+  possible.
+* Alert provider classes should be in a module with the same name.
+
 .. _development.tests:
 
 Unit Testing

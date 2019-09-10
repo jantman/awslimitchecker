@@ -40,10 +40,13 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import argparse
 import pytest
 import sys
+import termcolor
 
+from awslimitchecker.limit import AwsLimit, AwsLimitUsage
 from awslimitchecker.utils import (
     StoreKeyValuePair, dict2cols, paginate_dict, _get_dict_value_by_path,
-    _set_dict_value_by_path, _get_latest_version
+    _set_dict_value_by_path, _get_latest_version, color_output,
+    issue_string_tuple
 )
 
 # https://code.google.com/p/mock/issues/detail?id=249
@@ -409,10 +412,12 @@ class TestDictFuncs(object):
 class TestGetCurrentVersion(object):
 
     def test_exception(self):
+        mock_http = Mock()
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.side_effect = RuntimeError()
+                    m_pm.return_value = mock_http
+                    mock_http.request.side_effect = RuntimeError()
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == [
@@ -420,40 +425,215 @@ class TestGetCurrentVersion(object):
         ]
 
     def test_older(self):
-        mock_resp = Mock()
-        mock_resp.json.return_value = {
-            'info': {'version': '1.0.1'}
-        }
+        mock_http = Mock()
+        mock_resp = Mock(
+            status=200, data='{"info": {"version": "1.0.1"}}'
+        )
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.return_value = mock_resp
+                    m_pm.return_value = mock_http
+                    mock_http.request.return_value = mock_resp
                     res = _get_latest_version()
         assert res == '1.0.1'
         assert mock_logger.mock_calls == []
 
     def test_equal(self):
-        mock_resp = Mock()
-        mock_resp.json.return_value = {
-            'info': {'version': '0.2.3'}
-        }
+        mock_http = Mock()
+        mock_resp = Mock(
+            status=200, data='{"info": {"version": "0.2.3"}}'
+        )
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.return_value = mock_resp
+                    m_pm.return_value = mock_http
+                    mock_http.request.return_value = mock_resp
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == []
 
     def test_newer(self):
-        mock_resp = Mock()
-        mock_resp.json.return_value = {
-            'info': {'version': '0.1.2'}
-        }
+        mock_http = Mock()
+        mock_resp = Mock(
+            status=200, data='{"info": {"version": "0.1.2"}}'
+        )
         with patch('%s._VERSION_TUP' % pbm, (0, 2, 3)):
-            with patch('%s.requests' % pbm, autospec=True) as mock_req:
+            with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
                 with patch('%s.logger' % pbm, autospec=True) as mock_logger:
-                    mock_req.get.return_value = mock_resp
+                    m_pm.return_value = mock_http
+                    mock_http.request.return_value = mock_resp
                     res = _get_latest_version()
         assert res is None
         assert mock_logger.mock_calls == []
+
+
+class TestColorOutput(object):
+
+    def test_colored(self):
+        assert color_output('foo', 'yellow') == termcolor.colored(
+            'foo', 'yellow')
+
+    def test_not_colored(self):
+        assert color_output(
+            'foo', 'yellow', colorize=False
+        ) == 'foo'
+
+
+class TestIssueStringTuple(object):
+
+    def test_crit_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 56)
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1],
+                []
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXCRITICAL: 56Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 56', 'red', colorize=True)
+        ]
+
+    def test_crit_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 5
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
+        c3 = AwsLimitUsage(mock_limit, 8)
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1, c2, c3],
+                []
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 5) xXCRITICAL: 8, 10, c2id=12Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 8, 10, c2id=12', 'red', colorize=True)
+        ]
+
+    def test_warn_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        w1 = AwsLimitUsage(mock_limit, 11)
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [],
+                [w1]
+            )
+        assert res == ('svcname/limitname', '(limit 12) xXWARNING: 11Xx')
+        assert m_co.mock_calls == [
+            call('WARNING: 11', 'yellow', colorize=True)
+        ]
+
+    def test_warn_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        w1 = AwsLimitUsage(mock_limit, 11)
+        w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [],
+                [w1, w2, w3]
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXWARNING: w2id=10, w3id=10, 11Xx')
+        assert m_co.mock_calls == [
+            call('WARNING: w2id=10, w3id=10, 11', 'yellow', colorize=True)
+        ]
+
+    def test_both_one(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        w1 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1],
+                [w1],
+                colorize=False
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXCRITICAL: 10Xx xXWARNING: w3id=10Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 10', 'red', colorize=False),
+            call('WARNING: w3id=10', 'yellow', colorize=False)
+        ]
+
+    def test_both_multi(self):
+        mock_limit = Mock(spec_set=AwsLimit)
+        type(mock_limit).name = 'limitname'
+        mock_limit.get_limit.return_value = 12
+
+        c1 = AwsLimitUsage(mock_limit, 10)
+        c2 = AwsLimitUsage(mock_limit, 12, resource_id='c2id')
+        c3 = AwsLimitUsage(mock_limit, 8)
+        w1 = AwsLimitUsage(mock_limit, 11)
+        w2 = AwsLimitUsage(mock_limit, 10, resource_id='w2id')
+        w3 = AwsLimitUsage(mock_limit, 10, resource_id='w3id')
+
+        def se_color(s, c, colorize=True):
+            return 'xX%sXx' % s
+
+        with patch('%s.color_output' % pbm) as m_co:
+            m_co.side_effect = se_color
+            res = issue_string_tuple(
+                'svcname',
+                mock_limit,
+                [c1, c2, c3],
+                [w1, w2, w3]
+            )
+        assert res == ('svcname/limitname',
+                       '(limit 12) xXCRITICAL: 8, 10, c2id=12Xx '
+                       'xXWARNING: w2id=10, w3id=10, 11Xx')
+        assert m_co.mock_calls == [
+            call('CRITICAL: 8, 10, c2id=12', 'red', colorize=True),
+            call('WARNING: w2id=10, w3id=10, 11', 'yellow', colorize=True)
+        ]
