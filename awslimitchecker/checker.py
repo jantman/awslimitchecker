@@ -53,9 +53,9 @@ class AwsLimitChecker(object):
 
     def __init__(self, warning_threshold=80, critical_threshold=99,
                  profile_name=None, account_id=None, account_role=None,
-                 region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None, ta_refresh_mode=None, ta_refresh_timeout=None,
-                 check_version=True):
+                 role_partition='aws', region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, check_version=True):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -89,6 +89,10 @@ class AwsLimitChecker(object):
         :param region: AWS region name to connect to
         :type region: str
         :type account_role: str
+        :param role_partition: `AWS role partition <https://docs.aws.amazon.com/
+          general/latest/gr/aws-arns-and-namespaces.html>`_
+          for the account_role to connect via STS
+        :type role_partition: str
         :param external_id: (optional) the `External ID <http://docs.aws.amazon.
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
@@ -156,6 +160,7 @@ class AwsLimitChecker(object):
         self.profile_name = profile_name
         self.account_id = account_id
         self.account_role = account_role
+        self.role_partition = role_partition
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
@@ -306,7 +311,11 @@ class AwsLimitChecker(object):
         """
         logger.debug("Connecting to STS in region %s", self.region)
         sts = boto3.client('sts', region_name=self.region)
-        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        arn = "arn:%s:iam::%s:role/%s" % (
+            self.role_partition,
+            self.account_id,
+            self.account_role
+        )
         logger.debug("STS assume role for %s", arn)
         assume_kwargs = {
             'RoleArn': arn,
