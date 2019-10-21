@@ -55,7 +55,8 @@ class AwsLimitChecker(object):
                  profile_name=None, account_id=None, account_role=None,
                  role_partition='aws', region=None, external_id=None,
                  mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
-                 ta_refresh_timeout=None, check_version=True):
+                 ta_refresh_timeout=None, ta_api_region='us-east-1',
+                 check_version=True):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -120,6 +121,10 @@ class AwsLimitChecker(object):
           parameter is not None, only wait up to this number of seconds for the
           refresh to finish before continuing on anyway.
         :type ta_refresh_timeout: :py:class:`int` or :py:data:`None`
+        :param ta_api_region: The AWS region used for calls to the
+          TrustedAdvisor API. This is always us-east-1 for
+          non GovCloud accounts.
+        :type ta_api_region: str
         :param check_version: Whether or not to check for latest version of
           awslimitchecker on PyPI during instantiation.
         :type check_version: bool
@@ -177,7 +182,8 @@ class AwsLimitChecker(object):
         self.ta = TrustedAdvisor(self.services,
                                  boto_conn_kwargs,
                                  ta_refresh_mode=ta_refresh_mode,
-                                 ta_refresh_timeout=ta_refresh_timeout)
+                                 ta_refresh_timeout=ta_refresh_timeout,
+                                 ta_api_region=ta_api_region)
 
     @property
     def _boto_conn_kwargs(self):

@@ -59,7 +59,8 @@ class TrustedAdvisor(Connectable):
     api_name = 'support'
 
     def __init__(self, all_services, boto_connection_kwargs,
-                 ta_refresh_mode=None, ta_refresh_timeout=None):
+                 ta_refresh_mode=None, ta_refresh_timeout=None,
+                 ta_api_region='us-east-1'):
         """
         Class to contain all TrustedAdvisor-related logic.
 
@@ -110,13 +111,16 @@ class TrustedAdvisor(Connectable):
           parameter is not None, only wait up to this number of seconds for the
           refresh to finish before continuing on anyway.
         :type ta_refresh_timeout: :py:class:`int` or :py:data:`None`
+        :param ta_api_region: The AWS region used for calls to the
+          TrustedAdvisor API. This is always us-east-1 for
+          non GovCloud accounts.
+        :type ta_api_region: str
         """
         self.conn = None
         self.have_ta = True
         self.ta_region = boto_connection_kwargs.get('region_name')
-        # All Support/TA API connections are to us-east-1 only
         ta_kwargs = deepcopy(boto_connection_kwargs)
-        ta_kwargs['region_name'] = 'us-east-1'
+        ta_kwargs['region_name'] = ta_api_region
         self._boto3_connection_kwargs = ta_kwargs
         self.refresh_mode = ta_refresh_mode
         self.refresh_timeout = ta_refresh_timeout
