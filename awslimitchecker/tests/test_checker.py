@@ -122,7 +122,7 @@ class TestAwsLimitChecker(object):
             call(80, 99, {'region_name': None})
         ]
         assert self.mock_ta_constr.mock_calls == [
-            call(services, {'region_name': None},
+            call(services, {'region_name': None}, ta_api_region='us-east-1',
                  ta_refresh_mode=None, ta_refresh_timeout=None)
         ]
         assert self.mock_svc1.mock_calls == []
@@ -229,7 +229,7 @@ class TestAwsLimitChecker(object):
             call(5, 22, {'region_name': None})
         ]
         assert mock_ta_constr.mock_calls == [
-            call(services, {'region_name': None},
+            call(services, {'region_name': None}, ta_api_region='us-east-1',
                  ta_refresh_mode=None, ta_refresh_timeout=None)
         ]
         assert mock_svc1.mock_calls == []
