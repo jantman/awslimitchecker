@@ -134,6 +134,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_logger.mock_calls == [
             call.debug('Connecting to region %s', None)
         ]
+        assert self.cls.role_partition == 'aws'
 
     def test_init_AGPL_message(self, capsys):
         # get rid of the class
@@ -237,7 +238,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
 
-    def test_init_region_profile(self):
+    def test_init_region_profile_role_partition_ta_region(self):
         mock_svc1 = Mock(spec_set=_AwsService)
         mock_svc2 = Mock(spec_set=_AwsService)
         mock_foo = Mock(spec_set=_AwsService)
@@ -261,7 +262,15 @@ class TestAwsLimitChecker(object):
                     mock_version.return_value = self.mock_ver_info
                     mocks['TrustedAdvisor'].return_value = mock_ta
                     mocks['_get_latest_version'].return_value = None
-                    cls = AwsLimitChecker(region='regionX', profile_name='foo')
+                    with patch(
+                        '%s._boto_conn_kwargs' % pb, new_callable=PropertyMock
+                    ) as m_bck:
+                        m_bck.return_value = {'region_name': 'rName'}
+                        cls = AwsLimitChecker(
+                            region='regionX', profile_name='foo',
+                            role_partition='rpName',
+                            ta_api_region='taRegion'
+                        )
         # dict should be of _AwsService instances
         services = {
             'SvcFoo': mock_svc1,
@@ -270,10 +279,20 @@ class TestAwsLimitChecker(object):
         assert cls.profile_name == 'foo'
         assert cls.region == 'regionX'
         assert cls.services == services
+        assert cls.role_partition == 'rpName'
         assert mock_svc1.mock_calls == []
         assert mock_svc2.mock_calls == []
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
+        assert mocks['TrustedAdvisor'].mock_calls == [
+            call(
+                services,
+                {'region_name': 'rName'},
+                ta_api_region='taRegion',
+                ta_refresh_mode=None,
+                ta_refresh_timeout=None
+            )
+        ]
 
     def test_init_sts(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -284,7 +303,19 @@ class TestAwsLimitChecker(object):
         mock_foo.return_value = mock_svc1
         mock_bar.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with patch('%s.boto3' % pbm):
+        with patch('%s.boto3' % pbm) as mock_boto:
+            mock_boto.client.return_value.assume_role.return_value = {
+                'Credentials': {
+                    'AccessKeyId': 'akid',
+                    'SecretAccessKey': 'sk',
+                    'SessionToken': 'stoken',
+                    'Expiration': '0'
+                },
+                'AssumedRoleUser': {
+                    'AssumedRoleId': 'arid',
+                    'Arn': 'arn'
+                }
+            }
             with patch.dict('%s._services' % pbm, values=svcs, clear=True):
                 with patch.multiple(
                     'awslimitchecker.checker',
@@ -313,6 +344,13 @@ class TestAwsLimitChecker(object):
         assert mock_svc2.mock_calls == []
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
+        assert mock_boto.mock_calls == [
+            call.client('sts', region_name='myregion'),
+            call.client().assume_role(
+                RoleArn='arn:aws:iam::123456789012:role/myrole',
+                RoleSessionName='awslimitchecker'
+            )
+        ]
 
     def test_init_sts_external_id_ta_refresh(self):
         mock_svc1 = Mock(spec_set=_AwsService)
@@ -323,7 +361,19 @@ class TestAwsLimitChecker(object):
         mock_foo.return_value = mock_svc1
         mock_bar.return_value = mock_svc2
         svcs = {'SvcFoo': mock_foo, 'SvcBar': mock_bar}
-        with patch('%s.boto3' % pbm):
+        with patch('%s.boto3' % pbm) as mock_boto:
+            mock_boto.client.return_value.assume_role.return_value = {
+                'Credentials': {
+                    'AccessKeyId': 'akid',
+                    'SecretAccessKey': 'sk',
+                    'SessionToken': 'stoken',
+                    'Expiration': '0'
+                },
+                'AssumedRoleUser': {
+                    'AssumedRoleId': 'arid',
+                    'Arn': 'arn'
+                }
+            }
             with patch.dict('%s._services' % pbm, values=svcs, clear=True):
                 with patch.multiple(
                         'awslimitchecker.checker',
@@ -345,7 +395,8 @@ class TestAwsLimitChecker(object):
                         mfa_serial_number=123,
                         mfa_token=456,
                         ta_refresh_mode=123,
-                        ta_refresh_timeout=456
+                        ta_refresh_timeout=456,
+                        role_partition='mypart'
                     )
         # dict should be of _AwsService instances
         services = {
@@ -357,6 +408,16 @@ class TestAwsLimitChecker(object):
         assert mock_svc2.mock_calls == []
         assert self.mock_version.mock_calls == [call()]
         assert self.cls.vinfo == self.mock_ver_info
+        assert mock_boto.mock_calls == [
+            call.client('sts', region_name='myregion'),
+            call.client().assume_role(
+                ExternalId='myextid',
+                RoleArn='arn:mypart:iam::123456789012:role/myrole',
+                RoleSessionName='awslimitchecker',
+                SerialNumber=123,
+                TokenCode=456
+            )
+        ]
 
     def test_boto3_connection_kwargs(self):
         cls = AwsLimitChecker()

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+* `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
+
 7.1.0 (2019-09-10)
 ------------------
 
