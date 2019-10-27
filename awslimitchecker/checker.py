@@ -53,8 +53,9 @@ class AwsLimitChecker(object):
 
     def __init__(self, warning_threshold=80, critical_threshold=99,
                  profile_name=None, account_id=None, account_role=None,
-                 region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None, ta_refresh_mode=None, ta_refresh_timeout=None,
+                 role_partition='aws', region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, ta_api_region='us-east-1',
                  check_version=True):
         """
         Main AwsLimitChecker class - this should be the only externally-used
@@ -89,6 +90,10 @@ class AwsLimitChecker(object):
         :param region: AWS region name to connect to
         :type region: str
         :type account_role: str
+        :param role_partition: `AWS role partition <https://docs.aws.amazon.com/
+          general/latest/gr/aws-arns-and-namespaces.html>`_
+          for the account_role to connect via STS
+        :type role_partition: str
         :param external_id: (optional) the `External ID <http://docs.aws.amazon.
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
@@ -116,6 +121,10 @@ class AwsLimitChecker(object):
           parameter is not None, only wait up to this number of seconds for the
           refresh to finish before continuing on anyway.
         :type ta_refresh_timeout: :py:class:`int` or :py:data:`None`
+        :param ta_api_region: The AWS region used for calls to the
+          TrustedAdvisor API. This is always us-east-1 for
+          non GovCloud accounts.
+        :type ta_api_region: str
         :param check_version: Whether or not to check for latest version of
           awslimitchecker on PyPI during instantiation.
         :type check_version: bool
@@ -156,6 +165,7 @@ class AwsLimitChecker(object):
         self.profile_name = profile_name
         self.account_id = account_id
         self.account_role = account_role
+        self.role_partition = role_partition
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
@@ -172,7 +182,8 @@ class AwsLimitChecker(object):
         self.ta = TrustedAdvisor(self.services,
                                  boto_conn_kwargs,
                                  ta_refresh_mode=ta_refresh_mode,
-                                 ta_refresh_timeout=ta_refresh_timeout)
+                                 ta_refresh_timeout=ta_refresh_timeout,
+                                 ta_api_region=ta_api_region)
 
     @property
     def _boto_conn_kwargs(self):
@@ -306,7 +317,11 @@ class AwsLimitChecker(object):
         """
         logger.debug("Connecting to STS in region %s", self.region)
         sts = boto3.client('sts', region_name=self.region)
-        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        arn = "arn:%s:iam::%s:role/%s" % (
+            self.role_partition,
+            self.account_id,
+            self.account_role
+        )
         logger.debug("STS assume role for %s", arn)
         assume_kwargs = {
             'RoleArn': arn,
