@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
+import os
 import logging
 from collections import defaultdict
 from copy import deepcopy
@@ -68,7 +69,10 @@ class _Ec2Service(_AwsService):
         self.connect_resource()
         for lim in self.limits.values():
             lim._reset_usage()
-        self._find_usage_instances()
+        if self._use_vcpu_limits:
+            self._find_usage_instances_vcpu()
+        else:
+            self._find_usage_instances_nonvcpu()
         self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
@@ -77,7 +81,7 @@ class _Ec2Service(_AwsService):
         self._have_usage = True
         logger.debug("Done checking usage.")
 
-    def _find_usage_instances(self):
+    def _find_usage_instances_nonvcpu(self):
         """calculate On-Demand instance usage for all types and update Limits"""
         # update our limits with usage
         inst_usage = self._instance_usage()
@@ -127,6 +131,9 @@ class _Ec2Service(_AwsService):
             total_instances,
             aws_type='AWS::EC2::Instance'
         )
+
+    def _find_usage_instances_vcpu(self):
+        return {}
 
     def _find_usage_spot_instances(self):
         """calculate spot instance request usage and update Limits"""
@@ -258,6 +265,38 @@ class _Ec2Service(_AwsService):
                              "counting", inst.instance_type)
         return az_to_inst
 
+    @property
+    def _use_vcpu_limits(self):
+        """
+        Return whether or not to use the new vCPU-based limits.
+
+        :return: whether to use vCPU-based limits (True) or older
+          per-instance-type limits (False)
+        :rtype: bool
+        """
+        if 'USE_VCPU_LIMITS' in os.environ:
+            if os.environ['USE_VCPU_LIMITS'] == 'true':
+                logger.debug(
+                    'Using vCPU-based EC2 limits due to USE_VCPU_LIMITS=true '
+                    'in environment.'
+                )
+                return True
+            logger.debug(
+                'Using vCPU-based EC2 limits due to USE_VCPU_LIMITS in '
+                'environment and set to something other than "true".'
+            )
+            return False
+        oldconn = self.conn
+        self.connect()
+        region_name = self.conn._client_config.region_name
+        self.conn = oldconn
+        if region_name.startswith('cn-') or region_name.startswith('us-gov-'):
+            logger.debug(
+                'Using non-vCPU EC2 limits due to region name: %s', region_name
+            )
+            return False
+        return True
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -269,7 +308,10 @@ class _Ec2Service(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
-        limits.update(self._get_limits_instances())
+        if self._use_vcpu_limits:
+            limits.update(self._get_limits_instances_vcpu())
+        else:
+            limits.update(self._get_limits_instances_nonvcpu())
         limits.update(self._get_limits_networking())
         limits.update(self._get_limits_spot())
         self.limits = limits
@@ -303,7 +345,7 @@ class _Ec2Service(_AwsService):
                 self.limits[lname]._set_api_limit(int(val))
         logger.debug("Done setting limits from API")
 
-    def _get_limits_instances(self):
+    def _get_limits_instances_nonvcpu(self):
         """
         Return a dict of limits for EC2 instances only.
         This method should only be used internally by
@@ -390,6 +432,9 @@ class _Ec2Service(_AwsService):
             limit_type='On-Demand instances',
         )
         return limits
+
+    def _get_limits_instances_vcpu(self):
+        return {}
 
     def _get_limits_spot(self):
         """
