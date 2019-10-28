@@ -17,10 +17,6 @@ awslimitchecker
    :alt: GitHub Open Issues
    :target: https://github.com/jantman/awslimitchecker/issues
 
-.. image:: https://badge.waffle.io/jantman/awslimitchecker.png?label=ready&title=Ready
-   :target: https://waffle.io/jantman/awslimitchecker
-   :alt: 'Stories in Ready - waffle.io'
-
 .. image:: http://www.repostatus.org/badges/1.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
@@ -35,10 +31,6 @@ Master:
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for master branch
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/jantman/awslimitchecker/master
-   :alt: Code Health
-
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=master
    :alt: coverage report for master branch
@@ -52,10 +44,6 @@ Develop:
 .. image:: https://secure.travis-ci.org/jantman/awslimitchecker.png?branch=develop
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for develop branch
-
-.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg?style=flat
-   :target: https://landscape.io/github/jantman/awslimitchecker/develop
-   :alt: Code Health
 
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=develop
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=develop
