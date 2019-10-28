@@ -33,7 +33,8 @@ use as a Nagios-compatible plugin).
                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
                           [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
                           [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
-                          [-r REGION] [--skip-ta]
+                          [-r REGION] [--role-partition ROLE_PARTITION]
+                          [--ta-api-region TA_API_REGION] [--skip-ta]
                           [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
                           [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
                           [--no-check-version] [-v] [-V]
@@ -102,6 +103,13 @@ use as a Nagios-compatible plugin).
                            MFA Token to use when assuming a role via STS
      -r REGION, --region REGION
                            AWS region name to connect to; required for STS
+     --role-partition ROLE_PARTITION
+                           AWS partition name to use for account_role when
+                           connecting via STS; see documentation for more
+                           information (default: "aws")
+     --ta-api-region TA_API_REGION
+                           Region to use for Trusted Advisor / Support API
+                           (default: us-east-1)
      --skip-ta             do not attempt to pull *any* information on limits
                            from Trusted Advisor
      --ta-refresh-wait     If applicable, refresh all Trusted Advisor limit-
@@ -636,3 +644,10 @@ If you also need to specify an ``external_id`` of "myid", you can do that with t
 Please note that this assumes that you already have STS configured and working
 between your account and the 123456789012 destination account; see the
 `documentation <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ for further information.
+
+.. _cli_usage.partitions:
+
+Partitions and Trusted Advisor Regions
+++++++++++++++++++++++++++++++++++++++
+
+awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``--role-partition`` option to awslimitchecker, like ``--role-partition=aws-cn`` for the China (Beijing) partition. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``--ta-api-region`` option, like ``--ta-api-region=us-gov-west-1``.
