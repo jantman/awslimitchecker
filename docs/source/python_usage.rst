@@ -240,6 +240,13 @@ or :py:meth:`~.AwsLimitChecker.check_thresholds` with ``use_ta=False``:
 
    >>> result = c.check_thresholds(use_ta=False)
 
+.. _python_usage.partitions:
+
+Partitions and Trusted Advisor Regions
+++++++++++++++++++++++++++++++++++++++
+
+awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``role_partition`` keyword argument to the :py:class:`~.AwsLimitChecker` class. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``ta_api_region`` keyword argument to the :py:class:`~.AwsLimitChecker` class.
+
 Skipping Specific Services
 ++++++++++++++++++++++++++
 

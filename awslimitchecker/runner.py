@@ -185,6 +185,15 @@ class Runner(object):
         p.add_argument('-r', '--region', action='store',
                        type=str, default=None,
                        help='AWS region name to connect to; required for STS')
+        p.add_argument('--role-partition', action='store', type=str,
+                       default='aws',
+                       help='AWS partition name to use for account_role when '
+                            'connecting via STS; see documentation for more '
+                            'information (default: "aws")')
+        p.add_argument('--ta-api-region', action='store', type=str,
+                       default='us-east-1',
+                       help='Region to use for Trusted Advisor / Support API'
+                            ' (default: us-east-1)')
         p.add_argument('--skip-ta', action='store_true', default=False,
                        help='do not attempt to pull *any* information on limits'
                        ' from Trusted Advisor')
@@ -427,7 +436,9 @@ class Runner(object):
             mfa_token=args.mfa_token,
             ta_refresh_mode=args.ta_refresh_mode,
             ta_refresh_timeout=args.ta_refresh_timeout,
-            check_version=args.check_version
+            check_version=args.check_version,
+            role_partition=args.role_partition,
+            ta_api_region=args.ta_api_region
         )
 
         if args.version:

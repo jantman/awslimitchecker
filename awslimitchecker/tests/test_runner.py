@@ -125,6 +125,8 @@ class TestParseArgs(RunnerTester):
         assert res.list_alert_providers is False
         assert res.alert_provider is None
         assert res.alert_config == {}
+        assert res.role_partition == 'aws'
+        assert res.ta_api_region == 'us-east-1'
 
     def test_parser(self):
         argv = ['-V']
@@ -229,6 +231,16 @@ class TestParseArgs(RunnerTester):
                                 type=str, default=None,
                                 help='AWS region name to connect to; required '
                                 'for STS'),
+            call().add_argument('--role-partition', action='store', type=str,
+                                default='aws',
+                                help='AWS partition name to use for '
+                                     'account_role when connecting via STS; '
+                                     'see documentation for more information'
+                                     ' (default: "aws")'),
+            call().add_argument('--ta-api-region', action='store', type=str,
+                                default='us-east-1',
+                                help='Region to use for Trusted Advisor / '
+                                     'Support API (default: us-east-1)'),
             call().add_argument('--skip-ta', action='store_true', default=False,
                                 help='do not attempt to pull *any* information '
                                 'on limits from Trusted Advisor'),
@@ -395,6 +407,15 @@ class TestParseArgs(RunnerTester):
         ])
         assert res.alert_provider == 'ClassName'
         assert res.alert_config == {'foo': 'bar', 'baz': 'blam'}
+
+    def test_role_partition_ta_api_region(self):
+        argv = [
+            '--role-partition=foo',
+            '--ta-api-region=bar'
+        ]
+        res = self.cls.parse_args(argv)
+        assert res.role_partition == 'foo'
+        assert res.ta_api_region == 'bar'
 
 
 class TestListServices(RunnerTester):
@@ -1136,7 +1157,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             ),
             call().get_project_url(),
             call().get_version()
@@ -1204,7 +1227,46 @@ class TestConsoleEntryPoint(RunnerTester):
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
-                 check_version=True)
+                 check_version=True, role_partition='aws',
+                 ta_api_region='us-east-1')
+        ]
+
+    def test_role_partition(self):
+        argv = ['awslimitchecker', '--role-partition=foo']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True, role_partition='foo',
+                 ta_api_region='us-east-1')
+        ]
+
+    def test_ta_api_region(self):
+        argv = ['awslimitchecker', '--ta-api-region=foo']
+        with patch.object(sys, 'argv', argv):
+            with patch('%s.Runner.check_thresholds' % pb,
+                       autospec=True) as mock_check:
+                mock_check.return_value = 2, {'Foo': {'Bar': Mock()}}, 'foo'
+                with patch('%s.AwsLimitChecker' % pb, autospec=True) as mock_c:
+                    with pytest.raises(SystemExit) as excinfo:
+                        self.cls.console_entry_point()
+        assert excinfo.value.code == 2
+        assert mock_c.mock_calls == [
+            call(account_id=None, account_role=None, critical_threshold=99,
+                 external_id=None, mfa_serial_number=None, mfa_token=None,
+                 profile_name=None, region=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, warning_threshold=80,
+                 check_version=True, role_partition='aws',
+                 ta_api_region='foo')
         ]
 
     def test_skip_service(self):
@@ -1222,7 +1284,8 @@ class TestConsoleEntryPoint(RunnerTester):
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
-                 check_version=True),
+                 check_version=True, role_partition='aws',
+                 ta_api_region='us-east-1'),
             call().remove_services(['foo'])
         ]
 
@@ -1245,7 +1308,8 @@ class TestConsoleEntryPoint(RunnerTester):
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
-                 check_version=True),
+                 check_version=True, role_partition='aws',
+                 ta_api_region='us-east-1'),
             call().remove_services(['foo', 'bar'])
         ]
 
@@ -1267,7 +1331,8 @@ class TestConsoleEntryPoint(RunnerTester):
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
-                 check_version=True),
+                 check_version=True, role_partition='aws',
+                 ta_api_region='us-east-1'),
         ]
         assert self.cls.skip_check == [
             'EC2/Max launch specifications per spot fleet',
@@ -1292,7 +1357,8 @@ class TestConsoleEntryPoint(RunnerTester):
                  external_id=None, mfa_serial_number=None, mfa_token=None,
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
-                 check_version=True),
+                 check_version=True, role_partition='aws',
+                 ta_api_region='us-east-1'),
         ]
         assert self.cls.skip_check == [
             'EC2/Max launch specifications per spot fleet',
@@ -1442,7 +1508,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
         assert self.cls.service_name is None
@@ -1481,7 +1549,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
         assert self.cls.service_name is None
@@ -1523,7 +1593,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=False
+                check_version=False,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
         assert self.cls.service_name is None
@@ -1581,7 +1653,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
 
@@ -1608,7 +1682,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name='myprof',
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
 
@@ -1635,7 +1711,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=None,
                 ta_refresh_timeout=None,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
 
@@ -1663,7 +1741,9 @@ class TestConsoleEntryPoint(RunnerTester):
                 profile_name=None,
                 ta_refresh_mode=456,
                 ta_refresh_timeout=123,
-                check_version=True
+                check_version=True,
+                role_partition='aws',
+                ta_api_region='us-east-1'
             )
         ]
 
