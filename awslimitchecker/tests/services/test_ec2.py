@@ -60,9 +60,9 @@ fixtures = result_fixtures.EC2()
 pb = 'awslimitchecker.services.ec2._Ec2Service'  # patch base path
 
 
-class Test_Ec2Service(object):
+class TestInit(object):
 
-    def test_init(self):
+    def test_simple(self):
         """test __init__()"""
         cls = _Ec2Service(21, 43)
         assert cls.service_name == 'EC2'
@@ -71,7 +71,10 @@ class Test_Ec2Service(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_instance_types(self):
+
+class TestInstanceTypes(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
         # NOTE hi1.4xlarge is no longer in the instance type listings,
@@ -92,7 +95,10 @@ class Test_Ec2Service(object):
         assert 'x1.32xlarge' in types
         assert 'z1d.12xlarge' in types
 
-    def test_get_limits_nonvcpu(self):
+
+class TestGetLimits(object):
+
+    def test_nonvcpu(self):
         cls = _Ec2Service(21, 43)
         cls.limits = {}
         with patch.multiple(
@@ -128,7 +134,7 @@ class Test_Ec2Service(object):
         assert mocks['_get_limits_networking'].mock_calls == [call(cls)]
         assert mocks['_get_limits_spot'].mock_calls == [call(cls)]
 
-    def test_get_limits_vcpu(self):
+    def test_vcpu(self):
         cls = _Ec2Service(21, 43)
         cls.limits = {}
         with patch.multiple(
@@ -162,7 +168,7 @@ class Test_Ec2Service(object):
         assert mocks['_get_limits_networking'].mock_calls == [call(cls)]
         assert mocks['_get_limits_spot'].mock_calls == [call(cls)]
 
-    def test_get_limits_again(self):
+    def test_get_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         cls = _Ec2Service(21, 43)
         cls.limits = {'foo': 'bar'}
@@ -193,7 +199,7 @@ class Test_Ec2Service(object):
         assert mocks['_get_limits_networking'].mock_calls == []
         assert mocks['_get_limits_spot'].mock_calls == []
 
-    def test_get_limits_all_nonvcpu(self):
+    def test_all_nonvcpu(self):
         """test some things all limits should conform to"""
         with patch(
                 '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
@@ -206,7 +212,7 @@ class Test_Ec2Service(object):
             assert x == limits[x].name
             assert limits[x].service == cls
 
-    def test_get_limits_all_vcpu(self):
+    def test_all_vcpu(self):
         """test some things all limits should conform to"""
         with patch(
                 '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
@@ -219,7 +225,10 @@ class Test_Ec2Service(object):
             assert x == limits[x].name
             assert limits[x].service == cls
 
-    def test_get_limits_instances_nonvcpu(self):
+
+class TestGetLimitsInstancesNonvcpu(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances_nonvcpu()
         assert len(limits) == 176
@@ -260,7 +269,10 @@ class Test_Ec2Service(object):
                 assert lname == 'Running On-Demand %s instances' % itype
                 assert lim.ta_limit_name == 'On-Demand instances - %s' % itype
 
-    def test_find_usage_nonvcpu(self):
+
+class TestFindUsage(object):
+
+    def test_nonvcpu(self):
         with patch.multiple(
                 pb,
                 connect=DEFAULT,
@@ -301,7 +313,7 @@ class Test_Ec2Service(object):
             call(cls)
         ]
 
-    def test_find_usage_vcpu(self):
+    def test_vcpu(self):
         with patch.multiple(
                 pb,
                 connect=DEFAULT,
@@ -342,7 +354,10 @@ class Test_Ec2Service(object):
             call(cls)
         ]
 
-    def test_instance_usage(self):
+
+class TestInstanceUsage(object):
+
+    def test_simple(self):
         mock_t2_micro = Mock(spec_set=AwsLimit)
         mock_r3_2xlarge = Mock(spec_set=AwsLimit)
         mock_c4_4xlarge = Mock(spec_set=AwsLimit)
@@ -384,7 +399,33 @@ class Test_Ec2Service(object):
             call.instances.all()
         ]
 
-    def test_get_reserved_instance_count(self):
+    def test_key_error(self):
+        mock_conn = Mock()
+        data = fixtures.test_instance_usage_key_error
+        mock_conn.instances.all.return_value = data
+        cls = _Ec2Service(21, 43)
+        cls.resource_conn = mock_conn
+        cls.limits = {'Running On-Demand t2.micro instances': Mock()}
+
+        with patch(
+                '%s._instance_types' % pb,
+                autospec=True) as mock_itypes:
+            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+                mock_itypes.return_value = ['t2.micro']
+                cls._instance_usage()
+        assert mock_logger.mock_calls == [
+            call.debug('Getting usage for on-demand instances'),
+            call.error("ERROR - unknown instance type '%s'; not counting",
+                       'foobar'),
+        ]
+        assert mock_conn.mock_calls == [
+            call.instances.all()
+        ]
+
+
+class TestGetReservedInstanceCount(object):
+
+    def test_simple(self):
         response = fixtures.test_get_reserved_instance_count
 
         cls = _Ec2Service(21, 43)
@@ -412,7 +453,10 @@ class Test_Ec2Service(object):
             call.describe_reserved_instances()
         ]
 
-    def test_find_usage_instances_nonvcpu(self):
+
+class TestFindUsageInstancesNonvcpu(object):
+
+    def test_simple(self):
         iusage = {
             'us-east-1': {
                 't2.micro': 2,
@@ -494,30 +538,10 @@ class Test_Ec2Service(object):
         assert mock_res_inst_count.mock_calls == [call(cls)]
         assert mock_conn.mock_calls == []
 
-    def test_instance_usage_key_error(self):
-        mock_conn = Mock()
-        data = fixtures.test_instance_usage_key_error
-        mock_conn.instances.all.return_value = data
-        cls = _Ec2Service(21, 43)
-        cls.resource_conn = mock_conn
-        cls.limits = {'Running On-Demand t2.micro instances': Mock()}
 
-        with patch(
-                '%s._instance_types' % pb,
-                autospec=True) as mock_itypes:
-            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-                mock_itypes.return_value = ['t2.micro']
-                cls._instance_usage()
-        assert mock_logger.mock_calls == [
-            call.debug('Getting usage for on-demand instances'),
-            call.error("ERROR - unknown instance type '%s'; not counting",
-                       'foobar'),
-        ]
-        assert mock_conn.mock_calls == [
-            call.instances.all()
-        ]
+class TestRequiredIamPermissions(object):
 
-    def test_required_iam_permissions(self):
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         assert len(cls.required_iam_permissions()) == 19
         assert cls.required_iam_permissions() == [
@@ -542,7 +566,10 @@ class Test_Ec2Service(object):
             "ec2:DescribeVpcs",
         ]
 
-    def test_find_usage_networking_sgs(self):
+
+class TestFindUsageNetworkingSgs(object):
+
+    def test_simple(self):
         mocks = fixtures.test_find_usage_networking_sgs
 
         mock_conn = Mock()
@@ -585,7 +612,10 @@ class Test_Ec2Service(object):
             call.security_groups.all()
         ]
 
-    def test_find_usage_networking_eips(self):
+
+class TestFindUsageNetworkingEips(object):
+
+    def test_simple(self):
         mocks = fixtures.test_find_usage_networking_eips
 
         mock_conn = Mock()
@@ -620,7 +650,10 @@ class Test_Ec2Service(object):
             call.classic_addresses.all()
         ]
 
-    def test_find_usage_networking_eni_sg(self):
+
+class TestFindUsageNetworkingEniSg(object):
+
+    def test_simple(self):
         mocks = fixtures.test_find_usage_networking_eni_sg
 
         mock_conn = Mock()
@@ -648,7 +681,10 @@ class Test_Ec2Service(object):
             call.network_interfaces.all()
         ]
 
-    def test_get_limits_networking(self):
+
+class TestGetLimitsNetworking(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_networking()
         expected = [
@@ -662,7 +698,10 @@ class Test_Ec2Service(object):
         assert limits[
                    'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
 
-    def test_get_limits_spot(self):
+
+class TestGetLimitsSpot(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_spot()
         expected = [
@@ -674,7 +713,10 @@ class Test_Ec2Service(object):
         ]
         assert sorted(limits.keys()) == sorted(expected)
 
-    def test_find_usage_spot_instances(self):
+
+class TestFindUsageSpotInstances(object):
+
+    def test_happy_path(self):
         data = fixtures.test_find_usage_spot_instances
         mock_conn = Mock()
         mock_client_conn = Mock()
@@ -704,7 +746,7 @@ class Test_Ec2Service(object):
                        'reqID4', 'failed')
         ]
 
-    def test_find_usage_spot_instances_unsupported(self):
+    def test_unsupported(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'UnsupportedOperation'}},
@@ -718,7 +760,7 @@ class Test_Ec2Service(object):
         usage = lim.get_current_usage()
         assert len(usage) == 0
 
-    def test_find_usage_spot_instances_unknown_code(self):
+    def test_unknown_code(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'SomeCode'}},
@@ -730,7 +772,7 @@ class Test_Ec2Service(object):
         with pytest.raises(botocore.exceptions.ClientError):
             cls._find_usage_spot_instances()
 
-    def test_find_usage_spot_instances_unknown_error(self):
+    def test_unknown_error(self):
         mock_client_conn = Mock()
         err = RuntimeError
         mock_client_conn.describe_spot_instance_requests.side_effect = err
@@ -739,7 +781,10 @@ class Test_Ec2Service(object):
         with pytest.raises(RuntimeError):
             cls._find_usage_spot_instances()
 
-    def test_find_usage_spot_fleets(self):
+
+class TestFindUsageSpotFleets(object):
+
+    def test_simple(self):
         data = fixtures.test_find_usage_spot_fleets
         mock_conn = Mock()
         mock_client_conn = Mock()
@@ -788,7 +833,7 @@ class Test_Ec2Service(object):
                        'req3', 'modifying')
         ]
 
-    def test_find_usage_spot_fleets_paginated(self):
+    def test_paginated(self):
         data = deepcopy(fixtures.test_find_usage_spot_fleets)
         data['NextToken'] = 'string'
         mock_conn = Mock()
@@ -841,7 +886,7 @@ class Test_Ec2Service(object):
                        'req3', 'modifying')
         ]
 
-    def test_find_usage_spot_fleets_unsupported(self):
+    def test_unsupported(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'UnsupportedOperation'}},
@@ -855,7 +900,7 @@ class Test_Ec2Service(object):
                            'region'].get_current_usage()
         assert len(total) == 0
 
-    def test_find_usage_spot_fleets_unknown_code(self):
+    def test_unknown_code(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'SomeCode'}},
@@ -867,7 +912,7 @@ class Test_Ec2Service(object):
         with pytest.raises(botocore.exceptions.ClientError):
             cls._find_usage_spot_fleets()
 
-    def test_find_usage_spot_fleets_unknown_error(self):
+    def test_unknown_error(self):
         mock_client_conn = Mock()
         mock_client_conn.describe_spot_fleet_requests.side_effect = RuntimeError
         cls = _Ec2Service(21, 43)
@@ -875,7 +920,10 @@ class Test_Ec2Service(object):
         with pytest.raises(RuntimeError):
             cls._find_usage_spot_fleets()
 
-    def test_update_limits_from_api(self):
+
+class TestUpdateLimitsFromApi(object):
+
+    def test_happy_path(self):
         data = fixtures.test_update_limits_from_api
         mock_conn = Mock()
         mock_client_conn = Mock()
@@ -904,7 +952,7 @@ class Test_Ec2Service(object):
         assert cls.limits['VPC security groups per elastic '
                           'network interface'].api_limit == 5
 
-    def test_update_limits_from_api_unsupported(self):
+    def test_unsupported(self):
         data = fixtures.test_update_limits_from_api_unsupported
         mock_client_conn = Mock()
         mock_client_conn.describe_account_attributes.return_value = data
