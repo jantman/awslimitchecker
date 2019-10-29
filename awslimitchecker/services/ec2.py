@@ -278,6 +278,38 @@ class _Ec2Service(_AwsService):
                              "counting", inst.instance_type)
         return az_to_inst
 
+    def _instance_usage_vcpu(self):
+        """
+        Find counts of currently-running EC2 Instance vCPUs
+        (On-Demand or Reserved) by placement (Availability
+        Zone) and instance family. Return as a nested dict
+        of AZ name to dict of instance family to count.
+
+        :rtype: dict
+        """
+        az_to_inst = {}
+        logger.debug("Getting usage for on-demand instances (vCPU limit)")
+        for inst in self.resource_conn.instances.all():
+            if inst.spot_instance_request_id:
+                logger.info("Spot instance found (%s); skipping from "
+                            "Running On-Demand Instances count", inst.id)
+                continue
+            if inst.state['Name'] in ['stopped', 'terminated']:
+                logger.debug("Ignoring instance %s in state %s", inst.id,
+                             inst.state['Name'])
+                continue
+            if inst.placement['AvailabilityZone'] not in az_to_inst:
+                az_to_inst[
+                    inst.placement['AvailabilityZone']] = defaultdict(int)
+            az_to_inst[
+                    inst.placement['AvailabilityZone']
+            ][inst.instance_type[0]] += (
+                inst.cpu_options['CoreCount'] * inst.cpu_options[
+                    'ThreadsPerCore'
+                ]
+            )
+        return az_to_inst
+
     @property
     def _use_vcpu_limits(self):
         """

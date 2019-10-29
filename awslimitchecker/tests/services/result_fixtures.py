@@ -1905,6 +1905,140 @@ class EC2(object):
         return return_value
 
     @property
+    def test_instance_usage_vcpu(self):
+        mock_inst1A = Mock(spec_set=Instance)
+        type(mock_inst1A).id = '1A'
+        type(mock_inst1A).instance_type = 't2.micro'
+        type(mock_inst1A).spot_instance_request_id = None
+        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst1A).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
+
+        mock_inst1B = Mock(spec_set=Instance)
+        type(mock_inst1B).id = '1B'
+        type(mock_inst1B).instance_type = 'r3.2xlarge'
+        type(mock_inst1B).spot_instance_request_id = None
+        type(mock_inst1B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1B).state = {'Code': 0, 'Name': 'pending'}
+        type(mock_inst1B).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
+
+        mock_inst2A = Mock(spec_set=Instance)
+        type(mock_inst2A).id = '2A'
+        type(mock_inst2A).instance_type = 'c4.4xlarge'
+        type(mock_inst2A).spot_instance_request_id = None
+        type(mock_inst2A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2A).state = {'Code': 32, 'Name': 'shutting-down'}
+        type(mock_inst2A).cpu_options = {'CoreCount': 8, 'ThreadsPerCore': 2}
+
+        mock_inst2B = Mock(spec_set=Instance)
+        type(mock_inst2B).id = '2B'
+        type(mock_inst2B).instance_type = 't2.micro'
+        type(mock_inst2B).spot_instance_request_id = '1234'
+        type(mock_inst2B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2B).state = {'Code': 64, 'Name': 'stopping'}
+        type(mock_inst2B).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
+
+        mock_inst2C = Mock(spec_set=Instance)
+        type(mock_inst2C).id = '2C'
+        type(mock_inst2C).instance_type = 'm4.8xlarge'
+        type(mock_inst2C).spot_instance_request_id = None
+        type(mock_inst2C).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2C).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst2C).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
+
+        mock_instStopped = Mock(spec_set=Instance)
+        type(mock_instStopped).id = '2C'
+        type(mock_instStopped).instance_type = 'm4.8xlarge'
+        type(mock_instStopped).spot_instance_request_id = None
+        type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instStopped).state = {'Code': 80, 'Name': 'stopped'}
+        type(mock_instStopped).cpu_options = {
+            'CoreCount': 16, 'ThreadsPerCore': 2
+        }
+
+        mock_instTerm = Mock(spec_set=Instance)
+        type(mock_instTerm).id = '2C'
+        type(mock_instTerm).instance_type = 'm4.8xlarge'
+        type(mock_instTerm).spot_instance_request_id = None
+        type(mock_instTerm).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instTerm).state = {'Code': 48, 'Name': 'terminated'}
+        type(mock_instTerm).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
+
+        mock_inst2D = Mock(spec_set=Instance)
+        type(mock_inst2D).id = '2D'
+        type(mock_inst2D).instance_type = 'f1.16xlarge'
+        type(mock_inst2D).spot_instance_request_id = None
+        type(mock_inst2D).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2D).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst2D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
+
+        mock_inst2E = Mock(spec_set=Instance)
+        type(mock_inst2E).id = '2E'
+        type(mock_inst2E).instance_type = 'f1.2xlarge'
+        type(mock_inst2E).spot_instance_request_id = None
+        type(mock_inst2E).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2E).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst2E).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
+
+        mock_inst2F = Mock(spec_set=Instance)
+        type(mock_inst2F).id = '2F'
+        type(mock_inst2F).instance_type = 'g4dn.12xlarge'
+        type(mock_inst2F).spot_instance_request_id = None
+        type(mock_inst2F).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2F).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst2F).cpu_options = {'CoreCount': 12, 'ThreadsPerCore': 4}
+
+        mock_inst3A = Mock(spec_set=Instance)
+        type(mock_inst1A).id = '3A'
+        type(mock_inst3A).instance_type = 'p2.16xlarge'
+        type(mock_inst3A).spot_instance_request_id = None
+        type(mock_inst3A).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3A).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst3A).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
+
+        mock_inst3B = Mock(spec_set=Instance)
+        type(mock_inst3B).id = '3B'
+        type(mock_inst3B).instance_type = 'r3.2xlarge'
+        type(mock_inst3B).spot_instance_request_id = None
+        type(mock_inst3B).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3B).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst3B).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
+
+        mock_inst3C = Mock(spec_set=Instance)
+        type(mock_inst3C).id = '3C'
+        type(mock_inst3C).instance_type = 'x1e.32xlarge'
+        type(mock_inst3C).spot_instance_request_id = None
+        type(mock_inst3C).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3C).state = {'Code': 32, 'Name': 'stopped'}
+        type(mock_inst3C).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
+
+        mock_inst3D = Mock(spec_set=Instance)
+        type(mock_inst3D).id = '3D'
+        type(mock_inst3D).instance_type = 'x1e.32xlarge'
+        type(mock_inst3D).spot_instance_request_id = None
+        type(mock_inst3D).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3D).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst3D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
+
+        return_value = [
+            mock_inst1A,
+            mock_inst1B,
+            mock_inst2A,
+            mock_inst2B,
+            mock_inst2C,
+            mock_instStopped,
+            mock_instTerm,
+            mock_inst2D,
+            mock_inst2E,
+            mock_inst2F,
+            mock_inst3A,
+            mock_inst3B,
+            mock_inst3C,
+            mock_inst3D,
+        ]
+        return return_value
+
+    @property
     def test_instance_usage_key_error(self):
         mock_inst1A = Mock(spec_set=Instance)
         type(mock_inst1A).id = '1A'

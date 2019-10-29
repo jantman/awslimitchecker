@@ -443,6 +443,36 @@ class TestInstanceUsage(object):
         ]
 
 
+class TestInstanceUsageVcpu(object):
+
+    def test_simple(self):
+        cls = _Ec2Service(21, 43)
+        mock_conn = Mock()
+        retval = fixtures.test_instance_usage_vcpu
+        mock_conn.instances.all.return_value = retval
+        cls.resource_conn = mock_conn
+
+        res = cls._instance_usage_vcpu()
+        assert res == {
+            'az1a': {
+                'c': 16,
+                'f': 72,
+                'g': 48,
+                'm': 32,
+                'r': 8,
+                't': 2,
+            },
+            'az1c': {
+                'r': 8,
+                'p': 64,
+                'x': 128,
+            }
+        }
+        assert mock_conn.mock_calls == [
+            call.instances.all()
+        ]
+
+
 class TestGetReservedInstanceCount(object):
 
     def test_simple(self):
