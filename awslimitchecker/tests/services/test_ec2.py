@@ -37,6 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+import os
 import sys
 from copy import deepcopy
 import pytest
@@ -268,6 +269,25 @@ class TestGetLimitsInstancesNonvcpu(object):
             if itype is not None:
                 assert lname == 'Running On-Demand %s instances' % itype
                 assert lim.ta_limit_name == 'On-Demand instances - %s' % itype
+
+
+class TestGetLimitsInstancesVcpu(object):
+
+    def test_simple(self):
+        cls = _Ec2Service(21, 43)
+        limits = cls._get_limits_instances_vcpu()
+        assert len(limits) == 5
+        for k in ['f', 'g', 'p', 'x']:
+            lim = limits['Running On-Demand All %s instances' % k.upper()]
+            assert lim.default_limit == 128
+            assert lim.limit_type == 'On-Demand instances'
+            assert lim.limit_subtype == k.upper()
+        k = 'Running On-Demand All Standard ' \
+            '(A, C, D, H, I, M, R, T, Z) instances'
+        lim = limits[k]
+        assert lim.default_limit == 1152
+        assert lim.limit_type == 'On-Demand instances'
+        assert lim.limit_subtype == 'Standard'
 
 
 class TestFindUsage(object):
@@ -952,6 +972,34 @@ class TestUpdateLimitsFromApi(object):
         assert cls.limits['VPC security groups per elastic '
                           'network interface'].api_limit == 5
 
+    def test_vcpu(self):
+        data = fixtures.test_update_limits_from_api_vcpu
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_account_attributes.return_value = data
+
+        with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+        ) as m_use_vcpu:
+            m_use_vcpu.return_value = False
+            cls = _Ec2Service(21, 43)
+            cls.resource_conn = mock_conn
+            cls.conn = mock_client_conn
+            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+                cls._update_limits_from_api()
+        assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_account_attributes()
+        ]
+        assert mock_logger.mock_calls == [
+            call.info("Querying EC2 DescribeAccountAttributes for limits"),
+            call.debug('Done setting limits from API')
+        ]
+        assert cls.limits['Elastic IP addresses (EIPs)'].api_limit == 40
+        assert cls.limits['VPC Elastic IP addresses (EIPs)'].api_limit == 200
+        assert cls.limits['VPC security groups per elastic '
+                          'network interface'].api_limit == 5
+
     def test_unsupported(self):
         data = fixtures.test_update_limits_from_api_unsupported
         mock_client_conn = Mock()
@@ -963,3 +1011,330 @@ class TestUpdateLimitsFromApi(object):
         lim = cls.limits['Elastic IP addresses (EIPs)']
         usage = lim.get_current_usage()
         assert len(usage) == 0
+
+
+class TestUseVcpuLimits(object):
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_useast1(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-east-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_beijing(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-north-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_ningxia(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-northwest-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_gov_west1(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-gov-west-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_useast1_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-east-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_beijing_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-north-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_ningxia_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-northwest-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_gov_west1_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-gov-west-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_useast1_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-east-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_beijing_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-north-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_ningxia_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-northwest-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_gov_west1_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-gov-west-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn

@@ -2107,6 +2107,58 @@ class EC2(object):
         ]
     }
 
+    test_update_limits_from_api_vcpu = {
+        'ResponseMetadata': {
+            'HTTPStatusCode': 200,
+            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
+        },
+        'AccountAttributes': [
+            {
+                'AttributeName': 'supported-platforms',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': 'EC2'
+                    },
+                    {
+                        'AttributeValue': 'VPC'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'vpc-max-security-groups-per-interface',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '5'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'max-elastic-ips',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '40'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'vpc-max-elastic-ips',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': '200'
+                    }
+                ]
+            },
+            {
+                'AttributeName': 'default-vpc',
+                'AttributeValues': [
+                    {
+                        'AttributeValue': 'none'
+                    }
+                ]
+            }
+        ]
+    }
+
     test_update_limits_from_api_unsupported = {
         'ResponseMetadata': {
             'HTTPStatusCode': 200,

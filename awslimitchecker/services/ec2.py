@@ -58,6 +58,19 @@ class _Ec2Service(_AwsService):
     service_name = 'EC2'
     api_name = 'ec2'
 
+    #: Mapping of lower-case instance family character (instance type first
+    #: character) to limit name for that family.
+    instance_family_to_limit_name = {
+        'f': 'Running On-Demand All F instances',
+        'g': 'Running On-Demand All G instances',
+        'p': 'Running On-Demand All P instances',
+        'x': 'Running On-Demand All X instances'
+    }
+
+    #: Name of default limit for all other (standard) instance families.
+    default_limit_name = 'Running On-Demand All Standard ' \
+                         '(A, C, D, H, I, M, R, T, Z) instances'
+
     def find_usage(self):
         """
         Determine the current usage for each limit of this service,
@@ -347,7 +360,8 @@ class _Ec2Service(_AwsService):
 
     def _get_limits_instances_nonvcpu(self):
         """
-        Return a dict of limits for EC2 instances only.
+        Return a dict of limits for EC2 instances only, for regions using
+        non-vCPU-based (old-style) On Demand Instances limits.
         This method should only be used internally by
         :py:meth:~.get_limits`.
 
@@ -434,7 +448,36 @@ class _Ec2Service(_AwsService):
         return limits
 
     def _get_limits_instances_vcpu(self):
-        return {}
+        """
+        Return a dict of limits for EC2 instances only, for regions using
+        vCPU-based (new-style) On Demand Instances limits.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
+        limits = {}
+        iftln = self.instance_family_to_limit_name
+        for key in iftln.keys():
+            limits[iftln[key]] = AwsLimit(
+                iftln[key],
+                self,
+                128,
+                self.warning_threshold,
+                self.critical_threshold,
+                limit_type='On-Demand instances',
+                limit_subtype=key.upper()
+            )
+        limits[self.default_limit_name] = AwsLimit(
+            self.default_limit_name,
+            self,
+            1152,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='On-Demand instances',
+            limit_subtype='Standard'
+        )
+        return limits
 
     def _get_limits_spot(self):
         """
