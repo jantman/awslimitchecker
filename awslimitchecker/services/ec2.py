@@ -402,7 +402,7 @@ class _Ec2Service(_AwsService):
                 lname = 'VPC Elastic IP addresses (EIPs)'
             elif aname == 'vpc-max-security-groups-per-interface':
                 lname = 'VPC security groups per elastic network interface'
-            if lname is not None:
+            if lname in self.limits:
                 if int(val) == 0:
                     continue
                 self.limits[lname]._set_api_limit(int(val))
