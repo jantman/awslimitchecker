@@ -352,10 +352,10 @@ class TestPoll(object):
     def test_none(self):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            mock_id.return_value = None
+            mock_id.return_value = (None, None)
             res = self.cls._poll()
         assert tmp.mock_calls == []
-        assert res is None
+        assert res == {}
 
     def test_basic(self):
         poll_return_val = {

@@ -168,10 +168,10 @@ class TrustedAdvisor(Connectable):
         if not self.have_ta:
             logger.info('TrustedAdvisor.have_ta is False; not polling TA')
             return {}
-        if tmp is None:
+        if tmp[0] is None:
             logger.critical("Unable to find 'Service Limits' Trusted Advisor "
                             "check; not using Trusted Advisor data.")
-            return
+            return {}
         check_id, metadata = tmp
         checks = self._get_refreshed_check_result(check_id)
         region = self.ta_region or self.conn._client_config.region_name
