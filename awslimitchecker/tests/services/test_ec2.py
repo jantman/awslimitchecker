@@ -80,7 +80,8 @@ class TestInstanceTypes(object):
         types = cls._instance_types()
         # NOTE hi1.4xlarge is no longer in the instance type listings,
         # but some accounts might still have a limit for it
-        assert len(types) == 175
+        assert len(set(types)) == len(types)
+        assert len(types) == 268
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -95,6 +96,8 @@ class TestInstanceTypes(object):
         assert 'm4.16xlarge' in types
         assert 'x1.32xlarge' in types
         assert 'z1d.12xlarge' in types
+        assert 'u-24tb1.metal' in types
+        assert 'm5n.metal' in types
 
 
 class TestGetLimits(object):
@@ -232,7 +235,7 @@ class TestGetLimitsInstancesNonvcpu(object):
     def test_simple(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_instances_nonvcpu()
-        assert len(limits) == 176
+        assert len(limits) == 269
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
