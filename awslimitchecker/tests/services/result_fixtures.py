@@ -1947,7 +1947,7 @@ class EC2(object):
         type(mock_inst2C).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
         mock_instStopped = Mock(spec_set=Instance)
-        type(mock_instStopped).id = '2C'
+        type(mock_instStopped).id = 'instStopped'
         type(mock_instStopped).instance_type = 'm4.8xlarge'
         type(mock_instStopped).spot_instance_request_id = None
         type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
@@ -1996,6 +1996,22 @@ class EC2(object):
         type(mock_inst3A).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3A).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
 
+        mock_inst3F = Mock(spec_set=Instance)
+        type(mock_inst3F).id = '3F'
+        type(mock_inst3F).instance_type = 'p2.8xlarge'
+        type(mock_inst3F).spot_instance_request_id = None
+        type(mock_inst3F).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3F).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst3F).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
+
+        mock_inst3G = Mock(spec_set=Instance)
+        type(mock_inst3G).id = '3G'
+        type(mock_inst3G).instance_type = 'p2.8xlarge'
+        type(mock_inst3G).spot_instance_request_id = None
+        type(mock_inst3G).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3G).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst3G).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
+
         mock_inst3B = Mock(spec_set=Instance)
         type(mock_inst3B).id = '3B'
         type(mock_inst3B).instance_type = 'r3.2xlarge'
@@ -2020,6 +2036,14 @@ class EC2(object):
         type(mock_inst3D).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
+        mock_inst3E = Mock(spec_set=Instance)
+        type(mock_inst3E).id = '3E'
+        type(mock_inst3E).instance_type = 'x1e.32xlarge'
+        type(mock_inst3E).spot_instance_request_id = None
+        type(mock_inst3E).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3E).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst3E).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
+
         return_value = [
             mock_inst1A,
             mock_inst1B,
@@ -2035,6 +2059,9 @@ class EC2(object):
             mock_inst3B,
             mock_inst3C,
             mock_inst3D,
+            mock_inst3E,
+            mock_inst3F,
+            mock_inst3G,
         ]
         return return_value
 

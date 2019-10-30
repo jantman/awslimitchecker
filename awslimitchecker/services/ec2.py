@@ -146,7 +146,20 @@ class _Ec2Service(_AwsService):
         )
 
     def _find_usage_instances_vcpu(self):
-        return {}
+        res_usage = self._get_reserved_instance_count()
+        logger.debug('Reserved instance count: %s', res_usage)
+        usage = self._instance_usage_vcpu(res_usage)
+        limit_values = defaultdict(int)
+        for i_family, count in usage.items():
+            limname = self.instance_family_to_limit_name.get(
+                i_family, self.default_limit_name
+            )
+            limit_values[limname] += count
+        for limname, count in limit_values.items():
+            self.limits[limname]._add_current_usage(
+                count,
+                aws_type='AWS::EC2::Instance',
+            )
 
     def _find_usage_spot_instances(self):
         """calculate spot instance request usage and update Limits"""
@@ -278,16 +291,18 @@ class _Ec2Service(_AwsService):
                              "counting", inst.instance_type)
         return az_to_inst
 
-    def _instance_usage_vcpu(self):
+    def _instance_usage_vcpu(self, ris):
         """
         Find counts of currently-running EC2 Instance vCPUs
-        (On-Demand or Reserved) by placement (Availability
-        Zone) and instance family. Return as a nested dict
-        of AZ name to dict of instance family to count.
+        (On-Demand or Reserved) by instance family. Return as a dict of
+        instance family letter to count.
 
+        :param ris: nested dict of reserved instances, as returned by
+          :py:meth:`~._get_reserved_instance_count`
+        :type ris: dict
         :rtype: dict
         """
-        az_to_inst = {}
+        inst_counts = defaultdict(int)
         logger.debug("Getting usage for on-demand instances (vCPU limit)")
         for inst in self.resource_conn.instances.all():
             if inst.spot_instance_request_id:
@@ -298,17 +313,20 @@ class _Ec2Service(_AwsService):
                 logger.debug("Ignoring instance %s in state %s", inst.id,
                              inst.state['Name'])
                 continue
-            if inst.placement['AvailabilityZone'] not in az_to_inst:
-                az_to_inst[
-                    inst.placement['AvailabilityZone']] = defaultdict(int)
-            az_to_inst[
-                    inst.placement['AvailabilityZone']
-            ][inst.instance_type[0]] += (
+            az = inst.placement['AvailabilityZone']
+            itype = inst.instance_type
+            if ris.get(az, {}).get(itype, 0) > 0:
+                logger.debug(
+                    'Using RI for %s: %s in %s', inst.id, itype, az
+                )
+                ris[az][itype] -= 1
+                continue
+            inst_counts[inst.instance_type[0]] += (
                 inst.cpu_options['CoreCount'] * inst.cpu_options[
                     'ThreadsPerCore'
                 ]
             )
-        return az_to_inst
+        return inst_counts
 
     @property
     def _use_vcpu_limits(self):
