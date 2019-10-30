@@ -4,9 +4,9 @@ Changelog
 Unreleased Changes
 ------------------
 
-**Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five limits. Please see the sections below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
+**Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five (5) limits. Please see the sections below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
 
-* `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
+* `Issue #400 <https://github.com/jantman/awslimitchecker/issues/400>`__ / `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
 * `Issue #432 <https://github.com/jantman/awslimitchecker/issues/432>`__ - Update EC2 limit handling for new vCPU-based limits in regions other than ``cn-*`` and ``us-gov-*`` (which still use old per-instance-type limits). See section below for further information. For regions other than ``cn-*`` and ``us-gov-*``, **this will remove** all 175 ``Running On-Demand <type> instances`` and the ``Running On-Demand EC2 instances`` limit, and replace them with:
 
   * ``Running On-Demand All F instances``
@@ -16,6 +16,7 @@ Unreleased Changes
   * ``Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances``
 
 * `Issue #429 <https://github.com/jantman/awslimitchecker/issues/429>`_ - add 87 missing EC2 instance types. This will now only impact ``cn-*`` and ``us-gov-*`` regions.
+* `Issue #433 <https://github.com/jantman/awslimitchecker/issues/433>`_ - Fix broken links in the docs; waffle.io and landscape.io are both gone, sadly.
 
 New EC2 vCPU Limits
 +++++++++++++++++++
@@ -35,9 +36,7 @@ Please also note that with the change to vCPU limits, there is no longer an over
 
 I have **not** yet implemented Trusted Advisor (TA) support for these new limits, as they're presented in a different category of Trusted Advisor checks from the previous EC2 limits. I'm not going to be implementing TA for these limits, in favor of spending the time instead on implementing Service Quotas support via `Issue #413 <https://github.com/jantman/awslimitchecker/issues/413>`__.
 
-Calculation of current usage for the vCPU limits is based on the `EC2 Optimizing CPU Options documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html>`__ which specifies, "The number of vCPUs for the instance is the number of CPU cores multiplied by the threads per core.". The ``CpuOptions`` field of the EC2 ``DescribeInstances`` API specifies the core and thread count for each running instance.
-
-**Note:** As of the time of release, we are still waiting for confirmation from AWS on how these new service limits impact or interact with Reserved Instances (RIs). The code being released here assumes that there will be no change from the previous RI behavior; RIs (per-AZ, per-instance-type) are subtracted from the number of running instances before the vCPU usage is calculated. RIs are still considered to be instance-type-specific.
+Calculation of current usage for the vCPU limits is based on the `EC2 Optimizing CPU Options documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html>`__ which specifies, "The number of vCPUs for the instance is the number of CPU cores multiplied by the threads per core." The ``CpuOptions`` field of the EC2 ``DescribeInstances`` API specifies the core and thread count for each running instance.
 
 7.1.0 (2019-09-10)
 ------------------

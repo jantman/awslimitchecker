@@ -159,8 +159,9 @@ running in the Console or API, you'll get back instances of all types
 for Running On-Demand Instances current usage will *not* match the
 number of instances you see in the Console or API.
 
-**Important:** The limits for Running On-Demand Instances are now measured
-in vCPU count per instance family, not instance count per instance type.
+**Important:** The limits for **Running On-Demand Instances** are now
+measured in vCPU count per instance family, not instance count per instance
+type.
 
 
 ==================================================================== =============== ======= ====

@@ -175,8 +175,9 @@ def limits_for_ec2():
     for Running On-Demand Instances current usage will *not* match the
     number of instances you see in the Console or API.
     
-    **Important:** The limits for Running On-Demand Instances are now measured
-    in vCPU count per instance family, not instance count per instance type. 
+    **Important:** The limits for **Running On-Demand Instances** are now
+    measured in vCPU count per instance family, not instance count per instance
+    type. 
     """) + "\n"
     limit_info += "\n"
     limit_info += format_limits_for_service(
