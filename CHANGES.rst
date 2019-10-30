@@ -4,10 +4,16 @@ Changelog
 Unreleased Changes
 ------------------
 
-**Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits corresponding to the new `vCPU-based EC2 Instance Limits <https://aws.amazon.com/blogs/compute/preview-vcpu-based-instance-limits/>`__ announced by Amazon. Please see below for details.
+**Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five limits. Please see the sections below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
 
 * `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
-* Update EC2 limit handling for new vCPU-based limits in regions other than ``cn-*`` and ``us-gov-*`` (which still use old per-instance-type limits). See section below for further information.
+* Update EC2 limit handling for new vCPU-based limits in regions other than ``cn-*`` and ``us-gov-*`` (which still use old per-instance-type limits). See section below for further information. For regions other than ``cn-*`` and ``us-gov-*``, **this will remove** all 175 ``Running On-Demand <type> instances`` and the ``Running On-Demand EC2 instances`` limit, and replace them with:
+
+  * ``Running On-Demand All F instances``
+  * ``Running On-Demand All G instances``
+  * ``Running On-Demand All P instances``
+  * ``Running On-Demand All X instances``
+  * ``Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances``
 
 New EC2 vCPU Limits
 +++++++++++++++++++
@@ -26,6 +32,8 @@ As such, if you install this release before November 7, 2019 and need to force y
 Please also note that with the change to vCPU limits, there is no longer an overall ``Running On-Demand EC2 instances`` limit for accounts that use the new vCPU limits.
 
 Calculation of current usage for the vCPU limits is based on the `EC2 Optimizing CPU Options documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html>`_ which specifies, "The number of vCPUs for the instance is the number of CPU cores multiplied by the threads per core.". The ``CpuOptions`` field of the EC2 ``DescribeInstances`` API specifies the core and thread count for each running instance.
+
+**Note:** As of the time of release, we are still waiting for confirmation from AWS on how these new service limits impact or interact with Reserved Instances (RIs). The code being released here assumes that there will be no change from the previous RI behavior; RIs (per-AZ, per-instance-type) are subtracted from the number of running instances before the vCPU usage is calculated. RIs are still considered to be instance-type-specific.
 
 7.1.0 (2019-09-10)
 ------------------

@@ -372,8 +372,7 @@ For issues:
 Versioning Policy
 -----------------
 
-As of version 1.0.0, awslimitchecker strives to follow `semver 2.0.0 <http://semver.org/>`_
-for versioning, with some specific clarifications:
+As of version 1.0.0, awslimitchecker strives to follow `semver 2.0.0 <http://semver.org/>`_ for versioning, with some specific clarifications:
 
 * Major version bumps (backwards-incompatible changes):
 
