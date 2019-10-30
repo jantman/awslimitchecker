@@ -677,6 +677,60 @@ class TestFindUsageInstancesVcpu(object):
             call._add_current_usage(581, aws_type='AWS::EC2::Instance')
         ]
 
+    def test_default_zero(self):
+        usage = {
+            'c': 16,
+            'm': 32,
+            'r': 16,
+            't': 2,
+            'p': 128,
+            'x': 256,
+            'a': 512,
+            'k': 3
+        }
+
+        mock_f = Mock(spec_set=AwsLimit)
+        mock_g = Mock(spec_set=AwsLimit)
+        mock_p = Mock(spec_set=AwsLimit)
+        mock_x = Mock(spec_set=AwsLimit)
+        mock_std = Mock(spec_set=AwsLimit)
+        limits = {
+            'Running On-Demand All F instances': mock_f,
+            'Running On-Demand All G instances': mock_g,
+            'Running On-Demand All P instances': mock_p,
+            'Running On-Demand All X instances': mock_x,
+            'Running On-Demand All Standard '
+            '(A, C, D, H, I, M, R, T, Z) instances': mock_std
+        }
+
+        cls = _Ec2Service(21, 43)
+        cls.limits = limits
+
+        with patch(
+            '%s._get_reserved_instance_count' % pb, autospec=True
+        ) as m_gric:
+            with patch('%s._instance_usage_vcpu' % pb, autospec=True) as m_iuv:
+                m_gric.return_value = {'res': 'inst'}
+                m_iuv.return_value = usage
+                cls._find_usage_instances_vcpu()
+        assert m_gric.mock_calls == [call(cls)]
+        assert m_iuv.mock_calls == [call(cls, {'res': 'inst'})]
+        assert mock_f.mock_calls == [
+            call._add_current_usage(0, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_g.mock_calls == [
+            call._add_current_usage(0, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_p.mock_calls == [
+            call._add_current_usage(128, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_x.mock_calls == [
+            call._add_current_usage(256, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_std.mock_calls == [
+            call._add_current_usage(581, aws_type='AWS::EC2::Instance')
+        ]
+
 
 class TestRequiredIamPermissions(object):
 

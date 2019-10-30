@@ -155,6 +155,11 @@ class _Ec2Service(_AwsService):
                 i_family, self.default_limit_name
             )
             limit_values[limname] += count
+        for lname in list(
+            self.instance_family_to_limit_name.values()
+        ) + [self.default_limit_name]:
+            if lname not in limit_values:
+                limit_values[lname] = 0
         for limname, count in limit_values.items():
             self.limits[limname]._add_current_usage(
                 count,
