@@ -1194,7 +1194,8 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_useast1(self):
-        cls = _Ec2Service(21, 43)
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1221,7 +1222,8 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_beijing(self):
-        cls = _Ec2Service(21, 43)
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1248,7 +1250,8 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_ningxia(self):
-        cls = _Ec2Service(21, 43)
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1275,7 +1278,8 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_gov_west1(self):
-        cls = _Ec2Service(21, 43)
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
