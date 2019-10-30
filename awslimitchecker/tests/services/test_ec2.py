@@ -37,6 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+import os
 import sys
 from copy import deepcopy
 import pytest
@@ -52,19 +53,17 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, DEFAULT
+    from mock import patch, call, Mock, DEFAULT, PropertyMock
 else:
-    from unittest.mock import patch, call, Mock, DEFAULT
+    from unittest.mock import patch, call, Mock, DEFAULT, PropertyMock
 
 fixtures = result_fixtures.EC2()
+pb = 'awslimitchecker.services.ec2._Ec2Service'  # patch base path
 
 
-class Test_Ec2Service(object):
+class TestInit(object):
 
-    pb = 'awslimitchecker.services.ec2._Ec2Service'  # patch base path
-    pbm = 'awslimitchecker.services.ec2'  # module patch base path
-
-    def test_init(self):
+    def test_simple(self):
         """test __init__()"""
         cls = _Ec2Service(21, 43)
         assert cls.service_name == 'EC2'
@@ -73,12 +72,16 @@ class Test_Ec2Service(object):
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
-    def test_instance_types(self):
+
+class TestInstanceTypes(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         types = cls._instance_types()
         # NOTE hi1.4xlarge is no longer in the instance type listings,
         # but some accounts might still have a limit for it
-        assert len(types) == 175
+        assert len(set(types)) == len(types)
+        assert len(types) == 268
         assert 't2.micro' in types
         assert 'r3.8xlarge' in types
         assert 'c3.large' in types
@@ -93,52 +96,146 @@ class Test_Ec2Service(object):
         assert 'm4.16xlarge' in types
         assert 'x1.32xlarge' in types
         assert 'z1d.12xlarge' in types
+        assert 'u-24tb1.metal' in types
+        assert 'm5n.metal' in types
 
-    def test_get_limits(self):
+
+class TestGetLimits(object):
+
+    def test_nonvcpu(self):
         cls = _Ec2Service(21, 43)
         cls.limits = {}
-        with patch('%s._get_limits_instances' % self.pb) as mock_instances:
-            with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
-                with patch('%s._get_limits_spot' % self.pb) as mock_spot:
-                    mock_instances.return_value = {'ec2lname': 'ec2lval'}
-                    mock_vpc.return_value = {'vpck': 'vpcv'}
-                    mock_spot.return_value = {'spotk': 'spotv'}
-                    res = cls.get_limits()
+        with patch.multiple(
+            pb,
+            _get_limits_instances_nonvcpu=DEFAULT,
+            _get_limits_instances_vcpu=DEFAULT,
+            _get_limits_networking=DEFAULT,
+            _get_limits_spot=DEFAULT,
+            autospec=True
+        ) as mocks:
+            mocks['_get_limits_instances_nonvcpu'].return_value = {
+                'ec2lname': 'ec2lval'
+            }
+            mocks['_get_limits_instances_vcpu'].return_value = {
+                'fooname': 'fooval'
+            }
+            mocks['_get_limits_networking'].return_value = {'vpck': 'vpcv'}
+            mocks['_get_limits_spot'].return_value = {'spotk': 'spotv'}
+            with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+            ) as m_use_vcpu:
+                m_use_vcpu.return_value = False
+                res = cls.get_limits()
         assert res == {
             'ec2lname': 'ec2lval',
             'spotk': 'spotv',
             'vpck': 'vpcv',
         }
-        assert mock_instances.mock_calls == [call()]
-        assert mock_vpc.mock_calls == [call()]
-        assert mock_spot.mock_calls == [call()]
+        assert mocks['_get_limits_instances_nonvcpu'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_get_limits_instances_vcpu'].mock_calls == []
+        assert mocks['_get_limits_networking'].mock_calls == [call(cls)]
+        assert mocks['_get_limits_spot'].mock_calls == [call(cls)]
 
-    def test_get_limits_again(self):
+    def test_vcpu(self):
+        cls = _Ec2Service(21, 43)
+        cls.limits = {}
+        with patch.multiple(
+            pb,
+            _get_limits_instances_nonvcpu=DEFAULT,
+            _get_limits_instances_vcpu=DEFAULT,
+            _get_limits_networking=DEFAULT,
+            _get_limits_spot=DEFAULT,
+            autospec=True
+        ) as mocks:
+            mocks['_get_limits_instances_nonvcpu'].return_value = {
+                'ec2lname': 'ec2lval'
+            }
+            mocks['_get_limits_instances_vcpu'].return_value = {
+                'fooname': 'fooval'
+            }
+            mocks['_get_limits_networking'].return_value = {'vpck': 'vpcv'}
+            mocks['_get_limits_spot'].return_value = {'spotk': 'spotv'}
+            with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+            ) as m_use_vcpu:
+                m_use_vcpu.return_value = True
+                res = cls.get_limits()
+        assert res == {
+            'fooname': 'fooval',
+            'spotk': 'spotv',
+            'vpck': 'vpcv',
+        }
+        assert mocks['_get_limits_instances_nonvcpu'].mock_calls == []
+        assert mocks['_get_limits_instances_vcpu'].mock_calls == [call(cls)]
+        assert mocks['_get_limits_networking'].mock_calls == [call(cls)]
+        assert mocks['_get_limits_spot'].mock_calls == [call(cls)]
+
+    def test_get_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         cls = _Ec2Service(21, 43)
         cls.limits = {'foo': 'bar'}
-        with patch('%s._get_limits_instances' % self.pb) as mock_instances:
-            with patch('%s._get_limits_networking' % self.pb) as mock_vpc:
-                with patch('%s._get_limits_spot' % self.pb) as mock_spot:
-                    res = cls.get_limits()
+        with patch.multiple(
+            pb,
+            _get_limits_instances_nonvcpu=DEFAULT,
+            _get_limits_instances_vcpu=DEFAULT,
+            _get_limits_networking=DEFAULT,
+            _get_limits_spot=DEFAULT,
+            autospec=True
+        ) as mocks:
+            mocks['_get_limits_instances_nonvcpu'].return_value = {
+                'ec2lname': 'ec2lval'
+            }
+            mocks['_get_limits_instances_vcpu'].return_value = {
+                'fooname': 'fooval'
+            }
+            mocks['_get_limits_networking'].return_value = {'vpck': 'vpcv'}
+            mocks['_get_limits_spot'].return_value = {'spotk': 'spotv'}
+            with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+            ) as m_use_vcpu:
+                m_use_vcpu.return_value = False
+                res = cls.get_limits()
         assert res == {'foo': 'bar'}
-        assert mock_instances.mock_calls == []
-        assert mock_vpc.mock_calls == []
-        assert mock_spot.mock_calls == []
+        assert mocks['_get_limits_instances_nonvcpu'].mock_calls == []
+        assert mocks['_get_limits_instances_vcpu'].mock_calls == []
+        assert mocks['_get_limits_networking'].mock_calls == []
+        assert mocks['_get_limits_spot'].mock_calls == []
 
-    def test_get_limits_all(self):
+    def test_all_nonvcpu(self):
         """test some things all limits should conform to"""
-        cls = _Ec2Service(21, 43)
-        limits = cls.get_limits()
+        with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+        ) as m_use_vcpu:
+            m_use_vcpu.return_value = False
+            cls = _Ec2Service(21, 43)
+            limits = cls.get_limits()
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
             assert limits[x].service == cls
 
-    def test_get_limits_instances(self):
+    def test_all_vcpu(self):
+        """test some things all limits should conform to"""
+        with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+        ) as m_use_vcpu:
+            m_use_vcpu.return_value = True
+            cls = _Ec2Service(21, 43)
+            limits = cls.get_limits()
+        for x in limits:
+            assert isinstance(limits[x], AwsLimit)
+            assert x == limits[x].name
+            assert limits[x].service == cls
+
+
+class TestGetLimitsInstancesNonvcpu(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
-        limits = cls._get_limits_instances()
-        assert len(limits) == 176
+        limits = cls._get_limits_instances_nonvcpu()
+        assert len(limits) == 269
         # check a random subset of limits
         t2_micro = limits['Running On-Demand t2.micro instances']
         assert t2_micro.default_limit == 20
@@ -176,11 +273,34 @@ class Test_Ec2Service(object):
                 assert lname == 'Running On-Demand %s instances' % itype
                 assert lim.ta_limit_name == 'On-Demand instances - %s' % itype
 
-    def test_find_usage(self):
+
+class TestGetLimitsInstancesVcpu(object):
+
+    def test_simple(self):
+        cls = _Ec2Service(21, 43)
+        limits = cls._get_limits_instances_vcpu()
+        assert len(limits) == 5
+        for k in ['f', 'g', 'p', 'x']:
+            lim = limits['Running On-Demand All %s instances' % k.upper()]
+            assert lim.default_limit == 128
+            assert lim.limit_type == 'On-Demand instances'
+            assert lim.limit_subtype == k.upper()
+        k = 'Running On-Demand All Standard ' \
+            '(A, C, D, H, I, M, R, T, Z) instances'
+        lim = limits[k]
+        assert lim.default_limit == 1152
+        assert lim.limit_type == 'On-Demand instances'
+        assert lim.limit_subtype == 'Standard'
+
+
+class TestFindUsage(object):
+
+    def test_nonvcpu(self):
         with patch.multiple(
-                self.pb,
+                pb,
                 connect=DEFAULT,
-                _find_usage_instances=DEFAULT,
+                _find_usage_instances_nonvcpu=DEFAULT,
+                _find_usage_instances_vcpu=DEFAULT,
                 _find_usage_networking_sgs=DEFAULT,
                 _find_usage_networking_eips=DEFAULT,
                 _find_usage_networking_eni_sg=DEFAULT,
@@ -188,15 +308,79 @@ class Test_Ec2Service(object):
                 _find_usage_spot_fleets=DEFAULT,
                 autospec=True,
         ) as mocks:
-            cls = _Ec2Service(21, 43)
-            assert cls._have_usage is False
-            cls.find_usage()
+            with patch(
+                    '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+            ) as m_use_vcpu:
+                m_use_vcpu.return_value = False
+                cls = _Ec2Service(21, 43)
+                assert cls._have_usage is False
+                cls.find_usage()
         assert cls._have_usage is True
-        assert len(mocks) == 7
-        for m in mocks:
-            assert mocks[m].mock_calls == [call(cls)]
+        assert mocks['_find_usage_instances_nonvcpu'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_instances_vcpu'].mock_calls == []
+        assert mocks['_find_usage_networking_sgs'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_networking_eips'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_networking_eni_sg'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_spot_instances'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_spot_fleets'].mock_calls == [
+            call(cls)
+        ]
 
-    def test_instance_usage(self):
+    def test_vcpu(self):
+        with patch.multiple(
+                pb,
+                connect=DEFAULT,
+                _find_usage_instances_nonvcpu=DEFAULT,
+                _find_usage_instances_vcpu=DEFAULT,
+                _find_usage_networking_sgs=DEFAULT,
+                _find_usage_networking_eips=DEFAULT,
+                _find_usage_networking_eni_sg=DEFAULT,
+                _find_usage_spot_instances=DEFAULT,
+                _find_usage_spot_fleets=DEFAULT,
+                autospec=True,
+        ) as mocks:
+            with patch(
+                    '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+            ) as m_use_vcpu:
+                m_use_vcpu.return_value = True
+                cls = _Ec2Service(21, 43)
+                assert cls._have_usage is False
+                cls.find_usage()
+        assert cls._have_usage is True
+        assert mocks['_find_usage_instances_nonvcpu'].mock_calls == []
+        assert mocks['_find_usage_instances_vcpu'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_networking_sgs'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_networking_eips'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_networking_eni_sg'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_spot_instances'].mock_calls == [
+            call(cls)
+        ]
+        assert mocks['_find_usage_spot_fleets'].mock_calls == [
+            call(cls)
+        ]
+
+
+class TestInstanceUsage(object):
+
+    def test_simple(self):
         mock_t2_micro = Mock(spec_set=AwsLimit)
         mock_r3_2xlarge = Mock(spec_set=AwsLimit)
         mock_c4_4xlarge = Mock(spec_set=AwsLimit)
@@ -238,7 +422,90 @@ class Test_Ec2Service(object):
             call.instances.all()
         ]
 
-    def test_get_reserved_instance_count(self):
+    def test_key_error(self):
+        mock_conn = Mock()
+        data = fixtures.test_instance_usage_key_error
+        mock_conn.instances.all.return_value = data
+        cls = _Ec2Service(21, 43)
+        cls.resource_conn = mock_conn
+        cls.limits = {'Running On-Demand t2.micro instances': Mock()}
+
+        with patch(
+                '%s._instance_types' % pb,
+                autospec=True) as mock_itypes:
+            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+                mock_itypes.return_value = ['t2.micro']
+                cls._instance_usage()
+        assert mock_logger.mock_calls == [
+            call.debug('Getting usage for on-demand instances'),
+            call.error("ERROR - unknown instance type '%s'; not counting",
+                       'foobar'),
+        ]
+        assert mock_conn.mock_calls == [
+            call.instances.all()
+        ]
+
+
+class TestInstanceUsageVcpu(object):
+
+    def test_no_RIs(self):
+        cls = _Ec2Service(21, 43)
+        mock_conn = Mock()
+        retval = fixtures.test_instance_usage_vcpu
+        mock_conn.instances.all.return_value = retval
+        cls.resource_conn = mock_conn
+
+        res = cls._instance_usage_vcpu({})
+        assert res == {
+            'c': 16,
+            'f': 72,
+            'g': 48,
+            'm': 32,
+            'r': 16,
+            't': 2,
+            'p': 128,
+            'x': 256,
+        }
+        assert mock_conn.mock_calls == [
+            call.instances.all()
+        ]
+
+    def test_with_RIs(self):
+        cls = _Ec2Service(21, 43)
+        mock_conn = Mock()
+        retval = fixtures.test_instance_usage_vcpu
+        mock_conn.instances.all.return_value = retval
+        cls.resource_conn = mock_conn
+
+        res = cls._instance_usage_vcpu({
+            'az1a': {
+                'f1.2xlarge': 10,
+                'c4.4xlarge': 8,
+                'c4.2xlarge': 16,
+            },
+            'az1c': {
+                'x1e.32xlarge': 1,
+                'p2.8xlarge': 1,
+                'p2.16xlarge': 1
+            }
+        })
+        assert res == {
+            'f': 64,
+            'g': 48,
+            'm': 32,
+            'r': 16,
+            't': 2,
+            'p': 32,
+            'x': 128,
+        }
+        assert mock_conn.mock_calls == [
+            call.instances.all()
+        ]
+
+
+class TestGetReservedInstanceCount(object):
+
+    def test_simple(self):
         response = fixtures.test_get_reserved_instance_count
 
         cls = _Ec2Service(21, 43)
@@ -266,7 +533,10 @@ class Test_Ec2Service(object):
             call.describe_reserved_instances()
         ]
 
-    def test_find_usage_instances(self):
+
+class TestFindUsageInstancesNonvcpu(object):
+
+    def test_simple(self):
         iusage = {
             'us-east-1': {
                 't2.micro': 2,
@@ -317,13 +587,13 @@ class Test_Ec2Service(object):
         mock_conn = Mock()
         cls.resource_conn = mock_conn
         cls.limits = limits
-        with patch('%s._instance_usage' % self.pb,
+        with patch('%s._instance_usage' % pb,
                    autospec=True) as mock_inst_usage:
-            with patch('%s._get_reserved_instance_count' % self.pb,
+            with patch('%s._get_reserved_instance_count' % pb,
                        autospec=True) as mock_res_inst_count:
                 mock_inst_usage.return_value = iusage
                 mock_res_inst_count.return_value = ri_count
-                cls._find_usage_instances()
+                cls._find_usage_instances_nonvcpu()
         assert mock_t2_micro.mock_calls == [call._add_current_usage(
             36,
             aws_type='AWS::EC2::Instance'
@@ -348,30 +618,123 @@ class Test_Ec2Service(object):
         assert mock_res_inst_count.mock_calls == [call(cls)]
         assert mock_conn.mock_calls == []
 
-    def test_instance_usage_key_error(self):
-        mock_conn = Mock()
-        data = fixtures.test_instance_usage_key_error
-        mock_conn.instances.all.return_value = data
+
+class TestFindUsageInstancesVcpu(object):
+
+    def test_happy_path(self):
+        usage = {
+            'c': 16,
+            'f': 72,
+            'g': 48,
+            'm': 32,
+            'r': 16,
+            't': 2,
+            'p': 128,
+            'x': 256,
+            'a': 512,
+            'k': 3
+        }
+
+        mock_f = Mock(spec_set=AwsLimit)
+        mock_g = Mock(spec_set=AwsLimit)
+        mock_p = Mock(spec_set=AwsLimit)
+        mock_x = Mock(spec_set=AwsLimit)
+        mock_std = Mock(spec_set=AwsLimit)
+        limits = {
+            'Running On-Demand All F instances': mock_f,
+            'Running On-Demand All G instances': mock_g,
+            'Running On-Demand All P instances': mock_p,
+            'Running On-Demand All X instances': mock_x,
+            'Running On-Demand All Standard '
+            '(A, C, D, H, I, M, R, T, Z) instances': mock_std
+        }
+
         cls = _Ec2Service(21, 43)
-        cls.resource_conn = mock_conn
-        cls.limits = {'Running On-Demand t2.micro instances': Mock()}
+        cls.limits = limits
 
         with patch(
-                '%s._instance_types' % self.pb,
-                autospec=True) as mock_itypes:
-            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-                mock_itypes.return_value = ['t2.micro']
-                cls._instance_usage()
-        assert mock_logger.mock_calls == [
-            call.debug('Getting usage for on-demand instances'),
-            call.error("ERROR - unknown instance type '%s'; not counting",
-                       'foobar'),
+            '%s._get_reserved_instance_count' % pb, autospec=True
+        ) as m_gric:
+            with patch('%s._instance_usage_vcpu' % pb, autospec=True) as m_iuv:
+                m_gric.return_value = {'res': 'inst'}
+                m_iuv.return_value = usage
+                cls._find_usage_instances_vcpu()
+        assert m_gric.mock_calls == [call(cls)]
+        assert m_iuv.mock_calls == [call(cls, {'res': 'inst'})]
+        assert mock_f.mock_calls == [
+            call._add_current_usage(72, aws_type='AWS::EC2::Instance')
         ]
-        assert mock_conn.mock_calls == [
-            call.instances.all()
+        assert mock_g.mock_calls == [
+            call._add_current_usage(48, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_p.mock_calls == [
+            call._add_current_usage(128, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_x.mock_calls == [
+            call._add_current_usage(256, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_std.mock_calls == [
+            call._add_current_usage(581, aws_type='AWS::EC2::Instance')
         ]
 
-    def test_required_iam_permissions(self):
+    def test_default_zero(self):
+        usage = {
+            'c': 16,
+            'm': 32,
+            'r': 16,
+            't': 2,
+            'p': 128,
+            'x': 256,
+            'a': 512,
+            'k': 3
+        }
+
+        mock_f = Mock(spec_set=AwsLimit)
+        mock_g = Mock(spec_set=AwsLimit)
+        mock_p = Mock(spec_set=AwsLimit)
+        mock_x = Mock(spec_set=AwsLimit)
+        mock_std = Mock(spec_set=AwsLimit)
+        limits = {
+            'Running On-Demand All F instances': mock_f,
+            'Running On-Demand All G instances': mock_g,
+            'Running On-Demand All P instances': mock_p,
+            'Running On-Demand All X instances': mock_x,
+            'Running On-Demand All Standard '
+            '(A, C, D, H, I, M, R, T, Z) instances': mock_std
+        }
+
+        cls = _Ec2Service(21, 43)
+        cls.limits = limits
+
+        with patch(
+            '%s._get_reserved_instance_count' % pb, autospec=True
+        ) as m_gric:
+            with patch('%s._instance_usage_vcpu' % pb, autospec=True) as m_iuv:
+                m_gric.return_value = {'res': 'inst'}
+                m_iuv.return_value = usage
+                cls._find_usage_instances_vcpu()
+        assert m_gric.mock_calls == [call(cls)]
+        assert m_iuv.mock_calls == [call(cls, {'res': 'inst'})]
+        assert mock_f.mock_calls == [
+            call._add_current_usage(0, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_g.mock_calls == [
+            call._add_current_usage(0, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_p.mock_calls == [
+            call._add_current_usage(128, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_x.mock_calls == [
+            call._add_current_usage(256, aws_type='AWS::EC2::Instance')
+        ]
+        assert mock_std.mock_calls == [
+            call._add_current_usage(581, aws_type='AWS::EC2::Instance')
+        ]
+
+
+class TestRequiredIamPermissions(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         assert len(cls.required_iam_permissions()) == 19
         assert cls.required_iam_permissions() == [
@@ -396,7 +759,10 @@ class Test_Ec2Service(object):
             "ec2:DescribeVpcs",
         ]
 
-    def test_find_usage_networking_sgs(self):
+
+class TestFindUsageNetworkingSgs(object):
+
+    def test_simple(self):
         mocks = fixtures.test_find_usage_networking_sgs
 
         mock_conn = Mock()
@@ -439,7 +805,10 @@ class Test_Ec2Service(object):
             call.security_groups.all()
         ]
 
-    def test_find_usage_networking_eips(self):
+
+class TestFindUsageNetworkingEips(object):
+
+    def test_simple(self):
         mocks = fixtures.test_find_usage_networking_eips
 
         mock_conn = Mock()
@@ -474,7 +843,10 @@ class Test_Ec2Service(object):
             call.classic_addresses.all()
         ]
 
-    def test_find_usage_networking_eni_sg(self):
+
+class TestFindUsageNetworkingEniSg(object):
+
+    def test_simple(self):
         mocks = fixtures.test_find_usage_networking_eni_sg
 
         mock_conn = Mock()
@@ -502,7 +874,10 @@ class Test_Ec2Service(object):
             call.network_interfaces.all()
         ]
 
-    def test_get_limits_networking(self):
+
+class TestGetLimitsNetworking(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_networking()
         expected = [
@@ -516,7 +891,10 @@ class Test_Ec2Service(object):
         assert limits[
                    'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
 
-    def test_get_limits_spot(self):
+
+class TestGetLimitsSpot(object):
+
+    def test_simple(self):
         cls = _Ec2Service(21, 43)
         limits = cls._get_limits_spot()
         expected = [
@@ -528,7 +906,10 @@ class Test_Ec2Service(object):
         ]
         assert sorted(limits.keys()) == sorted(expected)
 
-    def test_find_usage_spot_instances(self):
+
+class TestFindUsageSpotInstances(object):
+
+    def test_happy_path(self):
         data = fixtures.test_find_usage_spot_instances
         mock_conn = Mock()
         mock_client_conn = Mock()
@@ -558,7 +939,7 @@ class Test_Ec2Service(object):
                        'reqID4', 'failed')
         ]
 
-    def test_find_usage_spot_instances_unsupported(self):
+    def test_unsupported(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'UnsupportedOperation'}},
@@ -572,7 +953,7 @@ class Test_Ec2Service(object):
         usage = lim.get_current_usage()
         assert len(usage) == 0
 
-    def test_find_usage_spot_instances_unknown_code(self):
+    def test_unknown_code(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'SomeCode'}},
@@ -584,7 +965,7 @@ class Test_Ec2Service(object):
         with pytest.raises(botocore.exceptions.ClientError):
             cls._find_usage_spot_instances()
 
-    def test_find_usage_spot_instances_unknown_error(self):
+    def test_unknown_error(self):
         mock_client_conn = Mock()
         err = RuntimeError
         mock_client_conn.describe_spot_instance_requests.side_effect = err
@@ -593,7 +974,10 @@ class Test_Ec2Service(object):
         with pytest.raises(RuntimeError):
             cls._find_usage_spot_instances()
 
-    def test_find_usage_spot_fleets(self):
+
+class TestFindUsageSpotFleets(object):
+
+    def test_simple(self):
         data = fixtures.test_find_usage_spot_fleets
         mock_conn = Mock()
         mock_client_conn = Mock()
@@ -642,7 +1026,7 @@ class Test_Ec2Service(object):
                        'req3', 'modifying')
         ]
 
-    def test_find_usage_spot_fleets_paginated(self):
+    def test_paginated(self):
         data = deepcopy(fixtures.test_find_usage_spot_fleets)
         data['NextToken'] = 'string'
         mock_conn = Mock()
@@ -695,7 +1079,7 @@ class Test_Ec2Service(object):
                        'req3', 'modifying')
         ]
 
-    def test_find_usage_spot_fleets_unsupported(self):
+    def test_unsupported(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'UnsupportedOperation'}},
@@ -709,7 +1093,7 @@ class Test_Ec2Service(object):
                            'region'].get_current_usage()
         assert len(total) == 0
 
-    def test_find_usage_spot_fleets_unknown_code(self):
+    def test_unknown_code(self):
         mock_client_conn = Mock()
         err = botocore.exceptions.ClientError(
             {'Error': {'Code': 'SomeCode'}},
@@ -721,7 +1105,7 @@ class Test_Ec2Service(object):
         with pytest.raises(botocore.exceptions.ClientError):
             cls._find_usage_spot_fleets()
 
-    def test_find_usage_spot_fleets_unknown_error(self):
+    def test_unknown_error(self):
         mock_client_conn = Mock()
         mock_client_conn.describe_spot_fleet_requests.side_effect = RuntimeError
         cls = _Ec2Service(21, 43)
@@ -729,17 +1113,24 @@ class Test_Ec2Service(object):
         with pytest.raises(RuntimeError):
             cls._find_usage_spot_fleets()
 
-    def test_update_limits_from_api(self):
+
+class TestUpdateLimitsFromApi(object):
+
+    def test_happy_path(self):
         data = fixtures.test_update_limits_from_api
         mock_conn = Mock()
         mock_client_conn = Mock()
         mock_client_conn.describe_account_attributes.return_value = data
 
-        cls = _Ec2Service(21, 43)
-        cls.resource_conn = mock_conn
-        cls.conn = mock_client_conn
-        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
-            cls._update_limits_from_api()
+        with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+        ) as m_use_vcpu:
+            m_use_vcpu.return_value = False
+            cls = _Ec2Service(21, 43)
+            cls.resource_conn = mock_conn
+            cls.conn = mock_client_conn
+            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+                cls._update_limits_from_api()
         assert mock_conn.mock_calls == []
         assert mock_client_conn.mock_calls == [
             call.describe_account_attributes()
@@ -754,7 +1145,35 @@ class Test_Ec2Service(object):
         assert cls.limits['VPC security groups per elastic '
                           'network interface'].api_limit == 5
 
-    def test_update_limits_from_api_unsupported(self):
+    def test_vcpu(self):
+        data = fixtures.test_update_limits_from_api_vcpu
+        mock_conn = Mock()
+        mock_client_conn = Mock()
+        mock_client_conn.describe_account_attributes.return_value = data
+
+        with patch(
+                '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
+        ) as m_use_vcpu:
+            m_use_vcpu.return_value = False
+            cls = _Ec2Service(21, 43)
+            cls.resource_conn = mock_conn
+            cls.conn = mock_client_conn
+            with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+                cls._update_limits_from_api()
+        assert mock_conn.mock_calls == []
+        assert mock_client_conn.mock_calls == [
+            call.describe_account_attributes()
+        ]
+        assert mock_logger.mock_calls == [
+            call.info("Querying EC2 DescribeAccountAttributes for limits"),
+            call.debug('Done setting limits from API')
+        ]
+        assert cls.limits['Elastic IP addresses (EIPs)'].api_limit == 40
+        assert cls.limits['VPC Elastic IP addresses (EIPs)'].api_limit == 200
+        assert cls.limits['VPC security groups per elastic '
+                          'network interface'].api_limit == 5
+
+    def test_unsupported(self):
         data = fixtures.test_update_limits_from_api_unsupported
         mock_client_conn = Mock()
         mock_client_conn.describe_account_attributes.return_value = data
@@ -765,3 +1184,334 @@ class Test_Ec2Service(object):
         lim = cls.limits['Elastic IP addresses (EIPs)']
         usage = lim.get_current_usage()
         assert len(usage) == 0
+
+
+class TestUseVcpuLimits(object):
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_useast1(self):
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-east-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_beijing(self):
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-north-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_ningxia(self):
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-northwest-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_gov_west1(self):
+        with patch('%s.get_limits' % pb):
+            cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-gov-west-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_useast1_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-east-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_beijing_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-north-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_ningxia_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-northwest-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'true'},
+        clear=True
+    )
+    def test_gov_west1_env_true(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-gov-west-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is True
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_useast1_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-east-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_beijing_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-north-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_ningxia_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='cn-northwest-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn
+
+    @patch.dict(
+        os.environ,
+        {'USE_VCPU_LIMITS': 'false'},
+        clear=True
+    )
+    def test_gov_west1_env_false(self):
+        cls = _Ec2Service(21, 43)
+        mock_orig_conn = Mock()
+        cls.conn = mock_orig_conn
+
+        def se_conn(klass):
+            mock_conn = Mock()
+            mock_conf = Mock()
+            type(mock_conf).region_name = PropertyMock(
+                return_value='us-gov-west-1'
+            )
+            type(mock_conn)._client_config = PropertyMock(
+                return_value=mock_conf
+            )
+            klass.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_conn
+            res = cls._use_vcpu_limits
+        assert res is False
+        assert cls.conn == mock_orig_conn

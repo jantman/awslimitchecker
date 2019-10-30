@@ -4,7 +4,39 @@ Changelog
 Unreleased Changes
 ------------------
 
-* `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
+**Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five (5) limits. Please see the sections below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
+
+* `Issue #400 <https://github.com/jantman/awslimitchecker/issues/400>`__ / `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
+* `Issue #432 <https://github.com/jantman/awslimitchecker/issues/432>`__ - Update EC2 limit handling for new vCPU-based limits in regions other than ``cn-*`` and ``us-gov-*`` (which still use old per-instance-type limits). See section below for further information. For regions other than ``cn-*`` and ``us-gov-*``, **this will remove** all 175 ``Running On-Demand <type> instances`` and the ``Running On-Demand EC2 instances`` limit, and replace them with:
+
+  * ``Running On-Demand All F instances``
+  * ``Running On-Demand All G instances``
+  * ``Running On-Demand All P instances``
+  * ``Running On-Demand All X instances``
+  * ``Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances``
+
+* `Issue #429 <https://github.com/jantman/awslimitchecker/issues/429>`_ - add 87 missing EC2 instance types. This will now only impact ``cn-*`` and ``us-gov-*`` regions.
+* `Issue #433 <https://github.com/jantman/awslimitchecker/issues/433>`_ - Fix broken links in the docs; waffle.io and landscape.io are both gone, sadly.
+
+New EC2 vCPU Limits
++++++++++++++++++++
+
+AWS has `announced <https://aws.amazon.com/blogs/compute/preview-vcpu-based-instance-limits/>`__ new, completely different handling of EC2 On-Demand Instances service limits. Instead of having a limit per instance type (currently 261 limits), there will now be only *five* limits, based on the number of vCPUs for instance families: one each for "F", "G", "P", and "X" family instances (defaulting to a total of 128 vCPUs each) and one limit for all other "Standard" instance families (currently A, C, D, H, I, M, R, T, and Z) defaulting to a combined total of 1152 vCPUs. Please see the link, and the `EC2 On-Demand Instance Limits section of the AWS FAQ <https://aws.amazon.com/ec2/faqs/#EC2_On-Demand_Instance_limits>`__ for further information.
+
+This greatly simplifies handling of the EC2 On-Demand limits, but does mean that any existing code that references EC2 Running On-Demand limit names, including any limit and/or threshold overrides, will need to be updated for this change.
+
+This change is only going into effect in the "standard" AWS regions/partitions, i.e. not in the China partition (``cn-`` regions) or GovCloud (``us-gov-`` regions). It is a phased rollout from October 24 to November 7, 2019 based on the first character of your account ID (see the "How will the transition to vCPU limits happen?" entry in the FAQ linked above for exact dates). **Unfortunately, there is no clear way to determine via API if a given account is using the new vCPU limits or the old per-instance-type limits.** As a result, and given that this release is being made already part-way through the rollout window, the current behavior of awslimitchecker is as follows:
+
+* When running against region names beginning with ``cn-`` or ``us-gov-``, use the old per-instance-type limits, unless the ``USE_VCPU_LIMITS`` environment variable is set to ``true``.
+* Otherwise use the new vCPU-based limits, unless the ``USE_VCPU_LIMITS`` environment variable is set to something other than ``true``.
+
+As such, if you install this release before November 7, 2019 and need to force your non-China, non-GovCloud accout to use the older per-instance-type limits, setting the ``USE_VCPU_LIMITS`` environment variable to ``false`` will accomplish this until your account switches over to the new vCPU limits. **Alternatively, you can leave awslimitchecker as-is and accept possibly-slightly-inaccurate limit calculations for a few days.**
+
+Please also note that with the change to vCPU limits, there is no longer an overall ``Running On-Demand EC2 instances`` limit for accounts that use the new vCPU limits.
+
+I have **not** yet implemented Trusted Advisor (TA) support for these new limits, as they're presented in a different category of Trusted Advisor checks from the previous EC2 limits. I'm not going to be implementing TA for these limits, in favor of spending the time instead on implementing Service Quotas support via `Issue #413 <https://github.com/jantman/awslimitchecker/issues/413>`__.
+
+Calculation of current usage for the vCPU limits is based on the `EC2 Optimizing CPU Options documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html>`__ which specifies, "The number of vCPUs for the instance is the number of CPU cores multiplied by the threads per core." The ``CpuOptions`` field of the EC2 ``DescribeInstances`` API specifies the core and thread count for each running instance.
 
 7.1.0 (2019-09-10)
 ------------------

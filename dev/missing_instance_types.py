@@ -35,3 +35,11 @@ print('awslimitchecker currently has %d of %d instance types' % (
 ))
 if len(missing) > 0:
     print('Missing types: %s' % missing)
+extra = []
+for itype in sorted(alctypes):
+    if itype not in uniq:
+        print('EXTRA INSTANCE TYPE: %s' % itype)
+        extra.append(itype)
+print('awslimitchecker currently has %d extra instance types' % len(extra))
+if len(extra) > 0:
+    print('Extra types: %s' % extra)

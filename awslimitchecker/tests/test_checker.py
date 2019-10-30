@@ -436,12 +436,6 @@ class TestAwsLimitChecker(object):
         }
 
     def test_boto3_connection_kwargs_profile(self):
-        with patch('%s.boto3' % pbm):
-            with patch(
-                'awslimitchecker.services.dynamodb._DynamodbService'
-                '.get_limits'
-            ):
-                cls = AwsLimitChecker(profile_name='myprof')
         m_creds = Mock()
         type(m_creds).access_key = 'ak'
         type(m_creds).secret_key = 'sk'
@@ -454,8 +448,13 @@ class TestAwsLimitChecker(object):
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.Session' % pbm) as mock_sess:
-                    mock_sess.return_value = mock_session
-                    res = cls._boto_conn_kwargs
+                    with patch.dict('%s._services' % pbm, {}, clear=True):
+                            mock_sess.return_value = mock_session
+                            cls = AwsLimitChecker(profile_name='myprof')
+                            mock_get_sts.reset_mock()
+                            mock_logger.reset_mock()
+                            mock_sess.reset_mock()
+                            res = cls._boto_conn_kwargs
         assert mock_get_sts.mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Using credentials profile: %s', 'myprof')
@@ -486,14 +485,6 @@ class TestAwsLimitChecker(object):
         }
 
     def test_boto3_connection_kwargs_sts(self):
-        with patch('%s.boto3' % pbm):
-            with patch(
-                'awslimitchecker.services.dynamodb._DynamodbService'
-                '.get_limits'
-            ):
-                cls = AwsLimitChecker(account_id='123',
-                                      account_role='myrole',
-                                      region='myregion')
         mock_creds = Mock()
         type(mock_creds).access_key = 'sts_ak'
         type(mock_creds).secret_key = 'sts_sk'
@@ -502,8 +493,15 @@ class TestAwsLimitChecker(object):
         with patch('%s._get_sts_token' % pb) as mock_get_sts:
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.Session' % pbm) as mock_sess:
-                    mock_get_sts.return_value = mock_creds
-                    res = cls._boto_conn_kwargs
+                    with patch.dict('%s._services' % pbm, {}, clear=True):
+                        cls = AwsLimitChecker(account_id='123',
+                                              account_role='myrole',
+                                              region='myregion')
+                        mock_get_sts.return_value = mock_creds
+                        mock_get_sts.reset_mock()
+                        mock_logger.reset_mock()
+                        mock_sess.reset_mock()
+                        res = cls._boto_conn_kwargs
         assert mock_get_sts.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.debug("Connecting for account %s role '%s' with STS "
