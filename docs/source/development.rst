@@ -104,7 +104,7 @@ Adding New EC2 Instance Types
    the EC2 Pricing API that aren't present in awslimitchecker and output a list of them.
 2. In ``services/ec2.py`` update the constants in :py:meth:`~._Ec2Service._instance_types` accordingly.
 3. Check the `EC2 Instance Type limits page <https://aws.amazon.com/ec2/faqs/>`__
-   for any new types that have non-default limits, and update :py:meth:`~._Ec2Service._get_limits_instances` accordingly.
+   for any new types that have non-default limits, and update :py:meth:`~._Ec2Service._get_limits_instances_nonvcpu` accordingly.
 4. Update ``tests/services/test_ec2.py`` as needed.
 
 .. _development.adding_checks:
