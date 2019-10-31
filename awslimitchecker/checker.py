@@ -203,20 +203,22 @@ class AwsLimitChecker(object):
             warnings.warn(
                 'awslimitchecker has detected that it is running under Python '
                 '2.7. This will no longer be supported as of January 1, 2020. '
-                'Please upgrade to Python 3.5 or newer. Please see the '
-                'changelog for awslimitchecker version 8.0.0 at <https://'
-                'awslimitchecker.readthedocs.io/en/latest/changes.html>'
-                'for further details.',
+                'Please update to a newer Python version (>= 3.5) or switch '
+                'to running via the official Docker image. For further '
+                'information, please see the awslimitchecker 8.0.0 changelog '
+                'at <https://awslimitchecker.readthedocs.io/en/latest/changes.'
+                'html#changelog-8-0-0>',
                 PendingDeprecationWarning
             )
         elif sys.version_info[:2] == (3, 4):  # nocoverage
             warnings.warn(
                 'awslimitchecker has detected that it is running under Python '
                 '3.4. This will no longer be supported as of January 1, 2020. '
-                'Please upgrade to Python 3.5 or newer. Please see the '
-                'changelog for awslimitchecker version 8.0.0 at <https://'
-                'awslimitchecker.readthedocs.io/en/latest/changes.html>'
-                'for further details.',
+                'Please update to a newer Python version (>= 3.5) or switch '
+                'to running via the official Docker image. For further '
+                'information, please see the awslimitchecker 8.0.0 changelog '
+                'at <https://awslimitchecker.readthedocs.io/en/latest/changes.'
+                'html#changelog-8-0-0>',
                 PendingDeprecationWarning
             )
         elif (
@@ -228,7 +230,10 @@ class AwsLimitChecker(object):
                 '%d.%d. This version has reached end-of-life and is no longer '
                 'supported by awslimitchecker, and may not function correctly. '
                 'Please update to a newer Python version (>= 3.5) or switch '
-                'to running via the official Docker image.'
+                'to running via the official Docker image. For further '
+                'information, please see the awslimitchecker 8.0.0 changelog '
+                'at <https://awslimitchecker.readthedocs.io/en/latest/changes.'
+                'html#changelog-8-0-0>'
                 '' % (sys.version_info[0], sys.version_info[1]),
                 DeprecationWarning
             )
