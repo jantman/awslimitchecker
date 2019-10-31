@@ -209,6 +209,16 @@ class AwsLimitChecker(object):
                 'for further details.',
                 PendingDeprecationWarning
             )
+        elif sys.version_info[:2] == (3, 4):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '3.4. This will no longer be supported as of January 1, 2020. '
+                'Please upgrade to Python 3.5 or newer. Please see the '
+                'changelog for awslimitchecker version 8.0.0 at <https://'
+                'awslimitchecker.readthedocs.io/en/latest/changes.html>'
+                'for further details.',
+                PendingDeprecationWarning
+            )
         elif (
             sys.version_info[0] < 3 or
             sys.version_info[0] == 3 and sys.version_info[1] < 4
