@@ -37,8 +37,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+import os
 import logging
 import boto3
+from botocore.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +68,37 @@ class ConnectableCredentials(object):
 
 
 class Connectable(object):
-
     """
     Mix-in helper class for connecting to AWS APIs. Centralizes logic of
     connecting via regions and/or STS.
     """
+
+    @property
+    def _max_retries_config(self):
+        """
+        If a ``BOTO_MAX_RETRIES_<self.api_name>`` environment variable is set,
+        return a new ``botocore.config.Config`` instance using that number
+        as the retries max_attempts value.
+
+        :rtype: ``botocore.config.Config`` or None
+        """
+        key = 'BOTO_MAX_RETRIES_%s' % self.api_name
+        if key not in os.environ:
+            return None
+        try:
+            max_retries = int(os.environ[key])
+        except Exception:
+            logger.error(
+                'ERROR: Found "%s" environment variable, but unable to '
+                'parse value "%s" to an integer.', key, os.environ[key]
+            )
+            return None
+        logger.debug(
+            'Setting explicit botocore retry config with max_attempts=%d '
+            'for "%s" API based on %s environment variable.',
+            max_retries, self.api_name, key
+        )
+        return Config(retries={'max_attempts': max_retries})
 
     def connect(self):
         """
@@ -84,7 +112,9 @@ class Connectable(object):
         """
         if self.conn is not None:
             return
-        kwargs = self._boto3_connection_kwargs
+        kwargs = dict(self._boto3_connection_kwargs)
+        if self._max_retries_config is not None:
+            kwargs['config'] = self._max_retries_config
         self.conn = boto3.client(self.api_name, **kwargs)
         logger.info("Connected to %s in region %s",
                     self.api_name, self.conn._client_config.region_name)
@@ -102,7 +132,9 @@ class Connectable(object):
         """
         if self.resource_conn is not None:
             return
-        kwargs = self._boto3_connection_kwargs
+        kwargs = dict(self._boto3_connection_kwargs)
+        if self._max_retries_config is not None:
+            kwargs['config'] = self._max_retries_config
         self.resource_conn = boto3.resource(self.api_name, **kwargs)
         logger.info("Connected to %s (resource) in region %s", self.api_name,
                     self.resource_conn.meta.client._client_config.region_name)

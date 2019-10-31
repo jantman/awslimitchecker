@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased Changes
-------------------
+8.0.0
+-----
 
 **Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five (5) limits. Please see the "New EC2 vCPU Limits" section below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
 
@@ -25,6 +25,7 @@ Unreleased Changes
 * `Issue #437 <https://github.com/jantman/awslimitchecker/issues/437>`_ - Per `PEP 429 <https://www.python.org/dev/peps/pep-0429/>`_, Python 3.4 reached end-of-life on March 18, 2019 and is now officially retired. Add a ``PendingDeprecationWarning`` for users running under this version, announcing that support for Python 3.4 will be removed on January 1, 2020.
 * In following with the above two issues, raise a ``DeprecationWarning`` when running on any Python2 version prior to 2.7 or any Python3 version prior to 3.4, in accorance with the `published end-of-life dates of those versions <https://devguide.python.org/devcycle/#end-of-life-branches>`_.
 * `Issue #436 <https://github.com/jantman/awslimitchecker/issues/436>`_ - Begin testing under Python 3.8 and base our Docker image on ``python:3.8-alpine``.
+* `Issue #435 <https://github.com/jantman/awslimitchecker/issues/435>`_ - Allow configuring the botocore maximum retries for Throttling / RateExceeded errors on a per-AWS-API basis via environment variables. See the relevant sections of the :ref:`CLI Usage <cli_usage.throttling>` or :ref:`Python Usage <python_usage.throttling>` documentation for further details.
 
 New EC2 vCPU Limits
 +++++++++++++++++++

@@ -261,6 +261,13 @@ To remove the Firehose and EC2 services:
 
     c.remove_services(['Firehose', 'EC2'])
 
+.. _python_usage.throttling:
+
+Handling Throttling and Rate Limiting
++++++++++++++++++++++++++++++++++++++
+
+See :ref:`CLI Usage - Handling Throttling and Rate Limiting <cli_usage.throttling>`; this is handled the same way in Python, though you'd likely set the environment variables using ``os.environ`` instead of exporting them outside of Python.
+
 Logging
 -------
 
