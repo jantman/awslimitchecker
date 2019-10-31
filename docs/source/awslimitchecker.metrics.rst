@@ -2,9 +2,9 @@ awslimitchecker.metrics package
 ===============================
 
 .. automodule:: awslimitchecker.metrics
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -14,4 +14,3 @@ Submodules
    awslimitchecker.metrics.base
    awslimitchecker.metrics.datadog
    awslimitchecker.metrics.dummy
-
