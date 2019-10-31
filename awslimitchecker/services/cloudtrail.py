@@ -71,15 +71,24 @@ class _CloudTrailService(_AwsService):
     def _find_usage_cloudtrail(self):
         """Calculate current usage for CloudTrail related metrics"""
 
-        trail_list = self.conn.describe_trails()['trailList']
+        trail_list = self.conn.describe_trails(
+            includeShadowTrails=False
+        )['trailList']
         trail_count = len(trail_list) if trail_list else 0
 
         for trail in trail_list:
             data_resource_count = 0
             if self.conn._client_config.region_name == trail['HomeRegion']:
-                response = self.conn.get_event_selectors(
-                    TrailName=trail['Name']
-                )
+                try:
+                    response = self.conn.get_event_selectors(
+                        TrailName=trail['TrailARN']
+                    )
+                except Exception as ex:
+                    logger.debug(
+                        'Unable to call GetEventSelectors on CloudTrail trail '
+                        '%s: %s', trail, ex
+                    )
+                    continue
                 event_selectors = response['EventSelectors']
                 for event_selector in event_selectors:
                     data_resource_count += len(

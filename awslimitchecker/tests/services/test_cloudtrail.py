@@ -113,10 +113,12 @@ class Test_CloudTrailService(object):
             result_fixtures.CloudTrail.mock_describe_trails
 
         def se_selectors(*args, **kwargs):
-            if kwargs['TrailName'] == 'trail2':
+            if kwargs['TrailName'] == 'trailarn2':
                 return result_fixtures.CloudTrail.mock_get_event_selectors
+            if kwargs['TrailName'] == 'trailarn4':
+                raise RuntimeError('foo')
             return {
-                'TrailArn': 'arn:%s' % kwargs['TrailName'],
+                'TrailArn': kwargs['TrailName'],
                 'EventSelectors': []
             }
 
@@ -133,7 +135,7 @@ class Test_CloudTrailService(object):
 
         usage = cls.limits['Trails Per Region'].get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 3
+        assert usage[0].get_value() == 4
 
         usage = cls.limits['Event Selectors Per Trail'].get_current_usage()
         assert len(usage) == 2

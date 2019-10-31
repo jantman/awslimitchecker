@@ -3949,7 +3949,7 @@ class CloudTrail(object):
                     'IncludeGlobalServiceEvents': True,
                     'IsMultiRegionTrail': True,
                     'HomeRegion': 'thisregion',
-                    'TrailARN': 'string',
+                    'TrailARN': 'trailarn1',
                     'LogFileValidationEnabled': True,
                     'CloudWatchLogsLogGroupArn': 'string',
                     'CloudWatchLogsRoleArn': 'string',
@@ -3965,7 +3965,7 @@ class CloudTrail(object):
                     'IncludeGlobalServiceEvents': True,
                     'IsMultiRegionTrail': True,
                     'HomeRegion': 'thisregion',
-                    'TrailARN': 'string',
+                    'TrailARN': 'trailarn2',
                     'LogFileValidationEnabled': True,
                     'CloudWatchLogsLogGroupArn': 'string',
                     'CloudWatchLogsRoleArn': 'string',
@@ -3981,12 +3981,17 @@ class CloudTrail(object):
                     'IncludeGlobalServiceEvents': True,
                     'IsMultiRegionTrail': True,
                     'HomeRegion': 'otherRegion',
-                    'TrailARN': 'string',
+                    'TrailARN': 'trailarn3',
                     'LogFileValidationEnabled': True,
                     'CloudWatchLogsLogGroupArn': 'string',
                     'CloudWatchLogsRoleArn': 'string',
                     'KmsKeyId': 'string',
                     'HasCustomEventSelectors': True
+                },
+                {
+                    'Name': 'trail4',
+                    'TrailARN': 'trailarn4',
+                    'HomeRegion': 'thisregion'
                 }
             ],
     }

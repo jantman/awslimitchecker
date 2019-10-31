@@ -18,6 +18,7 @@ Unreleased Changes
 * `Issue #429 <https://github.com/jantman/awslimitchecker/issues/429>`_ - add 87 missing EC2 instance types. This will now only impact ``cn-*`` and ``us-gov-*`` regions.
 * `Issue #433 <https://github.com/jantman/awslimitchecker/issues/433>`_ - Fix broken links in the docs; waffle.io and landscape.io are both gone, sadly.
 * `Issue #441 <https://github.com/jantman/awslimitchecker/issues/441>`_ - Fix critical bug where awslimitchecker would die with an unhandled ``botocore.exceptions.ParamValidationError`` exception in accounts that have Trusted Advisor but do not have a "Service Limits" check in the "performance" category.
+* `Issue #439 <https://github.com/jantman/awslimitchecker/issues/439>`_ - Fix unhandled exception in CloudTrail service when attempting to call ``GetEventSelectors`` on an Organization trail. When calling ``DescribeTrails``, we will now pass ``includeShadowTrails`` as False, to not include replications of trails in different regions or organization trails in member accounts (relevant `API documentation <https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DescribeTrails.html>`_).
 
 New EC2 vCPU Limits
 +++++++++++++++++++
