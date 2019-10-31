@@ -40,6 +40,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 from awslimitchecker.connectable import Connectable, ConnectableCredentials
 from datetime import datetime
 import sys
+import os
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -75,6 +76,54 @@ class ConnectableTester(Connectable):
         self.profile_name = profile_name
 
 
+class TestMaxRetriesConfig(object):
+
+    @patch.dict(
+        os.environ,
+        {'BOTO_MAX_RETRIES_myapi': '10'},
+        clear=True
+    )
+    def test_happy_path(self):
+        mock_conf = Mock()
+        cls = ConnectableTester()
+        cls.api_name = 'myapi'
+        with patch('%s.Config' % pbm) as m_conf:
+            m_conf.return_value = mock_conf
+            res = cls._max_retries_config
+        assert res == mock_conf
+        assert m_conf.mock_calls == [call(retries={'max_attempts': 10})]
+
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True
+    )
+    def test_env_var_not_set(self):
+        mock_conf = Mock()
+        cls = ConnectableTester()
+        cls.api_name = 'myapi'
+        with patch('%s.Config' % pbm) as m_conf:
+            m_conf.return_value = mock_conf
+            res = cls._max_retries_config
+        assert res is None
+        assert m_conf.mock_calls == []
+
+    @patch.dict(
+        os.environ,
+        {'BOTO_MAX_RETRIES_myapi': 'hello'},
+        clear=True
+    )
+    def test_cant_parse_int(self):
+        mock_conf = Mock()
+        cls = ConnectableTester()
+        cls.api_name = 'myapi'
+        with patch('%s.Config' % pbm) as m_conf:
+            m_conf.return_value = mock_conf
+            res = cls._max_retries_config
+        assert res is None
+        assert m_conf.mock_calls == []
+
+
 class Test_Connectable(object):
 
     def test_connect(self):
@@ -92,8 +141,12 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.client' % pbm) as mock_client:
-                    mock_client.return_value = mock_conn
-                    cls.connect()
+                    with patch(
+                        '%s._max_retries_config' % pb, new_callable=PropertyMock
+                    ) as m_mrc:
+                        m_mrc.return_value = None
+                        mock_client.return_value = mock_conn
+                        cls.connect()
         assert mock_kwargs.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.info("Connected to %s in region %s",
@@ -107,6 +160,46 @@ class Test_Connectable(object):
                 bar='barval'
             )
         ]
+        assert m_mrc.mock_calls == [call()]
+        assert cls.conn == mock_client.return_value
+
+    def test_connect_with_retries(self):
+        mock_conn = Mock()
+        mock_cc = Mock()
+        type(mock_cc).region_name = 'myregion'
+        type(mock_conn)._client_config = mock_cc
+
+        cls = ConnectableTester()
+        cls.api_name = 'myapi'
+        kwargs = {'foo': 'fooval', 'bar': 'barval'}
+        mock_conf = Mock()
+
+        with patch('%s._boto3_connection_kwargs' % pb,
+                   new_callable=PropertyMock, create=True) as mock_kwargs:
+            mock_kwargs.return_value = kwargs
+            with patch('%s.logger' % pbm) as mock_logger:
+                with patch('%s.boto3.client' % pbm) as mock_client:
+                    with patch(
+                        '%s._max_retries_config' % pb, new_callable=PropertyMock
+                    ) as m_mrc:
+                        m_mrc.return_value = mock_conf
+                        mock_client.return_value = mock_conn
+                        cls.connect()
+        assert mock_kwargs.mock_calls == [call()]
+        assert mock_logger.mock_calls == [
+            call.info("Connected to %s in region %s",
+                      'myapi',
+                      'myregion')
+        ]
+        assert mock_client.mock_calls == [
+            call(
+                'myapi',
+                foo='fooval',
+                bar='barval',
+                config=mock_conf
+            )
+        ]
+        assert m_mrc.mock_calls == [call(), call()]
         assert cls.conn == mock_client.return_value
 
     def test_connect_again(self):
@@ -125,11 +218,17 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.client' % pbm) as mock_client:
-                    mock_client.return_value = mock_conn
-                    cls.connect()
+                    with patch(
+                            '%s._max_retries_config' % pb,
+                            new_callable=PropertyMock
+                    ) as m_mrc:
+                        m_mrc.return_value = None
+                        mock_client.return_value = mock_conn
+                        cls.connect()
         assert mock_kwargs.mock_calls == []
         assert mock_logger.mock_calls == []
         assert mock_client.mock_calls == []
+        assert m_mrc.mock_calls == []
         assert cls.conn == mock_conn
 
     def test_connect_resource(self):
@@ -151,8 +250,13 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.resource' % pbm) as mock_resource:
-                    mock_resource.return_value = mock_conn
-                    cls.connect_resource()
+                    with patch(
+                            '%s._max_retries_config' % pb,
+                            new_callable=PropertyMock
+                    ) as m_mrc:
+                        m_mrc.return_value = None
+                        mock_resource.return_value = mock_conn
+                        cls.connect_resource()
         assert mock_kwargs.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.info("Connected to %s (resource) in region %s",
@@ -166,6 +270,51 @@ class Test_Connectable(object):
                 bar='barval'
             )
         ]
+        assert m_mrc.mock_calls == [call()]
+        assert cls.resource_conn == mock_resource.return_value
+
+    def test_connect_resource_with_max_retries(self):
+        mock_conn = Mock()
+        mock_meta = Mock()
+        mock_client = Mock()
+        mock_cc = Mock()
+        type(mock_cc).region_name = 'myregion'
+        type(mock_client)._client_config = mock_cc
+        type(mock_meta).client = mock_client
+        type(mock_conn).meta = mock_meta
+
+        cls = ConnectableTester()
+        cls.api_name = 'myapi'
+        kwargs = {'foo': 'fooval', 'bar': 'barval'}
+        mock_conf = Mock()
+
+        with patch('%s._boto3_connection_kwargs' % pb,
+                   new_callable=PropertyMock, create=True) as mock_kwargs:
+            mock_kwargs.return_value = kwargs
+            with patch('%s.logger' % pbm) as mock_logger:
+                with patch('%s.boto3.resource' % pbm) as mock_resource:
+                    with patch(
+                            '%s._max_retries_config' % pb,
+                            new_callable=PropertyMock
+                    ) as m_mrc:
+                        m_mrc.return_value = mock_conf
+                        mock_resource.return_value = mock_conn
+                        cls.connect_resource()
+        assert mock_kwargs.mock_calls == [call()]
+        assert mock_logger.mock_calls == [
+            call.info("Connected to %s (resource) in region %s",
+                      'myapi',
+                      'myregion')
+        ]
+        assert mock_resource.mock_calls == [
+            call(
+                'myapi',
+                foo='fooval',
+                bar='barval',
+                config=mock_conf
+            )
+        ]
+        assert m_mrc.mock_calls == [call(), call()]
         assert cls.resource_conn == mock_resource.return_value
 
     def test_connect_resource_again(self):
@@ -189,11 +338,17 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.resource' % pbm) as mock_resource:
-                    mock_resource.return_value = mock_conn
-                    cls.connect_resource()
+                    with patch(
+                            '%s._max_retries_config' % pb,
+                            new_callable=PropertyMock
+                    ) as m_mrc:
+                        m_mrc.return_value = None
+                        mock_resource.return_value = mock_conn
+                        cls.connect_resource()
         assert mock_kwargs.mock_calls == []
         assert mock_logger.mock_calls == []
         assert mock_resource.mock_calls == []
+        assert m_mrc.mock_calls == []
         assert cls.resource_conn == mock_conn
 
 
