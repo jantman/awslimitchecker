@@ -24,6 +24,7 @@ Unreleased Changes
 * `Issue #438 <https://github.com/jantman/awslimitchecker/issues/438>`_ - Per `PEP 373 <https://www.python.org/dev/peps/pep-0373/>`__, Python 2.7 will officially end support on January 1, 2020. As such, and in keeping with reasoning explained at `python3statement.org <https://python3statement.org/>`__, awslimitchecker will **stop supporting and testing against Python 2.7** on January 1, 2020. At that point, all new versions will be free to use Python features introduced in 3.5. As of this version, a `PendingDeprecationWarning <https://docs.python.org/3/library/exceptions.html#PendingDeprecationWarning>`__ will be emitted when running awslimitchecker under Python 2.7.
 * `Issue #437 <https://github.com/jantman/awslimitchecker/issues/437>`_ - Per `PEP 429 <https://www.python.org/dev/peps/pep-0429/>`_, Python 3.4 reached end-of-life on March 18, 2019 and is now officially retired. Add a ``PendingDeprecationWarning`` for users running under this version, announcing that support for Python 3.4 will be removed on January 1, 2020.
 * In following with the above two issues, raise a ``DeprecationWarning`` when running on any Python2 version prior to 2.7 or any Python3 version prior to 3.4, in accorance with the `published end-of-life dates of those versions <https://devguide.python.org/devcycle/#end-of-life-branches>`_.
+* `Issue #436 <https://github.com/jantman/awslimitchecker/issues/436>`_ - Begin testing under Python 3.8 and base our Docker image on ``python:3.8-alpine``.
 
 New EC2 vCPU Limits
 +++++++++++++++++++
