@@ -2,18 +2,18 @@ awslimitchecker package
 =======================
 
 .. automodule:: awslimitchecker
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Subpackages
 -----------
 
 .. toctree::
 
-    awslimitchecker.alerts
-    awslimitchecker.metrics
-    awslimitchecker.services
+   awslimitchecker.alerts
+   awslimitchecker.metrics
+   awslimitchecker.services
 
 Submodules
 ----------
@@ -27,4 +27,3 @@ Submodules
    awslimitchecker.trustedadvisor
    awslimitchecker.utils
    awslimitchecker.version
-

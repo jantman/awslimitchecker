@@ -13,3 +13,4 @@ exclude_lines =
     raise NotImplementedError
     except ImportError:
     pragma: no cover
+    .*# nocoverage.*

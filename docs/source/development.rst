@@ -49,7 +49,7 @@ To setup awslimitchecker for development:
 
 1. Fork the `awslimitchecker <https://github.com/jantman/awslimitchecker>`_ repository on GitHub
 
-2. Create a ``virtualenv`` to run the code in:
+2. Create a ``virtualenv`` (using Python 3.5 or later) to run the code in:
 
 .. code-block:: bash
 

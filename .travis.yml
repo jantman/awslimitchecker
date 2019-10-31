@@ -15,17 +15,21 @@ matrix:
       env: TOXENV=py37
       dist: xenial
       sudo: true
+    - python: "3.8"
+      env: TOXENV=py38
+      dist: xenial
+      sudo: true
     - python: "3.7"
       env: TOXENV=docker
       dist: xenial
       sudo: true
       services:
       - docker
-    - python: "2.7"
+    - python: "3.7"
       env: TOXENV=docs
     - python: "2.7"
       env: TOXENV=integration
-    - python: "3.6"
+    - python: "3.7"
       env: TOXENV=integration3
 install:
 - git config --global user.email "travisci@jasonantman.com"

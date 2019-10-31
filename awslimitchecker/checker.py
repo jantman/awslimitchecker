@@ -45,8 +45,16 @@ from .utils import _get_latest_version
 import boto3
 import sys
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
+
+warnings.filterwarnings(
+    action="always", category=DeprecationWarning, module=__name__
+)
+warnings.filterwarnings(
+    action="always", category=PendingDeprecationWarning, module=__name__
+)
 
 
 class AwsLimitChecker(object):
@@ -160,6 +168,7 @@ class AwsLimitChecker(object):
                     ' is %s; please consider upgrading.', self.vinfo.release,
                     latest_ver
                 )
+        self._check_python_version()
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.profile_name = profile_name
@@ -184,6 +193,45 @@ class AwsLimitChecker(object):
                                  ta_refresh_mode=ta_refresh_mode,
                                  ta_refresh_timeout=ta_refresh_timeout,
                                  ta_api_region=ta_api_region)
+
+    def _check_python_version(self):
+        """
+        Check that we are running under a supported Python version, and emit a
+        warning otherwise.
+        """
+        if sys.version_info[:2] == (2, 7):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '2.7. This will no longer be supported as of January 1, 2020. '
+                'Please upgrade to Python 3.5 or newer. Please see the '
+                'changelog for awslimitchecker version 8.0.0 at <https://'
+                'awslimitchecker.readthedocs.io/en/latest/changes.html>'
+                'for further details.',
+                PendingDeprecationWarning
+            )
+        elif sys.version_info[:2] == (3, 4):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '3.4. This will no longer be supported as of January 1, 2020. '
+                'Please upgrade to Python 3.5 or newer. Please see the '
+                'changelog for awslimitchecker version 8.0.0 at <https://'
+                'awslimitchecker.readthedocs.io/en/latest/changes.html>'
+                'for further details.',
+                PendingDeprecationWarning
+            )
+        elif (
+            sys.version_info[0] < 3 or
+            sys.version_info[0] == 3 and sys.version_info[1] < 4
+        ):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '%d.%d. This version has reached end-of-life and is no longer '
+                'supported by awslimitchecker, and may not function correctly. '
+                'Please update to a newer Python version (>= 3.5) or switch '
+                'to running via the official Docker image.'
+                '' % (sys.version_info[0], sys.version_info[1]),
+                DeprecationWarning
+            )
 
     @property
     def _boto_conn_kwargs(self):
