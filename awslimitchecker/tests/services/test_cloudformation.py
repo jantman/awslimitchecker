@@ -59,7 +59,7 @@ class Test_CloudformationService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _CloudformationService(21, 43)
+        cls = _CloudformationService(21, 43, {}, None)
         assert cls.service_name == 'CloudFormation'
         assert cls.api_name == 'cloudformation'
         assert cls.conn is None
@@ -67,7 +67,7 @@ class Test_CloudformationService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _CloudformationService(21, 43)
+        cls = _CloudformationService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -82,7 +82,7 @@ class Test_CloudformationService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _CloudformationService(21, 43)
+        cls = _CloudformationService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -109,7 +109,7 @@ class Test_CloudformationService(object):
         mock_conn = Mock()
         mock_conn.get_paginator.return_value = mock_paginator
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _CloudformationService(21, 43)
+            cls = _CloudformationService(21, 43, {}, None)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
@@ -143,7 +143,7 @@ class Test_CloudformationService(object):
         }
 
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _CloudformationService(21, 43)
+            cls = _CloudformationService(21, 43, {}, None)
             cls.conn = mock_conn
             cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
@@ -151,7 +151,7 @@ class Test_CloudformationService(object):
         assert cls.limits['Stacks'].api_limit == 400
 
     def test_required_iam_permissions(self):
-        cls = _CloudformationService(21, 43)
+        cls = _CloudformationService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'cloudformation:DescribeAccountLimits',
             'cloudformation:DescribeStacks'

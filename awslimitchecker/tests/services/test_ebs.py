@@ -60,7 +60,7 @@ class Test_EbsService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         assert cls.service_name == 'EBS'
         assert cls.conn is None
         assert cls.warning_threshold == 21
@@ -68,7 +68,7 @@ class Test_EbsService(object):
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         cls.limits = {'foo': 'bar'}
         with patch('%s._get_limits_ebs' % self.pb) as mock_ebs:
             res = cls.get_limits()
@@ -77,7 +77,7 @@ class Test_EbsService(object):
 
     def test_get_limits(self):
         """test some things all limits should conform to"""
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         limits = cls.get_limits()
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
@@ -125,7 +125,7 @@ class Test_EbsService(object):
                 _find_usage_snapshots=DEFAULT,
                 autospec=True,
         ) as mocks:
-            cls = _EbsService(21, 43)
+            cls = _EbsService(21, 43, {}, None)
             assert cls._have_usage is False
             cls.find_usage()
         assert cls._have_usage is True
@@ -137,7 +137,7 @@ class Test_EbsService(object):
         response = result_fixtures.EBS.test_find_usage_ebs
 
         mock_conn = Mock()
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
             with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
@@ -191,7 +191,7 @@ class Test_EbsService(object):
 
         mock_conn = Mock()
 
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
             with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
@@ -215,7 +215,7 @@ class Test_EbsService(object):
         ]
 
     def test_required_iam_permissions(self):
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "ec2:DescribeVolumes",
             "ec2:DescribeSnapshots"

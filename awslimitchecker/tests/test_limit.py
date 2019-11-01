@@ -84,6 +84,10 @@ class TestAwsLimit(object):
         assert limit.def_critical_threshold == 11
         assert limit._ta_service_name is None
         assert limit._ta_limit_name is None
+        assert limit._quotas_service_code is None
+        assert limit._quotas_name is None
+        assert limit._quotas_unit is None
+        assert limit.quotas_limit is None
 
     def test_init_ta_names(self):
         limit = AwsLimit(
@@ -93,7 +97,10 @@ class TestAwsLimit(object):
             7,
             11,
             ta_service_name='foo',
-            ta_limit_name='bar'
+            ta_limit_name='bar',
+            quotas_service_code='baz',
+            quotas_name='blam',
+            quotas_unit='blarg'
         )
         assert limit.name == 'limitname'
         assert limit.service == self.mock_svc
@@ -108,6 +115,10 @@ class TestAwsLimit(object):
         assert limit.def_critical_threshold == 11
         assert limit._ta_service_name == 'foo'
         assert limit._ta_limit_name == 'bar'
+        assert limit._quotas_service_code == 'baz'
+        assert limit._quotas_name == 'blam'
+        assert limit._quotas_unit == 'blarg'
+        assert limit.quotas_limit is None
 
     def test_init_valueerror(self):
         with pytest.raises(ValueError) as excinfo:

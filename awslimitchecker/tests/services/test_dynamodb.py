@@ -62,7 +62,7 @@ class Test_DynamodbService(object):
     def test_init(self):
         """test __init__()"""
         with patch('%s.get_limits' % pb):
-            cls = _DynamodbService(21, 43)
+            cls = _DynamodbService(21, 43, {}, None)
         assert cls.service_name == 'DynamoDB'
         assert cls.api_name == 'dynamodb'
         assert cls.conn is None
@@ -81,7 +81,7 @@ class Test_DynamodbService(object):
 
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             mock_connect.side_effect = se_conn
-            cls = _DynamodbService(21, 43)
+            cls = _DynamodbService(21, 43, {}, None)
 
         limits = cls.limits
         for x in limits:
@@ -123,7 +123,7 @@ class Test_DynamodbService(object):
 
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             mock_connect.side_effect = se_conn
-            cls = _DynamodbService(21, 43)
+            cls = _DynamodbService(21, 43, {}, None)
 
         limits = cls.limits
         for x in limits:
@@ -157,7 +157,7 @@ class Test_DynamodbService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)
-        cls = _DynamodbService(21, 43)
+        cls = _DynamodbService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -175,7 +175,7 @@ class Test_DynamodbService(object):
 
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             mock_connect.side_effect = se_conn
-            cls = _DynamodbService(21, 43)
+            cls = _DynamodbService(21, 43, {}, None)
             cls.conn = mock_conn
             cls._update_limits_from_api()
         assert cls.limits['Account Max Read Capacity Units'].api_limit == 111
@@ -202,7 +202,7 @@ class Test_DynamodbService(object):
                     '%s.connect_resource' % pb, autospec=True
                 ) as mock_conn_res:
                     mock_connect.side_effect = se_conn
-                    cls = _DynamodbService(21, 43)
+                    cls = _DynamodbService(21, 43, {}, None)
                     cls.conn = mock_conn
                     assert cls._have_usage is False
                     cls.find_usage()
@@ -231,7 +231,7 @@ class Test_DynamodbService(object):
 
         with patch('%s.connect' % pb, autospec=True) as mock_connect:
             mock_connect.side_effect = se_conn
-            cls = _DynamodbService(21, 43)
+            cls = _DynamodbService(21, 43, {}, None)
             cls.conn = mock_conn
             cls.resource_conn = mock_res_conn
             cls._find_usage_dynamodb()
@@ -280,7 +280,7 @@ class Test_DynamodbService(object):
         assert u[2].get_value() == 600
 
     def test_required_iam_permissions(self):
-        cls = _DynamodbService(21, 43)
+        cls = _DynamodbService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "dynamodb:DescribeLimits",
             "dynamodb:DescribeTable",

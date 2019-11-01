@@ -96,12 +96,14 @@ class TestAwsLimitChecker(object):
                     _get_version_info=DEFAULT,
                     TrustedAdvisor=DEFAULT,
                     _get_latest_version=DEFAULT,
+                    ServiceQuotasClient=DEFAULT,
                     autospec=True,
             ) as mocks:
                 self.mock_logger = mocks['logger']
                 self.mock_version = mocks['_get_version_info']
                 self.mock_ta_constr = mocks['TrustedAdvisor']
                 self.mock_glv = mocks['_get_latest_version']
+                self.mock_quotas = mocks['ServiceQuotasClient']
                 mocks['TrustedAdvisor'].return_value = self.mock_ta
                 mocks['_get_latest_version'].return_value = None
                 self.mock_version.return_value = self.mock_ver_info
@@ -116,10 +118,10 @@ class TestAwsLimitChecker(object):
         assert self.cls.services == services
         # _AwsService instances should exist, but have no other calls
         assert self.mock_foo.mock_calls == [
-            call(80, 99, {'region_name': None})
+            call(80, 99, {'region_name': None}, self.mock_quotas.return_value)
         ]
         assert self.mock_bar.mock_calls == [
-            call(80, 99, {'region_name': None})
+            call(80, 99, {'region_name': None}, self.mock_quotas.return_value)
         ]
         assert self.mock_ta_constr.mock_calls == [
             call(services, {'region_name': None}, ta_api_region='us-east-1',
@@ -135,6 +137,9 @@ class TestAwsLimitChecker(object):
             call.debug('Connecting to region %s', None)
         ]
         assert self.cls.role_partition == 'aws'
+        assert self.mock_quotas.mock_calls == [
+            call({'region_name': None})
+        ]
 
     def test_init_AGPL_message(self, capsys):
         # get rid of the class
@@ -205,6 +210,7 @@ class TestAwsLimitChecker(object):
                     _get_version_info=DEFAULT,
                     TrustedAdvisor=DEFAULT,
                     _get_latest_version=DEFAULT,
+                    ServiceQuotasClient=DEFAULT,
                     autospec=True,
             ) as mocks:
                 mock_version = mocks['_get_version_info']
@@ -224,10 +230,16 @@ class TestAwsLimitChecker(object):
         assert cls.services == services
         # _AwsService instances should exist, but have no other calls
         assert mock_foo.mock_calls == [
-            call(5, 22, {'region_name': None})
+            call(
+                5, 22, {'region_name': None},
+                mocks['ServiceQuotasClient'].return_value
+            )
         ]
         assert mock_bar.mock_calls == [
-            call(5, 22, {'region_name': None})
+            call(
+                5, 22, {'region_name': None},
+                mocks['ServiceQuotasClient'].return_value
+            )
         ]
         assert mock_ta_constr.mock_calls == [
             call(services, {'region_name': None}, ta_api_region='us-east-1',

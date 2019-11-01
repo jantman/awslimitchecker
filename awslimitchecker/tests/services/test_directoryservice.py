@@ -60,7 +60,7 @@ class Test_DirectoryserviceService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _DirectoryserviceService(21, 43)
+        cls = _DirectoryserviceService(21, 43, {}, None)
         assert cls.service_name == 'Directory Service'
         assert cls.api_name == 'ds'
         assert cls.conn is None
@@ -68,7 +68,7 @@ class Test_DirectoryserviceService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _DirectoryserviceService(21, 43)
+        cls = _DirectoryserviceService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -84,7 +84,7 @@ class Test_DirectoryserviceService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _DirectoryserviceService(21, 43)
+        cls = _DirectoryserviceService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -105,7 +105,7 @@ class Test_DirectoryserviceService(object):
             }
         }
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _DirectoryserviceService(21, 43)
+            cls = _DirectoryserviceService(21, 43, {}, None)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
@@ -135,7 +135,7 @@ class Test_DirectoryserviceService(object):
             }
         }
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _DirectoryserviceService(21, 43)
+            cls = _DirectoryserviceService(21, 43, {}, None)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls._update_limits_from_api()
@@ -146,7 +146,7 @@ class Test_DirectoryserviceService(object):
         assert cls.limits['ConnectedDirectories'].api_limit == 12
 
     def test_required_iam_permissions(self):
-        cls = _DirectoryserviceService(21, 43)
+        cls = _DirectoryserviceService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'ds:GetDirectoryLimits'
         ]

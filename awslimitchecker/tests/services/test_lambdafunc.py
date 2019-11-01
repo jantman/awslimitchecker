@@ -61,7 +61,7 @@ class Test_LambdaService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _LambdaService(21, 43)
+        cls = _LambdaService(21, 43, {}, None)
         assert cls.service_name == 'Lambda'
         assert cls.api_name == 'lambda'
         assert cls.conn is None
@@ -69,7 +69,7 @@ class Test_LambdaService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _LambdaService(21, 43)
+        cls = _LambdaService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == [
@@ -88,7 +88,7 @@ class Test_LambdaService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _LambdaService(21, 43)
+        cls = _LambdaService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -99,7 +99,7 @@ class Test_LambdaService(object):
         mock_conn.get_account_settings.return_value = response
 
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _LambdaService(21, 43)
+            cls = _LambdaService(21, 43, {}, None)
             assert len(cls.limits) == 6
             cls.conn = mock_conn
             cls._update_limits_from_api()
@@ -124,7 +124,7 @@ class Test_LambdaService(object):
         mock_conn.get_account_settings.return_value = response
 
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _LambdaService(21, 43)
+            cls = _LambdaService(21, 43, {}, None)
             assert len(cls.limits) == 6
             cls.limits = {"a": None, "b": None}
             cls.conn = mock_conn
@@ -140,7 +140,7 @@ class Test_LambdaService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _LambdaService(21, 43)
+                cls = _LambdaService(21, 43, {}, None)
                 cls.conn = mock_conn
                 cls.find_usage()
 
@@ -160,7 +160,7 @@ class Test_LambdaService(object):
         mock_conn.get_account_settings.return_value = response
 
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _LambdaService(21, 43)
+            cls = _LambdaService(21, 43, {}, None)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.get_limits()
@@ -178,7 +178,7 @@ class Test_LambdaService(object):
         assert u[0].get_value() == 2
 
     def test_required_iam_permissions(self):
-        cls = _LambdaService(21, 43)
+        cls = _LambdaService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'lambda:GetAccountSettings'
         ]

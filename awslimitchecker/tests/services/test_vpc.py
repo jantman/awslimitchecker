@@ -61,14 +61,14 @@ class Test_VpcService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         assert cls.service_name == 'VPC'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -91,7 +91,7 @@ class Test_VpcService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -116,7 +116,7 @@ class Test_VpcService(object):
                     _find_usage_network_interfaces=DEFAULT,
             ) as mocks:
                 mocks['_find_usage_subnets'].return_value = sn
-                cls = _VpcService(21, 43)
+                cls = _VpcService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -141,7 +141,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_vpcs.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_vpcs()
@@ -157,7 +157,7 @@ class Test_VpcService(object):
 
         mock_conn = Mock()
         mock_conn.describe_subnets.return_value = response
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         res = cls._find_usage_subnets()
@@ -181,7 +181,7 @@ class Test_VpcService(object):
         response = result_fixtures.VPC.test_find_usage_acls
         mock_conn = Mock()
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         mock_conn.describe_network_acls.return_value = response
@@ -212,7 +212,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_route_tables.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_route_tables()
@@ -242,7 +242,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_internet_gateways.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_gateways()
@@ -262,7 +262,7 @@ class Test_VpcService(object):
         mock_conn.describe_nat_gateways.return_value = response
 
         with patch('%s.logger' % self.pbm) as mock_logger:
-            cls = _VpcService(21, 43)
+            cls = _VpcService(21, 43, {}, None)
             cls.conn = mock_conn
             cls._find_usage_nat_gateways(subnets)
 
@@ -299,7 +299,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_nat_gateways.side_effect = se_exc
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
@@ -321,7 +321,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_vpn_gateways.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usages_vpn_gateways()
@@ -348,7 +348,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_network_interfaces.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_network_interfaces()
@@ -369,7 +369,7 @@ class Test_VpcService(object):
         mock_client_conn = Mock()
         mock_client_conn.describe_account_attributes.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.resource_conn = mock_conn
         cls.conn = mock_client_conn
         with patch('awslimitchecker.services.vpc.logger') as mock_logger:
@@ -393,7 +393,7 @@ class Test_VpcService(object):
         mock_client_conn = Mock()
         mock_client_conn.describe_account_attributes.return_value = response
 
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         cls.resource_conn = mock_conn
         cls.conn = mock_client_conn
         with patch('awslimitchecker.services.vpc.logger') as mock_logger:
@@ -412,7 +412,7 @@ class Test_VpcService(object):
         assert cls.limits[limit_name].get_limit() == DEFAULT_ENI_LIMIT
 
     def test_required_iam_permissions(self):
-        cls = _VpcService(21, 43)
+        cls = _VpcService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'ec2:DescribeNatGateways',
             'ec2:DescribeNetworkAcls',
