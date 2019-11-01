@@ -28,6 +28,7 @@ Changelog
 * In following with the above two issues, raise a ``DeprecationWarning`` when running on any Python2 version prior to 2.7 or any Python3 version prior to 3.4, in accorance with the `published end-of-life dates of those versions <https://devguide.python.org/devcycle/#end-of-life-branches>`_.
 * `Issue #436 <https://github.com/jantman/awslimitchecker/issues/436>`_ - Begin testing under Python 3.8 and base our Docker image on ``python:3.8-alpine``.
 * `Issue #435 <https://github.com/jantman/awslimitchecker/issues/435>`_ - Allow configuring the botocore maximum retries for Throttling / RateExceeded errors on a per-AWS-API basis via environment variables. See the relevant sections of the :ref:`CLI Usage <cli_usage.throttling>` or :ref:`Python Usage <python_usage.throttling>` documentation for further details.
+* `Issue #431 <https://github.com/jantman/awslimitchecker/issues/431>`_ - Fix a **major under-calculation** of usage for the EC2 ``Rules per VPC security group`` limit. We were previously calculating the number of "Rules" (from port / to port / protocol combinations) in a Security Group, but the limit is actually based on the number of permissions granted. See `this comment <https://github.com/jantman/awslimitchecker/issues/431#issuecomment-548599785>`_ on the issue for further details.
 
 .. _changelog.8_0_0_vcpu_limits:
 

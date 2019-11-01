@@ -796,11 +796,15 @@ class TestFindUsageNetworkingSgs(object):
         assert sorted_usage[0].resource_id == 'sg-1'
         assert sorted_usage[0].get_value() == 0
         assert sorted_usage[1].limit == limit
-        assert sorted_usage[1].resource_id == 'sg-4'
-        assert sorted_usage[1].get_value() == 3
+        assert sorted_usage[1].resource_id == 'sg-2'
+        # ingress: IPv4 = 15; IPv6 = 13
+        # egress: IPv4 = 5; IPv6 = 7
+        assert sorted_usage[1].get_value() == 15
         assert sorted_usage[2].limit == limit
         assert sorted_usage[2].resource_id == 'sg-3'
-        assert sorted_usage[2].get_value() == 9
+        # ingress: IPv4 = 4; IPv6 = 5
+        # egress: IPv4 = 22; IPv6 = 29
+        assert sorted_usage[2].get_value() == 29
         assert mock_conn.mock_calls == [
             call.security_groups.all()
         ]

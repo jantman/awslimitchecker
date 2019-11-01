@@ -591,9 +591,38 @@ class _Ec2Service(_AwsService):
         sgs_per_vpc = defaultdict(int)
         rules_per_sg = defaultdict(int)
         for sg in self.resource_conn.security_groups.all():
-            if sg.vpc_id is not None:
-                sgs_per_vpc[sg.vpc_id] += 1
-                rules_per_sg[sg.id] = len(sg.ip_permissions)
+            if sg.vpc_id is None:
+                continue
+            sgs_per_vpc[sg.vpc_id] += 1
+            """
+            see: https://github.com/jantman/awslimitchecker/issues/431
+
+            The value for each of ingress and egress is the count of all
+            PrefixListIds in all rules, plus the count of all
+            UserIdGroupPairs in all rules, plus the maximum of:
+              the count of all IpRanges in all rules
+                 -or-
+              the count of all Ipv6Ranges in all rules
+
+            The limit that we alert on is the maximum of those values for
+            ingress and egress.
+
+            In short, behind the scenes, there are four firewall rulesets
+            per SG: (IPv4|IPv6) (ingress|egress)
+            Each can have a maximum of <limit> entries. PrefixListIds and
+            UserIdGroupPairs count towards both IPv4 and IPv6.
+            """
+            counts = []
+            for perm in [sg.ip_permissions, sg.ip_permissions_egress]:
+                counts.append(
+                    max(
+                        sum([len(x.get('IpRanges', [])) for x in perm]),
+                        sum([len(x.get('Ipv6Ranges', [])) for x in perm])
+                    ) +
+                    sum([len(x.get('PrefixListIds', [])) for x in perm]) +
+                    sum([len(x.get('UserIdGroupPairs', [])) for x in perm])
+                )
+            rules_per_sg[sg.id] = max(counts)
         # set usage
         for vpc_id, count in sgs_per_vpc.items():
             self.limits['Security groups per VPC']._add_current_usage(

@@ -2084,19 +2084,458 @@ class EC2(object):
         type(mock_sg1).ip_permissions_egress = []
         mock_sg2 = Mock(spec_set=SecurityGroup)
         type(mock_sg2).id = 'sg-2'
-        type(mock_sg2).vpc_id = None
-        type(mock_sg2).ip_permissions = [1, 2, 3, 4, 5, 6]
-        type(mock_sg2).ip_permissions_egress = [8, 9, 10]
+        type(mock_sg2).vpc_id = 'vpc-aaa'
+        type(mock_sg2).ip_permissions = [
+            {
+                'FromPort': 1,
+                'ToPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {1: 1}, {2: 2}, {3: 3}, {4: 4}
+                ],
+                'Ipv6Ranges': [
+                    {1: 1}, {2: 2}
+                ],
+                'PrefixListIds': [
+                    {'p1': 'p1'},
+                ],
+                'UserIdGroupPairs': [
+                    {'a': 'a'}, {'b': 'b'}
+                ]
+            },
+            {
+                'FromPort': 2,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {1: 1},
+                ],
+                'Ipv6Ranges': [],
+                'PrefixListIds': [],
+                'ToPort': 123,
+                'UserIdGroupPairs': []
+            },
+            {
+                'FromPort': 3,
+                'IpProtocol': 'string',
+                'IpRanges': [],
+                'Ipv6Ranges': [
+                    {1: 1},
+                ],
+                'PrefixListIds': [],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {'a': 'a'},
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [],
+                'Ipv6Ranges': [],
+                'PrefixListIds': [
+                    {'a': 'a'},
+                ],
+                'ToPort': 1,
+                'UserIdGroupPairs': [
+                    {'b': 'b'},
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {'c': 'c'},
+                ],
+                'Ipv6Ranges': [
+                    {4: 4},
+                ],
+                'PrefixListIds': [
+                    {5: 5}, {6: 6}
+                ],
+                'ToPort': 2,
+                'UserIdGroupPairs': []
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [],
+                'Ipv6Ranges': [],
+                'PrefixListIds': [
+                    {2: 2},
+                ],
+                'ToPort': 3,
+                'UserIdGroupPairs': []
+            }
+        ]
+        type(mock_sg2).ip_permissions_egress = [
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {1: 1},
+                ],
+                'Ipv6Ranges': [
+                    {2: 2}, {3: 3}, {4: 4}
+                ],
+                'PrefixListIds': [
+                    {5: 5},
+                ],
+                'ToPort': 1,
+                'UserIdGroupPairs': [
+                    {6: 6},
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [],
+                'Ipv6Ranges': [
+                    {7: 7},
+                ],
+                'PrefixListIds': [],
+                'ToPort': 2,
+                'UserIdGroupPairs': []
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [],
+                'Ipv6Ranges': [
+                    {8: 8},
+                ],
+                'PrefixListIds': [],
+                'ToPort': 3,
+                'UserIdGroupPairs': []
+            }
+        ]
         mock_sg3 = Mock(spec_set=SecurityGroup)
         type(mock_sg3).id = 'sg-3'
         type(mock_sg3).vpc_id = 'vpc-bbb'
-        type(mock_sg3).ip_permissions = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        type(mock_sg3).ip_permissions_egress = [6, 7, 8, 9]
+        type(mock_sg3).ip_permissions = [
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {1: 1},
+                ],
+                'Ipv6Ranges': [],
+                'PrefixListIds': [
+                    {'a': 'a'},
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {2: 2},
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [],
+                'Ipv6Ranges': [
+                    {3: 3}, {6: 6}
+                ],
+                'PrefixListIds': [
+                    {4: 4},
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': []
+            }
+        ]
+        type(mock_sg3).ip_permissions_egress = [
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {1: 1},
+                    {2: 2},
+                    {3: 3},
+                    {4: 4},
+                    {5: 5},
+                    {6: 6},
+                ],
+                'Ipv6Ranges': [
+                    {1: 1},
+                    {2: 2},
+                    {3: 3},
+                    {4: 4},
+                    {5: 5},
+                    {6: 6},
+                    {7: 7},
+                    {8: 8},
+                    {9: 9},
+                    {10: 10},
+                    {11: 11},
+                    {12: 12},
+                    {13: 13}
+                ],
+                'PrefixListIds': [
+                    {1: 1},
+                    {2: 2},
+                    {3: 3},
+                    {4: 4},
+                    {5: 5},
+                    {6: 6},
+                    {7: 7},
+                    {8: 8},
+                    {9: 9},
+                    {10: 10}
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {1: 1},
+                    {2: 2},
+                    {3: 3},
+                    {4: 4},
+                    {5: 5},
+                    {6: 6},
+                ]
+            }
+        ]
         mock_sg4 = Mock(spec_set=SecurityGroup)
         type(mock_sg4).id = 'sg-4'
-        type(mock_sg4).vpc_id = 'vpc-aaa'
-        type(mock_sg4).ip_permissions = [1, 2, 3]
-        type(mock_sg4).ip_permissions_egress = [21, 22, 23, 24]
+        type(mock_sg4).vpc_id = None
+        type(mock_sg4).ip_permissions = [
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            },
+        ]
+        type(mock_sg4).ip_permissions_egress = [
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            },
+            {
+                'FromPort': 123,
+                'IpProtocol': 'string',
+                'IpRanges': [
+                    {
+                        'CidrIp': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'Ipv6Ranges': [
+                    {
+                        'CidrIpv6': 'string',
+                        'Description': 'string'
+                    },
+                ],
+                'PrefixListIds': [
+                    {
+                        'Description': 'string',
+                        'PrefixListId': 'string'
+                    },
+                ],
+                'ToPort': 123,
+                'UserIdGroupPairs': [
+                    {
+                        'Description': 'string',
+                        'GroupId': 'string',
+                        'GroupName': 'string',
+                        'PeeringStatus': 'string',
+                        'UserId': 'string',
+                        'VpcId': 'string',
+                        'VpcPeeringConnectionId': 'string'
+                    },
+                ]
+            }
+        ]
 
         return_value = [
             mock_sg1,
