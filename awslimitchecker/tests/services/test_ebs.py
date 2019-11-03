@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from awslimitchecker.services.ebs import _EbsService
+from awslimitchecker.services.ebs import _EbsService, convert_TiB_to_GiB
 from awslimitchecker.limit import AwsLimit
 from awslimitchecker.tests.services import result_fixtures
 
@@ -53,6 +53,15 @@ else:
     from unittest.mock import patch, call, Mock, DEFAULT
 
 
+class TestConvertTiBToGiB(object):
+
+    def test_happy_path(self):
+        assert convert_TiB_to_GiB(300.0, 'None', 'GiB') == 307200.0
+
+    def test_unknown_unit(self):
+        assert convert_TiB_to_GiB(300.0, 'Foo', 'GiB') is None
+
+
 class Test_EbsService(object):
 
     pb = 'awslimitchecker.services.ebs._EbsService'  # patch base path
@@ -60,7 +69,7 @@ class Test_EbsService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         assert cls.service_name == 'EBS'
         assert cls.conn is None
         assert cls.warning_threshold == 21
@@ -68,7 +77,7 @@ class Test_EbsService(object):
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         cls.limits = {'foo': 'bar'}
         with patch('%s._get_limits_ebs' % self.pb) as mock_ebs:
             res = cls.get_limits()
@@ -77,7 +86,7 @@ class Test_EbsService(object):
 
     def test_get_limits(self):
         """test some things all limits should conform to"""
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         limits = cls.get_limits()
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
@@ -91,17 +100,17 @@ class Test_EbsService(object):
         piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
-        assert piops_tb.default_limit == 102400
+        assert piops_tb.default_limit == 307200
         gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
-        assert gp_tb.default_limit == 102400
+        assert gp_tb.default_limit == 307200
         assert gp_tb.ta_limit_name == 'General Purpose SSD (gp2) ' \
                                       'volume storage (GiB)'
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
-        assert mag_tb.default_limit == 20480
+        assert mag_tb.default_limit == 307200
         assert mag_tb.ta_limit_name == 'Magnetic (standard) volume ' \
                                        'storage (GiB)'
         st_tb = limits['Throughput Optimized (HDD) volume storage (GiB)']
@@ -125,7 +134,7 @@ class Test_EbsService(object):
                 _find_usage_snapshots=DEFAULT,
                 autospec=True,
         ) as mocks:
-            cls = _EbsService(21, 43)
+            cls = _EbsService(21, 43, {}, None)
             assert cls._have_usage is False
             cls.find_usage()
         assert cls._have_usage is True
@@ -137,7 +146,7 @@ class Test_EbsService(object):
         response = result_fixtures.EBS.test_find_usage_ebs
 
         mock_conn = Mock()
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
             with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
@@ -191,7 +200,7 @@ class Test_EbsService(object):
 
         mock_conn = Mock()
 
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('awslimitchecker.services.ebs.logger') as mock_logger:
             with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
@@ -215,7 +224,7 @@ class Test_EbsService(object):
         ]
 
     def test_required_iam_permissions(self):
-        cls = _EbsService(21, 43)
+        cls = _EbsService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "ec2:DescribeVolumes",
             "ec2:DescribeSnapshots"

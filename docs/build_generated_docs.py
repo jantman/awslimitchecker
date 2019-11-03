@@ -49,6 +49,9 @@ from textwrap import dedent
 my_dir = os.path.dirname(os.path.abspath(__file__))
 os.environ['PYTHONPATH'] = os.path.join(my_dir, '..')
 sys.path.insert(0, os.path.join(my_dir, '..'))
+# always run in us-east-1, because some Quotas Service quotas only exist there
+os.environ['AWS_REGION'] = 'us-east-1'
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.metrics import MetricsProvider
@@ -108,6 +111,104 @@ def build_iam_policy(checker):
         fh.write(doc)
 
 
+def format_limits_for_service(limits):
+    limit_info = ''
+    # build a dict of the limits
+    slimits = {}
+    # track the maximum string lengths
+    max_name = 0
+    max_default_limit = 0
+    for limit in limits.values():
+        slimits[limit.name] = limit
+        # update max string length for table formatting
+        if len(limit.name) > max_name:
+            max_name = len(limit.name)
+        if len(str(limit.default_limit)) > max_default_limit:
+            max_default_limit = len(str(limit.default_limit))
+    # create the format string
+    sformat = '{name: <' + str(max_name) + '} ' \
+                                           '{ta: <15} {quotas: <8} ' \
+                                           '{api: <7} ' \
+                                           '{limit: <' + str(
+        max_default_limit) + '}\n'
+    # separator lines
+    sep = ('=' * max_name) + ' =============== ======== ======= ' + \
+          ('=' * max_default_limit) + "\n"
+    # header
+    limit_info += sep
+    limit_info += sformat.format(
+        name='Limit', limit='Default', api='API', ta='Trusted Advisor',
+        quotas='Quotas'
+    )
+    limit_info += sep
+    # limit lines
+    for lname, limit in sorted(slimits.items()):
+        limit_info += sformat.format(
+            name=lname, limit=str(limit.default_limit),
+            ta='|check|' if limit.ta_limit is not None else '',
+            api='|check|' if (
+                    limit.api_limit is not None or limit.has_resource_limits()
+            ) else '',
+            quotas='|check|' if limit.quotas_limit is not None else ''
+        )
+    # footer
+    limit_info += sep
+    limit_info += "\n"
+    return limit_info
+
+
+def limits_for_ec2():
+    limit_info = '.. _limits.EC2:\n\n'
+    limit_info += "EC2\n---\n\n"
+    limit_info += dedent("""
+    As of October 2019, the "standard" EC2 regions use the new
+    `vCPU-based limits <https://aws.amazon.com/blogs/compute/preview-vcpu-based-
+    instance-limits/>`__, while the China (``cn-``) and GovCloud (``us-gov-``)
+    regions still use the old per-instance-type limits. Please see the sections
+    for either :ref:`limits.ec2-standard` or :ref:`limits.ec2-nonvcpu` for
+    details.
+    
+    """)
+    limit_info += '.. _limits.ec2-standard:\n\n'
+    limit_info += "EC2 - Standard Regions\n"
+    limit_info += "----------------------\n"
+    limit_info += "\n" + dedent("""
+    **Note on On-Demand vs Reserved Instances:** The EC2 limits for
+    "Running On-Demand" EC2 Instances apply only to On-Demand instances,
+    not Reserved Instances. If you list all EC2 instances that are
+    running in the Console or API, you'll get back instances of all types
+    (On-Demand, Reserved, etc.). The value that awslimitchecker reports
+    for Running On-Demand Instances current usage will *not* match the
+    number of instances you see in the Console or API.
+    
+    **Important:** The limits for **Running On-Demand Instances** are now
+    measured in vCPU count per instance family, not instance count per instance
+    type. 
+    """) + "\n"
+    limit_info += "\n"
+    limit_info += format_limits_for_service(
+        AwsLimitChecker(region='us-east-1').get_limits()['EC2']
+    )
+    limit_info += '.. _limits.ec2-nonvcpu:\n\n'
+    limit_info += "EC2 - China and GovCloud\n"
+    limit_info += "------------------------\n"
+    limit_info += "\n" + dedent("""
+        **Note on On-Demand vs Reserved Instances:** The EC2 limits for
+        "Running On-Demand" EC2 Instances apply only to On-Demand instances,
+        not Reserved Instances. If you list all EC2 instances that are
+        running in the Console or API, you'll get back instances of all types
+        (On-Demand, Reserved, etc.). The value that awslimitchecker reports
+        for Running On-Demand Instances current usage will *not* match the
+        number of instances you see in the Console or API.
+        """) + "\n"
+    limit_info += "\n"
+    fname = os.path.join(my_dir, 'source', 'ec2_nonvcpu_limits.txt')
+    with open(fname, 'r') as fh:
+        limit_info += fh.read()
+    limit_info += "\n\n"
+    return limit_info
+
+
 def build_limits(checker):
     logger.info("Beginning build of limits.rst")
     logger.info("Getting Limits")
@@ -115,19 +216,12 @@ def build_limits(checker):
     limits = checker.get_limits()
     # this is a bit of a pain, because we need to know string lengths to build the table
     for svc_name in sorted(limits):
+        if svc_name == 'EC2':
+            limit_info += limits_for_ec2()
+            continue
         limit_info += '.. _limits.%s:\n\n' % svc_name
         limit_info += svc_name + "\n"
         limit_info += ('-' * (len(svc_name)+1)) + "\n"
-        if svc_name == 'EC2':
-            limit_info += "\n" + dedent("""
-            **Note on On-Demand vs Reserved Instances:** The EC2 limits for
-            "Running On-Demand" EC2 Instances apply only to On-Demand instances,
-            not Reserved Instances. If you list all EC2 instances that are
-            running in the Console or API, you'll get back instances of all types
-            (On-Demand, Reserved, etc.). The value that awslimitchecker reports
-            for Running On-Demand Instances current usage will *not* match the
-            number of instances you see in the Console or API.
-            """) + "\n"
         if svc_name == 'Route53':
             limit_info += "\n" + dedent("""
             **Note on Route53 Limits:** The Route53 limit values (maxima) are
@@ -135,43 +229,7 @@ def build_limits(checker):
             zone. As such, each zone may have a different limit value.
             """) + "\n"
         limit_info += "\n"
-        # build a dict of the limits
-        slimits = {}
-        # track the maximum string lengths
-        max_name = 0
-        max_default_limit = 0
-        for limit in limits[svc_name].values():
-            slimits[limit.name] = limit
-            # update max string length for table formatting
-            if len(limit.name) > max_name:
-                max_name = len(limit.name)
-            if len(str(limit.default_limit)) > max_default_limit:
-                max_default_limit = len(str(limit.default_limit))
-        # create the format string
-        sformat = '{name: <' + str(max_name) + '} ' \
-                  '{ta: <15} {api: <7} ' \
-                  '{limit: <' + str(max_default_limit) + '}\n'
-        # separator lines
-        sep = ('=' * max_name) + ' =============== ======= ' + \
-              ('=' * max_default_limit) + "\n"
-        # header
-        limit_info += sep
-        limit_info += sformat.format(
-            name='Limit', limit='Default', api='API', ta='Trusted Advisor'
-        )
-        limit_info += sep
-        # limit lines
-        for lname, limit in sorted(slimits.iteritems()):
-            limit_info += sformat.format(
-                name=lname, limit=str(limit.default_limit),
-                ta='|check|' if limit.ta_limit is not None else '',
-                api='|check|' if (
-                    limit.api_limit is not None or limit.has_resource_limits()
-                ) else ''
-            )
-        # footer
-        limit_info += sep
-        limit_info += "\n"
+        limit_info += format_limits_for_service(limits[svc_name])
 
     doc = """
     .. -- WARNING -- WARNING -- WARNING
@@ -196,11 +254,17 @@ def build_limits(checker):
     last release. Note that not all accounts can access Trusted Advisor, or can
     access all limits known by Trusted Advisor.
 
+    **Limits with a** |check| **in the "Quotas" column can be retrieved from
+    the Service Quotas service**; this information is supposed to be accurate
+    and up-to-date, but is likely less accurate than the service's own API.
+    Limits retrieved from Service Quotas take precedence over Trusted Advisor
+    and default limits.
+
     **Limits with a** |check| **in the "API" column can be retrieved directly from
     the corresponding Service API**; this information should be the most accurate
     and up-to-date, as it is retrieved directly from the service that evaluates
     and enforces limits. Limits retrieved via service API take precedence over
-    Trusted Advisor and default limits.
+    Trusted Advisor, Service Quotas, and default limits.
 
     {limit_info}
 
@@ -225,6 +289,7 @@ def build_runner_examples():
         'list_limits': ['awslimitchecker', '-l'],
         'list_defaults': ['awslimitchecker', '--list-defaults'],
         'skip_ta': ['awslimitchecker', '-l', '--skip-ta'],
+        'skip_quotas': ['awslimitchecker', '-l', '--skip-quotas'],
         'show_usage': ['awslimitchecker', '-u'],
         'list_services': ['awslimitchecker', '-s'],
         'limit_overrides': [
@@ -247,9 +312,9 @@ def build_runner_examples():
         cmd_str = ' '.join(command)
         logger.info("Running: %s", cmd_str)
         try:
-            output = subprocess.check_output(command)
+            output = subprocess.check_output(command).decode()
         except subprocess.CalledProcessError as e:
-            output = e.output
+            output = e.output.decode()
         results[name] = format_cmd_output(cmd_str, output, name)
         results['%s-output-only' % name] = format_cmd_output(None, output, name)
     results['metrics-providers'] = ''

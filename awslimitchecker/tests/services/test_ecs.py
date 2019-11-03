@@ -60,7 +60,7 @@ class Test_EcsService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _EcsService(21, 43)
+        cls = _EcsService(21, 43, {}, None)
         assert cls.service_name == 'ECS'
         assert cls.api_name == 'ecs'
         assert cls.conn is None
@@ -68,7 +68,7 @@ class Test_EcsService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _EcsService(21, 43)
+        cls = _EcsService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -86,7 +86,7 @@ class Test_EcsService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _EcsService(21, 43)
+        cls = _EcsService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -98,7 +98,7 @@ class Test_EcsService(object):
             connect=DEFAULT,
             _find_usage_clusters=DEFAULT
         ) as mocks:
-            cls = _EcsService(21, 43)
+            cls = _EcsService(21, 43, {}, None)
             assert cls._have_usage is False
             cls.find_usage()
         assert mocks['connect'].mock_calls == [call(cls)]
@@ -161,7 +161,7 @@ class Test_EcsService(object):
         }]
 
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _EcsService(21, 43)
+        cls = _EcsService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s._find_usage_one_cluster' % pb, autospec=True) as m_fuoc:
             cls._find_usage_clusters()
@@ -249,7 +249,7 @@ class Test_EcsService(object):
         }]
         mock_conn.get_paginator.return_value = mock_paginator
 
-        cls = _EcsService(21, 43)
+        cls = _EcsService(21, 43, {}, None)
         cls.conn = mock_conn
         cls._find_usage_one_cluster('cName')
 
@@ -274,7 +274,7 @@ class Test_EcsService(object):
         assert u[1].aws_type == 'AWS::ECS::Service'
 
     def test_required_iam_permissions(self):
-        cls = _EcsService(21, 43)
+        cls = _EcsService(21, 43, {}, None)
         assert sorted(cls.required_iam_permissions()) == [
             'ecs:DescribeClusters',
             'ecs:DescribeServices',

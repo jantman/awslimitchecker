@@ -1,7 +1,7 @@
-awslimitchecker.runner module
+awslimitchecker.quotas module
 =============================
 
-.. automodule:: awslimitchecker.runner
+.. automodule:: awslimitchecker.quotas
    :members:
    :undoc-members:
    :show-inheritance:

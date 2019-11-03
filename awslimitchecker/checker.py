@@ -42,20 +42,30 @@ from .services import _services
 from .trustedadvisor import TrustedAdvisor
 from .version import _get_version_info
 from .utils import _get_latest_version
+from .quotas import ServiceQuotasClient
 import boto3
 import sys
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
+
+warnings.filterwarnings(
+    action="always", category=DeprecationWarning, module=__name__
+)
+warnings.filterwarnings(
+    action="always", category=PendingDeprecationWarning, module=__name__
+)
 
 
 class AwsLimitChecker(object):
 
     def __init__(self, warning_threshold=80, critical_threshold=99,
                  profile_name=None, account_id=None, account_role=None,
-                 region=None, external_id=None, mfa_serial_number=None,
-                 mfa_token=None, ta_refresh_mode=None, ta_refresh_timeout=None,
-                 check_version=True):
+                 role_partition='aws', region=None, external_id=None,
+                 mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
+                 ta_refresh_timeout=None, ta_api_region='us-east-1',
+                 check_version=True, skip_quotas=False):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -89,6 +99,10 @@ class AwsLimitChecker(object):
         :param region: AWS region name to connect to
         :type region: str
         :type account_role: str
+        :param role_partition: `AWS role partition <https://docs.aws.amazon.com/
+          general/latest/gr/aws-arns-and-namespaces.html>`_
+          for the account_role to connect via STS
+        :type role_partition: str
         :param external_id: (optional) the `External ID <http://docs.aws.amazon.
           com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
           string to use when assuming a role via STS.
@@ -116,9 +130,16 @@ class AwsLimitChecker(object):
           parameter is not None, only wait up to this number of seconds for the
           refresh to finish before continuing on anyway.
         :type ta_refresh_timeout: :py:class:`int` or :py:data:`None`
+        :param ta_api_region: The AWS region used for calls to the
+          TrustedAdvisor API. This is always us-east-1 for
+          non GovCloud accounts.
+        :type ta_api_region: str
         :param check_version: Whether or not to check for latest version of
           awslimitchecker on PyPI during instantiation.
         :type check_version: bool
+        :param skip_quotas: If set to True, do not connect to Service Quotas
+          service or use it to obtain current limits.
+        :type skip_quotas: bool
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -151,11 +172,13 @@ class AwsLimitChecker(object):
                     ' is %s; please consider upgrading.', self.vinfo.release,
                     latest_ver
                 )
+        self._check_python_version()
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self.profile_name = profile_name
         self.account_id = account_id
         self.account_role = account_role
+        self.role_partition = role_partition
         self.external_id = external_id
         self.mfa_serial_number = mfa_serial_number
         self.mfa_token = mfa_token
@@ -164,15 +187,64 @@ class AwsLimitChecker(object):
         self.services = {}
 
         boto_conn_kwargs = self._boto_conn_kwargs
+        self._quotas_client = None
+        if not skip_quotas:
+            self._quotas_client = ServiceQuotasClient(boto_conn_kwargs)
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold,
                                        critical_threshold,
-                                       boto_conn_kwargs)
+                                       boto_conn_kwargs,
+                                       self._quotas_client)
 
         self.ta = TrustedAdvisor(self.services,
                                  boto_conn_kwargs,
                                  ta_refresh_mode=ta_refresh_mode,
-                                 ta_refresh_timeout=ta_refresh_timeout)
+                                 ta_refresh_timeout=ta_refresh_timeout,
+                                 ta_api_region=ta_api_region)
+
+    def _check_python_version(self):
+        """
+        Check that we are running under a supported Python version, and emit a
+        warning otherwise.
+        """
+        if sys.version_info[:2] == (2, 7):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '2.7. This will no longer be supported as of January 1, 2020. '
+                'Please update to a newer Python version (>= 3.5) or switch '
+                'to running via the official Docker image. For further '
+                'information, please see the awslimitchecker 8.0.0 changelog '
+                'at <https://awslimitchecker.readthedocs.io/en/latest/changes.'
+                'html#changelog-8-0-0>',
+                PendingDeprecationWarning
+            )
+        elif sys.version_info[:2] == (3, 4):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '3.4. This will no longer be supported as of January 1, 2020. '
+                'Please update to a newer Python version (>= 3.5) or switch '
+                'to running via the official Docker image. For further '
+                'information, please see the awslimitchecker 8.0.0 changelog '
+                'at <https://awslimitchecker.readthedocs.io/en/latest/changes.'
+                'html#changelog-8-0-0>',
+                PendingDeprecationWarning
+            )
+        elif (
+            sys.version_info[0] < 3 or
+            sys.version_info[0] == 3 and sys.version_info[1] < 4
+        ):  # nocoverage
+            warnings.warn(
+                'awslimitchecker has detected that it is running under Python '
+                '%d.%d. This version has reached end-of-life and is no longer '
+                'supported by awslimitchecker, and may not function correctly. '
+                'Please update to a newer Python version (>= 3.5) or switch '
+                'to running via the official Docker image. For further '
+                'information, please see the awslimitchecker 8.0.0 changelog '
+                'at <https://awslimitchecker.readthedocs.io/en/latest/changes.'
+                'html#changelog-8-0-0>'
+                '' % (sys.version_info[0], sys.version_info[1]),
+                DeprecationWarning
+            )
 
     @property
     def _boto_conn_kwargs(self):
@@ -277,6 +349,7 @@ class AwsLimitChecker(object):
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
+            cls._update_service_quotas()
             res[sname] = cls.get_limits()
         return res
 
@@ -306,7 +379,11 @@ class AwsLimitChecker(object):
         """
         logger.debug("Connecting to STS in region %s", self.region)
         sts = boto3.client('sts', region_name=self.region)
-        arn = "arn:aws:iam::%s:role/%s" % (self.account_id, self.account_role)
+        arn = "arn:%s:iam::%s:role/%s" % (
+            self.role_partition,
+            self.account_id,
+            self.account_role
+        )
         logger.debug("STS assume role for %s", arn)
         assume_kwargs = {
             'RoleArn': arn,
@@ -351,6 +428,7 @@ class AwsLimitChecker(object):
         for cls in to_get.values():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
+            cls._update_service_quotas()
             logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
@@ -551,6 +629,7 @@ class AwsLimitChecker(object):
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
+            cls._update_service_quotas()
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp
@@ -569,6 +648,7 @@ class AwsLimitChecker(object):
         :rtype: dict
         """
         required_actions = [
+            'servicequotas:ListServiceQuotas',
             'support:*',
             'trustedadvisor:Describe*',
             'trustedadvisor:RefreshCheck'

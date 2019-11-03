@@ -17,10 +17,6 @@ awslimitchecker
    :alt: GitHub Open Issues
    :target: https://github.com/jantman/awslimitchecker/issues
 
-.. image:: https://badge.waffle.io/jantman/awslimitchecker.png?label=ready&title=Ready
-   :target: https://waffle.io/jantman/awslimitchecker
-   :alt: 'Stories in Ready - waffle.io'
-
 .. image:: http://www.repostatus.org/badges/1.1.0/active.svg
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
@@ -34,10 +30,6 @@ Master:
 .. image:: https://secure.travis-ci.org/jantman/awslimitchecker.png?branch=master
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for master branch
-
-.. image:: https://landscape.io/github/jantman/awslimitchecker/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/jantman/awslimitchecker/master
-   :alt: Code Health
 
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=master
@@ -53,10 +45,6 @@ Develop:
    :target: http://travis-ci.org/jantman/awslimitchecker
    :alt: travis-ci for develop branch
 
-.. image:: https://landscape.io/github/jantman/awslimitchecker/develop/landscape.svg?style=flat
-   :target: https://landscape.io/github/jantman/awslimitchecker/develop
-   :alt: Code Health
-
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=develop
    :target: https://codecov.io/github/jantman/awslimitchecker?branch=develop
    :alt: coverage report for develop branch
@@ -70,9 +58,11 @@ A script and python module to check your AWS service limits and usage, and warn 
 Users building out scalable services in Amazon AWS often run into AWS' `service limits <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html>`_ -
 often at the least convenient time (i.e. mid-deploy or when autoscaling fails). Amazon's `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
 can help this, but even the version that comes with Business and Enterprise support only monitors a small subset of AWS limits
-and only alerts *weekly*. awslimitchecker provides a command line script and reusable package that queries your current
-usage of AWS resources and compares it to limits (hard-coded AWS defaults that you can override, API-based limits where available, or data from Trusted
-Advisor where available), notifying you when you are approaching or at your limits.
+and only alerts *weekly*. The new Service Quotas service can also help with this, but relies on CloudWatch alarms per-limit to notify
+you when you approach your limits; this cannot easily scale to the hundreds of current service limits. awslimitchecker provides a command line
+script and reusable Python package that queries your current usage of AWS resources and compares it to limits (hard-coded AWS defaults that you
+can override, API-based limits where available, Service Quotas data where available, or data from Trusted Advisor where available), notifying
+you when you are approaching or at your limits.
 
 Full project documentation for the latest release is available at `http://awslimitchecker.readthedocs.io/en/latest/ <http://awslimitchecker.readthedocs.io/en/latest/>`_.
 
@@ -94,6 +84,7 @@ What It Does
 - Define custom thresholds per-limit
 - where possible, pull current limits from Trusted Advisor API
 - where possible, pull current limits from each service's API (for services that provide this information)
+- where possible, pull current limits from the Service Quotas service
 - Supports explicitly setting the AWS region
 - Supports using `STS <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ to assume roles in other accounts, including using ``external_id``.
 - Optionally refresh Trusted Advisor "Service Limits" check before polling
@@ -109,7 +100,7 @@ Requirements
 
 **Either Docker in order to run via the** `docker image <http://awslimitchecker.readthedocs.io/en/latest/docker.html>`__, **or:**
 
-* Python 2.7 or 3.4+. Python 2.6 and 3.3 are no longer supported.
+* Python 3.5 or newer. Python 2.7 will not be supported as of January 1, 2010.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.4.6 and its dependency `botocore <https://botocore.readthedocs.io/en/latest/>`_ >= 1.6.0.
 

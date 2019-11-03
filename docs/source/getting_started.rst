@@ -23,6 +23,7 @@ What It Does
   an optional maximum time limit). See
   :ref:`Getting Started - Trusted Advisor <getting_started.trusted_advisor>`
   for more information.
+- Supports retrieving current limits from the Service Quotas service. See :ref:`getting_started.service_quotas` for more information.
 - Optionally send current usage and limit metrics to a :ref:`metrics store <cli_usage.metrics>` such as Datadog.
 - Optionally send warning/critical alerts to an :ref:`alert provider <cli_usage.alerts>`, such as PagerDuty.
 
@@ -61,7 +62,7 @@ Requirements
 
 **Either Docker in order to run via the** :ref:`docker image <docker>`, **or:**
 
-* Python 2.7 or 3.4+. Python 2.6 and 3.3 are no longer supported.
+* Python 3.5 or newer. Python 2.7 will not be supported as of January 1, 2010.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.4.6 and its dependency `botocore <https://botocore.readthedocs.io/en/latest/>`_ >= 1.6.0.
 
@@ -204,6 +205,18 @@ IAM permission.
 
 See :ref:`Internals - Trusted Advisor <internals.trusted_advisor>` for technical
 information on the implementation of Trusted Advisor polling.
+
+.. _getting_started.service_quotas:
+
+Service Quotas service
+----------------------
+
+AWS' new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`_
+provides a unified interface to retrieve current limits from many AWS services. These limit values are
+second only to the services' own APIs (for the services that provide limit information via API), and are
+much more current and complete than the information provided by Trusted Advisor. The introduction of
+Service Quotas should greatly reduce the number of limits that need to be retrieved from Trusted Advisor
+or specified manually.
 
 .. _getting_started.permissions:
 

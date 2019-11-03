@@ -61,6 +61,14 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 Disabling Trusted Advisor Checks
 ++++++++++++++++++++++++++++++++
 
+Using the ``--skip-quotas`` option will disable attempting to query limit information
+from the Service Quotas service.
+
+{skip_quotas}
+
+Disabling Service Quotas service
+++++++++++++++++++++++++++++++++
+
 Using the ``--skip-ta`` option will disable attempting to query limit information
 from Trusted Advisor for all commands.
 
@@ -311,3 +319,21 @@ If you also need to specify an ``external_id`` of "myid", you can do that with t
 Please note that this assumes that you already have STS configured and working
 between your account and the 123456789012 destination account; see the
 `documentation <http://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html>`_ for further information.
+
+.. _cli_usage.partitions:
+
+Partitions and Trusted Advisor Regions
+++++++++++++++++++++++++++++++++++++++
+
+awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``--role-partition`` option to awslimitchecker, like ``--role-partition=aws-cn`` for the China (Beijing) partition. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``--ta-api-region`` option, like ``--ta-api-region=us-gov-west-1``.
+
+.. _cli_usage.throttling:
+
+Handling Throttling and Rate Limiting
++++++++++++++++++++++++++++++++++++++
+
+In some very large and busy AWS accounts, from time to time awslimitchecker might die on unhandled ``Throttling`` or ``RateExceeded`` exceptions. botocore, the underlying low-level AWS API client library that we use, automatically catches these exceptions and retries them up to a per-AWS-API default number of times (generally four for most APIs) with an exponential backoff. In very busy accounts, it may be desirable to increase the default number of retries.
+
+This can be accomplished on a per-API basis (where the API name is the ``service_name`` that would be sent to :py:meth:`boto3.session.Session.client` and is set as the :py:attr:`~.awslimitchecker.services.base._AwsService.api_name` attribute on each :py:class:`~.awslimitchecker.services.base._AwsService` subclass) by setting an environment variable ``BOTO_MAX_RETRIES_<api_name>`` to the maximum number of attempts you'd like for that service.
+
+For example, if you have issues with rate limiting of the ``cloudformation:DescribeStacks`` still failing after the default of four attempts, and you'd like to use ten (10) attempts instead, you could ``export BOTO_MAX_RETRIES_cloudformation=10`` before running ``awslimitchecker``.

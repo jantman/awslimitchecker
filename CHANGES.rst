@@ -1,6 +1,72 @@
 Changelog
 =========
 
+.. _changelog.8_0_0:
+
+8.0.0 (2019-11-03)
+------------------
+
+**Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five (5) limits. Please see the :ref:`changelog.8_0_0_vcpu_limits` section below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
+
+**Important:** Python versions prior to 3.5, including 2.7, are now pending deprecation. As of January 1, 2020, they will no longer be tested or supported, and awslimitchecker **will require Python 3.5 or newer**. Please see below for details. Also take note that running via the official Docker image is a way to ensure the best version of Python is always used.
+
+**Important:** This release requires a new IAM permission, ``servicequotas:ListServiceQuotas``.
+
+* `Issue #400 <https://github.com/jantman/awslimitchecker/issues/400>`__ / `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
+* `Issue #432 <https://github.com/jantman/awslimitchecker/issues/432>`__ - Update EC2 limit handling for new vCPU-based limits in regions other than ``cn-*`` and ``us-gov-*`` (which still use old per-instance-type limits). See :ref:`section below <changelog.8_0_0_vcpu_limits>` for further information. For regions other than ``cn-*`` and ``us-gov-*``, **this will remove** all 175 ``Running On-Demand <type> instances`` and the ``Running On-Demand EC2 instances`` limit, and replace them with:
+
+  * ``Running On-Demand All F instances``
+  * ``Running On-Demand All G instances``
+  * ``Running On-Demand All P instances``
+  * ``Running On-Demand All X instances``
+  * ``Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances``
+
+* `Issue #429 <https://github.com/jantman/awslimitchecker/issues/429>`_ - add 87 missing EC2 instance types. This will now only impact ``cn-*`` and ``us-gov-*`` regions.
+* `Issue #433 <https://github.com/jantman/awslimitchecker/issues/433>`_ - Fix broken links in the docs; waffle.io and landscape.io are both gone, sadly.
+* `Issue #441 <https://github.com/jantman/awslimitchecker/issues/441>`_ - Fix critical bug where awslimitchecker would die with an unhandled ``botocore.exceptions.ParamValidationError`` exception in accounts that have Trusted Advisor but do not have a "Service Limits" check in the "performance" category.
+* `Issue #439 <https://github.com/jantman/awslimitchecker/issues/439>`_ - Fix unhandled exception in CloudTrail service when attempting to call ``GetEventSelectors`` on an Organization trail. When calling ``DescribeTrails``, we will now pass ``includeShadowTrails`` as False, to not include replications of trails in different regions or organization trails in member accounts (relevant `API documentation <https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DescribeTrails.html>`_).
+* `Issue #438 <https://github.com/jantman/awslimitchecker/issues/438>`_ - Per `PEP 373 <https://www.python.org/dev/peps/pep-0373/>`__, Python 2.7 will officially end support on January 1, 2020. As such, and in keeping with reasoning explained at `python3statement.org <https://python3statement.org/>`__, awslimitchecker will **stop supporting and testing against Python 2.7** on January 1, 2020. At that point, all new versions will be free to use Python features introduced in 3.5. As of this version, a `PendingDeprecationWarning <https://docs.python.org/3/library/exceptions.html#PendingDeprecationWarning>`__ will be emitted when running awslimitchecker under Python 2.7.
+* `Issue #437 <https://github.com/jantman/awslimitchecker/issues/437>`_ - Per `PEP 429 <https://www.python.org/dev/peps/pep-0429/>`_, Python 3.4 reached end-of-life on March 18, 2019 and is now officially retired. Add a ``PendingDeprecationWarning`` for users running under this version, announcing that support for Python 3.4 will be removed on January 1, 2020.
+* In following with the above two issues, raise a ``DeprecationWarning`` when running on any Python2 version prior to 2.7 or any Python3 version prior to 3.4, in accorance with the `published end-of-life dates of those versions <https://devguide.python.org/devcycle/#end-of-life-branches>`_.
+* `Issue #436 <https://github.com/jantman/awslimitchecker/issues/436>`_ - Begin testing under Python 3.8 and base our Docker image on ``python:3.8-alpine``.
+* `Issue #435 <https://github.com/jantman/awslimitchecker/issues/435>`_ - Allow configuring the botocore maximum retries for Throttling / RateExceeded errors on a per-AWS-API basis via environment variables. See the relevant sections of the :ref:`CLI Usage <cli_usage.throttling>` or :ref:`Python Usage <python_usage.throttling>` documentation for further details.
+* `Issue #431 <https://github.com/jantman/awslimitchecker/issues/431>`_ - Fix a **major under-calculation** of usage for the EC2 ``Rules per VPC security group`` limit. We were previously calculating the number of "Rules" (from port / to port / protocol combinations) in a Security Group, but the limit is actually based on the number of permissions granted. See `this comment <https://github.com/jantman/awslimitchecker/issues/431#issuecomment-548599785>`_ on the issue for further details.
+* `Issue #413 <https://github.com/jantman/awslimitchecker/issues/431>`_ - Add support for retrieving limits from the new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`__ where available. See the :ref:`changelog.8_0_0_service_quotas` section below for more information.
+* Bump boto3 minimum version requirement from 1.4.6 to 1.9.175 and botocore minimum version requirement from 1.6.0 to 1.12.175, in order to support Service Quotas.
+
+.. _changelog.8_0_0_vcpu_limits:
+
+New EC2 vCPU Limits
++++++++++++++++++++
+
+AWS has `announced <https://aws.amazon.com/blogs/compute/preview-vcpu-based-instance-limits/>`__ new, completely different handling of EC2 On-Demand Instances service limits. Instead of having a limit per instance type (currently 261 limits), there will now be only *five* limits, based on the number of vCPUs for instance families: one each for "F", "G", "P", and "X" family instances (defaulting to a total of 128 vCPUs each) and one limit for all other "Standard" instance families (currently A, C, D, H, I, M, R, T, and Z) defaulting to a combined total of 1152 vCPUs. Please see the link, and the `EC2 On-Demand Instance Limits section of the AWS FAQ <https://aws.amazon.com/ec2/faqs/#EC2_On-Demand_Instance_limits>`__ for further information.
+
+This greatly simplifies handling of the EC2 On-Demand limits, but does mean that any existing code that references EC2 Running On-Demand limit names, including any limit and/or threshold overrides, will need to be updated for this change.
+
+This change is only going into effect in the "standard" AWS regions/partitions, i.e. not in the China partition (``cn-`` regions) or GovCloud (``us-gov-`` regions). It is a phased rollout from October 24 to November 7, 2019 based on the first character of your account ID (see the "How will the transition to vCPU limits happen?" entry in the FAQ linked above for exact dates). **Unfortunately, there is no clear way to determine via API if a given account is using the new vCPU limits or the old per-instance-type limits.** As a result, and given that this release is being made already part-way through the rollout window, the current behavior of awslimitchecker is as follows:
+
+* When running against region names beginning with ``cn-`` or ``us-gov-``, use the old per-instance-type limits, unless the ``USE_VCPU_LIMITS`` environment variable is set to ``true``.
+* Otherwise use the new vCPU-based limits, unless the ``USE_VCPU_LIMITS`` environment variable is set to something other than ``true``.
+
+As such, if you install this release before November 7, 2019 and need to force your non-China, non-GovCloud accout to use the older per-instance-type limits, setting the ``USE_VCPU_LIMITS`` environment variable to ``false`` will accomplish this until your account switches over to the new vCPU limits. **Alternatively, you can leave awslimitchecker as-is and accept possibly-slightly-inaccurate limit calculations for a few days.**
+
+Please also note that with the change to vCPU limits, there is no longer an overall ``Running On-Demand EC2 instances`` limit for accounts that use the new vCPU limits.
+
+I have **not** yet implemented Trusted Advisor (TA) support for these new limits, as they're presented in a different category of Trusted Advisor checks from the previous EC2 limits. I'm not going to be implementing TA for these limits, in favor of spending the time instead on implementing Service Quotas support via `Issue #413 <https://github.com/jantman/awslimitchecker/issues/413>`__.
+
+Calculation of current usage for the vCPU limits is based on the `EC2 Optimizing CPU Options documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html>`__ which specifies, "The number of vCPUs for the instance is the number of CPU cores multiplied by the threads per core." The ``CpuOptions`` field of the EC2 ``DescribeInstances`` API specifies the core and thread count for each running instance.
+
+.. _changelog.8_0_0_service_quotas:
+
+Service Quotas
+++++++++++++++
+
+AWS' new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`__ provides a unified interface to retrieve current limits from many AWS services. These limit values are second only to the services' own APIs (for the services that provide limit information via API), and are much more current and complete than the information provided by Trusted Advisor. The introduction of Service Quotas should greatly reduce the number of limits that need to be retrieved from Trusted Advisor or specified manually.
+
+If you currently have any Limit Overrides set (via either the :ref:`CLI <cli_usage.limit_overrides>` or :ref:`Python API <python_usage.limit_overrides>`), please verify on the :ref:`limits` page whether Service Quotas data is now available for those limits. You should be able to remove manual overrides for the limits that now retrieve data from Service Quotas.
+
+.. _changelog.7_1_0:
+
 7.1.0 (2019-09-10)
 ------------------
 
@@ -14,6 +80,8 @@ Changelog
 * `Issue #418 <https://github.com/jantman/awslimitchecker/issues/418>`__ - Add support for sending runtime, limits, and usage to :ref:`<metric providers <cli_usage.metrics>` such as Datadog.
 * `Issue #419 <https://github.com/jantman/awslimitchecker/issues/419>`__ - Add support for alerts/notifications of thresholds crossed or failed runs (exceptions) via :ref:`<alert providers <cli_usage.alerts>` such as PagerDuty.
 
+.. _changelog.7_0_0:
+
 7.0.0 (2019-08-13)
 ------------------
 
@@ -23,50 +91,70 @@ This release **removes one limit and adds two new limits**!
 * `Issue #410 <https://github.com/jantman/awslimitchecker/issues/410>`__ - Documentation fix for missing Trusted Advisor information on Limits page.
 * Fix some test failures related to exception objects in pytest 5.0.0.
 
+.. _changelog.6_1_7:
+
 6.1.7 (2019-05-17)
 ------------------
 
 * `Issue #406 <https://github.com/jantman/awslimitchecker/issues/406>`__ - Fix for unhandled exception when a Trusted Advisor check has a ``null`` timestamp.
+
+.. _changelog.6_1_6:
 
 6.1.6 (2019-04-19)
 ------------------
 
 * `PR #402 <https://github.com/jantman/awslimitchecker/pull/402>`__ - Add ``--skip-check`` command line option for ignoring specific checks based on service and check name. Thanks to `@ddelnano <https://github.com/ddelnano>`__.
 
+.. _changelog.6_1_5:
+
 6.1.5 (2019-03-06)
 ------------------
 
 * `Issue #397 <https://github.com/jantman/awslimitchecker/issues/397>`__ - Fix unhandled exception checking SES in some regions. `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`__ in 6.0.1 handled an uncaught ``ClientError`` when checking SES in some regions, but some regions such as ap-southeast-2 are now returning a 503 Service Unavailable for SES instead. Handle this case as well. Thanks to `@TimGebert <https://github.com/TimGebert>`__ for reporting the issue and `bergkampsliew <https://github.com/bergkampsliew>`__ for verifying.
+
+.. _changelog.6_1_4:
 
 6.1.4 (2019-03-01)
 ------------------
 
 * `PR #394 <https://github.com/jantman/awslimitchecker/pull/394>`_ - Fix bug in calculation of VPC "Network interfaces per Region" limit, added in 6.1.0 (`PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__), that resulted in reporting the limit 5x lower than it actually is in some cases. Thanks to `@TimGebert <https://github.com/TimGebert>`__.
 
+.. _changelog.6_1_3:
+
 6.1.3 (2019-02-26)
 ------------------
 
 * `PR #391 <https://github.com/jantman/awslimitchecker/pull/391>`_ / `Issue #390 <https://github.com/jantman/awslimitchecker/issues/390>`_ - Update for some recently-increased DynamoDB and EFS default limits. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`__.
+
+.. _changelog.6_1_2:
 
 6.1.2 (2019-02-19)
 ------------------
 
 * `PR #387 <https://github.com/jantman/awslimitchecker/pull/387>`_ - Fix bug in calculation of VPC "Network interfaces per Region" limit, added in 6.1.0 (`PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__). Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
 
+.. _changelog.6_1_1:
+
 6.1.1 (2019-02-15)
 ------------------
 
 * `PR #381 <https://github.com/jantman/awslimitchecker/pull/381>`_ / `Issue #382 <https://github.com/jantman/awslimitchecker/issues/382>`_ - Revised fix for `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`__, uncaught ``ClientError`` exception when checking SES Send Quota in certain regions. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`__.
+
+.. _changelog.6_1_0:
 
 6.1.0 (2019-01-30)
 ------------------
 
 * `PR #379 <https://github.com/jantman/awslimitchecker/pull/379>`__ - Add support for EC2/VPC ``Network interfaces per Region`` limit. Thanks to `@nadlerjessie <https://github.com/nadlerjessie>`__.
 
+.. _changelog.6_0_1:
+
 6.0.1 (2019-01-27)
 ------------------
 
 * `Issue #375 <https://github.com/jantman/awslimitchecker/issues/375>`__ - Fix uncaught ``ClientError`` exception when checking SES Send Quota in certain regions. Thanks to `bergkampsliew <https://github.com/bergkampsliew>`__ for `PR #376 <https://github.com/jantman/awslimitchecker/pull/376>`_.
+
+.. _changelog.6_0_0:
 
 6.0.0 (2019-01-01)
 ------------------
@@ -97,12 +185,16 @@ awslimitchecker has had documented support for Limits that are unlimited/"infini
 
 If you are relying on the output format of the command line ``awslimitchecker`` script, please use the Python API instead.
 
+.. _changelog.5_1_0:
+
 5.1.0 (2018-09-23)
 ------------------
 
 * `Issue #358 <https://github.com/jantman/awslimitchecker/issues/358>`_ - Update EFS with new default limit for number of File systems: 70 in us-east-1 and 125 in other regions.
 * `PR #359 <https://github.com/jantman/awslimitchecker/pull/359>`_ - Add support for ``t3`` EC2 instance types (thanks to `chafouin <https://github.com/chafouin>`_).
 * Switch ``py37`` TravisCI tests from py37-dev to py37 (release).
+
+.. _changelog.5_0_0:
 
 5.0.0 (2018-07-30)
 ------------------
@@ -150,12 +242,16 @@ If you are relying on the output format of the command line ``awslimitchecker`` 
 
 For users of the Python API, please take note of the new :py:meth:`.AwsLimit.has_resource_limits` and :py:meth:`~.AwsLimitUsage.get_maximum` methods which assist in how to identify limits that have per-resource maxima. Existing code that only surfaces awslimitchecker's warnings/criticals (the result of :py:meth:`~.AwsLimitChecker.check_thresholds`) will work without modification, but any code that displays or uses the current limit values themselves may need to be updated.
 
+.. _changelog.4_0_2:
+
 4.0.2 (2018-03-22)
 ------------------
 
 This is a minor bugfix release for one issue:
 
 * `Issue #341 <https://github.com/jantman/awslimitchecker/issues/341>`_ - The Trusted Advisor EBS checks for ``General Purpose (SSD) volume storage (GiB)`` and ``Magnetic volume storage (GiB)`` have been renamed to to ``General Purpose SSD (gp2) volume storage (GiB)`` and ``Magnetic (standard) volume storage (GiB)``, respectively, to provide more unified naming. This change was made on March 19th or 20th without any public announcement, and resulted in awslimitchecker being unable to determine the current values for these limits from Trusted Advisor. Users relying on Trusted Advisor for these values saw the limit values incorrectly revert to the global default. This is an internal-only change to map the new Trusted Advisor check names to the awslimitchecker limit names.
+
+.. _changelog.4_0_1:
 
 4.0.1 (2018-03-09)
 ------------------
@@ -164,6 +260,8 @@ This is a minor bugfix release for a few issues that users have reported recentl
 
 * Fix `Issue #337 <https://github.com/jantman/awslimitchecker/issues/337>`_ where sometimes an account even with Business-level support will not have a Trusted Advisor result for the Service Limits check, and will return a result with ``status: not_available`` or a missing ``flaggedResources`` key.
 * Fix `Issue #335 <https://github.com/jantman/awslimitchecker/issues/335>`_ where runs against the EFS service in certain unsupported regions result in either a connection timeout or an AccessDeniedException.
+
+.. _changelog.4_0_0:
 
 4.0.0 (2018-02-17)
 ------------------
@@ -212,6 +310,8 @@ This release **requires new IAM permissions**:
 * Fix date and incorrect project name in some file/copyright headers.
 * `Issue #331 <https://github.com/jantman/awslimitchecker/issues/331>`_ - Change layout of the generated `Supported Limits <http://awslimitchecker.readthedocs.io/en/latest/limits.html>`_ documentation page to be more clear about which limits are supported, and include API and Trusted Advisor data in the same table as the limits and their defaults.
 
+.. _changelog.3_0_0:
+
 3.0.0 (2017-12-02)
 ------------------
 
@@ -228,12 +328,16 @@ after development was ceased. The test framework used by awslimitchecker, pytest
 * `Issue #315 <https://github.com/jantman/awslimitchecker/issues/315>`_ - Add new instance types: 'c5.18xlarge', 'c5.2xlarge', 'c5.4xlarge', 'c5.9xlarge', 'c5.large', 'c5.xlarge', 'g3.16xlarge', 'g3.4xlarge', 'g3.8xlarge', 'h1.16xlarge', 'h1.2xlarge', 'h1.4xlarge', 'h1.8xlarge', 'm5.12xlarge', 'm5.24xlarge', 'm5.2xlarge', 'm5.4xlarge', 'm5.large', 'm5.xlarge', 'p3.16xlarge', 'p3.2xlarge', 'p3.8xlarge', 'x1e.32xlarge', 'x1e.xlarge'
 * `Issue #316 <https://github.com/jantman/awslimitchecker/issues/316>`_ - Automate release process.
 
+.. _changelog.2_0_0:
+
 2.0.0 (2017-10-12)
 ------------------
 
 * Update README with correct boto version requirement. (Thanks to `nadlerjessie <https://github.com/nadlerjessie>`_ for the contribution.)
 * Update minimum ``boto3`` version requirement from 1.2.3 to 1.4.4; the code for `Issue #268 <https://github.com/jantman/awslimitchecker/issues/268>`_ released in 0.11.0 requires boto3 >= 1.4.4 to make the ElasticLoadBalancing ``DescribeAccountLimits`` call.
 * **Bug fix for "Running On-Demand EC2 instances" limit** - `Issue #308 <https://github.com/jantman/awslimitchecker/issues/308>`_ - The fix for `Issue #215 <https://github.com/jantman/awslimitchecker/issues/215>`_ / `PR #223 <https://github.com/jantman/awslimitchecker/pull/223>`_, released in 0.6.0 on November 11, 2016 was based on `incorrect information <https://github.com/jantman/awslimitchecker/issues/215#issuecomment-259144130>`_ about how Regional Benefit Reserved Instances (RIs) impact the service limit. The code implemented at that time subtracted Regional Benefit RIs from the count of running instances that we use to establish usage. Upon further review, as well as confirmation from AWS Support, some AWS TAMs, and the `relevant AWS documentation <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html#ri-limits>`_, only Zonal RIs (AZ-specific) are exempt from the Running On-Demand Instances limit. Regional Benefit RIs are counted the same as any other On-Demand Instances, as they don't have reserved capacity. This release stops subtracting Regional Benefit RIs from the count of Running Instances, which was causing awslimitchecker to report inaccurately low Running Instances usage.
+
+.. _changelog.1_0_0:
 
 1.0.0 (2017-09-21)
 ------------------
@@ -258,6 +362,8 @@ Changes in this release:
 * `PR #302 <https://github.com/jantman/awslimitchecker/pull/302>`_ - Add support for VPC VPN Gateways limit. (Thanks to `andrewmichael <https://github.com/andrewmichael>`_ for the contribution.)
 * `Issue #280 <https://github.com/jantman/awslimitchecker/issues/280>`_ / `PR #297 <https://github.com/jantman/awslimitchecker/pull/297>`_ - Add support for DynamoDB limits. (Thanks to `saratlingamarla <https://github.com/saratlingamarla>`_ for the contribution.)
 
+.. _changelog.0_11_0:
+
 0.11.0 (2017-08-06)
 -------------------
 
@@ -274,6 +380,8 @@ Changes in this release:
 * `Issue #287 <https://github.com/jantman/awslimitchecker/issues/287>`_ / `PR #288 <https://github.com/jantman/awslimitchecker/pull/288>`_ - Add support for Elastic Filesystem number of filesystems limit. (Thanks to `nicksantamaria <https://github.com/nicksantamaria>`_ for the contribution.)
 * `Issue #268 <https://github.com/jantman/awslimitchecker/issues/268>`_ - Add support for ELBv2 (Application Load Balancer) limits; get ELBv1 (Classic) and ELBv2 (Application) limits from the DescribeAccountLimits API calls.
 
+.. _changelog.0_10_0:
+
 0.10.0 (2017-06-25)
 -------------------
 
@@ -288,6 +396,8 @@ This release **removes the ElastiCache Clusters limit**, which no longer exists.
   * Add "Subnets per subnet group" limit.
 
 * `Issue #279 <https://github.com/jantman/awslimitchecker/issues/279>`_ - Add Github release to release process.
+
+.. _changelog.0_9_0:
 
 0.9.0 (2017-06-11)
 ------------------
@@ -312,6 +422,8 @@ This release **removes the ElastiCache Clusters limit**, which no longer exists.
 * `Issue #267 <https://github.com/jantman/awslimitchecker/issues/267>`_ - Firehose is only
   available in ``us-east-1``, ``us-west-2`` and ``eu-west-1``. Omit the traceback from the
   log message for Firehose ``EndpointConnectionError`` and log at warning instead of error.
+
+.. _changelog.0_8_0:
 
 0.8.0 (2017-03-11)
 ------------------
@@ -350,6 +462,8 @@ or bug reports specific to 3.2 will be closed.
 * `Issue #257 <https://github.com/jantman/awslimitchecker/issues/257>`_ - Handle ElastiCache DescribeCacheCluster responses that are missing ``CacheNodes`` key in a cluster description.
 * `Issue #200 <https://github.com/jantman/awslimitchecker/issues/200>`_ - Remove EC2 Spot Instances/Fleets limits from experimental status.
 * `Issue #123 <https://github.com/jantman/awslimitchecker/issues/123>`_ - Update documentation on using session tokens (Session or Federation temporary creds).
+
+.. _changelog.0_7_0:
 
 0.7.0 (2017-01-15)
 ------------------
@@ -406,6 +520,8 @@ See `Getting Started - Trusted Advisor <http://awslimitchecker.readthedocs.io/en
   for the final implementation and dealing (wonderfully) with the dizzying complexity of many of the unit tests
   (and even matching the existing style).
 
+.. _changelog.0_6_0:
+
 0.6.0 (2016-11-12)
 ------------------
 
@@ -445,6 +561,8 @@ This release requires the following new IAM permissions to function:
   AWS cross-sdk credential file profiles via ``-P`` / ``--profile``, like
   awscli.
 
+.. _changelog.0_5_1:
+
 0.5.1 (2016-09-25)
 ------------------
 
@@ -478,6 +596,8 @@ This release requires the following new IAM permissions to function:
 
 * `#208 <https://github.com/jantman/awslimitchecker/issues/208>`_ - fix KeyError when ``timestamp`` key is missing from TrustedAdvisor check result dict
 
+.. _changelog.0_5_0:
+
 0.5.0 (2016-07-06)
 ------------------
 
@@ -485,15 +605,21 @@ This release includes a change to ``awslimitchecker``'s Python API. `awslimitche
 
 * `#195 <https://github.com/jantman/awslimitchecker/issues/195>`_ - Handle TrustedAdvisor explicitly reporting some limits as "unlimited". This introduces the concept of unlimited limits, where the effective limit is ``None``.
 
+.. _changelog.0_4_4:
+
 0.4.4 (2016-06-27)
 ------------------
 
 * `PR #190 <https://github.com/jantman/awslimitchecker/pull/19>`_ / `#189 <https://github.com/jantman/awslimitchecker/issues/189>`_ - Add support for EBS st1 and sc1 volume types (adds "EBS/Throughput Optimized (HDD) volume storage (GiB)" and "EBS/Cold (HDD) volume storage (GiB)" limits).
 
+.. _changelog.0_4_3:
+
 0.4.3 (2016-05-08)
 ------------------
 
 * `PR #184 <https://github.com/jantman/awslimitchecker/pull/184>`_ Fix default VPC/Security groups per VPC limit from 100 to 500, per `VPC limits documentation <http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html#vpc-limits-security-groups>`_ (this limit was increased at some point recently). Thanks to `Travis Thieman <https://github.com/thieman>`_ for this contribution.
+
+.. _changelog.0_4_2:
 
 0.4.2 (2016-04-27)
 ------------------
@@ -509,10 +635,14 @@ This release requires the following new IAM permissions to function:
 * `#175 <https://github.com/jantman/awslimitchecker/issues/175>`_ the simplest and most clear contributor license agreement I could come up with.
 * `#172 <https://github.com/jantman/awslimitchecker/issues/172>`_ add an integration test running against sa-east-1, which has fewer services than the popular US regions.
 
+.. _changelog.0_4_1:
+
 0.4.1 (2016-03-15)
 ------------------
 
 * `#170 <https://github.com/jantman/awslimitchecker/issues/170>`_ Critical bug fix in implementation of `#71 <https://github.com/jantman/awslimitchecker/issues/71>`_ - SES only supports three regions (us-east-1, us-west-2, eu-west-1) and causes an unhandled connection error if used in another region.
+
+.. _changelog.0_4_0:
 
 0.4.0 (2016-03-14)
 ------------------
@@ -542,10 +672,14 @@ Issues addressed:
 * `#69 <https://github.com/jantman/awslimitchecker/issues/69>`_ Add support for CloudFormation service Stacks limit. This **requires additional IAM permissions**, ``cloudformation:DescribeAccountLimits`` and ``cloudformation:DescribeStacks``.
 * `#166 <https://github.com/jantman/awslimitchecker/issues/166>`_ Speed up TravisCI tests by dropping testing for PyPy and PyPy3, and only running the -versioncheck tests for two python interpreters instead of 8.
 
+.. _changelog.0_3_2:
+
 0.3.2 (2016-03-11)
 ------------------
 
 * `#155 <https://github.com/jantman/awslimitchecker/issues/155>`_ Bug fix for uncaught KeyError on accounts with Trusted Advisor (business-level support and above). This was caused by an undocumented change released by AWS between Thu, 10 Mar 2016 07:00:00 GMT and Fri, 11 Mar 2016 07:00:00 GMT, where five new IAM-related checks were introduced that lack the ``region`` data field (which the `TrustedAdvisorResourceDetail API docs <https://docs.aws.amazon.com/awssupport/latest/APIReference/API_TrustedAdvisorResourceDetail.html>`_ still list as a required field).
+
+.. _changelog.0_3_1:
 
 0.3.1 (2016-03-04)
 ------------------
@@ -555,6 +689,8 @@ Issues addressed:
 * `#134 <https://github.com/jantman/awslimitchecker/issues/134>`_ Minor update to project description in docs and setup.py; use only _VERSION (not git) when building in RTD; include short description in docs HTML title; set meta description on docs index.rst.
 * `#128 <https://github.com/jantman/awslimitchecker/issues/128>`_ Update Development and Getting Help documentation; add GitHub CONTRIBUTING.md file with link back to docs, as well as Issue and PR templates.
 * `#131 <https://github.com/jantman/awslimitchecker/issues/131>`_ Refactor TrustedAdvisor interaction with limits for special naming cases (limits where the TrustedAdvisor service or limit name doesn't match that of the awslimitchecker limit); enable newly-available TrustedAdvisor data for some EC2 on-demand instance usage.
+
+.. _changelog.0_3_0:
 
 0.3.0 (2016-02-18)
 ------------------
@@ -568,11 +704,15 @@ Issues addressed:
 * `#114 <https://github.com/jantman/awslimitchecker/issues/114>`_ expanded automatic integration tests
 * **Please note** that version 0.3.0 of awslimitchecker moved from using ``boto`` as its AWS API client to using ``boto3``. This change is mostly transparent, but there is a minor change in how AWS credentials are handled. In ``boto``, if the ``AWS_ACCESS_KEY_ID`` and ``AWS_SECRET_ACCESS_KEY`` environment variables were set, and the region was not set explicitly via awslimitchecker, the AWS region would either be taken from the ``AWS_DEFAULT_REGION`` environment variable or would default to us-east-1, regardless of whether a configuration file (``~/.aws/credentials`` or ``~/.aws/config``) was present. With boto3, it appears that the default region from the configuration file will be used if present, regardless of whether the credentials come from that file or from environment variables.
 
+.. _changelog.0_2_3:
+
 0.2.3 (2015-12-16)
 ------------------
 
 * `PR #100 <https://github.com/jantman/awslimitchecker/pull/100>`_ support MFA tokens when using STS assume role
 * `#107 <https://github.com/jantman/awslimitchecker/issues/107>`_ add support to explicitly disable pagination, and use for TrustedAdvisor to prevent pagination warnings
+
+.. _changelog.0_2_2:
 
 0.2.2 (2015-12-02)
 ------------------
@@ -580,11 +720,15 @@ Issues addressed:
 * `#83 <https://github.com/jantman/awslimitchecker/issues/83>`_ remove the "v" prefix from version tags so ReadTheDocs will build them automatically.
 * `#21 <https://github.com/jantman/awslimitchecker/issues/21>`_ run simple integration tests of ``-l`` and ``-u`` for commits to main repo branches.
 
+.. _changelog.0_2_1:
+
 0.2.1 (2015-12-01)
 ------------------
 
 * `#101 <https://github.com/jantman/awslimitchecker/issues/101>`_ Ignore stopped and terminated instances from EC2 Running On-Demand Instances usage count.
 * `#47 <https://github.com/jantman/awslimitchecker/issues/47>`_ In VersionCheck git -e tests, explicitly fetch git tags at beginning of test.
+
+.. _changelog.0_2_0:
 
 0.2.0 (2015-11-29)
 ------------------
@@ -606,6 +750,8 @@ Issues addressed:
 * Add ``autoscaling:DescribeAccountLimits`` and ``ec2:DescribeAccountAttributes`` to required IAM permissions.
 * Ignore ``AccountLimits`` objects from result pagination
 
+.. _changelog.0_1_3:
+
 0.1.3 (2015-10-04)
 ------------------
 
@@ -625,10 +771,14 @@ Issues addressed:
 * `#76 <https://github.com/jantman/awslimitchecker/issues/76>`_ default limits for EBS volume usage were in TiB not GiB, causing invalid default limits on accounts without Trusted Advisor
 * Changes to some tests in ``test_versioncheck.py`` to aid in debugging `#47 <https://github.com/jantman/awslimitchecker/issues/47>`_ where Travis tests fail on master because of git tag from release (if re-run after release)
 
+.. _changelog.0_1_2:
+
 0.1.2 (2015-08-13)
 ------------------
 
 * `#62 <https://github.com/jantman/awslimitchecker/issues/62>`_ - For 'RDS/DB snapshots per user' limit, only count manual snapshots. (fix bug in fix for `#54 <https://github.com/jantman/awslimitchecker/issues/54>`_)
+
+.. _changelog.0_1_1:
 
 0.1.1 (2015-08-13)
 ------------------
@@ -644,6 +794,8 @@ Issues addressed:
   * document logging configuration for library use
   * move boto log suppression from checker to runner
 * Add contributing docs
+
+.. _changelog.0_1_0:
 
 0.1.0 (2015-07-25)
 ------------------

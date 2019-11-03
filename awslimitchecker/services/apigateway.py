@@ -51,6 +51,7 @@ class _ApigatewayService(_AwsService):
 
     service_name = 'ApiGateway'
     api_name = 'apigateway'  # AWS API name to connect to (boto3.client)
+    quotas_service_code = 'apigateway'
 
     def find_usage(self):
         """
@@ -219,7 +220,8 @@ class _ApigatewayService(_AwsService):
             600,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::RestApi'
+            limit_type='AWS::ApiGateway::RestApi',
+            quotas_name='Regional APIs'
         )
         limits['Edge APIs per account'] = AwsLimit(
             'Edge APIs per account',
@@ -227,7 +229,8 @@ class _ApigatewayService(_AwsService):
             120,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::RestApi'
+            limit_type='AWS::ApiGateway::RestApi',
+            quotas_name='Edge-optimized APIs'
         )
         limits['Private APIs per account'] = AwsLimit(
             'Private APIs per account',
@@ -235,7 +238,8 @@ class _ApigatewayService(_AwsService):
             600,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::RestApi'
+            limit_type='AWS::ApiGateway::RestApi',
+            quotas_name='Private APIs'
         )
         limits['API keys per account'] = AwsLimit(
             'API keys per account',
@@ -243,7 +247,8 @@ class _ApigatewayService(_AwsService):
             500,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::ApiKey'
+            limit_type='AWS::ApiGateway::ApiKey',
+            quotas_name='API keys'
         )
         limits['Custom authorizers per API'] = AwsLimit(
             'Custom authorizers per API',
@@ -259,7 +264,8 @@ class _ApigatewayService(_AwsService):
             60,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::ClientCertificate'
+            limit_type='AWS::ApiGateway::ClientCertificate',
+            quotas_name='Client certificates'
         )
         limits['Documentation parts per API'] = AwsLimit(
             'Documentation parts per API',
@@ -275,7 +281,8 @@ class _ApigatewayService(_AwsService):
             300,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::Resource'
+            limit_type='AWS::ApiGateway::Resource',
+            quotas_name='Resources/Routes per API'
         )
         limits['Stages per API'] = AwsLimit(
             'Stages per API',
@@ -283,7 +290,8 @@ class _ApigatewayService(_AwsService):
             10,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::Stage'
+            limit_type='AWS::ApiGateway::Stage',
+            quotas_name='Stages per API'
         )
         limits['Usage plans per account'] = AwsLimit(
             'Usage plans per account',
@@ -291,7 +299,8 @@ class _ApigatewayService(_AwsService):
             300,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::UsagePlan'
+            limit_type='AWS::ApiGateway::UsagePlan',
+            quotas_name='Usage plans'
         )
         limits['VPC Links per account'] = AwsLimit(
             'VPC Links per account',
@@ -299,7 +308,8 @@ class _ApigatewayService(_AwsService):
             5,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::VpcLink'
+            limit_type='AWS::ApiGateway::VpcLink',
+            quotas_name='VPC links'
         )
         self.limits = limits
         return limits

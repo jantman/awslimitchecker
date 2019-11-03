@@ -2,9 +2,9 @@ awslimitchecker.services package
 ================================
 
 .. automodule:: awslimitchecker.services
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -34,4 +34,3 @@ Submodules
    awslimitchecker.services.s3
    awslimitchecker.services.ses
    awslimitchecker.services.vpc
-

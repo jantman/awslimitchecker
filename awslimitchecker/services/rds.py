@@ -50,6 +50,7 @@ class _RDSService(_AwsService):
 
     service_name = 'RDS'
     api_name = 'rds'
+    quotas_service_code = 'rds'
 
     # Mapping of RDS DescribeAccountAttributes action AccountQuotaName string
     # to our Limit name
@@ -147,7 +148,8 @@ class _RDSService(_AwsService):
             40,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::RDS::DBInstance'
+            limit_type='AWS::RDS::DBInstance',
+            quotas_name='DB instances'
         )
         limits['Reserved Instances'] = AwsLimit(
             'Reserved Instances',
@@ -156,6 +158,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBInstance',
+            quotas_name='Reserved DB instances'
         )
         limits['Storage quota (GB)'] = AwsLimit(
             'Storage quota (GB)',
@@ -164,6 +167,8 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBInstance',
+            quotas_name='Total storage for all DB instances',
+            quotas_unit='Gigabytes'
         )
         limits['DB snapshots per user'] = AwsLimit(
             'DB snapshots per user',
@@ -172,6 +177,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSnapshot',
+            quotas_name='Manual snapshots'
         )
         limits['DB parameter groups'] = AwsLimit(
             'DB parameter groups',
@@ -180,6 +186,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBParameterGroup',
+            quotas_name='Parameter groups'
         )
         limits['DB security groups'] = AwsLimit(
             'DB security groups',
@@ -188,6 +195,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSecurityGroup',
+            quotas_name='Security groups'
         )
         limits['VPC Security Groups'] = AwsLimit(
             'VPC Security Groups',
@@ -204,7 +212,8 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSubnetGroup',
-            ta_limit_name='Subnet groups'
+            ta_limit_name='Subnet groups',
+            quotas_name='DB subnet groups'
         )
         limits['Subnets per Subnet Group'] = AwsLimit(
             'Subnets per Subnet Group',
@@ -213,7 +222,8 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSubnetGroup',
-            ta_limit_name='Subnets per subnet group'
+            ta_limit_name='Subnets per subnet group',
+            quotas_name='Subnets per DB subnet group'
         )
         limits['Option Groups'] = AwsLimit(
             'Option Groups',
@@ -222,6 +232,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBOptionGroup',
+            quotas_name='Option groups'
         )
         limits['Event Subscriptions'] = AwsLimit(
             'Event Subscriptions',
@@ -230,7 +241,8 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBEventSubscription',
-            ta_limit_name='Event subscriptions'
+            ta_limit_name='Event subscriptions',
+            quotas_name='Event subscriptions'
         )
         limits['Read replicas per master'] = AwsLimit(
             'Read replicas per master',
@@ -239,6 +251,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBInstance',
+            quotas_name='Read replicas per master'
         )
         # this is the number of rules per security group
         limits['Max auths per security group'] = AwsLimit(
@@ -249,6 +262,7 @@ class _RDSService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::RDS::DBSecurityGroup',
             limit_subtype='AWS::RDS::DBSecurityGroupIngress',
+            quotas_name='Authorizations per DB security group'
         )
         limits['DB Clusters'] = AwsLimit(
             'DB Clusters',
@@ -257,7 +271,8 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBCluster',
-            ta_limit_name='Clusters'
+            ta_limit_name='Clusters',
+            quotas_name='DB clusters'
         )
         limits['DB Cluster Parameter Groups'] = AwsLimit(
             'DB Cluster Parameter Groups',
@@ -266,7 +281,8 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBClusterParameterGroup',
-            ta_limit_name='Cluster parameter groups'
+            ta_limit_name='Cluster parameter groups',
+            quotas_name='DB cluster parameter groups'
         )
         self.limits = limits
         return limits

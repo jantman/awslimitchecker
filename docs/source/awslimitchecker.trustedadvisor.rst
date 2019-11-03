@@ -2,6 +2,6 @@ awslimitchecker.trustedadvisor module
 =====================================
 
 .. automodule:: awslimitchecker.trustedadvisor
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

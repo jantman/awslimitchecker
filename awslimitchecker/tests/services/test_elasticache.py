@@ -61,14 +61,14 @@ class TestElastiCacheService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         assert cls.service_name == 'ElastiCache'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -87,7 +87,7 @@ class TestElastiCacheService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -104,7 +104,7 @@ class TestElastiCacheService(object):
                 _find_usage_parameter_groups=DEFAULT,
                 _find_usage_security_groups=DEFAULT,
             ) as mocks:
-                cls = _ElastiCacheService(21, 43)
+                cls = _ElastiCacheService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -128,7 +128,7 @@ class TestElastiCacheService(object):
         mock_paginator = Mock()
         mock_paginator.paginate.return_value = responses
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.conn = mock_conn
         cls._find_usage_nodes()
 
@@ -158,7 +158,7 @@ class TestElastiCacheService(object):
         mock_paginator = Mock()
         mock_paginator.paginate.return_value = responses
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_subnet_groups()
@@ -189,7 +189,7 @@ class TestElastiCacheService(object):
         mock_paginator = Mock()
         mock_paginator.paginate.return_value = responses
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.conn = mock_conn
         cls._find_usage_parameter_groups()
 
@@ -214,7 +214,7 @@ class TestElastiCacheService(object):
         mock_paginator = Mock()
         mock_paginator.paginate.return_value = responses
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_security_groups()
@@ -253,7 +253,7 @@ class TestElastiCacheService(object):
         mock_paginator.paginate.side_effect = se_exc
         mock_conn.get_paginator.return_value = mock_paginator
 
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.conn = mock_conn
 
         with patch('%s.logger' % self.pbm) as mock_logger:
@@ -298,7 +298,7 @@ class TestElastiCacheService(object):
         mock_paginator.paginate.side_effect = se_exc
         mock_conn.get_paginator.return_value = mock_paginator
 
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         cls.conn = mock_conn
 
         with pytest.raises(Exception) as raised:
@@ -314,7 +314,7 @@ class TestElastiCacheService(object):
         assert raised.value == exc
 
     def test_required_iam_permissions(self):
-        cls = _ElastiCacheService(21, 43)
+        cls = _ElastiCacheService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "elasticache:DescribeCacheClusters",
             "elasticache:DescribeCacheParameterGroups",

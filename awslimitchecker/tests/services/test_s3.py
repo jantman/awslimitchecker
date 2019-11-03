@@ -60,7 +60,7 @@ class Test_S3Service(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _S3Service(21, 43)
+        cls = _S3Service(21, 43, {}, None)
         assert cls.service_name == 'S3'
         assert cls.api_name == 's3'
         assert cls.conn is None
@@ -68,7 +68,7 @@ class Test_S3Service(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _S3Service(21, 43)
+        cls = _S3Service(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -82,7 +82,7 @@ class Test_S3Service(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)
-        cls = _S3Service(21, 43)
+        cls = _S3Service(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -92,7 +92,7 @@ class Test_S3Service(object):
         mock_buckets.all.return_value = ['a', 'b', 'c']
         mock_conn = Mock(buckets=mock_buckets)
         with patch('%s.connect_resource' % pb) as mock_connect:
-            cls = _S3Service(21, 43)
+            cls = _S3Service(21, 43, {}, None)
             cls.resource_conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
@@ -103,7 +103,7 @@ class Test_S3Service(object):
         assert cls.limits['Buckets'].get_current_usage()[0].get_value() == 3
 
     def test_required_iam_permissions(self):
-        cls = _S3Service(21, 43)
+        cls = _S3Service(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             's3:ListAllMyBuckets'
         ]

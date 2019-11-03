@@ -34,7 +34,7 @@ We also import :py:mod:`pprint` to make the output nicer.
    >>> import logging
    >>> logging.basicConfig()
    >>> logger = logging.getLogger()
-   >>> 
+   >>>
    >>> from awslimitchecker.checker import AwsLimitChecker
    >>> c = AwsLimitChecker()
 
@@ -49,7 +49,7 @@ parameter to the class constructor:
    >>> import logging
    >>> logging.basicConfig()
    >>> logger = logging.getLogger()
-   >>> 
+   >>>
    >>> from awslimitchecker.checker import AwsLimitChecker
    >>> c = AwsLimitChecker(region='us-west-2')
 
@@ -97,6 +97,8 @@ this can be specified by the ``external_id`` parameter. All are strings:
    >>>     account_role='myRoleName',
    >>>     external_id='myid'
    >>> )
+
+.. _python_usage.limit_overrides:
 
 Setting a Limit Override
 +++++++++++++++++++++++++
@@ -186,7 +188,7 @@ In this particular case, there is no resource ID associated with the usage, beca
 .. code-block:: pycon
 
    >>> result['EC2']['Magnetic volume storage (TiB)'].get_criticals()[0].resource_id
-   >>> 
+   >>>
 
 The usage is of the EC2 Volume resource type (where one exists, we use the
 `CloudFormation Resource Type strings <http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_ to identify resource types).
@@ -227,18 +229,37 @@ crossed the critical threshold:
 
    >>> for usage in result['EC2']['Security groups per VPC'].get_criticals():
    ...     print(str(usage))
-   ... 
+   ...
    vpc-c300b9a6=100
 
 Disabling Trusted Advisor
 ++++++++++++++++++++++++++
 
-To disable querying Trusted Advisor for limit information, simply call :py:meth:`~.AwsLimitChecker.get_limits`
+To disable querying Trusted Advisor for limit information, call :py:meth:`~.AwsLimitChecker.get_limits`
 or :py:meth:`~.AwsLimitChecker.check_thresholds` with ``use_ta=False``:
 
 .. code-block:: pycon
 
    >>> result = c.check_thresholds(use_ta=False)
+
+.. _python_usage.disabling_service_quotas:
+
+Disabling Service Quotas
+++++++++++++++++++++++++
+
+To disable querying the Service Quotas service for current limits, pass ``skip_quotas=True``
+in to the :py:class:`~.AwsLimitChecker` class constructor:
+
+.. code-block:: python
+
+    checker = AwsLimitChecker(skip_quotas=True)
+
+.. _python_usage.partitions:
+
+Partitions and Trusted Advisor Regions
+++++++++++++++++++++++++++++++++++++++
+
+awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``role_partition`` keyword argument to the :py:class:`~.AwsLimitChecker` class. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``ta_api_region`` keyword argument to the :py:class:`~.AwsLimitChecker` class.
 
 Skipping Specific Services
 ++++++++++++++++++++++++++
@@ -253,6 +274,13 @@ To remove the Firehose and EC2 services:
 .. code-block:: pycon
 
     c.remove_services(['Firehose', 'EC2'])
+
+.. _python_usage.throttling:
+
+Handling Throttling and Rate Limiting
++++++++++++++++++++++++++++++++++++++
+
+See :ref:`CLI Usage - Handling Throttling and Rate Limiting <cli_usage.throttling>`; this is handled the same way in Python, though you'd likely set the environment variables using ``os.environ`` instead of exporting them outside of Python.
 
 Logging
 -------
@@ -310,11 +338,11 @@ multiple critical thresholds crossed.
    >>> import logging
    >>> logging.basicConfig()
    >>> logger = logging.getLogger()
-   >>> 
+   >>>
    >>> from awslimitchecker.checker import AwsLimitChecker
    >>> c = AwsLimitChecker()
    >>> result = c.check_thresholds()
-   >>> 
+   >>>
    >>> have_critical = False
    >>> for service, svc_limits in result.items():
    ...     for limit_name, limit in svc_limits.items():
@@ -337,7 +365,7 @@ multiple critical thresholds crossed.
    ...                                l=limit.get_limit(),
    ...                            )
    ...             )
-   ... 
+   ...
    CRITICAL:root:EC2 'Magnetic volume storage (TiB)' usage (23.417) exceeds critical threshold (limit=20)
    CRITICAL:root:EC2 'Running On-Demand EC2 instances' usage (97) exceeds critical threshold (limit=20)
    WARNING:root:EC2 'Security groups per VPC' usage (vpc-c300b9a6=96) exceeds warning threshold (limit=100)
@@ -345,6 +373,6 @@ multiple critical thresholds crossed.
    CRITICAL:root:EC2 'EC2-Classic Elastic IPs' usage (5) exceeds critical threshold (limit=5)
    >>> if have_critical:
    ...     raise SystemExit(1)
-   ... 
+   ...
    (awslimitchecker)$ echo $?
    1

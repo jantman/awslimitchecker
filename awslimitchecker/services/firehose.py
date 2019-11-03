@@ -51,6 +51,7 @@ class _FirehoseService(_AwsService):
 
     service_name = 'Firehose'
     api_name = 'firehose'
+    quotas_service_code = 'firehose'
 
     def find_usage(self):
         """
@@ -106,6 +107,7 @@ class _FirehoseService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::KinesisFirehose::DeliveryStream',
+            quotas_name='Delivery streams'
         )
         self.limits = limits
         return limits

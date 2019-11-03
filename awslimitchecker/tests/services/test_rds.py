@@ -59,14 +59,14 @@ class Test_RDSService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         assert cls.service_name == 'RDS'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -96,7 +96,7 @@ class Test_RDSService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -112,7 +112,7 @@ class Test_RDSService(object):
                     _find_usage_security_groups=DEFAULT,
                     _update_limits_from_api=DEFAULT,
             ) as mocks:
-                cls = _RDSService(21, 43)
+                cls = _RDSService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -127,7 +127,7 @@ class Test_RDSService(object):
             assert mocks[x].mock_calls == [call()]
 
     def test_required_iam_permissions(self):
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "rds:DescribeAccountAttributes",
             "rds:DescribeDBInstances",
@@ -148,7 +148,7 @@ class Test_RDSService(object):
         mock_paginator.paginate.return_value = instances
         mock_conn.get_paginator.return_value = mock_paginator
 
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_instances()
@@ -178,7 +178,7 @@ class Test_RDSService(object):
         mock_paginator.paginate.return_value = data
         mock_conn.get_paginator.return_value = mock_paginator
 
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_subnet_groups()
@@ -213,7 +213,7 @@ class Test_RDSService(object):
         mock_paginator.paginate.return_value = data
         mock_conn.get_paginator.return_value = mock_paginator
 
-        cls = _RDSService(21, 43)
+        cls = _RDSService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_security_groups()
@@ -257,7 +257,7 @@ class Test_RDSService(object):
         mock_conn.describe_account_attributes.return_value = response
         with patch('%s.logger' % self.pbm) as mock_logger:
             with patch('%s.connect' % self.pb) as mock_connect:
-                cls = _RDSService(21, 43)
+                cls = _RDSService(21, 43, {}, None)
                 cls.conn = mock_conn
                 # limits that we still calculate usage for
                 cls.limits['Max auths per security group']._add_current_usage(1)

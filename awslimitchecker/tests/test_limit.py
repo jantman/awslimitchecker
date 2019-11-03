@@ -41,7 +41,7 @@ import pytest
 import sys
 from awslimitchecker.limit import (
     AwsLimit, AwsLimitUsage, SOURCE_DEFAULT, SOURCE_OVERRIDE,
-    SOURCE_TA, SOURCE_API
+    SOURCE_TA, SOURCE_API, SOURCE_QUOTAS
 )
 from awslimitchecker.services.base import _AwsService
 
@@ -56,13 +56,17 @@ else:
     from unittest.mock import patch, call, Mock
 
 
-class TestAwsLimit(object):
+class AwsLimitTester(object):
 
     def setup(self):
         self.mock_svc = Mock(spec_set=_AwsService)
         type(self.mock_svc).service_name = 'mysname'
+        type(self.mock_svc).quotas_service_code = 'qscode'
 
-    def test_init(self):
+
+class TestInit(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -84,8 +88,14 @@ class TestAwsLimit(object):
         assert limit.def_critical_threshold == 11
         assert limit._ta_service_name is None
         assert limit._ta_limit_name is None
+        assert limit._quotas_service_code is None
+        assert limit._quotas_name is None
+        assert limit._quotas_unit == 'None'
+        assert limit.quotas_limit is None
+        assert limit.quotas_unit_converter is None
 
-    def test_init_ta_names(self):
+    def test_ta_names(self):
+        m_foo = Mock()
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -93,7 +103,11 @@ class TestAwsLimit(object):
             7,
             11,
             ta_service_name='foo',
-            ta_limit_name='bar'
+            ta_limit_name='bar',
+            quotas_service_code='baz',
+            quotas_name='blam',
+            quotas_unit='blarg',
+            quotas_unit_converter=m_foo
         )
         assert limit.name == 'limitname'
         assert limit.service == self.mock_svc
@@ -108,8 +122,13 @@ class TestAwsLimit(object):
         assert limit.def_critical_threshold == 11
         assert limit._ta_service_name == 'foo'
         assert limit._ta_limit_name == 'bar'
+        assert limit._quotas_service_code == 'baz'
+        assert limit._quotas_name == 'blam'
+        assert limit._quotas_unit == 'blarg'
+        assert limit.quotas_limit is None
+        assert limit.quotas_unit_converter == m_foo
 
-    def test_init_valueerror(self):
+    def test_valueerror(self):
         with pytest.raises(ValueError) as excinfo:
             AwsLimit(
                 'limitname',
@@ -125,7 +144,7 @@ class TestAwsLimit(object):
         assert msg == "critical threshold must be greater " \
             "than warning threshold"
 
-    def test_init_type(self):
+    def test_type(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -145,7 +164,10 @@ class TestAwsLimit(object):
         assert limit.def_warning_threshold == 6
         assert limit.def_critical_threshold == 12
 
-    def test_set_limit_override(self):
+
+class TestSetLimitOverride(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -158,7 +180,7 @@ class TestAwsLimit(object):
         assert limit.default_limit == 3
         assert limit.override_ta is True
 
-    def test_set_limit_override_ta_False(self):
+    def test_ta_False(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -171,7 +193,10 @@ class TestAwsLimit(object):
         assert limit.default_limit == 3
         assert limit.override_ta is False
 
-    def test_set_ta_limit(self):
+
+class TestSetTaLimit(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -197,7 +222,10 @@ class TestAwsLimit(object):
         assert limit.ta_limit is None
         assert limit.ta_unlimited is True
 
-    def test_set_api_limit(self):
+
+class TestSetApiLimit(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -209,7 +237,25 @@ class TestAwsLimit(object):
         limit._set_api_limit(10)
         assert limit.api_limit == 10
 
-    def test_add_current_usage(self):
+
+class TestSetQuotasLimit(AwsLimitTester):
+
+    def test_simple(self):
+        limit = AwsLimit(
+            'limitname',
+            self.mock_svc,
+            3,
+            1,
+            2
+        )
+        assert limit.quotas_limit is None
+        limit._set_quotas_limit(10.1)
+        assert limit.quotas_limit == 10.1
+
+
+class TestAddCurrentUsage(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -225,7 +271,10 @@ class TestAwsLimit(object):
         assert len(limit.get_current_usage()) == 2
         assert limit._current_usage[1].get_value() == 4
 
-    def test_get_current_usage(self):
+
+class TestGetCurrentUsage(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -236,7 +285,7 @@ class TestAwsLimit(object):
         limit._current_usage = 2
         assert limit.get_current_usage() == 2
 
-    def test_get_current_usage_str_none(self):
+    def test_str_none(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -246,7 +295,7 @@ class TestAwsLimit(object):
         )
         assert limit.get_current_usage_str() == '<unknown>'
 
-    def test_get_current_usage_str(self):
+    def test_str(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -257,7 +306,7 @@ class TestAwsLimit(object):
         limit._add_current_usage(4)
         assert limit.get_current_usage_str() == '4'
 
-    def test_get_current_usage_str_id(self):
+    def test_str_id(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -268,7 +317,7 @@ class TestAwsLimit(object):
         limit._add_current_usage(4, resource_id='foobar')
         assert limit.get_current_usage_str() == 'foobar=4'
 
-    def test_get_current_usage_str_multi(self):
+    def test_str_multi(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -281,7 +330,7 @@ class TestAwsLimit(object):
         limit._add_current_usage(2)
         assert limit.get_current_usage_str() == 'max: 4 (2, 3, 4)'
 
-    def test_get_current_usage_str_multi_id(self):
+    def test_str_multi_id(self):
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -295,107 +344,167 @@ class TestAwsLimit(object):
         assert limit.get_current_usage_str() == 'max: foo4bar=4 (foo2bar=2, ' \
             'foo3bar=3, foo4bar=4)'
 
-    def test_get_limit_default(self):
+
+class TestGetLimit(AwsLimitTester):
+
+    def test_default(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         assert limit.get_limit() == 3
 
-    def test_get_limit_override(self):
+    def test_override(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
         assert limit.get_limit() == 55
 
-    def test_get_limit_ta(self):
+    def test_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55, override_ta=False)
         limit._set_ta_limit(40)
         assert limit.get_limit() == 40
 
-    def test_get_limit_ta_unlimited(self):
+    def test_ta_unlimited(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55, override_ta=False)
         limit._set_ta_unlimited()
         assert limit.get_limit() is None
 
-    def test_get_limit_api(self):
+    def test_api(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
         assert limit.get_limit() == 40
 
-    def test_get_limit_api_ta(self):
+    def test_api_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_ta_limit(40)
         limit._set_api_limit(11)
         assert limit.get_limit() == 11
 
-    def test_get_limit_api_override(self):
+    def test_api_override(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
         limit._set_api_limit(40)
         assert limit.get_limit() == 55
 
-    def test_get_limit_api_override_ta(self):
+    def test_api_override_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
         limit._set_ta_limit(40)
         limit._set_api_limit(11)
         assert limit.get_limit() == 55
 
-    def test_get_limit_source_default(self):
+    def test_quotas(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_quotas_limit(12)
+        assert limit.get_limit() == 12
+
+    def test_quotas_api_ta_override(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit.set_limit_override(55)
+        limit._set_ta_limit(40)
+        limit._set_api_limit(11)
+        limit._set_quotas_limit(12)
+        assert limit.get_limit() == 55
+
+
+class TestGetLimitSource(AwsLimitTester):
+
+    def test_default(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         assert limit.get_limit_source() == SOURCE_DEFAULT
 
-    def test_get_limit_source_override(self):
+    def test_override(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
         assert limit.get_limit_source() == SOURCE_OVERRIDE
 
-    def test_get_limit_source_override_no_override_ta(self):
+    def test_override_no_override_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55, override_ta=False)
         limit._set_ta_limit(40)
         assert limit.get_limit_source() == SOURCE_TA
 
-    def test_get_limit_source_override_with_ta(self):
+    def test_override_with_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit.set_limit_override(55)
         limit._set_ta_limit(40)
         assert limit.get_limit_source() == SOURCE_OVERRIDE
 
-    def test_get_limit_source_ta(self):
+    def test_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_ta_limit(40)
         assert limit.get_limit_source() == SOURCE_TA
 
-    def test_get_limit_source_ta_unlimited(self):
+    def test_ta_unlimited(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_ta_unlimited()
         assert limit.get_limit_source() == SOURCE_TA
 
-    def test_get_limit_source_api(self):
+    def test_api(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
         assert limit.get_limit_source() == SOURCE_API
 
-    def test_get_limit_source_api_override(self):
+    def test_api_override(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
         limit.set_limit_override(55)
         assert limit.get_limit_source() == SOURCE_OVERRIDE
 
-    def test_get_limit_source_api_ta(self):
+    def test_api_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
         limit._set_ta_limit(41)
         assert limit.get_limit_source() == SOURCE_API
 
-    def test_get_limit_source_api_override_ta(self):
+    def test_api_override_ta(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         limit._set_api_limit(40)
         limit._set_ta_limit(41)
         limit.set_limit_override(55)
         assert limit.get_limit_source() == SOURCE_OVERRIDE
 
-    def test_check_thresholds_pct(self):
+    def test_quotas(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_quotas_limit(40)
+        assert limit.get_limit_source() == SOURCE_QUOTAS
+
+    def test_quotas_api(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_api_limit(40)
+        limit._set_quotas_limit(50)
+        assert limit.get_limit_source() == SOURCE_API
+
+    def test_quotas_override(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_quotas_limit(40)
+        limit.set_limit_override(55)
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
+
+    def test_quotas_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_quotas_limit(40)
+        limit._set_ta_limit(41)
+        assert limit.get_limit_source() == SOURCE_QUOTAS
+
+    def test_quotas_override_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_quotas_limit(40)
+        limit._set_ta_limit(41)
+        limit.set_limit_override(55)
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
+
+    def test_quotas_api_override_ta(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        limit._set_quotas_limit(10.2)
+        limit._set_api_limit(40)
+        limit._set_ta_limit(41)
+        limit.set_limit_override(55)
+        assert limit.get_limit_source() == SOURCE_OVERRIDE
+
+
+class TestCheckThresholds(AwsLimitTester):
+
+    def test_pct(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
@@ -414,7 +523,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_ta_unlimited(self):
+    def test_ta_unlimited(self):
         limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
@@ -434,7 +543,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_pct_warn(self):
+    def test_pct_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 50, resource_id='foo3bar')
@@ -453,7 +562,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_int_warn(self):
+    def test_int_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 1, resource_id='foo3bar')
@@ -472,7 +581,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_int_warn_crit(self):
+    def test_int_warn_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 1, resource_id='foo3bar')
@@ -491,7 +600,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_pct_crit(self):
+    def test_pct_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
@@ -510,7 +619,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_int_crit(self):
+    def test_int_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 9, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
@@ -529,7 +638,7 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_check_thresholds_pct_warn_crit(self):
+    def test_pct_warn_crit(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 50, resource_id='foo4bar')
         u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
@@ -548,19 +657,28 @@ class TestAwsLimit(object):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
-    def test_get_warnings(self):
+
+class TestGetWarnings(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         m = Mock()
         limit._warnings = m
         assert limit.get_warnings() == m
 
-    def test_get_criticals(self):
+
+class TestGetCriticals(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         m = Mock()
         limit._criticals = m
         assert limit.get_criticals() == m
 
-    def test_get_thresholds(self):
+
+class TestGetThresholds(AwsLimitTester):
+
+    def test_simple(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         assert limit._get_thresholds() == (
             None,
@@ -569,7 +687,7 @@ class TestAwsLimit(object):
             2
         )
 
-    def test_get_thresholds_overridden(self):
+    def test_overridden(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 88, 99)
         limit.warn_percent = 1
         limit.warn_count = 2
@@ -581,6 +699,9 @@ class TestAwsLimit(object):
             4,
             3
         )
+
+
+class TestSetThresholdOverride(AwsLimitTester):
 
     def test_set_threshold_override(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
@@ -595,25 +716,64 @@ class TestAwsLimit(object):
         assert limit.crit_percent == 3
         assert limit.crit_count == 4
 
-    def test_ta_service_name_default(self):
+
+class TestTaServiceName(AwsLimitTester):
+
+    def test_default(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         assert limit.ta_service_name == 'mysname'
 
-    def test_ta_service_name_overridden(self):
+    def test_overridden(self):
         limit = AwsLimit(
             'limitname', self.mock_svc, 100, 1, 2, ta_service_name='foo'
         )
         assert limit.ta_service_name == 'foo'
 
-    def test_ta_limit_name_default(self):
+
+class TestTaLimitName(AwsLimitTester):
+
+    def test_default(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         assert limit.ta_limit_name == 'limitname'
 
-    def test_ta_limit_name_overridden(self):
+    def test_overridden(self):
         limit = AwsLimit(
             'limitname', self.mock_svc, 100, 1, 2, ta_limit_name='foo'
         )
         assert limit.ta_limit_name == 'foo'
+
+
+class TestQuotasServiceCode(AwsLimitTester):
+
+    def test_default(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
+        assert limit.quotas_service_code == 'qscode'
+
+    def test_overridden(self):
+        limit = AwsLimit(
+            'limitname', self.mock_svc, 100, 1, 2, quotas_service_code='qsc'
+        )
+        assert limit.quotas_service_code == 'qsc'
+
+
+class TestQuotaName(AwsLimitTester):
+
+    def test_default(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
+        assert limit.quota_name == 'limitname'
+
+    def test_overridden(self):
+        limit = AwsLimit(
+            'limitname', self.mock_svc, 100, 1, 2, quotas_name='qn'
+        )
+        assert limit.quota_name == 'qn'
+
+
+class TestQuotasUnit(AwsLimitTester):
+
+    def test_default(self):
+        limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
+        assert limit.quotas_unit == 'None'
 
 
 class TestAwsLimitUsage(object):

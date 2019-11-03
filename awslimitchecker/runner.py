@@ -46,7 +46,7 @@ import time
 
 from .checker import AwsLimitChecker
 from .utils import StoreKeyValuePair, dict2cols, issue_string_tuple
-from .limit import SOURCE_TA, SOURCE_API
+from .limit import SOURCE_TA, SOURCE_API, SOURCE_QUOTAS
 from .metrics import MetricsProvider
 from .alerts import AlertProvider
 
@@ -185,9 +185,21 @@ class Runner(object):
         p.add_argument('-r', '--region', action='store',
                        type=str, default=None,
                        help='AWS region name to connect to; required for STS')
+        p.add_argument('--role-partition', action='store', type=str,
+                       default='aws',
+                       help='AWS partition name to use for account_role when '
+                            'connecting via STS; see documentation for more '
+                            'information (default: "aws")')
+        p.add_argument('--ta-api-region', action='store', type=str,
+                       default='us-east-1',
+                       help='Region to use for Trusted Advisor / Support API'
+                            ' (default: us-east-1)')
         p.add_argument('--skip-ta', action='store_true', default=False,
                        help='do not attempt to pull *any* information on limits'
                        ' from Trusted Advisor')
+        p.add_argument('--skip-quotas', action='store_true', default=False,
+                       help='Do not attempt to connect to Service Quotas '
+                            'service or use its data for current limits')
         g = p.add_mutually_exclusive_group()
         g.add_argument('--ta-refresh-wait', dest='ta_refresh_wait',
                        action='store_true', default=False,
@@ -276,6 +288,8 @@ class Runner(object):
                     src_str = ' (API)'
                 if limits[svc][lim].get_limit_source() == SOURCE_TA:
                     src_str = ' (TA)'
+                if limits[svc][lim].get_limit_source() == SOURCE_QUOTAS:
+                    src_str = ' (Quotas)'
                 if limits[svc][lim].has_resource_limits():
                     for usage in limits[svc][lim].get_current_usage():
                         id = "{s}/{l}/{r}".format(s=svc, l=lim,
@@ -427,7 +441,10 @@ class Runner(object):
             mfa_token=args.mfa_token,
             ta_refresh_mode=args.ta_refresh_mode,
             ta_refresh_timeout=args.ta_refresh_timeout,
-            check_version=args.check_version
+            check_version=args.check_version,
+            role_partition=args.role_partition,
+            ta_api_region=args.ta_api_region,
+            skip_quotas=args.skip_quotas
         )
 
         if args.version:

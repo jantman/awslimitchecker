@@ -49,7 +49,7 @@ To setup awslimitchecker for development:
 
 1. Fork the `awslimitchecker <https://github.com/jantman/awslimitchecker>`_ repository on GitHub
 
-2. Create a ``virtualenv`` to run the code in:
+2. Create a ``virtualenv`` (using Python 3.5 or later) to run the code in:
 
 .. code-block:: bash
 
@@ -104,7 +104,7 @@ Adding New EC2 Instance Types
    the EC2 Pricing API that aren't present in awslimitchecker and output a list of them.
 2. In ``services/ec2.py`` update the constants in :py:meth:`~._Ec2Service._instance_types` accordingly.
 3. Check the `EC2 Instance Type limits page <https://aws.amazon.com/ec2/faqs/>`__
-   for any new types that have non-default limits, and update :py:meth:`~._Ec2Service._get_limits_instances` accordingly.
+   for any new types that have non-default limits, and update :py:meth:`~._Ec2Service._get_limits_instances_nonvcpu` accordingly.
 4. Update ``tests/services/test_ec2.py`` as needed.
 
 .. _development.adding_checks:
@@ -114,7 +114,8 @@ Adding New Limits and Checks to Existing Services
 
 First, note that all calls to boto3 client ("low-level") methods that return a dict response that can
 include 'NextToken' or another pagination marker, should be called through
-:py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters.
+:py:func:`~awslimitchecker.utils.paginate_dict` with the appropriate parameters
+if the boto3 client can't paginate the call itself.
 
 1. Add a new :py:class:`~.AwsLimit` instance to the return value of the
    Service class's :py:meth:`~._AwsService.get_limits` method. If Trusted Advisor
@@ -130,7 +131,11 @@ include 'NextToken' or another pagination marker, should be called through
    include your new limit, ensure that this value is updated in the limit via its
    :py:meth:`~.AwsLimit._set_api_limit` method. This should be done in the Service
    class's ``_update_limits_from_api()`` method.
-4. Ensure complete test coverage for the above.
+4. If Service Quotas returns data for this limit, be sure that the parent
+   :py:class:`~._AwsService` class has its :py:attr:`~._AwsService.quotas_service_code`
+   attribute set appropriately and specify the ``quotas_name`` argument to the
+   :py:class:`~.AwsLimit` constructor if the quota name is different from the limit name.
+5. Ensure complete test coverage for the above.
 
 In cases where the AWS service API has a different name than what is reported
 by Trusted Advisor, or legacy cases where Trusted Advisor support is retroactively
@@ -179,19 +184,22 @@ include 'NextToken' or another pagination marker, should be called through
 7. If your service has an API action to retrieve limit/quota information (i.e. ``DescribeAccountAttributes`` for EC2 and RDS), ensure
    that the service class has an ``_update_limits_from_api()`` method which makes this API call and updates each relevant AwsLimit
    via its :py:meth:`~.AwsLimit._set_api_limit` method.
-8. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
-9. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
-   returns a list of all IAM permissions required for it to work.
-10. Run all tox jobs, or at least one python version, docs and coverage.
-11. Commit the updated documentation to the repository.
-12. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
+8. If the Service Quotas service returns information on limits for your service, be sure you set the :py:attr:`~._AwsService.quotas_service_code`
+   attribute appropriately, and also pass the ``quota_name`` keyword argument to the constructor of any :py:class:`~.AwsLimit` classes
+   which have information available via Service Quotas.
+9. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
+10. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
+    returns a list of all IAM permissions required for it to work.
+11. Run all tox jobs, or at least one python version, docs and coverage.
+12. Commit the updated documentation to the repository.
+13. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
     output of ``awslimitchecker --iam-policy``, login to your AWS account, and navigate to the IAM page.
     Click through to create a new policy, paste the output of the ``--iam-policy`` command, and click the
     "Validate Policy" button. Correct any errors that occur; for more information, see the AWS IAM docs on
     `Using Policy Validator <http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_policy-validator.html>`_.
     It would also be a good idea to run any policy changes through the
     `Policy Simulator <http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html>`_.
-13. Submit your pull request.
+14. Submit your pull request.
 
 .. _development.adding_ta:
 
@@ -372,8 +380,7 @@ For issues:
 Versioning Policy
 -----------------
 
-As of version 1.0.0, awslimitchecker strives to follow `semver 2.0.0 <http://semver.org/>`_
-for versioning, with some specific clarifications:
+As of version 1.0.0, awslimitchecker strives to follow `semver 2.0.0 <http://semver.org/>`_ for versioning, with some specific clarifications:
 
 * Major version bumps (backwards-incompatible changes):
 

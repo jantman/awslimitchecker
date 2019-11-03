@@ -50,6 +50,7 @@ class _XXNewServiceXXService(_AwsService):
 
     service_name = 'XXNewServiceXX'
     api_name = 'XXnewserviceXX'  # AWS API name to connect to (boto3.client)
+    quotas_service_code = None  # @TODO set to Service Quotas service code, if available
 
     def find_usage(self):
         """

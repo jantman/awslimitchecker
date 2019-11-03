@@ -44,91 +44,135 @@ command for :ref:`cli_usage`. For example, to show help:
 
     $ docker run jantman/awslimitchecker --help
     usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
-                       [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
-                       [-s] [-l] [--list-defaults] [-L LIMIT] [-u]
-                       [--iam-policy] [-W WARNING_THRESHOLD]
-                       [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
-                       [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
-                       [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
-                       [-r REGION] [--skip-ta]
-                       [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
-                       [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
-                       [--no-check-version] [-v] [-V]
+                           [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
+                           [-s] [-l] [--list-defaults] [-L LIMIT]
+                           [--limit-override-json LIMIT_OVERRIDE_JSON]
+                           [--threshold-override-json THRESHOLD_OVERRIDE_JSON]
+                           [-u] [--iam-policy] [-W WARNING_THRESHOLD]
+                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
+                           [-A STS_ACCOUNT_ID] [-R STS_ACCOUNT_ROLE]
+                           [-E EXTERNAL_ID] [-M MFA_SERIAL_NUMBER] [-T MFA_TOKEN]
+                           [-r REGION] [--role-partition ROLE_PARTITION]
+                           [--ta-api-region TA_API_REGION] [--skip-ta]
+                           [--skip-quotas]
+                           [--ta-refresh-wait | --ta-refresh-trigger | --ta-refresh-older TA_REFRESH_OLDER]
+                           [--ta-refresh-timeout TA_REFRESH_TIMEOUT] [--no-color]
+                           [--no-check-version] [-v] [-V]
+                           [--list-metrics-providers]
+                           [--metrics-provider METRICS_PROVIDER]
+                           [--metrics-config METRICS_CONFIG]
+                           [--list-alert-providers]
+                           [--alert-provider ALERT_PROVIDER]
+                           [--alert-config ALERT_CONFIG]
 
     Report on AWS service limits and usage via boto3, optionally warn about any
     services with usage nearing or exceeding their limits. For further help, see
     <http://awslimitchecker.readthedocs.org/>
 
     optional arguments:
-    -h, --help            show this help message and exit
-    -S [SERVICE [SERVICE ...]], --service [SERVICE [SERVICE ...]]
-                        perform action for only the specified service name;
-                        see -s|--list-services for valid names
-    --skip-service SKIP_SERVICE
-                        avoid performing actions for the specified service
-                        name; see -s|--list-services for valid names
-    --skip-check SKIP_CHECK
-                        avoid performing actions for the specified check name
-    -s, --list-services   print a list of all AWS service types that
-                        awslimitchecker knows how to check
-    -l, --list-limits     print all AWS effective limits in
-                        "service_name/limit_name" format
-    --list-defaults       print all AWS default limits in
-                        "service_name/limit_name" format
-    -L LIMIT, --limit LIMIT
-                        override a single AWS limit, specified in
-                        "service_name/limit_name=value" format; can be
-                        specified multiple times.
-    -u, --show-usage      find and print the current usage of all AWS services
-                        with known limits
-    --iam-policy          output a JSON serialized IAM Policy listing the
-                        required permissions for awslimitchecker to run
-                        correctly.
-    -W WARNING_THRESHOLD, --warning-threshold WARNING_THRESHOLD
-                        default warning threshold (percentage of limit);
-                        default: 80
-    -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
-                        default critical threshold (percentage of limit);
-                        default: 99
-    -P PROFILE_NAME, --profile PROFILE_NAME
-                        Name of profile in the AWS cross-sdk credentials file
-                        to use credentials from; similar to the corresponding
-                        awscli option
-    -A STS_ACCOUNT_ID, --sts-account-id STS_ACCOUNT_ID
-                        for use with STS, the Account ID of the destination
-                        account (account to assume a role in)
-    -R STS_ACCOUNT_ROLE, --sts-account-role STS_ACCOUNT_ROLE
-                        for use with STS, the name of the IAM role to assume
-    -E EXTERNAL_ID, --external-id EXTERNAL_ID
-                        External ID to use when assuming a role via STS
-    -M MFA_SERIAL_NUMBER, --mfa-serial-number MFA_SERIAL_NUMBER
-                        MFA Serial Number to use when assuming a role via STS
-    -T MFA_TOKEN, --mfa-token MFA_TOKEN
-                        MFA Token to use when assuming a role via STS
-    -r REGION, --region REGION
-                        AWS region name to connect to; required for STS
-    --skip-ta             do not attempt to pull *any* information on limits
-                        from Trusted Advisor
-    --ta-refresh-wait     If applicable, refresh all Trusted Advisor limit-
-                        related checks, and wait for the refresh to complete
-                        before continuing.
-    --ta-refresh-trigger  If applicable, trigger refreshes for all Trusted
-                        Advisor limit-related checks, but do not wait for them
-                        to finish refreshing; trigger the refresh and continue
-                        on (useful to ensure checks are refreshed before the
-                        next scheduled run).
-    --ta-refresh-older TA_REFRESH_OLDER
-                        If applicable, trigger refreshes for all Trusted
-                        Advisor limit-related checks with results more than
-                        this number of seconds old. Wait for the refresh to
-                        complete before continuing.
-    --ta-refresh-timeout TA_REFRESH_TIMEOUT
-                        If waiting for TA checks to refresh, wait up to this
-                        number of seconds before continuing on anyway.
-    --no-color            do not colorize output
-    --no-check-version    do not check latest version at startup
-    -v, --verbose         verbose output. specify twice for debug-level output.
-    -V, --version         print version number and exit.
+      -h, --help            show this help message and exit
+      -S [SERVICE [SERVICE ...]], --service [SERVICE [SERVICE ...]]
+                            perform action for only the specified service name;
+                            see -s|--list-services for valid names
+      --skip-service SKIP_SERVICE
+                            avoid performing actions for the specified service
+                            name; see -s|--list-services for valid names
+      --skip-check SKIP_CHECK
+                            avoid performing actions for the specified check name
+      -s, --list-services   print a list of all AWS service types that
+                            awslimitchecker knows how to check
+      -l, --list-limits     print all AWS effective limits in
+                            "service_name/limit_name" format
+      --list-defaults       print all AWS default limits in
+                            "service_name/limit_name" format
+      -L LIMIT, --limit LIMIT
+                            override a single AWS limit, specified in
+                            "service_name/limit_name=value" format; can be
+                            specified multiple times.
+      --limit-override-json LIMIT_OVERRIDE_JSON
+                            Absolute or relative path, or s3:// URL, to a JSON
+                            file specifying limit overrides. See docs for expected
+                            format.
+      --threshold-override-json THRESHOLD_OVERRIDE_JSON
+                            Absolute or relative path, or s3:// URL, to a JSON
+                            file specifying threshold overrides. See docs for
+                            expected format.
+      -u, --show-usage      find and print the current usage of all AWS services
+                            with known limits
+      --iam-policy          output a JSON serialized IAM Policy listing the
+                            required permissions for awslimitchecker to run
+                            correctly.
+      -W WARNING_THRESHOLD, --warning-threshold WARNING_THRESHOLD
+                            default warning threshold (percentage of limit);
+                            default: 80
+      -C CRITICAL_THRESHOLD, --critical-threshold CRITICAL_THRESHOLD
+                            default critical threshold (percentage of limit);
+                            default: 99
+      -P PROFILE_NAME, --profile PROFILE_NAME
+                            Name of profile in the AWS cross-sdk credentials file
+                            to use credentials from; similar to the corresponding
+                            awscli option
+      -A STS_ACCOUNT_ID, --sts-account-id STS_ACCOUNT_ID
+                            for use with STS, the Account ID of the destination
+                            account (account to assume a role in)
+      -R STS_ACCOUNT_ROLE, --sts-account-role STS_ACCOUNT_ROLE
+                            for use with STS, the name of the IAM role to assume
+      -E EXTERNAL_ID, --external-id EXTERNAL_ID
+                            External ID to use when assuming a role via STS
+      -M MFA_SERIAL_NUMBER, --mfa-serial-number MFA_SERIAL_NUMBER
+                            MFA Serial Number to use when assuming a role via STS
+      -T MFA_TOKEN, --mfa-token MFA_TOKEN
+                            MFA Token to use when assuming a role via STS
+      -r REGION, --region REGION
+                            AWS region name to connect to; required for STS
+      --role-partition ROLE_PARTITION
+                            AWS partition name to use for account_role when
+                            connecting via STS; see documentation for more
+                            information (default: "aws")
+      --ta-api-region TA_API_REGION
+                            Region to use for Trusted Advisor / Support API
+                            (default: us-east-1)
+      --skip-ta             do not attempt to pull *any* information on limits
+                            from Trusted Advisor
+      --skip-quotas         Do not attempt to connect to Service Quotas service or
+                            use its data for current limits
+      --ta-refresh-wait     If applicable, refresh all Trusted Advisor limit-
+                            related checks, and wait for the refresh to complete
+                            before continuing.
+      --ta-refresh-trigger  If applicable, trigger refreshes for all Trusted
+                            Advisor limit-related checks, but do not wait for them
+                            to finish refreshing; trigger the refresh and continue
+                            on (useful to ensure checks are refreshed before the
+                            next scheduled run).
+      --ta-refresh-older TA_REFRESH_OLDER
+                            If applicable, trigger refreshes for all Trusted
+                            Advisor limit-related checks with results more than
+                            this number of seconds old. Wait for the refresh to
+                            complete before continuing.
+      --ta-refresh-timeout TA_REFRESH_TIMEOUT
+                            If waiting for TA checks to refresh, wait up to this
+                            number of seconds before continuing on anyway.
+      --no-color            do not colorize output
+      --no-check-version    do not check latest version at startup
+      -v, --verbose         verbose output. specify twice for debug-level output.
+      -V, --version         print version number and exit.
+      --list-metrics-providers
+                            List available metrics providers and exit
+      --metrics-provider METRICS_PROVIDER
+                            Metrics provider class name, to enable sending metrics
+      --metrics-config METRICS_CONFIG
+                            Specify key/value parameters for the metrics provider
+                            constructor. See documentation for further
+                            information.
+      --list-alert-providers
+                            List available alert providers and exit
+      --alert-provider ALERT_PROVIDER
+                            Alert provider class name, to enable sending
+                            notifications
+      --alert-config ALERT_CONFIG
+                            Specify key/value parameters for the alert provider
+                            constructor. See documentation for further
+                            information.
 
     awslimitchecker is AGPLv3-licensed Free Software. Anyone using this program,
     even remotely over a network, is entitled to a copy of the source code. Use

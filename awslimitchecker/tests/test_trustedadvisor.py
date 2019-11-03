@@ -116,6 +116,33 @@ class TestInit(object):
         assert cls.refresh_mode == 123
         assert cls.refresh_timeout == 456
 
+    def test_boto_kwargs_ta_api_region(self):
+        mock_svc = Mock(spec_set=_AwsService)
+        mock_svc.get_limits.return_value = {}
+        boto_args = dict(region_name='myregion',
+                         aws_access_key_id='myaccesskey',
+                         aws_secret_access_key='mysecretkey',
+                         aws_session_token='mytoken')
+
+        cls = TrustedAdvisor(
+            {'foo': mock_svc},
+            boto_args,
+            ta_refresh_mode=123,
+            ta_refresh_timeout=456,
+            ta_api_region='myRegion'
+        )
+        assert cls.conn is None
+        cls_boto_args = cls._boto3_connection_kwargs
+        assert cls_boto_args.get('region_name') == 'myRegion'
+        assert cls_boto_args.get('aws_access_key_id') == 'myaccesskey'
+        assert cls_boto_args.get('aws_secret_access_key') == 'mysecretkey'
+        assert cls_boto_args.get('aws_session_token') == 'mytoken'
+        assert cls.ta_region == 'myregion'
+        assert cls.all_services == {'foo': mock_svc}
+        assert cls.limits_updated is False
+        assert cls.refresh_mode == 123
+        assert cls.refresh_timeout == 456
+
 
 class TestUpdateLimits(object):
 
@@ -325,10 +352,10 @@ class TestPoll(object):
     def test_none(self):
         tmp = self.mock_conn.describe_trusted_advisor_check_result
         with patch('%s._get_limit_check_id' % pb, autospec=True) as mock_id:
-            mock_id.return_value = None
+            mock_id.return_value = (None, None)
             res = self.cls._poll()
         assert tmp.mock_calls == []
-        assert res is None
+        assert res == {}
 
     def test_basic(self):
         poll_return_val = {

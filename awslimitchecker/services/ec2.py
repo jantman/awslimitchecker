@@ -38,6 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import abc  # noqa
+import os
 import logging
 from collections import defaultdict
 from copy import deepcopy
@@ -56,6 +57,52 @@ class _Ec2Service(_AwsService):
 
     service_name = 'EC2'
     api_name = 'ec2'
+    quotas_service_code = 'ec2'
+
+    #: Mapping of lower-case instance family character (instance type first
+    #: character) to limit name for that family.
+    instance_family_to_limit_name = {
+        'f': 'Running On-Demand All F instances',
+        'g': 'Running On-Demand All G instances',
+        'p': 'Running On-Demand All P instances',
+        'x': 'Running On-Demand All X instances'
+    }
+
+    #: Mapping of lower-case instance family character to Service Quotas
+    #: quota name for that family.
+    instance_family_to_quota_name = {
+        'f': 'Running On-Demand F instances',
+        'g': 'Running On-Demand G instances',
+        'p': 'Running On-Demand P instances',
+        'x': 'Running On-Demand X instances'
+    }
+
+    #: Name of default limit for all other (standard) instance families.
+    default_limit_name = 'Running On-Demand All Standard ' \
+                         '(A, C, D, H, I, M, R, T, Z) instances'
+
+    #: Name of default Service Quota for all other (standard) families.
+    default_quota_name = 'Running On-Demand Standard ' \
+                         '(A, C, D, H, I, M, R, T, Z) instances'
+
+    #: List of instance types that aren't exposed via Service Quotas
+    no_quotas_types = [
+        'c5d.12xlarge',
+        'c5d.24xlarge',
+        'c5d.metal',
+        'cc1.4xlarge',
+        'cg1.4xlarge',
+        'cr1.8xlarge',
+        'g4dn.metal',
+        'hi1.4xlarge',
+        'hs1.8xlarge',
+        'm5dn.metal',
+        'm5n.metal',
+        'r5dn.metal',
+        'r5n.metal',
+        'u-18tb1.metal',
+        'u-24tb1.metal'
+    ]
 
     def find_usage(self):
         """
@@ -68,7 +115,10 @@ class _Ec2Service(_AwsService):
         self.connect_resource()
         for lim in self.limits.values():
             lim._reset_usage()
-        self._find_usage_instances()
+        if self._use_vcpu_limits:
+            self._find_usage_instances_vcpu()
+        else:
+            self._find_usage_instances_nonvcpu()
         self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
@@ -77,7 +127,7 @@ class _Ec2Service(_AwsService):
         self._have_usage = True
         logger.debug("Done checking usage.")
 
-    def _find_usage_instances(self):
+    def _find_usage_instances_nonvcpu(self):
         """calculate On-Demand instance usage for all types and update Limits"""
         # update our limits with usage
         inst_usage = self._instance_usage()
@@ -127,6 +177,27 @@ class _Ec2Service(_AwsService):
             total_instances,
             aws_type='AWS::EC2::Instance'
         )
+
+    def _find_usage_instances_vcpu(self):
+        res_usage = self._get_reserved_instance_count()
+        logger.debug('Reserved instance count: %s', res_usage)
+        usage = self._instance_usage_vcpu(res_usage)
+        limit_values = defaultdict(int)
+        for i_family, count in usage.items():
+            limname = self.instance_family_to_limit_name.get(
+                i_family, self.default_limit_name
+            )
+            limit_values[limname] += count
+        for lname in list(
+            self.instance_family_to_limit_name.values()
+        ) + [self.default_limit_name]:
+            if lname not in limit_values:
+                limit_values[lname] = 0
+        for limname, count in limit_values.items():
+            self.limits[limname]._add_current_usage(
+                count,
+                aws_type='AWS::EC2::Instance',
+            )
 
     def _find_usage_spot_instances(self):
         """calculate spot instance request usage and update Limits"""
@@ -258,6 +329,75 @@ class _Ec2Service(_AwsService):
                              "counting", inst.instance_type)
         return az_to_inst
 
+    def _instance_usage_vcpu(self, ris):
+        """
+        Find counts of currently-running EC2 Instance vCPUs
+        (On-Demand or Reserved) by instance family. Return as a dict of
+        instance family letter to count.
+
+        :param ris: nested dict of reserved instances, as returned by
+          :py:meth:`~._get_reserved_instance_count`
+        :type ris: dict
+        :rtype: dict
+        """
+        inst_counts = defaultdict(int)
+        logger.debug("Getting usage for on-demand instances (vCPU limit)")
+        for inst in self.resource_conn.instances.all():
+            if inst.spot_instance_request_id:
+                logger.info("Spot instance found (%s); skipping from "
+                            "Running On-Demand Instances count", inst.id)
+                continue
+            if inst.state['Name'] in ['stopped', 'terminated']:
+                logger.debug("Ignoring instance %s in state %s", inst.id,
+                             inst.state['Name'])
+                continue
+            az = inst.placement['AvailabilityZone']
+            itype = inst.instance_type
+            if ris.get(az, {}).get(itype, 0) > 0:
+                logger.debug(
+                    'Using RI for %s: %s in %s', inst.id, itype, az
+                )
+                ris[az][itype] -= 1
+                continue
+            inst_counts[inst.instance_type[0]] += (
+                inst.cpu_options['CoreCount'] * inst.cpu_options[
+                    'ThreadsPerCore'
+                ]
+            )
+        return inst_counts
+
+    @property
+    def _use_vcpu_limits(self):
+        """
+        Return whether or not to use the new vCPU-based limits.
+
+        :return: whether to use vCPU-based limits (True) or older
+          per-instance-type limits (False)
+        :rtype: bool
+        """
+        if 'USE_VCPU_LIMITS' in os.environ:
+            if os.environ['USE_VCPU_LIMITS'] == 'true':
+                logger.debug(
+                    'Using vCPU-based EC2 limits due to USE_VCPU_LIMITS=true '
+                    'in environment.'
+                )
+                return True
+            logger.debug(
+                'Using vCPU-based EC2 limits due to USE_VCPU_LIMITS in '
+                'environment and set to something other than "true".'
+            )
+            return False
+        oldconn = self.conn
+        self.connect()
+        region_name = self.conn._client_config.region_name
+        self.conn = oldconn
+        if region_name.startswith('cn-') or region_name.startswith('us-gov-'):
+            logger.debug(
+                'Using non-vCPU EC2 limits due to region name: %s', region_name
+            )
+            return False
+        return True
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -269,7 +409,10 @@ class _Ec2Service(_AwsService):
         if self.limits != {}:
             return self.limits
         limits = {}
-        limits.update(self._get_limits_instances())
+        if self._use_vcpu_limits:
+            limits.update(self._get_limits_instances_vcpu())
+        else:
+            limits.update(self._get_limits_instances_nonvcpu())
         limits.update(self._get_limits_networking())
         limits.update(self._get_limits_spot())
         self.limits = limits
@@ -297,15 +440,16 @@ class _Ec2Service(_AwsService):
                 lname = 'VPC Elastic IP addresses (EIPs)'
             elif aname == 'vpc-max-security-groups-per-interface':
                 lname = 'VPC security groups per elastic network interface'
-            if lname is not None:
+            if lname in self.limits:
                 if int(val) == 0:
                     continue
                 self.limits[lname]._set_api_limit(int(val))
         logger.debug("Done setting limits from API")
 
-    def _get_limits_instances(self):
+    def _get_limits_instances_nonvcpu(self):
         """
-        Return a dict of limits for EC2 instances only.
+        Return a dict of limits for EC2 instances only, for regions using
+        non-vCPU-based (old-style) On Demand Instances limits.
         This method should only be used internally by
         :py:meth:~.get_limits`.
 
@@ -369,6 +513,9 @@ class _Ec2Service(_AwsService):
             lim = default_limits[0]
             if i_type in special_limits:
                 lim = special_limits[i_type][0]
+            quotas_name = 'Running On-Demand %s instances' % i_type
+            if i_type in self.no_quotas_types:
+                quotas_name = None
             limits[key] = AwsLimit(
                 key,
                 self,
@@ -377,7 +524,8 @@ class _Ec2Service(_AwsService):
                 self.critical_threshold,
                 limit_type='On-Demand instances',
                 limit_subtype=i_type,
-                ta_limit_name='On-Demand instances - %s' % i_type
+                ta_limit_name='On-Demand instances - %s' % i_type,
+                quotas_name=quotas_name
             )
         # limit for ALL running On-Demand instances
         key = 'Running On-Demand EC2 instances'
@@ -388,6 +536,41 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='On-Demand instances',
+            quotas_name='Total running On-Demand instances'
+        )
+        return limits
+
+    def _get_limits_instances_vcpu(self):
+        """
+        Return a dict of limits for EC2 instances only, for regions using
+        vCPU-based (new-style) On Demand Instances limits.
+        This method should only be used internally by
+        :py:meth:~.get_limits`.
+
+        :rtype: dict
+        """
+        limits = {}
+        iftln = self.instance_family_to_limit_name
+        for key in iftln.keys():
+            limits[iftln[key]] = AwsLimit(
+                iftln[key],
+                self,
+                128,
+                self.warning_threshold,
+                self.critical_threshold,
+                limit_type='On-Demand instances',
+                limit_subtype=key.upper(),
+                quotas_name=self.instance_family_to_quota_name[key]
+            )
+        limits[self.default_limit_name] = AwsLimit(
+            self.default_limit_name,
+            self,
+            1152,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='On-Demand instances',
+            limit_subtype='Standard',
+            quotas_name=self.default_quota_name
         )
         return limits
 
@@ -448,9 +631,38 @@ class _Ec2Service(_AwsService):
         sgs_per_vpc = defaultdict(int)
         rules_per_sg = defaultdict(int)
         for sg in self.resource_conn.security_groups.all():
-            if sg.vpc_id is not None:
-                sgs_per_vpc[sg.vpc_id] += 1
-                rules_per_sg[sg.id] = len(sg.ip_permissions)
+            if sg.vpc_id is None:
+                continue
+            sgs_per_vpc[sg.vpc_id] += 1
+            """
+            see: https://github.com/jantman/awslimitchecker/issues/431
+
+            The value for each of ingress and egress is the count of all
+            PrefixListIds in all rules, plus the count of all
+            UserIdGroupPairs in all rules, plus the maximum of:
+              the count of all IpRanges in all rules
+                 -or-
+              the count of all Ipv6Ranges in all rules
+
+            The limit that we alert on is the maximum of those values for
+            ingress and egress.
+
+            In short, behind the scenes, there are four firewall rulesets
+            per SG: (IPv4|IPv6) (ingress|egress)
+            Each can have a maximum of <limit> entries. PrefixListIds and
+            UserIdGroupPairs count towards both IPv4 and IPv6.
+            """
+            counts = []
+            for perm in [sg.ip_permissions, sg.ip_permissions_egress]:
+                counts.append(
+                    max(
+                        sum([len(x.get('IpRanges', [])) for x in perm]),
+                        sum([len(x.get('Ipv6Ranges', [])) for x in perm])
+                    ) +
+                    sum([len(x.get('PrefixListIds', [])) for x in perm]) +
+                    sum([len(x.get('UserIdGroupPairs', [])) for x in perm])
+                )
+            rules_per_sg[sg.id] = max(counts)
         # set usage
         for vpc_id, count in sgs_per_vpc.items():
             self.limits['Security groups per VPC']._add_current_usage(
@@ -528,7 +740,8 @@ class _Ec2Service(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
             limit_subtype='AWS::EC2::VPC',
-            ta_service_name='VPC'  # TA shows this as VPC not EC2
+            ta_service_name='VPC',  # TA shows this as VPC not EC2
+            quotas_name='Number of EIPs - VPC EIPs'
         )
         # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
         # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
@@ -539,6 +752,7 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
+            quotas_name='Elastic IP addresses for EC2-Classic'
         )
         limits['VPC security groups per elastic network interface'] = AwsLimit(
             'VPC security groups per elastic network interface',
@@ -594,49 +808,91 @@ class _Ec2Service(_AwsService):
             'a1.4xlarge',
             'a1.large',
             'a1.medium',
+            'a1.metal',
             'a1.xlarge',
-            't2.nano',
-            't2.micro',
-            't2.small',
-            't2.medium',
-            't2.large',
-            't2.xlarge',
-            't2.2xlarge',
-            't3.nano',
-            't3.micro',
-            't3.small',
-            't3.medium',
-            't3.large',
-            't3.xlarge',
-            't3.2xlarge',
-            'm3.medium',
-            'm3.large',
-            'm3.xlarge',
             'm3.2xlarge',
-            'm4.large',
-            'm4.xlarge',
+            'm3.large',
+            'm3.medium',
+            'm3.xlarge',
             'm4.2xlarge',
             'm4.4xlarge',
             'm4.10xlarge',
             'm4.16xlarge',
-            'm5.12xlarge',
-            'm5.24xlarge',
+            'm4.large',
+            'm4.xlarge',
             'm5.2xlarge',
             'm5.4xlarge',
+            'm5.8xlarge',
+            'm5.12xlarge',
+            'm5.16xlarge',
+            'm5.24xlarge',
             'm5.large',
+            'm5.metal',
             'm5.xlarge',
-            'm5d.12xlarge',
-            'm5d.24xlarge',
-            'm5d.2xlarge',
-            'm5d.4xlarge',
-            'm5d.large',
-            'm5d.xlarge',
-            'm5a.12xlarge',
-            'm5a.24xlarge',
             'm5a.2xlarge',
             'm5a.4xlarge',
+            'm5a.8xlarge',
+            'm5a.12xlarge',
+            'm5a.16xlarge',
+            'm5a.24xlarge',
             'm5a.large',
             'm5a.xlarge',
+            'm5ad.2xlarge',
+            'm5ad.4xlarge',
+            'm5ad.8xlarge',
+            'm5ad.12xlarge',
+            'm5ad.16xlarge',
+            'm5ad.24xlarge',
+            'm5ad.large',
+            'm5ad.xlarge',
+            'm5d.2xlarge',
+            'm5d.4xlarge',
+            'm5d.8xlarge',
+            'm5d.12xlarge',
+            'm5d.16xlarge',
+            'm5d.24xlarge',
+            'm5d.large',
+            'm5d.metal',
+            'm5d.xlarge',
+            'm5dn.2xlarge',
+            'm5dn.4xlarge',
+            'm5dn.8xlarge',
+            'm5dn.12xlarge',
+            'm5dn.16xlarge',
+            'm5dn.24xlarge',
+            'm5dn.large',
+            'm5dn.metal',
+            'm5dn.xlarge',
+            'm5n.2xlarge',
+            'm5n.4xlarge',
+            'm5n.8xlarge',
+            'm5n.12xlarge',
+            'm5n.16xlarge',
+            'm5n.24xlarge',
+            'm5n.large',
+            'm5n.metal',
+            'm5n.xlarge',
+            't2.2xlarge',
+            't2.large',
+            't2.medium',
+            't2.micro',
+            't2.nano',
+            't2.small',
+            't2.xlarge',
+            't3.2xlarge',
+            't3.large',
+            't3.medium',
+            't3.micro',
+            't3.nano',
+            't3.small',
+            't3.xlarge',
+            't3a.2xlarge',
+            't3a.large',
+            't3a.medium',
+            't3a.micro',
+            't3a.nano',
+            't3a.small',
+            't3a.xlarge',
         ]
 
         PREV_GENERAL_TYPES = [
@@ -668,12 +924,22 @@ class _Ec2Service(_AwsService):
             'r5.large',
             'r5.metal',
             'r5.xlarge',
-            'r5a.12xlarge',
-            'r5a.24xlarge',
             'r5a.2xlarge',
             'r5a.4xlarge',
+            'r5a.8xlarge',
+            'r5a.12xlarge',
+            'r5a.16xlarge',
+            'r5a.24xlarge',
             'r5a.large',
             'r5a.xlarge',
+            'r5ad.2xlarge',
+            'r5ad.4xlarge',
+            'r5ad.8xlarge',
+            'r5ad.12xlarge',
+            'r5ad.16xlarge',
+            'r5ad.24xlarge',
+            'r5ad.large',
+            'r5ad.xlarge',
             'r5d.2xlarge',
             'r5d.4xlarge',
             'r5d.8xlarge',
@@ -683,6 +949,26 @@ class _Ec2Service(_AwsService):
             'r5d.large',
             'r5d.metal',
             'r5d.xlarge',
+            'r5dn.2xlarge',
+            'r5dn.4xlarge',
+            'r5dn.8xlarge',
+            'r5dn.12xlarge',
+            'r5dn.16xlarge',
+            'r5dn.24xlarge',
+            'r5dn.large',
+            'r5dn.metal',
+            'r5dn.xlarge',
+            'r5n.2xlarge',
+            'r5n.4xlarge',
+            'r5n.8xlarge',
+            'r5n.12xlarge',
+            'r5n.16xlarge',
+            'r5n.24xlarge',
+            'r5n.large',
+            'r5n.metal',
+            'r5n.xlarge',
+            'u-18tb1.metal',
+            'u-24tb1.metal',
             'x1.16xlarge',
             'x1.32xlarge',
             'x1e.2xlarge',
@@ -707,33 +993,40 @@ class _Ec2Service(_AwsService):
         ]
 
         COMPUTE_TYPES = [
-            'c3.large',
-            'c3.xlarge',
             'c3.2xlarge',
             'c3.4xlarge',
             'c3.8xlarge',
-            'c4.large',
-            'c4.xlarge',
+            'c3.large',
+            'c3.xlarge',
             'c4.2xlarge',
             'c4.4xlarge',
             'c4.8xlarge',
-            'c5.18xlarge',
+            'c4.large',
+            'c4.xlarge',
             'c5.2xlarge',
             'c5.4xlarge',
             'c5.9xlarge',
+            'c5.12xlarge',
+            'c5.18xlarge',
+            'c5.24xlarge',
             'c5.large',
+            'c5.metal',
             'c5.xlarge',
-            'c5d.18xlarge',
             'c5d.2xlarge',
             'c5d.4xlarge',
             'c5d.9xlarge',
+            'c5d.12xlarge',
+            'c5d.18xlarge',
+            'c5d.24xlarge',
             'c5d.large',
+            'c5d.metal',
             'c5d.xlarge',
-            'c5n.18xlarge',
             'c5n.2xlarge',
             'c5n.4xlarge',
             'c5n.9xlarge',
+            'c5n.18xlarge',
             'c5n.large',
+            'c5n.metal',
             'c5n.xlarge',
         ]
 
@@ -756,21 +1049,28 @@ class _Ec2Service(_AwsService):
         ]
 
         STORAGE_TYPES = [
-            'i2.xlarge',
+            'h1.2xlarge',
+            'h1.4xlarge',
+            'h1.8xlarge',
+            'h1.16xlarge',
             'i2.2xlarge',
             'i2.4xlarge',
             'i2.8xlarge',
-            'i3.large',
-            'i3.xlarge',
+            'i2.xlarge',
             'i3.2xlarge',
             'i3.4xlarge',
             'i3.8xlarge',
             'i3.16xlarge',
+            'i3.large',
             'i3.metal',
-            'h1.16xlarge',
-            'h1.2xlarge',
-            'h1.4xlarge',
-            'h1.8xlarge',
+            'i3.xlarge',
+            'i3en.2xlarge',
+            'i3en.3xlarge',
+            'i3en.6xlarge',
+            'i3en.12xlarge',
+            'i3en.24xlarge',
+            'i3en.large',
+            'i3en.xlarge',
         ]
 
         PREV_STORAGE_TYPES = [
@@ -790,10 +1090,17 @@ class _Ec2Service(_AwsService):
         GPU_TYPES = [
             'g2.2xlarge',
             'g2.8xlarge',
-            'g3.16xlarge',
             'g3.4xlarge',
             'g3.8xlarge',
+            'g3.16xlarge',
             'g3s.xlarge',
+            'g4dn.2xlarge',
+            'g4dn.4xlarge',
+            'g4dn.8xlarge',
+            'g4dn.12xlarge',
+            'g4dn.16xlarge',
+            'g4dn.metal',
+            'g4dn.xlarge',
         ]
 
         PREV_GPU_TYPES = [

@@ -51,6 +51,7 @@ class _AutoscalingService(_AwsService):
 
     service_name = 'AutoScaling'
     api_name = 'autoscaling'
+    quotas_service_code = 'autoscaling'
 
     def find_usage(self):
         """
@@ -108,6 +109,7 @@ class _AutoscalingService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::AutoScaling::AutoScalingGroup',
+            quotas_name='Auto Scaling groups per region'
         )
         # autoscaleconnection.get_all_launch_configurations()
         limits['Launch configurations'] = AwsLimit(
@@ -117,6 +119,7 @@ class _AutoscalingService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::AutoScaling::LaunchConfiguration',
+            quotas_name='Launch configurations per region'
         )
         self.limits = limits
         return limits
