@@ -155,6 +155,10 @@ class LogRecordHelper(object):
                     r.funcName == 'find_usage' and 'perhaps the Firehose '
                     'service is not available in this region' in r.msg):
                 continue
+            if (r.levelno == logging.WARNING and r.module == 'quotas' and
+                    r.funcName == 'quotas_for_service' and
+                    'Attempted to retrieve Service Quotas' in r.msg):
+                continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,
                 r.module,
