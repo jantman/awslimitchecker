@@ -49,6 +49,9 @@ from textwrap import dedent
 my_dir = os.path.dirname(os.path.abspath(__file__))
 os.environ['PYTHONPATH'] = os.path.join(my_dir, '..')
 sys.path.insert(0, os.path.join(my_dir, '..'))
+# always run in us-east-1, because some Quotas Service quotas only exist there
+os.environ['AWS_REGION'] = 'us-east-1'
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.metrics import MetricsProvider

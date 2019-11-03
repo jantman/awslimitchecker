@@ -23,7 +23,7 @@ What It Does
   an optional maximum time limit). See
   :ref:`Getting Started - Trusted Advisor <getting_started.trusted_advisor>`
   for more information.
-- Supports retrieving current limits from the Service Quotas service.
+- Supports retrieving current limits from the Service Quotas service. See :ref:`getting_started.service_quotas` for more information.
 - Optionally send current usage and limit metrics to a :ref:`metrics store <cli_usage.metrics>` such as Datadog.
 - Optionally send warning/critical alerts to an :ref:`alert provider <cli_usage.alerts>`, such as PagerDuty.
 
@@ -205,6 +205,8 @@ IAM permission.
 
 See :ref:`Internals - Trusted Advisor <internals.trusted_advisor>` for technical
 information on the implementation of Trusted Advisor polling.
+
+.. _getting_started.service_quotas:
 
 Service Quotas service
 ----------------------

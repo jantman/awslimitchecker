@@ -189,7 +189,7 @@ include 'NextToken' or another pagination marker, should be called through
    which have information available via Service Quotas.
 9. Test your code; 100% test coverage is expected, and mocks should be using ``autospec`` or ``spec_set``.
 10. Ensure the :py:meth:`~awslimitchecker.services.base._AwsService.required_iam_permissions` method of your new class
-   returns a list of all IAM permissions required for it to work.
+    returns a list of all IAM permissions required for it to work.
 11. Run all tox jobs, or at least one python version, docs and coverage.
 12. Commit the updated documentation to the repository.
 13. As there is no programmatic way to validate IAM policies, once you are done writing your service, grab the
