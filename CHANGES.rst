@@ -3,8 +3,8 @@ Changelog
 
 .. _changelog.8_0_0:
 
-8.0.0
------
+8.0.0 (2019-11-03)
+------------------
 
 **Important:** This release includes **major** changes to the EC2 On-Demand Instances service limits! For most users, this means the 175 Instance-type-specific limits will be removed and replaced with five (5) limits. Please see the :ref:`changelog.8_0_0_vcpu_limits` section below for further details, as this will especially impact anyone using limit or threshold overrides, or post-processing awslimitchecker's output. This is also a time to remind all users that this project adheres to a strict :ref:`development.versioning_policy` and if occasional breakage due to limit or IAM policy changes is unacceptable, you should pin to a major version.
 
