@@ -60,7 +60,7 @@ class AwsLimit(object):
                  limit_type=None, limit_subtype=None,
                  ta_service_name=None, ta_limit_name=None,
                  quotas_service_code=None, quotas_name=None,
-                 quotas_unit=None):
+                 quotas_unit='None'):
         """
         Describes one specific AWS service limit, as well as its
         current utilization, default limit, thresholds, and any
@@ -103,8 +103,10 @@ class AwsLimit(object):
         :type quotas_name: str or None
         :param quotas_unit: the Service Quotas quota unit that we need our
           limit value to be, for quotas that use units. This must be one of
-          the units supported by :py:class:`~.ServiceQuotasClient`.
-        :type quotas_unit: str or None
+          the units supported by :py:class:`~.ServiceQuotasClient`. It defaults
+          to the string "None", which (for some strange reason) is what's
+          returned by the Service Quotas API.
+        :type quotas_unit: str
         :raises: ValueError
         """
         if def_warning_threshold >= def_critical_threshold:
@@ -196,21 +198,21 @@ class AwsLimit(object):
 
     def get_limit_source(self):
         """
-        Return :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT` if
+        Return :py:data:`~awslimitchecker.limit.SOURCE_DEFAULT` if
         :py:meth:`~.get_limit` returns the default limit,
-        :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE` if it returns a
+        :py:data:`~awslimitchecker.limit.SOURCE_OVERRIDE` if it returns a
         manually-overridden limit,
-        :py:const:`~awslimitchecker.limit.SOURCE_TA` if it returns a limit from
-        Trusted Advisor, :py:const:`~awslimitchecker.limit.SOURCE_API` if it
+        :py:data:`~awslimitchecker.limit.SOURCE_TA` if it returns a limit from
+        Trusted Advisor, :py:data:`~awslimitchecker.limit.SOURCE_API` if it
         returns a limit retrieved from the service's API, or
-        :py:const:`~.SOURCE_QUOTAS` if it returns a limit from the Service
+        :py:data:`~.SOURCE_QUOTAS` if it returns a limit from the Service
         Quotas service.
 
-        :returns: one of :py:const:`~awslimitchecker.limit.SOURCE_DEFAULT`,
-          :py:const:`~awslimitchecker.limit.SOURCE_OVERRIDE`, or
-          :py:const:`~awslimitchecker.limit.SOURCE_TA`, or
-          :py:const:`~awslimitchecker.limit.SOURCE_API`, or
-          :py:const:`~.awslimitchecker.limit.SOURCE_QUOTAS`
+        :returns: one of :py:data:`~awslimitchecker.limit.SOURCE_DEFAULT`,
+          :py:data:`~awslimitchecker.limit.SOURCE_OVERRIDE`, or
+          :py:data:`~awslimitchecker.limit.SOURCE_TA`, or
+          :py:data:`~awslimitchecker.limit.SOURCE_API`, or
+          :py:data:`~.awslimitchecker.limit.SOURCE_QUOTAS`
         :rtype: int
         """
         if self.limit_override is not None and (
@@ -506,6 +508,16 @@ class AwsLimit(object):
         if self._quotas_name is not None:
             return self._quotas_name
         return self.name
+
+    @property
+    def quotas_unit(self):
+        """
+        Return the Service Quotas unit to use for this limit.
+
+        :return: Service Quotas unit
+        :rtype: str
+        """
+        return self._quotas_unit
 
 
 class AwsLimitUsage(object):

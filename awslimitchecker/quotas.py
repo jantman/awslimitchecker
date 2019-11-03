@@ -45,17 +45,13 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceQuotasClient(Connectable):
-    """
-    Client for the AWS Service Quotas service, that manages retrieving quotas
-    information and updating :py:class:`~.AwsLimit` instances for them. This
-    class is also intended to cache Service Quotas responses.
-    """
-
     api_name = 'service-quotas'
 
     def __init__(self, boto_connection_kwargs):
         """
-        should only **ever** be called from :py:meth:`~.get_instance`.
+        Client for the AWS Service Quotas service, that manages retrieving
+        quotas information and updating :py:class:`~.AwsLimit` instances for
+        them. This class is also intended to cache Service Quotas responses.
 
         :param boto_connection_kwargs: keyword arguments to pass to boto3
           connection methods.
@@ -77,9 +73,6 @@ class ServiceQuotasClient(Connectable):
         :rtype: dict
         """
         if service_code in self._cache:
-            logger.debug(
-                'Using cached quotas for service code: %s', service_code
-            )
             return self._cache[service_code]
         self.connect()
         logger.debug(
@@ -98,10 +91,11 @@ class ServiceQuotasClient(Connectable):
                             item['QuotaName']
                         ]['QuotaCode'], item['QuotaCode']
                     )
-                self._cache[service_code][item['QuotaName']] = item
+                self._cache[service_code][item['QuotaName'].lower()] = item
         logger.debug(
-            'Retrieved %d quotas for service code %s',
-            len(self._cache[service_code]), service_code
+            'Retrieved %d quotas for service code %s: %s',
+            len(self._cache[service_code]), service_code,
+            sorted([x['QuotaName'] for x in self._cache[service_code].values()])
         )
         return self._cache[service_code]
 
@@ -122,8 +116,15 @@ class ServiceQuotasClient(Connectable):
         :raises: UnknownQuotaUnitsException if the units cannot be converted
         """
         svc = self.quotas_for_service(service_code)
-        if quota_name not in svc:
+        if quota_name.lower() not in svc:
             return None
-        if svc[quota_name]['Unit'] != 'None':
-            raise NotImplementedError()
-        return svc[quota_name]['Value']
+        if svc[quota_name.lower()]['Unit'] != 'None' or units != 'None':
+            logger.error(
+                'ERROR: Service Quota service_code=%s QuotaName="%s" has '
+                'Units set to "%s"; awslimitchecker does not know how to '
+                'handle this. This quota will be ignored. Please open a bug '
+                'report.', service_code, quota_name,
+                svc[quota_name.lower()]['Unit']
+            )
+            return None
+        return svc[quota_name.lower()]['Value']

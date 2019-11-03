@@ -574,10 +574,12 @@ class TestAwsLimitChecker(object):
             call.update_limits()
         ]
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.get_limits()
         ]
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.get_limits()
         ]
 
@@ -589,10 +591,12 @@ class TestAwsLimitChecker(object):
         assert res == limits
         assert self.mock_ta.mock_calls == []
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.get_limits()
         ]
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.get_limits()
         ]
 
@@ -606,6 +610,7 @@ class TestAwsLimitChecker(object):
             call.update_limits()
         ]
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.get_limits()
         ]
         assert self.mock_svc2.mock_calls == []
@@ -622,16 +627,19 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.get_limits()
         ]
 
     def test_find_usage(self):
         self.cls.find_usage()
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.find_usage()
         ]
         assert self.mock_ta.mock_calls == [
@@ -641,10 +649,12 @@ class TestAwsLimitChecker(object):
     def test_find_usage_no_ta(self):
         self.cls.find_usage(use_ta=False)
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.find_usage()
         ]
         assert self.mock_ta.mock_calls == []
@@ -652,6 +662,7 @@ class TestAwsLimitChecker(object):
     def test_find_usage_service(self):
         self.cls.find_usage(service=['SvcFoo'])
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == []
@@ -664,6 +675,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.find_usage()
         ]
         assert self.mock_ta.mock_calls == [
@@ -838,6 +850,7 @@ class TestAwsLimitChecker(object):
                     'ec2:foo',
                     'foo:perm1',
                     'foo:perm2',
+                    'servicequotas:ListServiceQuotas',
                     'support:*',
                     'trustedadvisor:Describe*',
                     'trustedadvisor:RefreshCheck'
@@ -875,10 +888,12 @@ class TestAwsLimitChecker(object):
             call.update_limits(),
         ]
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.check_thresholds()
         ]
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.check_thresholds()
         ]
 
@@ -895,6 +910,7 @@ class TestAwsLimitChecker(object):
             call.update_limits()
         ]
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.check_thresholds()
         ]
         assert self.mock_svc2.mock_calls == []
@@ -914,6 +930,7 @@ class TestAwsLimitChecker(object):
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.check_thresholds()
         ]
 
@@ -933,10 +950,12 @@ class TestAwsLimitChecker(object):
         }
         assert self.mock_ta.mock_calls == []
         assert self.mock_svc1.mock_calls == [
+            call._update_service_quotas(),
             call.check_thresholds()
         ]
         assert self.mock_svc2.mock_calls == [
             call._update_limits_from_api(),
+            call._update_service_quotas(),
             call.check_thresholds()
         ]
 

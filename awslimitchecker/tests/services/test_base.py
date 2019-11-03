@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.limit import AwsLimit
+from awslimitchecker.quotas import ServiceQuotasClient
 import pytest
 import sys
 
@@ -48,9 +49,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock
+    from mock import patch, call, Mock, PropertyMock
 else:
-    from unittest.mock import patch, call, Mock
+    from unittest.mock import patch, call, Mock, PropertyMock
 
 
 class AwsServiceTester(_AwsService):
@@ -257,6 +258,98 @@ class Test_AwsService(object):
         assert mock_limit4.mock_calls == [call.check_thresholds()]
         assert res == {'foo': mock_limit1, 'foo4': mock_limit4}
         assert mock_find_usage.mock_calls == [call()]
+
+    def test_update_service_quotas(self):
+
+        def se_get_quota_value(_, quota_name, **kwargs):
+            if quota_name == 'qn1':
+                return 12.4
+            return None
+
+        mock_client = Mock(spec_set=ServiceQuotasClient)
+        mock_client.get_quota_value.side_effect = se_get_quota_value
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        type(mock_limit1).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit1).quota_name = PropertyMock(return_value='qn1')
+        type(mock_limit1).quotas_unit = PropertyMock(return_value='None')
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        type(mock_limit2).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit2).quota_name = PropertyMock(return_value='qn2')
+        type(mock_limit2).quotas_unit = PropertyMock(return_value='None')
+        cls = AwsServiceTester(1, 2, {}, mock_client)
+        cls.quotas_service_code = 'qsc'
+        cls.limits = {'limit1': mock_limit1, 'limit2': mock_limit2}
+        cls._update_service_quotas()
+        assert mock_client.mock_calls == [
+            call.get_quota_value('qsc', 'qn1', units='None'),
+            call.get_quota_value('qsc', 'qn2', units='None')
+        ]
+        assert mock_limit1.mock_calls == [
+            call._set_quotas_limit(12.4)
+        ]
+        assert mock_limit2.mock_calls == []
+
+    def test_update_service_quotas_no_code(self):
+
+        def se_get_quota_value(_, quota_name, **kwargs):
+            if quota_name == 'qn1':
+                return 12.4
+            return None
+
+        mock_client = Mock(spec_set=ServiceQuotasClient)
+        mock_client.get_quota_value.side_effect = se_get_quota_value
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        type(mock_limit1).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit1).quota_name = PropertyMock(return_value='qn1')
+        type(mock_limit1).quotas_unit = PropertyMock(return_value='None')
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        type(mock_limit2).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit2).quota_name = PropertyMock(return_value='qn2')
+        type(mock_limit2).quotas_unit = PropertyMock(return_value='None')
+        cls = AwsServiceTester(1, 2, {}, mock_client)
+        cls.quotas_service_code = None
+        cls.limits = {'limit1': mock_limit1, 'limit2': mock_limit2}
+        cls._update_service_quotas()
+        assert mock_client.mock_calls == []
+        assert mock_limit1.mock_calls == []
+        assert mock_limit2.mock_calls == []
+
+    def test_update_service_quotas_no_client(self):
+
+        def se_get_quota_value(_, quota_name, **kwargs):
+            if quota_name == 'qn1':
+                return 12.4
+            return None
+
+        mock_client = Mock(spec_set=ServiceQuotasClient)
+        mock_client.get_quota_value.side_effect = se_get_quota_value
+        mock_limit1 = Mock(spec_set=AwsLimit)
+        type(mock_limit1).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit1).quota_name = PropertyMock(return_value='qn1')
+        type(mock_limit1).quotas_unit = PropertyMock(return_value='None')
+        mock_limit2 = Mock(spec_set=AwsLimit)
+        type(mock_limit2).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit2).quota_name = PropertyMock(return_value='qn2')
+        type(mock_limit2).quotas_unit = PropertyMock(return_value='None')
+        cls = AwsServiceTester(1, 2, {}, None)
+        cls.quotas_service_code = 'qsc'
+        cls.limits = {'limit1': mock_limit1, 'limit2': mock_limit2}
+        cls._update_service_quotas()
+        assert mock_client.mock_calls == []
+        assert mock_limit1.mock_calls == []
+        assert mock_limit2.mock_calls == []
 
 
 class Test_AwsServiceSubclasses(object):

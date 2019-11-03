@@ -38,7 +38,7 @@ to the services and limits without any connection to AWS. This is utilized by th
 .. _internals.trusted_advisor:
 
 Trusted Advisor
------------------
+---------------
 
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is initialized, it also initializes an instance of
 :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`. In :py:meth:`~.AwsLimitChecker.get_limits`,
@@ -112,6 +112,21 @@ For use via Python, these same parameters (``ta_refresh_mode`` and ``ta_refresh_
 are exposed as parameters on the
 :py:class:`~awslimitchecker.checker.AwsLimitChecker` constructor.
 
+.. _internals.quotas:
+
+Service Quotas service
+----------------------
+
+Unless use of Serivce Quotas is disabled with the ``--skip-quotas`` command line option or by passing ``skip_quotas=False`` to the :py:class:`~awslimitchecker.checker.AwsLimitChecker` constructor, awslimitchecker will retrieve all relevant data from the Service Quotas service. In the :py:class:`~.AwsLimitChecker` constructor (so long as ``skip_quotas`` is True), an instance of the :py:class:`~.ServiceQuotasClient` class is constructed, passing in our boto3 connection keyword arguments for the current region. This client class instance is then passed to the constructor of every Service class (:py:class:`~._AwsService` subclass) when the class is created, via the ``quotas_client`` argument. Each :py:class:`~._AwsService` class stores this as the ``_quotas_client`` instance variable.
+
+As the :py:class:`~.AwsLimitChecker` class iterates over all (configured) services in its :py:meth:`~.AwsLimitChecker.get_limits`, :py:meth:`~.AwsLimitChecker.find_usage`, and :py:meth:`~.AwsLimitChecker.check_thresholds` methods, it will call the service class's :py:meth:`~._AwsService._update_service_quotas` method after calling :py:meth:`~.TrustedAdvisor.update_limits` and the service class's ``_update_limits_from_api()`` method (if present), and before the actual operation of getting limits, finding usage, or checking thresholds.
+
+The :py:meth:`._AwsService._update_service_quotas` method will iterate through all limits (:py:class:`~.AwsLimit`) for the service and call the :py:meth:`~.ServiceQuotasClient.get_quota_value` method for each. Assuming it returns a non-``None`` result, that result will be passed to the limit's :py:meth:`~.AwsLimit._set_quotas_limit` method for later use in :py:meth:`~.AwsLimit.get_limit`.
+
+When retrieving values from Service Quotas, the ``ServiceCode`` is taken from the :py:attr:`._AwsService.quotas_service_code` attribute on the Service class. If that is set to ``None``, Service Quotas will not be consulted for that service. The ``ServiceCode`` can also be overridden on a per-limit basis via the ``quotas_service_code`` argument to the :py:class:`~.AwsLimit` constructor. The ``QuotaName`` used by each limit defaults to the limit name itself (:py:class:`.AwsLimit` instance variable ``name``) but can be overridden with the ``quota_name`` argument to the :py:class:`~.AwsLimit` constructor.
+
+Note that quota names are stored and compared in lower case.
+
 Service API Limit Information
 -----------------------------
 
@@ -129,8 +144,9 @@ The value used for a limit is the first match in the following list:
 
 1. Limit Override (set at runtime)
 2. API Limit
-3. Trusted Advisor
-4. Hard-coded default
+3. Service Quotas
+4. Trusted Advisor
+5. Hard-coded default
 
 Threshold Overrides
 -------------------

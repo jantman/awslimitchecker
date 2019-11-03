@@ -79,7 +79,7 @@ class _AwsService(Connectable):
           pass to boto connection methods.
         :type boto_connection_kwargs: dict
         :param quotas_client: Instance of ServiceQuotasClient
-        :type quotas_client: ServiceQuotasClient
+        :type quotas_client: ``ServiceQuotasClient`` or ``None``
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
@@ -267,4 +267,14 @@ class _AwsService(Connectable):
         """
         if self.quotas_service_code is None:
             return
-        raise NotImplementedError()
+        if self._quotas_client is None:
+            return
+        logger.debug('Updating service quotas for %s', self.service_name)
+        for lname in sorted(self.limits.keys()):
+            lim = self.limits[lname]
+            val = self._quotas_client.get_quota_value(
+                lim.quotas_service_code, lim.quota_name,
+                units=lim.quotas_unit
+            )
+            if val is not None:
+                lim._set_quotas_limit(val)

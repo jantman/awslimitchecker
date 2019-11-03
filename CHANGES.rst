@@ -31,7 +31,15 @@ Changelog
 * `Issue #436 <https://github.com/jantman/awslimitchecker/issues/436>`_ - Begin testing under Python 3.8 and base our Docker image on ``python:3.8-alpine``.
 * `Issue #435 <https://github.com/jantman/awslimitchecker/issues/435>`_ - Allow configuring the botocore maximum retries for Throttling / RateExceeded errors on a per-AWS-API basis via environment variables. See the relevant sections of the :ref:`CLI Usage <cli_usage.throttling>` or :ref:`Python Usage <python_usage.throttling>` documentation for further details.
 * `Issue #431 <https://github.com/jantman/awslimitchecker/issues/431>`_ - Fix a **major under-calculation** of usage for the EC2 ``Rules per VPC security group`` limit. We were previously calculating the number of "Rules" (from port / to port / protocol combinations) in a Security Group, but the limit is actually based on the number of permissions granted. See `this comment <https://github.com/jantman/awslimitchecker/issues/431#issuecomment-548599785>`_ on the issue for further details.
-* boto3 1.9.175 botocore 1.12.175
+
+* boto3 1.9.175 botocore 1.12.175 :py:class:`~.NoSuchClass.RememberToFinishTheDocs`
+
+AWS' new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`_
+provides a unified interface to retrieve current limits from many AWS services. These limit values are
+second only to the services' own APIs (for the services that provide limit information via API), and are
+much more current and complete than the information provided by Trusted Advisor. The introduction of
+Service Quotas should greatly reduce the number of limits that need to be retrieved from Trusted Advisor
+or specified manually. :py:class:`~.NoSuchClass.RememberToFinishTheDocs`
 
 .. _changelog.8_0_0_vcpu_limits:
 

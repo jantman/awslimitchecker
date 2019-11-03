@@ -71,6 +71,7 @@ class TestInit(object):
         assert cls.resource_conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
+        assert cls.quotas_service_code == 'ec2'
 
 
 class TestInstanceTypes(object):
@@ -893,7 +894,25 @@ class TestGetLimitsNetworking(object):
         ]
         assert sorted(limits.keys()) == sorted(expected)
         assert limits[
-                   'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
+            'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
+        assert limits[
+            'VPC Elastic IP addresses (EIPs)'
+        ].quotas_service_code == 'ec2'
+        assert limits[
+            'VPC Elastic IP addresses (EIPs)'
+        ].quota_name == 'Number of EIPs - VPC EIPs'
+        assert limits[
+            'VPC Elastic IP addresses (EIPs)'
+        ].quotas_unit == 'None'
+        assert limits[
+            'Elastic IP addresses (EIPs)'
+        ].quotas_service_code == 'ec2'
+        assert limits[
+            'Elastic IP addresses (EIPs)'
+        ].quota_name == 'Elastic IP addresses for EC2-Classic'
+        assert limits[
+            'Elastic IP addresses (EIPs)'
+        ].quotas_unit == 'None'
 
 
 class TestGetLimitsSpot(object):

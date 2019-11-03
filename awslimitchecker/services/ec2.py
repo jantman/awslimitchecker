@@ -57,6 +57,7 @@ class _Ec2Service(_AwsService):
 
     service_name = 'EC2'
     api_name = 'ec2'
+    quotas_service_code = 'ec2'
 
     #: Mapping of lower-case instance family character (instance type first
     #: character) to limit name for that family.
@@ -700,7 +701,8 @@ class _Ec2Service(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
             limit_subtype='AWS::EC2::VPC',
-            ta_service_name='VPC'  # TA shows this as VPC not EC2
+            ta_service_name='VPC',  # TA shows this as VPC not EC2
+            quotas_name='Number of EIPs - VPC EIPs'
         )
         # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
         # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
@@ -711,6 +713,7 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
+            quotas_name='Elastic IP addresses for EC2-Classic'
         )
         limits['VPC security groups per elastic network interface'] = AwsLimit(
             'VPC security groups per elastic network interface',

@@ -37,10 +37,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
 """
 
-import pytest
 import sys
 
 from awslimitchecker.quotas import ServiceQuotasClient
+from awslimitchecker.tests.support import quotas_response
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -48,9 +48,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, mock_open, PropertyMock
+    from mock import patch, call, Mock
 else:
-    from unittest.mock import patch, call, Mock, mock_open, PropertyMock
+    from unittest.mock import patch, call, Mock
 
 pbm = 'awslimitchecker.quotas'
 pb = '%s.ServiceQuotasClient' % pbm
@@ -63,3 +63,98 @@ class TestConstructor(object):
         assert cls._boto3_connection_kwargs == {'foo': 'bar'}
         assert cls._cache == {}
         assert cls.conn is None
+
+
+class TestQuotasForService(object):
+
+    def setup(self):
+        self.cls = ServiceQuotasClient({'foo': 'bar'})
+
+    def test_not_cached(self):
+        resp, expected = quotas_response()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = resp
+        mock_conn = Mock()
+        mock_conn.get_paginator.return_value = mock_paginator
+
+        def se_connect(cls):
+            cls.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_connect
+            res = self.cls.quotas_for_service('scode')
+        assert res == expected
+        assert self.cls._cache == {'scode': expected}
+        assert m_connect.mock_calls == [call(self.cls)]
+        assert mock_conn.mock_calls == [
+            call.get_paginator('list_service_quotas'),
+            call.get_paginator().paginate(ServiceCode='scode')
+        ]
+
+    def test_cached(self):
+        resp, expected = quotas_response()
+        mock_paginator = Mock()
+        mock_paginator.paginate.return_value = resp
+        mock_conn = Mock()
+        mock_conn.get_paginator.return_value = mock_paginator
+
+        def se_connect(cls):
+            cls.conn = mock_conn
+
+        self.cls._cache = {'scode': expected}
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_connect
+            res = self.cls.quotas_for_service('scode')
+        assert res == expected
+        assert self.cls._cache == {'scode': expected}
+        assert m_connect.mock_calls == []
+        assert mock_conn.mock_calls == []
+
+
+class TestGetQuotaValue(object):
+
+    def setup(self):
+        self.cls = ServiceQuotasClient({'foo': 'bar'})
+
+    def test_happy_path(self):
+        self.cls._cache = {
+            'scode': {
+                'qname': {
+                    'QuotaName': 'qname',
+                    'QuotaCode': 'qcode',
+                    'Value': 12.3,
+                    'Unit': 'None'
+                }
+            }
+        }
+        res = self.cls.get_quota_value('scode', 'QName')
+        assert res == 12.3
+
+    def test_no_quota(self):
+        self.cls._cache = {
+            'scode': {
+                'qname': {
+                    'QuotaName': 'qname',
+                    'QuotaCode': 'qcode',
+                    'Value': 12.3,
+                    'Unit': 'None'
+                }
+            }
+        }
+        res = self.cls.get_quota_value('scode', 'OtherName')
+        assert res is None
+
+    def test_units(self):
+        self.cls._cache = {
+            'scode': {
+                'qname': {
+                    'QuotaName': 'qname',
+                    'QuotaCode': 'qcode',
+                    'Value': 12.3,
+                    'Unit': 'Foo'
+                }
+            }
+        }
+        res = self.cls.get_quota_value('scode', 'QName')
+        assert res is None

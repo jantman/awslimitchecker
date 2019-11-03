@@ -127,6 +127,7 @@ class TestParseArgs(RunnerTester):
         assert res.alert_config == {}
         assert res.role_partition == 'aws'
         assert res.ta_api_region == 'us-east-1'
+        assert res.skip_quotas is False
 
     def test_parser(self):
         argv = ['-V']
@@ -244,6 +245,11 @@ class TestParseArgs(RunnerTester):
             call().add_argument('--skip-ta', action='store_true', default=False,
                                 help='do not attempt to pull *any* information '
                                 'on limits from Trusted Advisor'),
+            call().add_argument('--skip-quotas', action='store_true',
+                                default=False,
+                                help='Do not attempt to connect to Service '
+                                     'Quotas service or use its data for '
+                                     'current limits'),
             call().add_mutually_exclusive_group(),
             call().add_mutually_exclusive_group().add_argument(
                 '--ta-refresh-wait', action='store_true', default=False,
@@ -338,6 +344,12 @@ class TestParseArgs(RunnerTester):
         res = self.cls.parse_args(argv)
         assert isinstance(res, argparse.Namespace)
         assert res.ta_refresh_mode == 'trigger'
+
+    def test_skip_quotas(self):
+        argv = ['--skip-quotas']
+        res = self.cls.parse_args(argv)
+        assert isinstance(res, argparse.Namespace)
+        assert res.skip_quotas is True
 
     def test_ta_refresh_older(self):
         argv = ['--ta-refresh-older=123']
@@ -520,7 +532,8 @@ class TestListLimits(RunnerTester):
                 'SvcBar/barlimit1': '1',
                 'SvcFoo/foo limit3': '10 (TA)',
                 'SvcFoo/zzz limit4': '34 (API)',
-                'SvcFoo/limit with usage maximums/res_id': '10 (API)'
+                'SvcFoo/limit with usage maximums/res_id': '10 (API)',
+                'SvcFoo/zzz limit5': '60.0 (Quotas)'
             })
         ]
 
@@ -543,7 +556,8 @@ class TestListLimits(RunnerTester):
             call({
                 'SvcFoo/foo limit3': '10 (TA)',
                 'SvcFoo/zzz limit4': '34 (API)',
-                'SvcFoo/limit with usage maximums/res_id': '10 (API)'
+                'SvcFoo/limit with usage maximums/res_id': '10 (API)',
+                'SvcFoo/zzz limit5': '60.0 (Quotas)'
             })
         ]
 
@@ -1159,7 +1173,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             ),
             call().get_project_url(),
             call().get_version()
@@ -1188,8 +1203,8 @@ class TestConsoleEntryPoint(RunnerTester):
             call(self.cls)
         ]
 
-    def test_list_defaults(self):
-        argv = ['awslimitchecker', '--list-defaults']
+    def test_list_defaults_skip_quotas(self):
+        argv = ['awslimitchecker', '--list-defaults', '--skip-quotas']
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.list_defaults' % pb,
                        autospec=True) as mock_list:
@@ -1228,7 +1243,7 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='aws',
-                 ta_api_region='us-east-1')
+                 ta_api_region='us-east-1', skip_quotas=False)
         ]
 
     def test_role_partition(self):
@@ -1247,11 +1262,11 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='foo',
-                 ta_api_region='us-east-1')
+                 ta_api_region='us-east-1', skip_quotas=False)
         ]
 
-    def test_ta_api_region(self):
-        argv = ['awslimitchecker', '--ta-api-region=foo']
+    def test_ta_api_region_skip_quotas(self):
+        argv = ['awslimitchecker', '--ta-api-region=foo', '--skip-quotas']
         with patch.object(sys, 'argv', argv):
             with patch('%s.Runner.check_thresholds' % pb,
                        autospec=True) as mock_check:
@@ -1266,7 +1281,7 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='aws',
-                 ta_api_region='foo')
+                 ta_api_region='foo', skip_quotas=True)
         ]
 
     def test_skip_service(self):
@@ -1285,7 +1300,7 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='aws',
-                 ta_api_region='us-east-1'),
+                 ta_api_region='us-east-1', skip_quotas=False),
             call().remove_services(['foo'])
         ]
 
@@ -1309,7 +1324,7 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='aws',
-                 ta_api_region='us-east-1'),
+                 ta_api_region='us-east-1', skip_quotas=False),
             call().remove_services(['foo', 'bar'])
         ]
 
@@ -1332,7 +1347,7 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='aws',
-                 ta_api_region='us-east-1'),
+                 ta_api_region='us-east-1', skip_quotas=False),
         ]
         assert self.cls.skip_check == [
             'EC2/Max launch specifications per spot fleet',
@@ -1358,7 +1373,7 @@ class TestConsoleEntryPoint(RunnerTester):
                  profile_name=None, region=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, warning_threshold=80,
                  check_version=True, role_partition='aws',
-                 ta_api_region='us-east-1'),
+                 ta_api_region='us-east-1', skip_quotas=False),
         ]
         assert self.cls.skip_check == [
             'EC2/Max launch specifications per spot fleet',
@@ -1510,7 +1525,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
         assert self.cls.service_name is None
@@ -1551,7 +1567,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
         assert self.cls.service_name is None
@@ -1595,7 +1612,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=False,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
         assert self.cls.service_name is None
@@ -1655,7 +1673,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
 
@@ -1684,7 +1703,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
 
@@ -1713,7 +1733,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=None,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
 
@@ -1743,7 +1764,8 @@ class TestConsoleEntryPoint(RunnerTester):
                 ta_refresh_timeout=123,
                 check_version=True,
                 role_partition='aws',
-                ta_api_region='us-east-1'
+                ta_api_region='us-east-1',
+                skip_quotas=False
             )
         ]
 

@@ -23,6 +23,7 @@ Submodules
    awslimitchecker.checker
    awslimitchecker.connectable
    awslimitchecker.limit
+   awslimitchecker.quotas
    awslimitchecker.runner
    awslimitchecker.trustedadvisor
    awslimitchecker.utils

@@ -51,6 +51,7 @@ class _ApigatewayService(_AwsService):
 
     service_name = 'ApiGateway'
     api_name = 'apigateway'  # AWS API name to connect to (boto3.client)
+    quotas_service_code = 'apigateway'
 
     def find_usage(self):
         """
@@ -299,7 +300,8 @@ class _ApigatewayService(_AwsService):
             5,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::ApiGateway::VpcLink'
+            limit_type='AWS::ApiGateway::VpcLink',
+            quotas_name='VPC links'
         )
         self.limits = limits
         return limits

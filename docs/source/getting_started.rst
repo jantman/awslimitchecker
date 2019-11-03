@@ -23,6 +23,7 @@ What It Does
   an optional maximum time limit). See
   :ref:`Getting Started - Trusted Advisor <getting_started.trusted_advisor>`
   for more information.
+- Supports retrieving current limits from the Service Quotas service.
 - Optionally send current usage and limit metrics to a :ref:`metrics store <cli_usage.metrics>` such as Datadog.
 - Optionally send warning/critical alerts to an :ref:`alert provider <cli_usage.alerts>`, such as PagerDuty.
 
@@ -204,6 +205,16 @@ IAM permission.
 
 See :ref:`Internals - Trusted Advisor <internals.trusted_advisor>` for technical
 information on the implementation of Trusted Advisor polling.
+
+Service Quotas service
+----------------------
+
+AWS' new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`_
+provides a unified interface to retrieve current limits from many AWS services. These limit values are
+second only to the services' own APIs (for the services that provide limit information via API), and are
+much more current and complete than the information provided by Trusted Advisor. The introduction of
+Service Quotas should greatly reduce the number of limits that need to be retrieved from Trusted Advisor
+or specified manually.
 
 .. _getting_started.permissions:
 

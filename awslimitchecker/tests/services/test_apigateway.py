@@ -67,6 +67,7 @@ class Test_ApigatewayService(object):
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
+        assert cls.quotas_service_code == 'apigateway'
 
     def test_get_limits(self):
         cls = _ApigatewayService(21, 43, {}, None)
@@ -89,6 +90,7 @@ class Test_ApigatewayService(object):
             assert limit.service == cls
             assert limit.def_warning_threshold == 21
             assert limit.def_critical_threshold == 43
+        assert res['VPC Links per account'].quota_name == 'VPC links'
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""

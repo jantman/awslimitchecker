@@ -65,7 +65,7 @@ class AwsLimitChecker(object):
                  role_partition='aws', region=None, external_id=None,
                  mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, ta_api_region='us-east-1',
-                 check_version=True):
+                 check_version=True, skip_quotas=False):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -137,6 +137,9 @@ class AwsLimitChecker(object):
         :param check_version: Whether or not to check for latest version of
           awslimitchecker on PyPI during instantiation.
         :type check_version: bool
+        :param skip_quotas: If set to True, do not connect to Service Quotas
+          service or use it to obtain current limits.
+        :type skip_quotas: bool
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -184,7 +187,9 @@ class AwsLimitChecker(object):
         self.services = {}
 
         boto_conn_kwargs = self._boto_conn_kwargs
-        self._quotas_client = ServiceQuotasClient(boto_conn_kwargs)
+        self._quotas_client = None
+        if not skip_quotas:
+            self._quotas_client = ServiceQuotasClient(boto_conn_kwargs)
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold,
                                        critical_threshold,
