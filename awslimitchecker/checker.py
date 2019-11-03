@@ -42,6 +42,7 @@ from .services import _services
 from .trustedadvisor import TrustedAdvisor
 from .version import _get_version_info
 from .utils import _get_latest_version
+from .quotas import ServiceQuotasClient
 import boto3
 import sys
 import logging
@@ -64,7 +65,7 @@ class AwsLimitChecker(object):
                  role_partition='aws', region=None, external_id=None,
                  mfa_serial_number=None, mfa_token=None, ta_refresh_mode=None,
                  ta_refresh_timeout=None, ta_api_region='us-east-1',
-                 check_version=True):
+                 check_version=True, skip_quotas=False):
         """
         Main AwsLimitChecker class - this should be the only externally-used
         portion of awslimitchecker.
@@ -136,6 +137,9 @@ class AwsLimitChecker(object):
         :param check_version: Whether or not to check for latest version of
           awslimitchecker on PyPI during instantiation.
         :type check_version: bool
+        :param skip_quotas: If set to True, do not connect to Service Quotas
+          service or use it to obtain current limits.
+        :type skip_quotas: bool
         """
         # ###### IMPORTANT license notice ##########
         # Pursuant to Sections 5(b) and 13 of the GNU Affero General Public
@@ -183,10 +187,14 @@ class AwsLimitChecker(object):
         self.services = {}
 
         boto_conn_kwargs = self._boto_conn_kwargs
+        self._quotas_client = None
+        if not skip_quotas:
+            self._quotas_client = ServiceQuotasClient(boto_conn_kwargs)
         for sname, cls in _services.items():
             self.services[sname] = cls(warning_threshold,
                                        critical_threshold,
-                                       boto_conn_kwargs)
+                                       boto_conn_kwargs,
+                                       self._quotas_client)
 
         self.ta = TrustedAdvisor(self.services,
                                  boto_conn_kwargs,
@@ -341,6 +349,7 @@ class AwsLimitChecker(object):
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
+            cls._update_service_quotas()
             res[sname] = cls.get_limits()
         return res
 
@@ -419,6 +428,7 @@ class AwsLimitChecker(object):
         for cls in to_get.values():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
+            cls._update_service_quotas()
             logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
@@ -619,6 +629,7 @@ class AwsLimitChecker(object):
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
+            cls._update_service_quotas()
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp
@@ -637,6 +648,7 @@ class AwsLimitChecker(object):
         :rtype: dict
         """
         required_actions = [
+            'servicequotas:ListServiceQuotas',
             'support:*',
             'trustedadvisor:Describe*',
             'trustedadvisor:RefreshCheck'

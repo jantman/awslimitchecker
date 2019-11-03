@@ -65,18 +65,19 @@ class TestInit(object):
 
     def test_simple(self):
         """test __init__()"""
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         assert cls.service_name == 'EC2'
         assert cls.conn is None
         assert cls.resource_conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
+        assert cls.quotas_service_code == 'ec2'
 
 
 class TestInstanceTypes(object):
 
     def test_simple(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         types = cls._instance_types()
         # NOTE hi1.4xlarge is no longer in the instance type listings,
         # but some accounts might still have a limit for it
@@ -103,7 +104,7 @@ class TestInstanceTypes(object):
 class TestGetLimits(object):
 
     def test_nonvcpu(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.limits = {}
         with patch.multiple(
             pb,
@@ -139,7 +140,7 @@ class TestGetLimits(object):
         assert mocks['_get_limits_spot'].mock_calls == [call(cls)]
 
     def test_vcpu(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.limits = {}
         with patch.multiple(
             pb,
@@ -174,7 +175,7 @@ class TestGetLimits(object):
 
     def test_get_again(self):
         """test that existing limits dict is returned on subsequent calls"""
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.limits = {'foo': 'bar'}
         with patch.multiple(
             pb,
@@ -209,7 +210,7 @@ class TestGetLimits(object):
                 '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
         ) as m_use_vcpu:
             m_use_vcpu.return_value = False
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
             limits = cls.get_limits()
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
@@ -222,7 +223,7 @@ class TestGetLimits(object):
                 '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
         ) as m_use_vcpu:
             m_use_vcpu.return_value = True
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
             limits = cls.get_limits()
         for x in limits:
             assert isinstance(limits[x], AwsLimit)
@@ -233,7 +234,7 @@ class TestGetLimits(object):
 class TestGetLimitsInstancesNonvcpu(object):
 
     def test_simple(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         limits = cls._get_limits_instances_nonvcpu()
         assert len(limits) == 269
         # check a random subset of limits
@@ -277,7 +278,7 @@ class TestGetLimitsInstancesNonvcpu(object):
 class TestGetLimitsInstancesVcpu(object):
 
     def test_simple(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         limits = cls._get_limits_instances_vcpu()
         assert len(limits) == 5
         for k in ['f', 'g', 'p', 'x']:
@@ -312,7 +313,7 @@ class TestFindUsage(object):
                     '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
             ) as m_use_vcpu:
                 m_use_vcpu.return_value = False
-                cls = _Ec2Service(21, 43)
+                cls = _Ec2Service(21, 43, {}, None)
                 assert cls._have_usage is False
                 cls.find_usage()
         assert cls._have_usage is True
@@ -353,7 +354,7 @@ class TestFindUsage(object):
                     '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
             ) as m_use_vcpu:
                 m_use_vcpu.return_value = True
-                cls = _Ec2Service(21, 43)
+                cls = _Ec2Service(21, 43, {}, None)
                 assert cls._have_usage is False
                 cls.find_usage()
         assert cls._have_usage is True
@@ -392,7 +393,7 @@ class TestInstanceUsage(object):
             'Running On-Demand m4.8xlarge instances': mock_m4_8xlarge,
         }
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_conn = Mock()
 
         retval = fixtures.test_instance_usage
@@ -426,7 +427,7 @@ class TestInstanceUsage(object):
         mock_conn = Mock()
         data = fixtures.test_instance_usage_key_error
         mock_conn.instances.all.return_value = data
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
         cls.limits = {'Running On-Demand t2.micro instances': Mock()}
 
@@ -449,7 +450,7 @@ class TestInstanceUsage(object):
 class TestInstanceUsageVcpu(object):
 
     def test_no_RIs(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_conn = Mock()
         retval = fixtures.test_instance_usage_vcpu
         mock_conn.instances.all.return_value = retval
@@ -471,7 +472,7 @@ class TestInstanceUsageVcpu(object):
         ]
 
     def test_with_RIs(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_conn = Mock()
         retval = fixtures.test_instance_usage_vcpu
         mock_conn.instances.all.return_value = retval
@@ -508,7 +509,7 @@ class TestGetReservedInstanceCount(object):
     def test_simple(self):
         response = fixtures.test_get_reserved_instance_count
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_client_conn = Mock()
         cls.conn = mock_client_conn
         mock_client_conn.describe_reserved_instances.return_value = response
@@ -583,7 +584,7 @@ class TestFindUsageInstancesNonvcpu(object):
             'Running On-Demand EC2 instances': mock_all_ec2,
         }
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_conn = Mock()
         cls.resource_conn = mock_conn
         cls.limits = limits
@@ -649,7 +650,7 @@ class TestFindUsageInstancesVcpu(object):
             '(A, C, D, H, I, M, R, T, Z) instances': mock_std
         }
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.limits = limits
 
         with patch(
@@ -703,7 +704,7 @@ class TestFindUsageInstancesVcpu(object):
             '(A, C, D, H, I, M, R, T, Z) instances': mock_std
         }
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.limits = limits
 
         with patch(
@@ -735,7 +736,7 @@ class TestFindUsageInstancesVcpu(object):
 class TestRequiredIamPermissions(object):
 
     def test_simple(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         assert len(cls.required_iam_permissions()) == 19
         assert cls.required_iam_permissions() == [
             "ec2:DescribeAccountAttributes",
@@ -768,7 +769,7 @@ class TestFindUsageNetworkingSgs(object):
         mock_conn = Mock()
         mock_conn.security_groups.all.return_value = mocks
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
 
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -818,7 +819,7 @@ class TestFindUsageNetworkingEips(object):
         mock_conn = Mock()
         mock_conn.classic_addresses.all.return_value = mocks['Classic']
         mock_conn.vpc_addresses.all.return_value = mocks['Vpc']
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
 
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -855,7 +856,7 @@ class TestFindUsageNetworkingEniSg(object):
 
         mock_conn = Mock()
         mock_conn.network_interfaces.all.return_value = mocks
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
             cls._find_usage_networking_eni_sg()
@@ -882,7 +883,7 @@ class TestFindUsageNetworkingEniSg(object):
 class TestGetLimitsNetworking(object):
 
     def test_simple(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         limits = cls._get_limits_networking()
         expected = [
             'Security groups per VPC',
@@ -893,13 +894,31 @@ class TestGetLimitsNetworking(object):
         ]
         assert sorted(limits.keys()) == sorted(expected)
         assert limits[
-                   'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
+            'VPC Elastic IP addresses (EIPs)'].ta_service_name == 'VPC'
+        assert limits[
+            'VPC Elastic IP addresses (EIPs)'
+        ].quotas_service_code == 'ec2'
+        assert limits[
+            'VPC Elastic IP addresses (EIPs)'
+        ].quota_name == 'Number of EIPs - VPC EIPs'
+        assert limits[
+            'VPC Elastic IP addresses (EIPs)'
+        ].quotas_unit == 'None'
+        assert limits[
+            'Elastic IP addresses (EIPs)'
+        ].quotas_service_code == 'ec2'
+        assert limits[
+            'Elastic IP addresses (EIPs)'
+        ].quota_name == 'Elastic IP addresses for EC2-Classic'
+        assert limits[
+            'Elastic IP addresses (EIPs)'
+        ].quotas_unit == 'None'
 
 
 class TestGetLimitsSpot(object):
 
     def test_simple(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         limits = cls._get_limits_spot()
         expected = [
             'Max spot instance requests per region',
@@ -918,7 +937,7 @@ class TestFindUsageSpotInstances(object):
         mock_conn = Mock()
         mock_client_conn = Mock()
         mock_client_conn.describe_spot_instance_requests.return_value = data
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
         cls.conn = mock_client_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -950,7 +969,7 @@ class TestFindUsageSpotInstances(object):
             'operation',
         )
         mock_client_conn.describe_spot_instance_requests.side_effect = err
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         cls._find_usage_spot_instances()
         lim = cls.limits['Max spot instance requests per region']
@@ -964,7 +983,7 @@ class TestFindUsageSpotInstances(object):
             'operation',
         )
         mock_client_conn.describe_spot_instance_requests.side_effect = err
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         with pytest.raises(botocore.exceptions.ClientError):
             cls._find_usage_spot_instances()
@@ -973,7 +992,7 @@ class TestFindUsageSpotInstances(object):
         mock_client_conn = Mock()
         err = RuntimeError
         mock_client_conn.describe_spot_instance_requests.side_effect = err
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         with pytest.raises(RuntimeError):
             cls._find_usage_spot_instances()
@@ -986,7 +1005,7 @@ class TestFindUsageSpotFleets(object):
         mock_conn = Mock()
         mock_client_conn = Mock()
         mock_client_conn.describe_spot_fleet_requests.return_value = data
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
         cls.conn = mock_client_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -1036,7 +1055,7 @@ class TestFindUsageSpotFleets(object):
         mock_conn = Mock()
         mock_client_conn = Mock()
         mock_client_conn.describe_spot_fleet_requests.return_value = data
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.resource_conn = mock_conn
         cls.conn = mock_client_conn
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -1090,7 +1109,7 @@ class TestFindUsageSpotFleets(object):
             'operation',
         )
         mock_client_conn.describe_spot_fleet_requests.side_effect = err
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         cls._find_usage_spot_fleets()
         total = cls.limits['Max active spot fleets per '
@@ -1104,7 +1123,7 @@ class TestFindUsageSpotFleets(object):
             'operation',
         )
         mock_client_conn.describe_spot_fleet_requests.side_effect = err
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         with pytest.raises(botocore.exceptions.ClientError):
             cls._find_usage_spot_fleets()
@@ -1112,7 +1131,7 @@ class TestFindUsageSpotFleets(object):
     def test_unknown_error(self):
         mock_client_conn = Mock()
         mock_client_conn.describe_spot_fleet_requests.side_effect = RuntimeError
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         with pytest.raises(RuntimeError):
             cls._find_usage_spot_fleets()
@@ -1130,7 +1149,7 @@ class TestUpdateLimitsFromApi(object):
                 '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
         ) as m_use_vcpu:
             m_use_vcpu.return_value = False
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
             cls.resource_conn = mock_conn
             cls.conn = mock_client_conn
             with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -1159,7 +1178,7 @@ class TestUpdateLimitsFromApi(object):
                 '%s._use_vcpu_limits' % pb, new_callable=PropertyMock
         ) as m_use_vcpu:
             m_use_vcpu.return_value = False
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
             cls.resource_conn = mock_conn
             cls.conn = mock_client_conn
             with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -1182,7 +1201,7 @@ class TestUpdateLimitsFromApi(object):
         mock_client_conn = Mock()
         mock_client_conn.describe_account_attributes.return_value = data
 
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         cls.conn = mock_client_conn
         cls._update_limits_from_api()
         lim = cls.limits['Elastic IP addresses (EIPs)']
@@ -1199,7 +1218,7 @@ class TestUseVcpuLimits(object):
     )
     def test_useast1(self):
         with patch('%s.get_limits' % pb):
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1227,7 +1246,7 @@ class TestUseVcpuLimits(object):
     )
     def test_beijing(self):
         with patch('%s.get_limits' % pb):
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1255,7 +1274,7 @@ class TestUseVcpuLimits(object):
     )
     def test_ningxia(self):
         with patch('%s.get_limits' % pb):
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1283,7 +1302,7 @@ class TestUseVcpuLimits(object):
     )
     def test_gov_west1(self):
         with patch('%s.get_limits' % pb):
-            cls = _Ec2Service(21, 43)
+            cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1310,7 +1329,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_useast1_env_true(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1337,7 +1356,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_beijing_env_true(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1364,7 +1383,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_ningxia_env_true(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1391,7 +1410,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_gov_west1_env_true(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1418,7 +1437,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_useast1_env_false(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1445,7 +1464,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_beijing_env_false(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1472,7 +1491,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_ningxia_env_false(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 
@@ -1499,7 +1518,7 @@ class TestUseVcpuLimits(object):
         clear=True
     )
     def test_gov_west1_env_false(self):
-        cls = _Ec2Service(21, 43)
+        cls = _Ec2Service(21, 43, {}, None)
         mock_orig_conn = Mock()
         cls.conn = mock_orig_conn
 

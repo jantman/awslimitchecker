@@ -60,7 +60,7 @@ class Test_IamService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _IamService(21, 43)
+        cls = _IamService(21, 43, {}, None)
         assert cls.service_name == 'IAM'
         assert cls.api_name == 'iam'
         assert cls.conn is None
@@ -68,7 +68,7 @@ class Test_IamService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _IamService(21, 43)
+        cls = _IamService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -88,21 +88,21 @@ class Test_IamService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _IamService(21, 43)
+        cls = _IamService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
 
     def test_find_usage(self):
         with patch('%s._update_limits_from_api' % pb) as mock_update:
-            cls = _IamService(21, 43)
+            cls = _IamService(21, 43, {}, None)
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_update.mock_calls == [call()]
         assert cls._have_usage is True
 
     def test_required_iam_permissions(self):
-        cls = _IamService(21, 43)
+        cls = _IamService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'iam:GetAccountSummary'
         ]
@@ -115,7 +115,7 @@ class Test_IamService(object):
         mock_conn.AccountSummary.return_value = mock_summary
         with patch('%s.logger' % pbm) as mock_logger:
             with patch('%s.connect_resource' % pb) as mock_connect:
-                cls = _IamService(21, 43)
+                cls = _IamService(21, 43, {}, None)
                 cls.resource_conn = mock_conn
                 cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]

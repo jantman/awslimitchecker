@@ -61,6 +61,7 @@ class _ElbService(_AwsService):
 
     service_name = 'ELB'
     api_name = 'elb'
+    quotas_service_code = 'elasticloadbalancing'
 
     def find_usage(self):
         """
@@ -271,6 +272,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
+            quotas_name='Classic Load Balancers per Region',
+            quotas_unit='Count'
         )
         limits['Listeners per load balancer'] = AwsLimit(
             'Listeners per load balancer',
@@ -298,6 +301,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
+            quotas_name='Application Load Balancers per Region',
+            quotas_unit='Count'
         )
         limits['Target groups'] = AwsLimit(
             'Target groups',

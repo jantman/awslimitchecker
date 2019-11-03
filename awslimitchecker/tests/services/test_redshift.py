@@ -60,7 +60,7 @@ class Test_RedshiftService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _RedshiftService(21, 43)
+        cls = _RedshiftService(21, 43, {}, None)
         assert cls.service_name == 'Redshift'
         assert cls.api_name == 'redshift'
         assert cls.conn is None
@@ -68,7 +68,7 @@ class Test_RedshiftService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _RedshiftService(21, 43)
+        cls = _RedshiftService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -83,7 +83,7 @@ class Test_RedshiftService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _RedshiftService(21, 43)
+        cls = _RedshiftService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -97,7 +97,7 @@ class Test_RedshiftService(object):
                 _find_cluster_manual_snapshots=DEFAULT,
                 _find_cluster_subnet_groups=DEFAULT,
             ) as mocks:
-                cls = _RedshiftService(21, 43)
+                cls = _RedshiftService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -117,7 +117,7 @@ class Test_RedshiftService(object):
         mock_conn = Mock()
         mock_conn.describe_cluster_snapshots.return_value = response
 
-        cls = _RedshiftService(21, 43, {'region_name': 'us-west-2'})
+        cls = _RedshiftService(21, 43, {'region_name': 'us-west-2'}, None)
         cls.conn = mock_conn
         cls._find_cluster_manual_snapshots()
 
@@ -135,7 +135,7 @@ class Test_RedshiftService(object):
         mock_conn = Mock()
         mock_conn.describe_cluster_subnet_groups.return_value = response
 
-        cls = _RedshiftService(21, 43, {'region_name': 'us-west-2'})
+        cls = _RedshiftService(21, 43, {'region_name': 'us-west-2'}, None)
         cls.conn = mock_conn
         cls._find_cluster_subnet_groups()
 
@@ -145,7 +145,7 @@ class Test_RedshiftService(object):
             0].get_value() == 3
 
     def test_required_iam_permissions(self):
-        cls = _RedshiftService(21, 43)
+        cls = _RedshiftService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "redshift:DescribeClusterSnapshots",
             "redshift:DescribeClusterSubnetGroups",

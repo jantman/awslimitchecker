@@ -59,14 +59,14 @@ class Test_AutoscalingService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _AutoscalingService(21, 43)
+        cls = _AutoscalingService(21, 43, {}, None)
         assert cls.service_name == 'AutoScaling'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _AutoscalingService(21, 43)
+        cls = _AutoscalingService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -81,7 +81,7 @@ class Test_AutoscalingService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _AutoscalingService(21, 43)
+        cls = _AutoscalingService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -109,7 +109,7 @@ class Test_AutoscalingService(object):
 
         with patch('%s.connect' % self.pb) as mock_connect:
             with patch('%s.paginate_dict' % self.pbm) as mock_paginate:
-                cls = _AutoscalingService(21, 43)
+                cls = _AutoscalingService(21, 43, {}, None)
                 cls.conn = mock_conn
                 mock_paginate.side_effect = se_wrapper
                 assert cls._have_usage is False
@@ -139,7 +139,7 @@ class Test_AutoscalingService(object):
         assert lcs[0].get_value() == 2
 
     def test_required_iam_permissions(self):
-        cls = _AutoscalingService(21, 43)
+        cls = _AutoscalingService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'autoscaling:DescribeAccountLimits',
             'autoscaling:DescribeAutoScalingGroups',
@@ -157,7 +157,7 @@ class Test_AutoscalingService(object):
 
         mock_conn.describe_account_limits.return_value = aslimits
         with patch('%s.connect' % self.pb) as mock_connect:
-            cls = _AutoscalingService(21, 43)
+            cls = _AutoscalingService(21, 43, {}, None)
             cls.conn = mock_conn
             cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]

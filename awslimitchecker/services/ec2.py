@@ -57,6 +57,7 @@ class _Ec2Service(_AwsService):
 
     service_name = 'EC2'
     api_name = 'ec2'
+    quotas_service_code = 'ec2'
 
     #: Mapping of lower-case instance family character (instance type first
     #: character) to limit name for that family.
@@ -67,9 +68,41 @@ class _Ec2Service(_AwsService):
         'x': 'Running On-Demand All X instances'
     }
 
+    #: Mapping of lower-case instance family character to Service Quotas
+    #: quota name for that family.
+    instance_family_to_quota_name = {
+        'f': 'Running On-Demand F instances',
+        'g': 'Running On-Demand G instances',
+        'p': 'Running On-Demand P instances',
+        'x': 'Running On-Demand X instances'
+    }
+
     #: Name of default limit for all other (standard) instance families.
     default_limit_name = 'Running On-Demand All Standard ' \
                          '(A, C, D, H, I, M, R, T, Z) instances'
+
+    #: Name of default Service Quota for all other (standard) families.
+    default_quota_name = 'Running On-Demand Standard ' \
+                         '(A, C, D, H, I, M, R, T, Z) instances'
+
+    #: List of instance types that aren't exposed via Service Quotas
+    no_quotas_types = [
+        'c5d.12xlarge',
+        'c5d.24xlarge',
+        'c5d.metal',
+        'cc1.4xlarge',
+        'cg1.4xlarge',
+        'cr1.8xlarge',
+        'g4dn.metal',
+        'hi1.4xlarge',
+        'hs1.8xlarge',
+        'm5dn.metal',
+        'm5n.metal',
+        'r5dn.metal',
+        'r5n.metal',
+        'u-18tb1.metal',
+        'u-24tb1.metal'
+    ]
 
     def find_usage(self):
         """
@@ -480,6 +513,9 @@ class _Ec2Service(_AwsService):
             lim = default_limits[0]
             if i_type in special_limits:
                 lim = special_limits[i_type][0]
+            quotas_name = 'Running On-Demand %s instances' % i_type
+            if i_type in self.no_quotas_types:
+                quotas_name = None
             limits[key] = AwsLimit(
                 key,
                 self,
@@ -488,7 +524,8 @@ class _Ec2Service(_AwsService):
                 self.critical_threshold,
                 limit_type='On-Demand instances',
                 limit_subtype=i_type,
-                ta_limit_name='On-Demand instances - %s' % i_type
+                ta_limit_name='On-Demand instances - %s' % i_type,
+                quotas_name=quotas_name
             )
         # limit for ALL running On-Demand instances
         key = 'Running On-Demand EC2 instances'
@@ -499,6 +536,7 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='On-Demand instances',
+            quotas_name='Total running On-Demand instances'
         )
         return limits
 
@@ -521,7 +559,8 @@ class _Ec2Service(_AwsService):
                 self.warning_threshold,
                 self.critical_threshold,
                 limit_type='On-Demand instances',
-                limit_subtype=key.upper()
+                limit_subtype=key.upper(),
+                quotas_name=self.instance_family_to_quota_name[key]
             )
         limits[self.default_limit_name] = AwsLimit(
             self.default_limit_name,
@@ -530,7 +569,8 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='On-Demand instances',
-            limit_subtype='Standard'
+            limit_subtype='Standard',
+            quotas_name=self.default_quota_name
         )
         return limits
 
@@ -700,7 +740,8 @@ class _Ec2Service(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
             limit_subtype='AWS::EC2::VPC',
-            ta_service_name='VPC'  # TA shows this as VPC not EC2
+            ta_service_name='VPC',  # TA shows this as VPC not EC2
+            quotas_name='Number of EIPs - VPC EIPs'
         )
         # the EC2 limits screen calls this 'EC2-Classic Elastic IPs'
         # but Trusted Advisor just calls it 'Elastic IP addresses (EIPs)'
@@ -711,6 +752,7 @@ class _Ec2Service(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::EIP',
+            quotas_name='Elastic IP addresses for EC2-Classic'
         )
         limits['VPC security groups per elastic network interface'] = AwsLimit(
             'VPC security groups per elastic network interface',

@@ -61,7 +61,7 @@ class Test_SesService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _SesService(21, 43)
+        cls = _SesService(21, 43, {}, None)
         assert cls.service_name == 'SES'
         assert cls.api_name == 'ses'
         assert cls.conn is None
@@ -69,7 +69,7 @@ class Test_SesService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _SesService(21, 43)
+        cls = _SesService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -84,7 +84,7 @@ class Test_SesService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _SesService(21, 43)
+        cls = _SesService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -98,7 +98,7 @@ class Test_SesService(object):
         }
 
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _SesService(21, 43)
+            cls = _SesService(21, 43, {}, None)
             cls.conn = mock_conn
             assert cls._have_usage is False
             cls.find_usage()
@@ -118,7 +118,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -156,7 +156,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -192,7 +192,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -229,7 +229,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 with pytest.raises(ClientError):
@@ -251,7 +251,7 @@ class Test_SesService(object):
         }
 
         with patch('%s.connect' % pb) as mock_connect:
-            cls = _SesService(21, 43)
+            cls = _SesService(21, 43, {}, None)
             cls.conn = mock_conn
             cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
@@ -267,7 +267,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
@@ -302,7 +302,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
@@ -333,7 +333,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
@@ -365,7 +365,7 @@ class Test_SesService(object):
 
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.logger' % pbm) as mock_logger:
-                cls = _SesService(21, 43)
+                cls = _SesService(21, 43, {}, None)
                 cls.conn = mock_conn
                 with pytest.raises(ClientError):
                     cls._update_limits_from_api()
@@ -375,7 +375,7 @@ class Test_SesService(object):
         assert cls.limits['Daily sending quota'].api_limit is None
 
     def test_required_iam_permissions(self):
-        cls = _SesService(21, 43)
+        cls = _SesService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'ses:GetSendQuota'
         ]

@@ -60,7 +60,7 @@ class Test_ElasticBeanstalkService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         assert cls.service_name == 'ElasticBeanstalk'
         assert cls.api_name == 'elasticbeanstalk'
         assert cls.conn is None
@@ -69,7 +69,7 @@ class Test_ElasticBeanstalkService(object):
 
     def test_get_limits(self):
         """test get limits returns all keys"""
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -85,7 +85,7 @@ class Test_ElasticBeanstalkService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -100,7 +100,7 @@ class Test_ElasticBeanstalkService(object):
                 _find_usage_application_versions=DEFAULT,
                 _find_usage_environments=DEFAULT,
             ) as mocks:
-                cls = _ElasticBeanstalkService(21, 43)
+                cls = _ElasticBeanstalkService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -120,7 +120,7 @@ class Test_ElasticBeanstalkService(object):
         mock_conn = Mock()
         mock_conn.describe_applications.return_value = response
 
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_applications()
@@ -139,7 +139,7 @@ class Test_ElasticBeanstalkService(object):
         mock_conn = Mock()
         mock_conn.describe_application_versions.return_value = response
 
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_application_versions()
@@ -157,7 +157,7 @@ class Test_ElasticBeanstalkService(object):
         mock_conn = Mock()
         mock_conn.describe_environments.return_value = response
 
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         cls.conn = mock_conn
 
         cls._find_usage_environments()
@@ -171,7 +171,7 @@ class Test_ElasticBeanstalkService(object):
 
     def test_required_iam_permissions(self):
         """test expected permissions are returned"""
-        cls = _ElasticBeanstalkService(21, 43)
+        cls = _ElasticBeanstalkService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'elasticbeanstalk:DescribeApplications',
             'elasticbeanstalk:DescribeApplicationVersions',

@@ -50,6 +50,7 @@ class _IamService(_AwsService):
 
     service_name = 'IAM'
     api_name = 'iam'
+    quotas_service_code = 'iam'
 
     # mapping of iam.AccountSummary() key to limit name
     API_TO_LIMIT_NAME = {
@@ -93,6 +94,7 @@ class _IamService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Group',
+            quotas_name='Groups per account'
         )
         limits['Users'] = AwsLimit(
             'Users',
@@ -101,6 +103,7 @@ class _IamService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::User',
+            quotas_name='Users per account'
         )
         limits['Roles'] = AwsLimit(
             'Roles',
@@ -109,6 +112,7 @@ class _IamService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Role',
+            quotas_name='Roles per account'
         )
         limits['Instance profiles'] = AwsLimit(
             'Instance profiles',
@@ -117,6 +121,7 @@ class _IamService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::InstanceProfile',
+            quotas_name='Instance profiles per account'
         )
         limits['Server certificates'] = AwsLimit(
             'Server certificates',
@@ -125,6 +130,7 @@ class _IamService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::ServerCertificate',
+            quotas_name='Server certificates per account'
         )
         limits['Policies'] = AwsLimit(
             'Policies',
@@ -133,6 +139,7 @@ class _IamService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::IAM::Policy',
+            quotas_name='Customer managed policies per account'
         )
         limits['Policy Versions In Use'] = AwsLimit(
             'Policy Versions In Use',

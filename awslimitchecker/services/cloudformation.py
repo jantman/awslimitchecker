@@ -50,6 +50,7 @@ class _CloudformationService(_AwsService):
 
     service_name = 'CloudFormation'
     api_name = 'cloudformation'  # AWS API name to connect to (boto3.client)
+    quotas_service_code = 'cloudformation'
 
     def find_usage(self):
         """
@@ -95,6 +96,7 @@ class _CloudformationService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::CloudFormation::Stack',
+            quotas_name='Stack count'
         )
         self.limits = limits
         return limits

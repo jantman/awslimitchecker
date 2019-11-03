@@ -47,10 +47,21 @@ from ..utils import paginate_dict
 logger = logging.getLogger(__name__)
 
 
+def convert_TiB_to_GiB(value, in_unit, out_unit):
+    if in_unit != 'None' or out_unit != 'GiB':
+        logger.error(
+            'ERROR: cannot convert Service Quotas EBS limit value from '
+            'units of "%s" to units of "%s"', in_unit, out_unit
+        )
+        return None
+    return value * 1024.0
+
+
 class _EbsService(_AwsService):
 
     service_name = 'EBS'
     api_name = 'ec2'
+    quotas_service_code = 'ebs'
 
     def find_usage(self):
         """
@@ -184,35 +195,45 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
+            quotas_name='Provisioned IOPS'
         )
         limits['Provisioned IOPS (SSD) storage (GiB)'] = AwsLimit(
             'Provisioned IOPS (SSD) storage (GiB)',
             self,
-            102400,
+            307200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
+            quotas_name='Provisioned IOPS (SSD) volume storage',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
         )
         limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
             'General Purpose (SSD) volume storage (GiB)',
             self,
-            102400,
+            307200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
-            ta_limit_name='General Purpose SSD (gp2) volume storage (GiB)'
+            ta_limit_name='General Purpose SSD (gp2) volume storage (GiB)',
+            quotas_name='General Purpose (SSD) volume storage',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
         )
         limits['Magnetic volume storage (GiB)'] = AwsLimit(
             'Magnetic volume storage (GiB)',
             self,
-            20480,
+            307200,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
-            ta_limit_name='Magnetic (standard) volume storage (GiB)'
+            ta_limit_name='Magnetic (standard) volume storage (GiB)',
+            quotas_name='Magnetic volume storage',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
         )
         limits['Throughput Optimized (HDD) volume storage (GiB)'] = AwsLimit(
             'Throughput Optimized (HDD) volume storage (GiB)',
@@ -222,6 +243,9 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='st1',
+            quotas_name='Max Throughput Optimized HDD (ST1) Storage',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
         )
         limits['Cold (HDD) volume storage (GiB)'] = AwsLimit(
             'Cold (HDD) volume storage (GiB)',
@@ -231,6 +255,9 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='sc1',
+            quotas_name='Max Cold HDD (SC1) Storage',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
         )
         limits['Active snapshots'] = AwsLimit(
             'Active snapshots',
@@ -239,6 +266,7 @@ class _EbsService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::VolumeSnapshot',
+            quotas_name='Number of EBS snapshots'
         )
         limits['Active volumes'] = AwsLimit(
             'Active volumes',

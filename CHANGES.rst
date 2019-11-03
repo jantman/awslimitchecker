@@ -10,6 +10,8 @@ Changelog
 
 **Important:** Python versions prior to 3.5, including 2.7, are now pending deprecation. As of January 1, 2020, they will no longer be tested or supported, and awslimitchecker **will require Python 3.5 or newer**. Please see below for details. Also take note that running via the official Docker image is a way to ensure the best version of Python is always used.
 
+**Important:** This release requires a new IAM permission, ``servicequotas:ListServiceQuotas``.
+
 * `Issue #400 <https://github.com/jantman/awslimitchecker/issues/400>`__ / `PR #434 <https://github.com/jantman/awslimitchecker/pull/434>`__ - Support GovCloud region and alternate partitions in STS assumed roles and Trusted Advisor. Thanks to `@djkiourtsis <https://github.com/djkiourtsis>`__.
 * `Issue #432 <https://github.com/jantman/awslimitchecker/issues/432>`__ - Update EC2 limit handling for new vCPU-based limits in regions other than ``cn-*`` and ``us-gov-*`` (which still use old per-instance-type limits). See :ref:`section below <changelog.8_0_0_vcpu_limits>` for further information. For regions other than ``cn-*`` and ``us-gov-*``, **this will remove** all 175 ``Running On-Demand <type> instances`` and the ``Running On-Demand EC2 instances`` limit, and replace them with:
 
@@ -29,6 +31,8 @@ Changelog
 * `Issue #436 <https://github.com/jantman/awslimitchecker/issues/436>`_ - Begin testing under Python 3.8 and base our Docker image on ``python:3.8-alpine``.
 * `Issue #435 <https://github.com/jantman/awslimitchecker/issues/435>`_ - Allow configuring the botocore maximum retries for Throttling / RateExceeded errors on a per-AWS-API basis via environment variables. See the relevant sections of the :ref:`CLI Usage <cli_usage.throttling>` or :ref:`Python Usage <python_usage.throttling>` documentation for further details.
 * `Issue #431 <https://github.com/jantman/awslimitchecker/issues/431>`_ - Fix a **major under-calculation** of usage for the EC2 ``Rules per VPC security group`` limit. We were previously calculating the number of "Rules" (from port / to port / protocol combinations) in a Security Group, but the limit is actually based on the number of permissions granted. See `this comment <https://github.com/jantman/awslimitchecker/issues/431#issuecomment-548599785>`_ on the issue for further details.
+* `Issue #413 <https://github.com/jantman/awslimitchecker/issues/431>`_ - Add support for retrieving limits from the new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`__ where available. See the :ref:`changelog.8_0_0_service_quotas` section below for more information.
+* Bump boto3 minimum version requirement from 1.4.6 to 1.9.175 and botocore minimum version requirement from 1.6.0 to 1.12.175, in order to support Service Quotas.
 
 .. _changelog.8_0_0_vcpu_limits:
 
@@ -51,6 +55,15 @@ Please also note that with the change to vCPU limits, there is no longer an over
 I have **not** yet implemented Trusted Advisor (TA) support for these new limits, as they're presented in a different category of Trusted Advisor checks from the previous EC2 limits. I'm not going to be implementing TA for these limits, in favor of spending the time instead on implementing Service Quotas support via `Issue #413 <https://github.com/jantman/awslimitchecker/issues/413>`__.
 
 Calculation of current usage for the vCPU limits is based on the `EC2 Optimizing CPU Options documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html>`__ which specifies, "The number of vCPUs for the instance is the number of CPU cores multiplied by the threads per core." The ``CpuOptions`` field of the EC2 ``DescribeInstances`` API specifies the core and thread count for each running instance.
+
+.. _changelog.8_0_0_service_quotas:
+
+Service Quotas
+++++++++++++++
+
+AWS' new `Service Quotas service <https://docs.aws.amazon.com/servicequotas/latest/userguide/intro.html>`__ provides a unified interface to retrieve current limits from many AWS services. These limit values are second only to the services' own APIs (for the services that provide limit information via API), and are much more current and complete than the information provided by Trusted Advisor. The introduction of Service Quotas should greatly reduce the number of limits that need to be retrieved from Trusted Advisor or specified manually.
+
+If you currently have any Limit Overrides set (via either the :ref:`CLI <cli_usage.limit_overrides>` or :ref:`Python API <python_usage.limit_overrides>`), please verify on the :ref:`limits` page whether Service Quotas data is now available for those limits. You should be able to remove manual overrides for the limits that now retrieve data from Service Quotas.
 
 .. _changelog.7_1_0:
 

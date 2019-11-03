@@ -155,6 +155,10 @@ class LogRecordHelper(object):
                     r.funcName == 'find_usage' and 'perhaps the Firehose '
                     'service is not available in this region' in r.msg):
                 continue
+            if (r.levelno == logging.WARNING and r.module == 'quotas' and
+                    r.funcName == 'quotas_for_service' and
+                    'Attempted to retrieve Service Quotas' in r.msg):
+                continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,
                 r.module,
@@ -307,12 +311,22 @@ def sample_limits_api():
                 limit_type='ltfoo5',
                 limit_subtype='sltfoo5',
             ),
+            'zzz limit5': AwsLimit(
+                'zzz limit5',
+                'SvcFoo',
+                4,
+                1,
+                5,
+                limit_type='ltfoo5',
+                limit_subtype='sltfoo5',
+            ),
         },
     }
     limits['SvcBar']['bar limit2']._set_api_limit(2)
     limits['SvcBar']['bar limit2'].set_limit_override(99)
     limits['SvcFoo']['foo limit3']._set_ta_limit(10)
     limits['SvcFoo']['zzz limit4']._set_api_limit(34)
+    limits['SvcFoo']['zzz limit5']._set_quotas_limit(60.0)
 
     limits['SvcFoo']['limit with usage maximums']._add_current_usage(
         1,
@@ -320,3 +334,55 @@ def sample_limits_api():
         aws_type='res_type',
         resource_id='res_id')
     return limits
+
+
+def quotas_response():
+    return (
+        [
+            {
+                'Quotas': [
+                    {
+                        'QuotaName': 'qname1',
+                        'QuotaCode': 'qcode1',
+                        'Value': 1.1
+                    },
+                    {
+                        'QuotaName': 'qname2',
+                        'QuotaCode': 'qcode2',
+                        'Value': 2.2
+                    }
+                ]
+            },
+            {
+                'Quotas': [
+                    {
+                        'QuotaName': 'qname3',
+                        'QuotaCode': 'qcode3',
+                        'Value': 3.3
+                    },
+                    {
+                        'QuotaName': 'qname2',
+                        'QuotaCode': 'qcode2',
+                        'Value': 2.4  # triggers the error log for dupe
+                    }
+                ]
+            }
+        ],
+        {
+            'qname1': {
+                'QuotaName': 'qname1',
+                'QuotaCode': 'qcode1',
+                'Value': 1.1
+            },
+            'qname2': {
+                'QuotaName': 'qname2',
+                'QuotaCode': 'qcode2',
+                'Value': 2.4
+            },
+            'qname3': {
+                'QuotaName': 'qname3',
+                'QuotaCode': 'qcode3',
+                'Value': 3.3
+            }
+        }
+    )

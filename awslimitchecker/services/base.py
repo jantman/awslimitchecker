@@ -47,11 +47,17 @@ logger = logging.getLogger(__name__)
 class _AwsService(Connectable):
     __metaclass__ = abc.ABCMeta
 
+    #: awslimitchecker's name for the service
     service_name = 'baseclass'
+
+    #: the AWS API name for the service
     api_name = 'baseclass'
 
+    #: the service code for Service Quotas, or None
+    quotas_service_code = None
+
     def __init__(self, warning_threshold, critical_threshold,
-                 boto_connection_kwargs={}):
+                 boto_connection_kwargs, quotas_client):
         """
         Describes an AWS service and its limits, and provides methods to
         query current utilization.
@@ -69,37 +75,16 @@ class _AwsService(Connectable):
           integer percentage, for any limits without a specifically-set
           threshold.
         :type critical_threshold: int
-        :param profile_name: The name of a profile in the cross-SDK
-          `shared credentials file <https://boto3.readthedocs.io/en/latest/
-          guide/configuration.html#shared-credentials-file>`_ for boto3 to
-          retrieve AWS credentials from.
-        :type profile_name: str
-        :param account_id: `AWS Account ID <http://docs.aws.amazon.com/general/
-          latest/gr/acct-identifiers.html>`_
-          (12-digit string, currently numeric) for the account to connect to
-          (destination) via STS
-        :type account_id: str
-        :param account_role: the name of an
-          `IAM Role <http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.
-          html>`_
-          (in the destination account) to assume
-        :param region: AWS region name to connect to
-        :type region: str
-        :type account_role: str
-        :param external_id: (optional) the `External ID <http://docs.aws.amazon.
-          com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html>`_
-          string to use when assuming a role via STS.
-        :type external_id: str
-        :param mfa_serial_number: (optional) the `MFA Serial Number` string to
-          use when assuming a role via STS.
-        :type mfa_serial_number: str
-        :param mfa_token: (optional) the `MFA Token` string to use when
-          assuming a role via STS.
-        :type mfa_token: str
+        :param boto_connection_kwargs: Dictionary of keyword arguments to
+          pass to boto connection methods.
+        :type boto_connection_kwargs: dict
+        :param quotas_client: Instance of ServiceQuotasClient
+        :type quotas_client: ``ServiceQuotasClient`` or ``None``
         """
         self.warning_threshold = warning_threshold
         self.critical_threshold = critical_threshold
         self._boto3_connection_kwargs = boto_connection_kwargs
+        self._quotas_client = quotas_client
         self.conn = None
         self.resource_conn = None
         self.limits = {}
@@ -275,3 +260,21 @@ class _AwsService(Connectable):
             if limit.check_thresholds() is False:
                 ret[name] = limit
         return ret
+
+    def _update_service_quotas(self):
+        """
+        Update all limits for this service via the Service Quotas service.
+        """
+        if self.quotas_service_code is None:
+            return
+        if self._quotas_client is None:
+            return
+        logger.debug('Updating service quotas for %s', self.service_name)
+        for lname in sorted(self.limits.keys()):
+            lim = self.limits[lname]
+            val = self._quotas_client.get_quota_value(
+                lim.quotas_service_code, lim.quota_name,
+                units=lim.quotas_unit, converter=lim.quotas_unit_converter
+            )
+            if val is not None:
+                lim._set_quotas_limit(val)

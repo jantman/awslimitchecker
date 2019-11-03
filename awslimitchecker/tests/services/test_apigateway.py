@@ -61,15 +61,16 @@ class Test_ApigatewayService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         assert cls.service_name == 'ApiGateway'
         assert cls.api_name == 'apigateway'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
+        assert cls.quotas_service_code == 'apigateway'
 
     def test_get_limits(self):
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -89,11 +90,12 @@ class Test_ApigatewayService(object):
             assert limit.service == cls
             assert limit.def_warning_threshold == 21
             assert limit.def_critical_threshold == 43
+        assert res['VPC Links per account'].quota_name == 'VPC links'
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -110,7 +112,7 @@ class Test_ApigatewayService(object):
                 _find_usage_plans=DEFAULT,
                 _find_usage_vpc_links=DEFAULT
             ) as mocks:
-                cls = _ApigatewayService(21, 43)
+                cls = _ApigatewayService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -154,7 +156,7 @@ class Test_ApigatewayService(object):
 
         mock_conn.get_paginator.side_effect = se_get_paginator
         mock_conn.get_stages.side_effect = se_get_stages
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.paginate_dict' % pbm, autospec=True) as mock_pd:
             with patch('%s.logger' % pbm) as mock_logger:
@@ -351,7 +353,7 @@ class Test_ApigatewayService(object):
 
         mock_conn.get_paginator.side_effect = se_get_paginator
         mock_conn.get_stages.side_effect = se_get_stages
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.paginate_dict' % pbm, autospec=True) as mock_pd:
             with patch('%s.logger' % pbm) as mock_logger:
@@ -374,7 +376,7 @@ class Test_ApigatewayService(object):
         mock_paginator.paginate.return_value = res
 
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.logger' % pbm) as mock_logger:
             cls._find_usage_plans()
@@ -398,7 +400,7 @@ class Test_ApigatewayService(object):
         mock_paginator.paginate.return_value = res
 
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.logger' % pbm) as mock_logger:
             cls._find_usage_certs()
@@ -423,7 +425,7 @@ class Test_ApigatewayService(object):
         mock_paginator.paginate.return_value = res
 
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.logger' % pbm) as mock_logger:
             cls._find_usage_api_keys()
@@ -448,7 +450,7 @@ class Test_ApigatewayService(object):
         mock_paginator.paginate.return_value = res
 
         mock_conn.get_paginator.return_value = mock_paginator
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.logger' % pbm) as mock_logger:
             cls._find_usage_vpc_links()
@@ -467,7 +469,7 @@ class Test_ApigatewayService(object):
         ]
 
     def test_required_iam_permissions(self):
-        cls = _ApigatewayService(21, 43)
+        cls = _ApigatewayService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "apigateway:GET",
             "apigateway:HEAD",

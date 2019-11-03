@@ -49,6 +49,9 @@ from textwrap import dedent
 my_dir = os.path.dirname(os.path.abspath(__file__))
 os.environ['PYTHONPATH'] = os.path.join(my_dir, '..')
 sys.path.insert(0, os.path.join(my_dir, '..'))
+# always run in us-east-1, because some Quotas Service quotas only exist there
+os.environ['AWS_REGION'] = 'us-east-1'
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 from awslimitchecker.checker import AwsLimitChecker
 from awslimitchecker.metrics import MetricsProvider
@@ -124,26 +127,29 @@ def format_limits_for_service(limits):
             max_default_limit = len(str(limit.default_limit))
     # create the format string
     sformat = '{name: <' + str(max_name) + '} ' \
-                                           '{ta: <15} {api: <7} ' \
+                                           '{ta: <15} {quotas: <8} ' \
+                                           '{api: <7} ' \
                                            '{limit: <' + str(
         max_default_limit) + '}\n'
     # separator lines
-    sep = ('=' * max_name) + ' =============== ======= ' + \
+    sep = ('=' * max_name) + ' =============== ======== ======= ' + \
           ('=' * max_default_limit) + "\n"
     # header
     limit_info += sep
     limit_info += sformat.format(
-        name='Limit', limit='Default', api='API', ta='Trusted Advisor'
+        name='Limit', limit='Default', api='API', ta='Trusted Advisor',
+        quotas='Quotas'
     )
     limit_info += sep
     # limit lines
-    for lname, limit in sorted(slimits.iteritems()):
+    for lname, limit in sorted(slimits.items()):
         limit_info += sformat.format(
             name=lname, limit=str(limit.default_limit),
             ta='|check|' if limit.ta_limit is not None else '',
             api='|check|' if (
                     limit.api_limit is not None or limit.has_resource_limits()
-            ) else ''
+            ) else '',
+            quotas='|check|' if limit.quotas_limit is not None else ''
         )
     # footer
     limit_info += sep
@@ -248,11 +254,17 @@ def build_limits(checker):
     last release. Note that not all accounts can access Trusted Advisor, or can
     access all limits known by Trusted Advisor.
 
+    **Limits with a** |check| **in the "Quotas" column can be retrieved from
+    the Service Quotas service**; this information is supposed to be accurate
+    and up-to-date, but is likely less accurate than the service's own API.
+    Limits retrieved from Service Quotas take precedence over Trusted Advisor
+    and default limits.
+
     **Limits with a** |check| **in the "API" column can be retrieved directly from
     the corresponding Service API**; this information should be the most accurate
     and up-to-date, as it is retrieved directly from the service that evaluates
     and enforces limits. Limits retrieved via service API take precedence over
-    Trusted Advisor and default limits.
+    Trusted Advisor, Service Quotas, and default limits.
 
     {limit_info}
 
@@ -277,6 +289,7 @@ def build_runner_examples():
         'list_limits': ['awslimitchecker', '-l'],
         'list_defaults': ['awslimitchecker', '--list-defaults'],
         'skip_ta': ['awslimitchecker', '-l', '--skip-ta'],
+        'skip_quotas': ['awslimitchecker', '-l', '--skip-quotas'],
         'show_usage': ['awslimitchecker', '-u'],
         'list_services': ['awslimitchecker', '-s'],
         'limit_overrides': [
@@ -299,9 +312,9 @@ def build_runner_examples():
         cmd_str = ' '.join(command)
         logger.info("Running: %s", cmd_str)
         try:
-            output = subprocess.check_output(command)
+            output = subprocess.check_output(command).decode()
         except subprocess.CalledProcessError as e:
-            output = e.output
+            output = e.output.decode()
         results[name] = format_cmd_output(cmd_str, output, name)
         results['%s-output-only' % name] = format_cmd_output(None, output, name)
     results['metrics-providers'] = ''

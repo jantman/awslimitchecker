@@ -62,7 +62,7 @@ class Test_CloudTrailService(object):
 
     def test_init(self):
         with patch('%s.get_limits' % PATCH_BASE):
-            cls = _CloudTrailService(21, 43)
+            cls = _CloudTrailService(21, 43, {}, None)
         assert cls.service_name == 'CloudTrail'
         assert cls.api_name == 'cloudtrail'
         assert cls.conn is None
@@ -71,7 +71,7 @@ class Test_CloudTrailService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _CloudTrailService(21, 43)
+        cls = _CloudTrailService(21, 43, {}, None)
 
         limit_dict = cls.get_limits()
         for limit in limit_dict:
@@ -99,7 +99,7 @@ class Test_CloudTrailService(object):
     def test_get_limits_again(self):
         """Test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)
-        cls = _CloudTrailService(21, 43)
+        cls = _CloudTrailService(21, 43, {}, None)
         cls.limits = mock_limits
         response = cls.get_limits()
         assert response == mock_limits
@@ -125,7 +125,7 @@ class Test_CloudTrailService(object):
         mock_trails.get_event_selectors.side_effect = se_selectors
 
         with patch('%s.connect' % PATCH_BASE,) as mock_connect:
-            cls = _CloudTrailService(21, 43)
+            cls = _CloudTrailService(21, 43, {}, None)
             cls.conn = mock_trails
             assert cls._have_usage is False
             cls.find_usage()
@@ -148,7 +148,7 @@ class Test_CloudTrailService(object):
         assert usage[1].get_value() == 3
 
     def test_required_iam_permissions(self):
-        cls = _CloudTrailService(21, 43)
+        cls = _CloudTrailService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "cloudtrail:DescribeTrails",
             "cloudtrail:GetEventSelectors",

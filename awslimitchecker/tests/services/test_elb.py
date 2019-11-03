@@ -60,14 +60,14 @@ class Test_ElbService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _ElbService(21, 43)
+        cls = _ElbService(21, 43, {}, None)
         assert cls.service_name == 'ELB'
         assert cls.conn is None
         assert cls.warning_threshold == 21
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _ElbService(21, 43)
+        cls = _ElbService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -90,7 +90,7 @@ class Test_ElbService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _ElbService(21, 43)
+        cls = _ElbService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -109,7 +109,7 @@ class Test_ElbService(object):
                     return_value='rname'
                 )
                 m_cli.describe_account_limits.return_value = r2
-                cls = _ElbService(21, 43)
+                cls = _ElbService(21, 43, {}, None)
                 cls.conn = mock_conn
                 cls._boto3_connection_kwargs = {'foo': 'bar', 'baz': 'blam'}
                 cls.get_limits()
@@ -138,7 +138,7 @@ class Test_ElbService(object):
             with patch('%s._find_usage_elbv2' % pb, autospec=True) as mock_v2:
                 mock_v1.return_value = 3
                 mock_v2.return_value = 5
-                cls = _ElbService(21, 43)
+                cls = _ElbService(21, 43, {}, None)
                 assert cls._have_usage is False
                 cls.find_usage()
         assert cls._have_usage is True
@@ -161,7 +161,7 @@ class Test_ElbService(object):
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.paginate_dict' % pbm) as mock_paginate:
                 mock_paginate.return_value = return_value
-                cls = _ElbService(21, 43)
+                cls = _ElbService(21, 43, {}, None)
                 cls.conn = mock_conn
                 res = cls._find_usage_elbv1()
         assert res == 4
@@ -217,7 +217,7 @@ class Test_ElbService(object):
                                 tgs_res,
                                 lbs_res
                             ]
-                            cls = _ElbService(21, 43)
+                            cls = _ElbService(21, 43, {}, None)
                             cls._boto3_connection_kwargs = {
                                 'foo': 'bar',
                                 'baz': 'blam'
@@ -268,7 +268,7 @@ class Test_ElbService(object):
                 result_fixtures.ELB.test_usage_alb_rules[1],
                 result_fixtures.ELB.test_usage_alb_rules[2]
             ]
-            cls = _ElbService(21, 43)
+            cls = _ElbService(21, 43, {}, None)
             cls._update_usage_for_alb(conn, 'myarn', 'albname')
         assert mock_paginate.mock_calls == [
             call(
@@ -326,7 +326,7 @@ class Test_ElbService(object):
             mock_paginate.side_effect = [
                 result_fixtures.ELB.test_usage_nlb_listeners
             ]
-            cls = _ElbService(21, 43)
+            cls = _ElbService(21, 43, {}, None)
             cls._update_usage_for_nlb(conn, 'mynarn', 'nlbname')
         assert mock_paginate.mock_calls == [
             call(
@@ -346,7 +346,7 @@ class Test_ElbService(object):
         assert lim[0].resource_id == 'nlbname'
 
     def test_required_iam_permissions(self):
-        cls = _ElbService(21, 43)
+        cls = _ElbService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "elasticloadbalancing:DescribeLoadBalancers",
             "elasticloadbalancing:DescribeAccountLimits",

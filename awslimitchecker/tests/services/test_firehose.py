@@ -63,7 +63,7 @@ class Test_FirehoseService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _FirehoseService(21, 43)
+        cls = _FirehoseService(21, 43, {}, None)
         assert cls.service_name == 'Firehose'
         assert cls.api_name == 'firehose'
         assert cls.conn is None
@@ -71,7 +71,7 @@ class Test_FirehoseService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _FirehoseService(21, 43)
+        cls = _FirehoseService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -85,7 +85,7 @@ class Test_FirehoseService(object):
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock()
-        cls = _FirehoseService(21, 43)
+        cls = _FirehoseService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -99,7 +99,7 @@ class Test_FirehoseService(object):
                 response_streams.append(stream_name)
         mock_conn = Mock()
         mock_conn.list_delivery_streams.side_effect = responses
-        cls = _FirehoseService(21, 43, {'region_name': 'us-west-2'})
+        cls = _FirehoseService(21, 43, {'region_name': 'us-west-2'}, None)
         cls.conn = mock_conn
         cls.find_usage()
         assert mock_conn.list_delivery_streams.call_count == len(responses)
@@ -111,7 +111,7 @@ class Test_FirehoseService(object):
         assert usage[0].aws_type == 'AWS::KinesisFirehose::DeliveryStream'
 
     def test_required_iam_permissions(self):
-        cls = _FirehoseService(21, 43)
+        cls = _FirehoseService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "firehose:ListDeliveryStreams",
         ]
@@ -121,7 +121,7 @@ class Test_FirehoseService(object):
         client_error = EndpointConnectionError(
             endpoint_url='https://firehose.bad-region.amazonaws.com/')
         mock_conn.list_delivery_streams.side_effect = client_error
-        cls = _FirehoseService(21, 43)
+        cls = _FirehoseService(21, 43, {}, None)
         cls.conn = mock_conn
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
             cls.find_usage()

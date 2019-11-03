@@ -70,7 +70,7 @@ class Test_Route53Service(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _Route53Service(21, 43)
+        cls = _Route53Service(21, 43, {}, None)
         assert cls.service_name == 'Route53'
         assert cls.api_name == 'route53'
         assert cls.conn is None
@@ -81,7 +81,7 @@ class Test_Route53Service(object):
         """
         Test that get_limits returns AwsLimits
         """
-        cls = _Route53Service(21, 43)
+        cls = _Route53Service(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -94,7 +94,7 @@ class Test_Route53Service(object):
             assert limit.def_critical_threshold == 43
 
     def test_find_usage(self):
-        cls = _Route53Service(21, 43)
+        cls = _Route53Service(21, 43, {}, None)
 
         assert cls._have_usage is False
         cls.find_usage()
@@ -109,7 +109,7 @@ class Test_Route53Service(object):
                     pb,
                     _find_limit_hosted_zone=DEFAULT,
             ) as mocks:
-                cls = _Route53Service(21, 43)
+                cls = _Route53Service(21, 43, {}, None)
                 cls.conn = mock_conn
                 cls._update_limits_from_api()
         assert mock_connect.mock_calls == [call()]
@@ -120,7 +120,7 @@ class Test_Route53Service(object):
             assert mocks[x].mock_calls == [call()]
 
     def test_find_limit_hosted_zone_recordsets(self):
-        cls = _Route53Service(21, 43)
+        cls = _Route53Service(21, 43, {}, None)
         self._mock_reponse_init(cls)
         cls._find_limit_hosted_zone()
 
@@ -143,7 +143,7 @@ class Test_Route53Service(object):
         assert usage2.get_maximum() == 10002
 
     def test_find_limit_hosted_zone_vpc_associations(self):
-        cls = _Route53Service(21, 43)
+        cls = _Route53Service(21, 43, {}, None)
         self._mock_reponse_init(cls)
         cls._find_limit_hosted_zone()
 
@@ -161,7 +161,7 @@ class Test_Route53Service(object):
         assert usage2.get_maximum() == 101
 
     def test_required_iam_permissions(self):
-        cls = _Route53Service(21, 43)
+        cls = _Route53Service(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "route53:GetHostedZone",
             "route53:GetHostedZoneLimit",

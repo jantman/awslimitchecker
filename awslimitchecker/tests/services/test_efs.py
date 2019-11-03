@@ -61,7 +61,7 @@ class Test_EfsService(object):
 
     def test_init(self):
         """test __init__()"""
-        cls = _EfsService(21, 43)
+        cls = _EfsService(21, 43, {}, None)
         assert cls.service_name == 'EFS'
         assert cls.api_name == 'efs'
         assert cls.conn is None
@@ -69,7 +69,7 @@ class Test_EfsService(object):
         assert cls.critical_threshold == 43
 
     def test_get_limits(self):
-        cls = _EfsService(21, 43)
+        cls = _EfsService(21, 43, {}, None)
         cls.limits = {}
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
@@ -80,56 +80,10 @@ class Test_EfsService(object):
         assert res['File systems'].def_critical_threshold == 43
         assert res['File systems'].default_limit == 1000
 
-    def test_update_limits_from_api(self):
-        mock_conn = Mock()
-        mock_conf = Mock()
-        type(mock_conf).region_name = 'us-west-2'
-        mock_conn._client_config = mock_conf
-        with patch('%s.connect' % pb, create=True) as mock_connect:
-            cls = _EfsService(21, 43)
-            cls.conn = mock_conn
-            cls.limits = {
-                'File systems': AwsLimit(
-                    'File systems',
-                    cls,
-                    1000,
-                    cls.warning_threshold,
-                    cls.critical_threshold,
-                    limit_type='AWS::EFS::FileSystem',
-                )
-            }
-            cls._update_limits_from_api()
-        assert mock_connect.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert cls.limits['File systems'].default_limit == 1000
-
-    def test_update_limits_from_api_us_east_1(self):
-        mock_conn = Mock()
-        mock_conf = Mock()
-        type(mock_conf).region_name = 'us-east-1'
-        mock_conn._client_config = mock_conf
-        with patch('%s.connect' % pb, create=True) as mock_connect:
-            cls = _EfsService(21, 43)
-            cls.conn = mock_conn
-            cls.limits = {
-                'File systems': AwsLimit(
-                    'File systems',
-                    cls,
-                    1000,
-                    cls.warning_threshold,
-                    cls.critical_threshold,
-                    limit_type='AWS::EFS::FileSystem',
-                )
-            }
-            cls._update_limits_from_api()
-        assert mock_connect.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert cls.limits['File systems'].default_limit == 70
-
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)
-        cls = _EfsService(21, 43)
+        cls = _EfsService(21, 43, {}, None)
         cls.limits = mock_limits
         res = cls.get_limits()
         assert res == mock_limits
@@ -145,7 +99,7 @@ class Test_EfsService(object):
                         {'FileSystemId': 'baz'}
                     ]
                 }
-                cls = _EfsService(21, 43)
+                cls = _EfsService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -173,7 +127,7 @@ class Test_EfsService(object):
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.paginate_dict' % pbm) as mock_paginate:
                 mock_paginate.side_effect = exc
-                cls = _EfsService(21, 43)
+                cls = _EfsService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -206,7 +160,7 @@ class Test_EfsService(object):
         with patch('%s.connect' % pb) as mock_connect:
             with patch('%s.paginate_dict' % pbm) as mock_paginate:
                 mock_paginate.side_effect = exc
-                cls = _EfsService(21, 43)
+                cls = _EfsService(21, 43, {}, None)
                 cls.conn = mock_conn
                 assert cls._have_usage is False
                 cls.find_usage()
@@ -225,7 +179,7 @@ class Test_EfsService(object):
         assert len(usage) == 0
 
     def test_required_iam_permissions(self):
-        cls = _EfsService(21, 43)
+        cls = _EfsService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             'elasticfilesystem:DescribeFileSystems'
         ]
