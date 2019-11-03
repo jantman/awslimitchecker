@@ -92,10 +92,6 @@ class _EfsService(_AwsService):
         Return all known limits for this service, as a dict of their names
         to :py:class:`~.AwsLimit` objects.
 
-        **Note:** we can't make connections to AWS in this method. So, the
-        :py:meth:`~._update_limits_from_api` method fixes this limit if we're
-        in us-east-1, which has a lower default limit.
-
         :returns: dict of limit names to :py:class:`~.AwsLimit` objects
         :rtype: dict
         """

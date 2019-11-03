@@ -139,7 +139,7 @@ class ServiceQuotasClient(Connectable):
         svc = self.quotas_for_service(service_code)
         if quota_name.lower() not in svc:
             return None
-        val = svc[quota_name.lower()]['Value']
+        val = svc[quota_name.lower()].get('Value', None)
         if svc[quota_name.lower()]['Unit'] != units:
             if converter is not None:
                 return converter(val, svc[quota_name.lower()]['Unit'], units)
