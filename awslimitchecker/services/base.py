@@ -274,7 +274,7 @@ class _AwsService(Connectable):
             lim = self.limits[lname]
             val = self._quotas_client.get_quota_value(
                 lim.quotas_service_code, lim.quota_name,
-                units=lim.quotas_unit
+                units=lim.quotas_unit, converter=lim.quotas_unit_converter
             )
             if val is not None:
                 lim._set_quotas_limit(val)

@@ -38,7 +38,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
-from awslimitchecker.services.ebs import _EbsService
+from awslimitchecker.services.ebs import _EbsService, convert_TiB_to_GiB
 from awslimitchecker.limit import AwsLimit
 from awslimitchecker.tests.services import result_fixtures
 
@@ -51,6 +51,15 @@ if (
     from mock import patch, call, Mock, DEFAULT
 else:
     from unittest.mock import patch, call, Mock, DEFAULT
+
+
+class TestConvertTiBToGiB(object):
+
+    def test_happy_path(self):
+        assert convert_TiB_to_GiB(300.0, 'None', 'GiB') == 307200.0
+
+    def test_unknown_unit(self):
+        assert convert_TiB_to_GiB(300.0, 'Foo', 'GiB') is None
 
 
 class Test_EbsService(object):
@@ -91,17 +100,17 @@ class Test_EbsService(object):
         piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
-        assert piops_tb.default_limit == 102400
+        assert piops_tb.default_limit == 307200
         gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
-        assert gp_tb.default_limit == 102400
+        assert gp_tb.default_limit == 307200
         assert gp_tb.ta_limit_name == 'General Purpose SSD (gp2) ' \
                                       'volume storage (GiB)'
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
-        assert mag_tb.default_limit == 20480
+        assert mag_tb.default_limit == 307200
         assert mag_tb.ta_limit_name == 'Magnetic (standard) volume ' \
                                        'storage (GiB)'
         st_tb = limits['Throughput Optimized (HDD) volume storage (GiB)']

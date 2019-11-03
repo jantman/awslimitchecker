@@ -80,52 +80,6 @@ class Test_EfsService(object):
         assert res['File systems'].def_critical_threshold == 43
         assert res['File systems'].default_limit == 1000
 
-    def test_update_limits_from_api(self):
-        mock_conn = Mock()
-        mock_conf = Mock()
-        type(mock_conf).region_name = 'us-west-2'
-        mock_conn._client_config = mock_conf
-        with patch('%s.connect' % pb, create=True) as mock_connect:
-            cls = _EfsService(21, 43, {}, None)
-            cls.conn = mock_conn
-            cls.limits = {
-                'File systems': AwsLimit(
-                    'File systems',
-                    cls,
-                    1000,
-                    cls.warning_threshold,
-                    cls.critical_threshold,
-                    limit_type='AWS::EFS::FileSystem',
-                )
-            }
-            cls._update_limits_from_api()
-        assert mock_connect.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert cls.limits['File systems'].default_limit == 1000
-
-    def test_update_limits_from_api_us_east_1(self):
-        mock_conn = Mock()
-        mock_conf = Mock()
-        type(mock_conf).region_name = 'us-east-1'
-        mock_conn._client_config = mock_conf
-        with patch('%s.connect' % pb, create=True) as mock_connect:
-            cls = _EfsService(21, 43, {}, None)
-            cls.conn = mock_conn
-            cls.limits = {
-                'File systems': AwsLimit(
-                    'File systems',
-                    cls,
-                    1000,
-                    cls.warning_threshold,
-                    cls.critical_threshold,
-                    limit_type='AWS::EFS::FileSystem',
-                )
-            }
-            cls._update_limits_from_api()
-        assert mock_connect.mock_calls == [call()]
-        assert mock_conn.mock_calls == []
-        assert cls.limits['File systems'].default_limit == 70
-
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
         mock_limits = Mock(spec_set=AwsLimit)

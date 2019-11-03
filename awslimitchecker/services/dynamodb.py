@@ -50,6 +50,7 @@ class _DynamodbService(_AwsService):
 
     service_name = 'DynamoDB'
     api_name = 'dynamodb'
+    quotas_service_code = 'dynamodb'
 
     def find_usage(self):
         """
@@ -160,7 +161,10 @@ class _DynamodbService(_AwsService):
             80000 if region_name == 'us-east-1' else 20000,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::DynamoDB::Table', )
+            limit_type='AWS::DynamoDB::Table',
+            quotas_name='Account-level write throughput limit '
+                        '(Provisioned mode)'
+        )
 
         limits['Table Max Write Capacity Units'] = AwsLimit(
             'Table Max Write Capacity Units',
@@ -169,6 +173,7 @@ class _DynamodbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DynamoDB::Table',
+            quotas_name='Table-level write throughput limit'
         )
 
         limits['Account Max Read Capacity Units'] = AwsLimit(
@@ -178,6 +183,7 @@ class _DynamodbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DynamoDB::Table',
+            quotas_name='Account-level read throughput limit (Provisioned mode)'
         )
 
         limits['Table Max Read Capacity Units'] = AwsLimit(
@@ -187,6 +193,7 @@ class _DynamodbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DynamoDB::Table',
+            quotas_name='Table-level read throughput limit'
         )
 
         limits['Global Secondary Indexes'] = AwsLimit(

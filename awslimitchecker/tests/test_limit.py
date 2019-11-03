@@ -92,8 +92,10 @@ class TestInit(AwsLimitTester):
         assert limit._quotas_name is None
         assert limit._quotas_unit == 'None'
         assert limit.quotas_limit is None
+        assert limit.quotas_unit_converter is None
 
     def test_ta_names(self):
+        m_foo = Mock()
         limit = AwsLimit(
             'limitname',
             self.mock_svc,
@@ -104,7 +106,8 @@ class TestInit(AwsLimitTester):
             ta_limit_name='bar',
             quotas_service_code='baz',
             quotas_name='blam',
-            quotas_unit='blarg'
+            quotas_unit='blarg',
+            quotas_unit_converter=m_foo
         )
         assert limit.name == 'limitname'
         assert limit.service == self.mock_svc
@@ -123,6 +126,7 @@ class TestInit(AwsLimitTester):
         assert limit._quotas_name == 'blam'
         assert limit._quotas_unit == 'blarg'
         assert limit.quotas_limit is None
+        assert limit.quotas_unit_converter == m_foo
 
     def test_valueerror(self):
         with pytest.raises(ValueError) as excinfo:

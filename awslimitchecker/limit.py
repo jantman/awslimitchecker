@@ -60,7 +60,7 @@ class AwsLimit(object):
                  limit_type=None, limit_subtype=None,
                  ta_service_name=None, ta_limit_name=None,
                  quotas_service_code=None, quotas_name=None,
-                 quotas_unit='None'):
+                 quotas_unit='None', quotas_unit_converter=None):
         """
         Describes one specific AWS service limit, as well as its
         current utilization, default limit, thresholds, and any
@@ -107,6 +107,14 @@ class AwsLimit(object):
           to the string "None", which (for some strange reason) is what's
           returned by the Service Quotas API.
         :type quotas_unit: str
+        :param quotas_unit_converter: A callable to be passed to
+          :py:meth:`~.ServiceQuotasClient.get_quota_value` for unit conversion.
+          Must take three positional arguments: the Service Quotas value for
+          this quota (float), the quota ``Unit`` str, and the return value of
+          :py:meth:`~.quotas_unit`. This callable is responsible for converting
+          the quota value from the quota Unit to this class's expected unit.
+          If they cannot be converted, it should log an error and return None.
+        :type quotas_unit_converter: ``callable``
         :raises: ValueError
         """
         if def_warning_threshold >= def_critical_threshold:
@@ -137,6 +145,7 @@ class AwsLimit(object):
         self._quotas_name = quotas_name
         self._quotas_unit = quotas_unit
         self.quotas_limit = None
+        self.quotas_unit_converter = quotas_unit_converter
 
     def set_limit_override(self, limit_value, override_ta=True):
         """

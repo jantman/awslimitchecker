@@ -37,6 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ##############################################################################
 """
 
+from botocore.exceptions import ClientError
 import logging
 
 from awslimitchecker.connectable import Connectable
@@ -79,19 +80,31 @@ class ServiceQuotasClient(Connectable):
             'Getting service quotas for service code: %s', service_code
         )
         self._cache[service_code] = {}
-        paginator = self.conn.get_paginator('list_service_quotas')
-        for page in paginator.paginate(ServiceCode=service_code):
-            for item in page['Quotas']:
-                if item['QuotaName'] in self._cache[service_code]:
-                    logger.error(
-                        'ERROR: Received duplicate service quota for service '
-                        'code %s quota name "%s" - QuotaCodes %s and %s',
-                        service_code, item['QuotaName'],
-                        self._cache[service_code][
-                            item['QuotaName']
-                        ]['QuotaCode'], item['QuotaCode']
-                    )
-                self._cache[service_code][item['QuotaName'].lower()] = item
+        try:
+            paginator = self.conn.get_paginator('list_service_quotas')
+            for page in paginator.paginate(ServiceCode=service_code):
+                for item in page['Quotas']:
+                    if item['QuotaName'] in self._cache[service_code]:
+                        logger.error(
+                            'ERROR: Received duplicate service quota for '
+                            'service code %s quota name "%s" - QuotaCodes %s'
+                            ' and %s', service_code, item['QuotaName'],
+                            self._cache[service_code][
+                                item['QuotaName']
+                            ]['QuotaCode'], item['QuotaCode']
+                        )
+                    self._cache[service_code][item['QuotaName'].lower()] = item
+        except ClientError as ex:
+            if ex.response.get(
+                'Error', {}
+            ).get('Code', '') == 'NoSuchResourceException':
+                logger.warning(
+                    'Attempted to retrieve Service Quotas for service code '
+                    '%s but received NoSuchResourceException',
+                    service_code
+                )
+                return {}
+            raise
         logger.debug(
             'Retrieved %d quotas for service code %s: %s',
             len(self._cache[service_code]), service_code,
@@ -99,7 +112,9 @@ class ServiceQuotasClient(Connectable):
         )
         return self._cache[service_code]
 
-    def get_quota_value(self, service_code, quota_name, units='None'):
+    def get_quota_value(
+        self, service_code, quota_name, units='None', converter=None
+    ):
         """
         Return a given quota value, or None if it cannot be found. If
         ``units`` is a value other than ``None``, attempt to convert the value
@@ -111,14 +126,23 @@ class ServiceQuotasClient(Connectable):
         :type quota_name: str
         :param units: the units for the value, or the string "None"
         :type units: str
+        :param converter: A callable for unit conversion.
+          Must take three positional arguments: the Service Quotas value for
+          this quota (float), the quota ``Unit`` str, and the return value of
+          :py:meth:`~.quotas_unit`. This callable is responsible for converting
+          the quota value from the quota Unit to this class's expected unit.
+          If they cannot be converted, it should log an error and return None.
+        :type converter: ``callable``
         :return: the quota value
         :rtype: float or None
-        :raises: UnknownQuotaUnitsException if the units cannot be converted
         """
         svc = self.quotas_for_service(service_code)
         if quota_name.lower() not in svc:
             return None
-        if svc[quota_name.lower()]['Unit'] != 'None' or units != 'None':
+        val = svc[quota_name.lower()]['Value']
+        if svc[quota_name.lower()]['Unit'] != units:
+            if converter is not None:
+                return converter(val, svc[quota_name.lower()]['Unit'], units)
             logger.error(
                 'ERROR: Service Quota service_code=%s QuotaName="%s" has '
                 'Units set to "%s"; awslimitchecker does not know how to '
@@ -127,4 +151,4 @@ class ServiceQuotasClient(Connectable):
                 svc[quota_name.lower()]['Unit']
             )
             return None
-        return svc[quota_name.lower()]['Value']
+        return val

@@ -38,6 +38,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import sys
+from botocore.exceptions import ClientError
+import pytest
 
 from awslimitchecker.quotas import ServiceQuotasClient
 from awslimitchecker.tests.support import quotas_response
@@ -111,6 +113,63 @@ class TestQuotasForService(object):
         assert m_connect.mock_calls == []
         assert mock_conn.mock_calls == []
 
+    def test_no_such_resource(self):
+        mock_paginator = Mock()
+        mock_paginator.paginate.side_effect = ClientError(
+            {
+                'Error': {
+                    'Code': 'NoSuchResourceException',
+                    'Message': 'The request failed because the specified '
+                               'service does not exist.'
+                }
+            },
+            'ListServiceQuotas'
+        )
+        mock_conn = Mock()
+        mock_conn.get_paginator.return_value = mock_paginator
+
+        def se_connect(cls):
+            cls.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_connect
+            res = self.cls.quotas_for_service('scode')
+        assert res == {}
+        assert self.cls._cache == {'scode': {}}
+        assert m_connect.mock_calls == [call(self.cls)]
+        assert mock_conn.mock_calls == [
+            call.get_paginator('list_service_quotas'),
+            call.get_paginator().paginate(ServiceCode='scode')
+        ]
+
+    def test_other_exception(self):
+        mock_paginator = Mock()
+        mock_paginator.paginate.side_effect = ClientError(
+            {
+                'Error': {
+                    'Code': 'SomeOtherError',
+                    'Message': 'My message.'
+                }
+            },
+            'ListServiceQuotas'
+        )
+        mock_conn = Mock()
+        mock_conn.get_paginator.return_value = mock_paginator
+
+        def se_connect(cls):
+            cls.conn = mock_conn
+
+        with patch('%s.connect' % pb, autospec=True) as m_connect:
+            m_connect.side_effect = se_connect
+            with pytest.raises(ClientError):
+                self.cls.quotas_for_service('scode')
+        assert self.cls._cache == {'scode': {}}
+        assert m_connect.mock_calls == [call(self.cls)]
+        assert mock_conn.mock_calls == [
+            call.get_paginator('list_service_quotas'),
+            call.get_paginator().paginate(ServiceCode='scode')
+        ]
+
 
 class TestGetQuotaValue(object):
 
@@ -158,3 +217,24 @@ class TestGetQuotaValue(object):
         }
         res = self.cls.get_quota_value('scode', 'QName')
         assert res is None
+
+    def test_units_converter(self):
+        m_conv = Mock()
+        m_conv.return_value = 1230.0
+        self.cls._cache = {
+            'scode': {
+                'qname': {
+                    'QuotaName': 'qname',
+                    'QuotaCode': 'qcode',
+                    'Value': 12.3,
+                    'Unit': 'Foo'
+                }
+            }
+        }
+        res = self.cls.get_quota_value(
+            'scode', 'QName', converter=m_conv
+        )
+        assert res == 1230.0
+        assert m_conv.mock_calls == [
+            call(12.3, 'Foo', 'None')
+        ]

@@ -55,6 +55,7 @@ class _VpcService(_AwsService):
 
     service_name = 'VPC'
     api_name = 'ec2'
+    quotas_service_code = 'vpc'
 
     def find_usage(self):
         """
@@ -246,6 +247,7 @@ class _VpcService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::VPC',
+            quotas_name='VPCs per Region'
         )
 
         limits['Subnets per VPC'] = AwsLimit(
@@ -305,6 +307,7 @@ class _VpcService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::InternetGateway',
+            quotas_name='Internet gateways per Region'
         )
 
         limits['NAT Gateways per AZ'] = AwsLimit(

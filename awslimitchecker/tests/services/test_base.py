@@ -274,19 +274,42 @@ class Test_AwsService(object):
         )
         type(mock_limit1).quota_name = PropertyMock(return_value='qn1')
         type(mock_limit1).quotas_unit = PropertyMock(return_value='None')
+        type(mock_limit1).quotas_unit_converter = PropertyMock(
+            return_value=None
+        )
         mock_limit2 = Mock(spec_set=AwsLimit)
         type(mock_limit2).quotas_service_code = PropertyMock(
             return_value='qsc'
         )
         type(mock_limit2).quota_name = PropertyMock(return_value='qn2')
         type(mock_limit2).quotas_unit = PropertyMock(return_value='None')
+        type(mock_limit2).quotas_unit_converter = PropertyMock(
+            return_value=None
+        )
+        mock_limit3 = Mock(spec_set=AwsLimit)
+        type(mock_limit3).quotas_service_code = PropertyMock(
+            return_value='qsc'
+        )
+        type(mock_limit3).quota_name = PropertyMock(return_value='qn3')
+        type(mock_limit3).quotas_unit = PropertyMock(return_value='Foo')
+        mock_conv = Mock()
+        type(mock_limit3).quotas_unit_converter = PropertyMock(
+            return_value=mock_conv
+        )
         cls = AwsServiceTester(1, 2, {}, mock_client)
         cls.quotas_service_code = 'qsc'
-        cls.limits = {'limit1': mock_limit1, 'limit2': mock_limit2}
+        cls.limits = {
+            'limit1': mock_limit1,
+            'limit2': mock_limit2,
+            'limit3': mock_limit3
+        }
         cls._update_service_quotas()
         assert mock_client.mock_calls == [
-            call.get_quota_value('qsc', 'qn1', units='None'),
-            call.get_quota_value('qsc', 'qn2', units='None')
+            call.get_quota_value('qsc', 'qn1', units='None', converter=None),
+            call.get_quota_value('qsc', 'qn2', units='None', converter=None),
+            call.get_quota_value(
+                'qsc', 'qn3', units='Foo', converter=mock_conv
+            )
         ]
         assert mock_limit1.mock_calls == [
             call._set_quotas_limit(12.4)
