@@ -726,7 +726,7 @@ class _Ec2Service(_AwsService):
         limits['Rules per VPC security group'] = AwsLimit(
             'Rules per VPC security group',
             self,
-            50,
+            60,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::SecurityGroup',
