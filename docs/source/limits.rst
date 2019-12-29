@@ -180,6 +180,7 @@ Max spot instance requests per region                                           
 Max target capacity for all spot fleets in region                                                     5000
 Max target capacity per spot fleet                                                                    3000
 Rules per VPC security group                                                                          50  
+Rules per VPC security group                                                                          60  
 Running On-Demand All F instances                                                    |check|          128 
 Running On-Demand All G instances                                                    |check|          128 
 Running On-Demand All P instances                                                    |check|          128 
