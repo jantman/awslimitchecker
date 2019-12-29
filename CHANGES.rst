@@ -1,6 +1,14 @@
 Changelog
 =========
 
+.. _changelog.8_0_1:
+
+8.0.1 (2019-12-28)
+------------------
+
+* Update tox ``docs`` and ``localdocs`` environments to use Python 3.8.
+* Fixes `issue #451 <https://github.com/jantman/awslimitchecker/issues/451>`__ - Fix default Rules Per VPC Security Group limit.
+
 .. _changelog.8_0_0:
 
 8.0.0 (2019-11-03)

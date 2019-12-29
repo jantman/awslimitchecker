@@ -25,7 +25,7 @@ matrix:
       sudo: true
       services:
       - docker
-    - python: "3.7"
+    - python: "3.8"
       env: TOXENV=docs
     - python: "2.7"
       env: TOXENV=integration
