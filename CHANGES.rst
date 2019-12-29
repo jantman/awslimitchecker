@@ -1,6 +1,16 @@
 Changelog
 =========
 
+.. _changelog.8_0_1:
+
+8.0.1 (2019-12-28)
+------------------
+
+* Fixes `issue #453 <https://github.com/jantman/awslimitchecker/issues/453>`__ - remove version constraint on ``dateutil`` dependency.
+* Fixes `issue #454 <https://github.com/jantman/awslimitchecker/issues/454>`__ - remove version constraint on ``botocore`` dependency.
+* Update tox ``docs``, ``localdocs``, and ``docker`` environments to use Python 3.8.
+* Fixes `issue #451 <https://github.com/jantman/awslimitchecker/issues/451>`__ - Fix default Rules Per VPC Security Group limit.
+
 .. _changelog.8_0_0:
 
 8.0.0 (2019-11-03)
@@ -335,7 +345,7 @@ after development was ceased. The test framework used by awslimitchecker, pytest
 
 * Update README with correct boto version requirement. (Thanks to `nadlerjessie <https://github.com/nadlerjessie>`_ for the contribution.)
 * Update minimum ``boto3`` version requirement from 1.2.3 to 1.4.4; the code for `Issue #268 <https://github.com/jantman/awslimitchecker/issues/268>`_ released in 0.11.0 requires boto3 >= 1.4.4 to make the ElasticLoadBalancing ``DescribeAccountLimits`` call.
-* **Bug fix for "Running On-Demand EC2 instances" limit** - `Issue #308 <https://github.com/jantman/awslimitchecker/issues/308>`_ - The fix for `Issue #215 <https://github.com/jantman/awslimitchecker/issues/215>`_ / `PR #223 <https://github.com/jantman/awslimitchecker/pull/223>`_, released in 0.6.0 on November 11, 2016 was based on `incorrect information <https://github.com/jantman/awslimitchecker/issues/215#issuecomment-259144130>`_ about how Regional Benefit Reserved Instances (RIs) impact the service limit. The code implemented at that time subtracted Regional Benefit RIs from the count of running instances that we use to establish usage. Upon further review, as well as confirmation from AWS Support, some AWS TAMs, and the `relevant AWS documentation <http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html#ri-limits>`_, only Zonal RIs (AZ-specific) are exempt from the Running On-Demand Instances limit. Regional Benefit RIs are counted the same as any other On-Demand Instances, as they don't have reserved capacity. This release stops subtracting Regional Benefit RIs from the count of Running Instances, which was causing awslimitchecker to report inaccurately low Running Instances usage.
+* **Bug fix for "Running On-Demand EC2 instances" limit** - `Issue #308 <https://github.com/jantman/awslimitchecker/issues/308>`_ - The fix for `Issue #215 <https://github.com/jantman/awslimitchecker/issues/215>`_ / `PR #223 <https://github.com/jantman/awslimitchecker/pull/223>`_, released in 0.6.0 on November 11, 2016 was based on `incorrect information <https://github.com/jantman/awslimitchecker/issues/215#issuecomment-259144130>`_ about how Regional Benefit Reserved Instances (RIs) impact the service limit. The code implemented at that time subtracted Regional Benefit RIs from the count of running instances that we use to establish usage. Upon further review, as well as confirmation from AWS Support, some AWS TAMs, and the `relevant AWS documentation <https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-reserved-instances.html#ri-limits>`_, only Zonal RIs (AZ-specific) are exempt from the Running On-Demand Instances limit. Regional Benefit RIs are counted the same as any other On-Demand Instances, as they don't have reserved capacity. This release stops subtracting Regional Benefit RIs from the count of Running Instances, which was causing awslimitchecker to report inaccurately low Running Instances usage.
 
 .. _changelog.1_0_0:
 
@@ -389,7 +399,7 @@ This release **removes the ElastiCache Clusters limit**, which no longer exists.
 
 * `Issue #283 <https://github.com/jantman/awslimitchecker/issues/283>`_ - Add gitter.im chat link to README and docs.
 * `Issue #282 <https://github.com/jantman/awslimitchecker/issues/282>`_ - versionfinder caused awslimitchecker to die unexpectedly on systems without a ``git`` binary on the PATH. Bump versionfinder requirement to ``>= 0.1.1``.
-* `Issue #284 <https://github.com/jantman/awslimitchecker/issues/284>`_ - Fix ElastiCache limits to reflect what AWS Support and the `current documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_elasticache>`_ say, instead of a `support ticket from July 2015 <https://github.com/jantman/awslimitchecker/issues/38#issuecomment-118806921>`_.
+* `Issue #284 <https://github.com/jantman/awslimitchecker/issues/284>`_ - Fix ElastiCache limits to reflect what AWS Support and the `current documentation <https://docs.aws.amazon.com/general/latest/gr/elasticache-service.html#limits_elasticache>`_ say, instead of a `support ticket from July 2015 <https://github.com/jantman/awslimitchecker/issues/38#issuecomment-118806921>`_.
 
   * Remove the "Clusters" limit, which no longer exists.
   * "Nodes per Cluster" limit is Memcached only.
