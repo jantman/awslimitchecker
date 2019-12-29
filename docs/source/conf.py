@@ -318,7 +318,7 @@ linkcheck_ignore = [
     r'https?://github\.com/pytest-dev/pytest/blob/master/CHANGELOG\.rst',
     r'https?://github\.com/jantman/awslimitchecker/releases/tag/.*',
     r'https?://github\.com/jantman/awslimitchecker/tree/master/.*',
-    r'https?://docs\.aws\.amazon\.com/AWSEC2/latest/UserGuide/ec2-reserved-instances\.html#ri-limits',
+    r'https?://docs\.aws\.amazon\.com/.*#.*',
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734

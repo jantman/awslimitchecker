@@ -399,7 +399,7 @@ This release **removes the ElastiCache Clusters limit**, which no longer exists.
 
 * `Issue #283 <https://github.com/jantman/awslimitchecker/issues/283>`_ - Add gitter.im chat link to README and docs.
 * `Issue #282 <https://github.com/jantman/awslimitchecker/issues/282>`_ - versionfinder caused awslimitchecker to die unexpectedly on systems without a ``git`` binary on the PATH. Bump versionfinder requirement to ``>= 0.1.1``.
-* `Issue #284 <https://github.com/jantman/awslimitchecker/issues/284>`_ - Fix ElastiCache limits to reflect what AWS Support and the `current documentation <http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html#limits_elasticache>`_ say, instead of a `support ticket from July 2015 <https://github.com/jantman/awslimitchecker/issues/38#issuecomment-118806921>`_.
+* `Issue #284 <https://github.com/jantman/awslimitchecker/issues/284>`_ - Fix ElastiCache limits to reflect what AWS Support and the `current documentation <https://docs.aws.amazon.com/general/latest/gr/elasticache-service.html#limits_elasticache>`_ say, instead of a `support ticket from July 2015 <https://github.com/jantman/awslimitchecker/issues/38#issuecomment-118806921>`_.
 
   * Remove the "Clusters" limit, which no longer exists.
   * "Nodes per Cluster" limit is Memcached only.
