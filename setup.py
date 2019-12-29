@@ -45,9 +45,9 @@ with open('README.rst') as file:
 
 requires = [
     'boto3>=1.9.175',
-    'botocore>=1.12.175',
+    'botocore',
     'termcolor>=1.1.0',
-    'python-dateutil>=2.4.2',
+    'python-dateutil',
     'versionfinder>=0.1.1',
     'pytz',
     'urllib3'
