@@ -543,6 +543,26 @@ class TestCheckThresholds(AwsLimitTester):
         assert mock_get_thresh.mock_calls == [call()]
         assert mock_get_limit.mock_calls == [call(), call(), call()]
 
+    def test_ta_zero(self):
+        limit = AwsLimit('limitname', self.mock_svc, 3, 1, 2)
+        u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
+        u2 = AwsLimitUsage(limit, 3, resource_id='foo3bar')
+        u3 = AwsLimitUsage(limit, 2, resource_id='foo2bar')
+        limit._current_usage = [u1, u2, u3]
+        limit._set_ta_unlimited()
+        with patch('awslimitchecker.limit.AwsLimit.'
+                   '_get_thresholds') as mock_get_thresh:
+            with patch('awslimitchecker.limit.AwsLimit.get_'
+                       'limit') as mock_get_limit:
+                mock_get_thresh.return_value = (None, 40, None, 80)
+                mock_get_limit.return_value = 0
+                res = limit.check_thresholds()
+        assert res is True
+        assert limit._warnings == []
+        assert limit._criticals == []
+        assert mock_get_thresh.mock_calls == [call()]
+        assert mock_get_limit.mock_calls == [call(), call(), call()]
+
     def test_pct_warn(self):
         limit = AwsLimit('limitname', self.mock_svc, 100, 1, 2)
         u1 = AwsLimitUsage(limit, 4, resource_id='foo4bar')
