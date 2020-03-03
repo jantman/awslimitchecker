@@ -91,6 +91,7 @@ class TestIntegration(object):
         # capture the AWS-related env vars
 
     @pytest.mark.integration
+    @pytest.mark.timeout(540)
     @skip_if_pr
     def test_verify_limits(self, checker_args, creds_type, service_name, use_ta,
                            expect_api_source, allow_endpoint_error):
@@ -185,6 +186,7 @@ class TestIntegration(object):
             "Advisor once, but polled %s times" % polls
 
     @pytest.mark.integration
+    @pytest.mark.timeout(540)
     @skip_if_pr
     def test_verify_usage(self, checker_args, creds_type, service_name,
                           expect_usage, allow_endpoint_error):
