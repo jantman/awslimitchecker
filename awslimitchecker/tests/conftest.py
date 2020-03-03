@@ -233,7 +233,12 @@ def param_for_integration_test_verify_usage(metafunc):
         ]
     ]
     testnames = [
-        'other_region_all_services'
+        'default_creds_all_services',
+        'other_region_all_services',
+        'sts',
+        'sts_external_id',
+        'sts_mfa',
+        'sts_mfa_external_id'
     ]
     for sname in _services:
         eu = False
@@ -334,7 +339,12 @@ def param_for_integration_test_verify_limits(metafunc):
         ]
     ]
     testnames = [
-        'other_region_all_services'
+        'default_creds_all_services',
+        'other_region_all_services',
+        'sts',
+        'sts_external_id',
+        'sts_mfa',
+        'sts_mfa_external_id'
     ]
     for sname in _services:
         argvals.append([
