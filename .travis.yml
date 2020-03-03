@@ -4,30 +4,6 @@ cache: pip
 matrix:
   include:
     - python: "2.7"
-      env: TOXENV=py27
-    - python: "3.4"
-      env: TOXENV=py34
-    - python: "3.5"
-      env: TOXENV=py35
-    - python: "3.6"
-      env: TOXENV=py36
-    - python: "3.7"
-      env: TOXENV=py37
-      dist: xenial
-      sudo: true
-    - python: "3.8"
-      env: TOXENV=py38
-      dist: xenial
-      sudo: true
-    - python: "3.8"
-      env: TOXENV=docker
-      dist: xenial
-      sudo: true
-      services:
-      - docker
-    - python: "3.8"
-      env: TOXENV=docs
-    - python: "2.7"
       env: TOXENV=integration
     - python: "3.7"
       env: TOXENV=integration3
@@ -40,17 +16,6 @@ install:
 - virtualenv --version
 script:
 - tox -r
-after_success:
-- codecov
-notifications:
-  email:
-    on_success: always
-    on_failure: always
-  pushover:
-    users:
-    - secure: CZz/iYMw6w0yAA9szniSIWQA2oxMWhYXcVZnLkmEFS9gGw3JJxAqVN/IvE16ya/9hgojc4Nonr24rTkT/ihj8xm+JEpRIHLXIf206PipQWm4vJO+zwBAk3HKpqn3iwB4JBaNGWrMOwbdtY33+8C6YBDyte2cKi5yozaKZY3af87XHViqunPQoeqe2BmuiVcscVx/ChdSQobB0mvJQiS4TfZHlKSfJt0UEBQXe2UfTC0Y0JhajWPhmFWUeZWE6Q+sVe51QBU6IvDD5uwx7G+VhrRWhgTfk5LnzeZ5YzjwaWXd94WMuigIiNETLb5gOEzNRy9Lqfpu4QcygIkh/GTwwr29iMbZbSNoK+kJem5eI2Uvyc80aYt3CUn8yvRlkcoiu78su6vxXzsnUR4jkDEceRQc9X4o6wDXlDqOrsfVIH4eqsfjxXhBLCBcP2g+THSaZtFG0fDJt0tThczDkHcqP5SMOrUHK5Tpwo5fCi0HxhAWW4iOgM2HpkCa9S3mVM/Ce8t6xA0/BxEz4QDgIRcxKPhEO5R5aSoXBeVt9S2rQm7DEIa4Q84FFc2O9DyAkzr/po/yWo8ze0oN18LBieRhlqBb3zydGRukmCxv11C5QNP4zPrUgzwsnimu+Yml3YB6waZpGyHVZ/ruXOYBTP/1vAYJtrrN1xVqvv6NrpuYTzI=
-    api_key:
-      secure: ZZFNkScS4lAx52wDamFP2TnSiZzE+Wsh+JlryYU2zVrRdqsw7NeLu5aa8BwyCIz9mkBitqGZABTHU0qkQ1KkibmrI8mWiPAFQC50OMo6XOlwdy8KFVlaRuKkEPuZXfvDRhJKy0Dv0/7FKqCcYRZnFLdp5e7sdGBHV3E/Ur0g/CUm8aXJckgDP6X+v3VblRzcwR2O+gilKV9B1UysAI+m6G9Nph7FWvAPyzTQlbqD16pxY2YktfdCYM9KHsLRMfzHmk/6zjKbYhbrhZVhilEhKlJvTcburL5ET5AHMPp90uhO7R4hY46lEsd8gZYSfDXwGYbJZPvG1H6A+CXiimmV7hh9KvORs8JJ7XtpGxpUneAxSUxuvLbBbtbfEZOtXlWFr8iGGgvWNX8e69/vmfx1/O+ToakuRhPLQS1463nd9yfRYW3A0E2wMppSnTh736aidOlvMFA+jNEQASyjykFiZ5uFoKYEJiyaPA800wOFs6YHLT2ki1RiOxFO6YYZmihvoLm4mkXDyiipCOe5I2w8cNCRlip/Kmk9L1njLdXCWri+Nsxvpe9iaHrbaeGMR3KfbznugQvu5jFzTkYgxCjc3Ak2UTI/A9QwC6mzGUACwT7kySJiljKDgypB9uB0A2K/aDqwqGL6bYDVHyvV5kOWhOK7M+h5E4R4vzC42oiS5Gs=
 branches:
   except:
   - "/^noci-.*$/"
