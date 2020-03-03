@@ -177,7 +177,7 @@ def param_for_integration_test_verify_usage(metafunc):
             False
         ],
         [
-            {'region': 'sa-east-1'},
+            {'region': 'ap-southeast-1'},
             'normal',
             None,
             False,
@@ -278,7 +278,7 @@ def param_for_integration_test_verify_limits(metafunc):
             False
         ],
         [
-            {'region': 'sa-east-1'},
+            {'region': 'ap-southeast-1'},
             'normal',
             None,
             True,

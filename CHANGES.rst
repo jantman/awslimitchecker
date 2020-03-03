@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _changelog.8_0_2:
+
+8.0.2 (2020-03-03)
+------------------
+
+* `PR #458 <https://github.com/jantman/awslimitchecker/pull/458>`_ - Fix for ZeroDivisionError on some Service Quotas limits that report as having a limit of zero. Thanks to `@deimosfr <https://github.com/deimosfr>`__.
+
 .. _changelog.8_0_1:
 
 8.0.1 (2019-12-28)
