@@ -239,7 +239,7 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 
 
 
-Disabling Trusted Advisor Checks
+Disabling Service Quotas service
 ++++++++++++++++++++++++++++++++
 
 Using the ``--skip-quotas`` option will disable attempting to query limit information
@@ -264,7 +264,7 @@ from the Service Quotas service.
 
 
 
-Disabling Service Quotas service
+Disabling Trusted Advisor Checks
 ++++++++++++++++++++++++++++++++
 
 Using the ``--skip-ta`` option will disable attempting to query limit information
