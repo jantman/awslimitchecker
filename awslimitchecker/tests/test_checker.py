@@ -571,7 +571,8 @@ class TestAwsLimitChecker(object):
         res = self.cls.get_limits()
         assert res == limits
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service(sname)
+            for sname in self.cls.services.keys()
         ]
         assert self.mock_svc1.mock_calls == [
             call._update_service_quotas(),
@@ -607,7 +608,7 @@ class TestAwsLimitChecker(object):
         res = self.cls.get_limits(service=['SvcFoo'])
         assert res == {'SvcFoo': limits['SvcFoo']}
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service('SvcFoo')
         ]
         assert self.mock_svc1.mock_calls == [
             call._update_service_quotas(),
@@ -622,7 +623,7 @@ class TestAwsLimitChecker(object):
         res = self.cls.get_limits(service=['SvcBar'])
         assert res == {'SvcBar': limits['SvcBar']}
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service('SvcBar')
         ]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == [
@@ -643,7 +644,8 @@ class TestAwsLimitChecker(object):
             call.find_usage()
         ]
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service(svc.service_name)
+            for svc in self.cls.services.values()
         ]
 
     def test_find_usage_no_ta(self):
@@ -666,8 +668,9 @@ class TestAwsLimitChecker(object):
             call.find_usage()
         ]
         assert self.mock_svc2.mock_calls == []
+        svc_name = self.cls.services['SvcFoo'].service_name
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service(svc_name)
         ]
 
     def test_find_usage_service_with_api(self):
@@ -678,8 +681,9 @@ class TestAwsLimitChecker(object):
             call._update_service_quotas(),
             call.find_usage()
         ]
+        svc_name = self.cls.services['SvcBar'].service_name
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service(svc_name)
         ]
 
     def test_set_threshold_overrides(self):
@@ -885,7 +889,8 @@ class TestAwsLimitChecker(object):
             }
         }
         assert self.mock_ta.mock_calls == [
-            call.update_limits(),
+            call.update_limits_per_service(sname)
+            for sname in self.cls.services.keys()
         ]
         assert self.mock_svc1.mock_calls == [
             call._update_service_quotas(),
@@ -907,7 +912,7 @@ class TestAwsLimitChecker(object):
             }
         }
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service('SvcFoo')
         ]
         assert self.mock_svc1.mock_calls == [
             call._update_service_quotas(),
@@ -925,7 +930,7 @@ class TestAwsLimitChecker(object):
             }
         }
         assert self.mock_ta.mock_calls == [
-            call.update_limits()
+            call.update_limits_per_service('SvcBar')
         ]
         assert self.mock_svc1.mock_calls == []
         assert self.mock_svc2.mock_calls == [
