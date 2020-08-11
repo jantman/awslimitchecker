@@ -202,7 +202,8 @@ class TrustedAdvisor(Connectable):
             else:
                 raise ex
         return [(check['id'], check['metadata']) for check in checks \
-                if check['name'].startswith(sname)]
+                if check['name'].startswith(sname) and \
+                'Limit Amount' in check['metadata']]
 
     def _get_ta_limit(self, check_id, metadata, ta_results):
         """
