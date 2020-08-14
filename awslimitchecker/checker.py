@@ -344,12 +344,12 @@ class AwsLimitChecker(object):
         to_get = self.services
         if service is not None:
             to_get = dict((each, self.services[each]) for each in service)
-        if use_ta:
-            self.ta.update_limits()
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
             cls._update_service_quotas()
+            if use_ta:
+                self.ta.update_limits_per_service(sname)
             res[sname] = cls.get_limits()
         return res
 
@@ -423,12 +423,12 @@ class AwsLimitChecker(object):
         to_get = self.services
         if service is not None:
             to_get = dict((each, self.services[each]) for each in service)
-        if use_ta:
-            self.ta.update_limits()
         for cls in to_get.values():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
             cls._update_service_quotas()
+            if use_ta:
+                self.ta.update_limits_per_service(cls.service_name)
             logger.debug("Finding usage for service: %s", cls.service_name)
             cls.find_usage()
 
@@ -624,12 +624,12 @@ class AwsLimitChecker(object):
         to_get = self.services
         if service is not None:
             to_get = dict((each, self.services[each]) for each in service)
-        if use_ta:
-            self.ta.update_limits()
         for sname, cls in to_get.items():
             if hasattr(cls, '_update_limits_from_api'):
                 cls._update_limits_from_api()
             cls._update_service_quotas()
+            if use_ta:
+                self.ta.update_limits_per_service(sname)
             tmp = cls.check_thresholds()
             if len(tmp) > 0:
                 res[sname] = tmp

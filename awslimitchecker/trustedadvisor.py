@@ -127,6 +127,10 @@ class TrustedAdvisor(Connectable):
         self.all_services = all_services
         self.ta_services = self._make_ta_service_dict()
         self.limits_updated = False
+        # new boolean dictionary per service
+        self.svc_limits_updated = dict(
+            [(svc, False) for svc in self.ta_services.keys()]
+            )
 
     def update_limits(self):
         """
@@ -145,6 +149,117 @@ class TrustedAdvisor(Connectable):
         ta_results = self._poll()
         self._update_services(ta_results)
         self.limits_updated = True
+
+    def update_limits_per_service(self, sname):
+        """
+        Poll 'Service Limits' check results from Trusted Advisor, if possible.
+        Iterate over all :py:class:`~.AwsLimit` objects for one given service
+        and update their limits from TA if present in TA checks. Similar to
+        update_limits function, but queries for a specific service.
+
+        :param sname: the service name
+        :type sname: str
+        """
+        if self.svc_limits_updated[sname]:
+            logger.debug('Already polled TA; skipping update')
+            return
+        self.connect()
+        check_list = self._get_service_limit_check_ids(sname)
+        ta_results = {}
+        for check in check_list:
+            # get all TrustedAdvisor limits into ta_results dict
+            self._get_ta_limit(check[0], check[1], ta_results)
+        # update the new limits
+        self._update_services(ta_results)
+        self.svc_limits_updated[sname] = True
+
+    def _get_service_limit_check_ids(self, sname):
+        """
+        Query currently-available TA checks, return the set of check IDs
+        and metadata as a list that _get_ta_limit will iterate over.
+
+        Inspired by the _get_limit_check_id function, but queries for a
+        specific service only.
+
+        :param sname: the service name
+        :type sname: str
+        :returns: list of 2-tuples of Service Limits TA check ID (string),
+          metadata (list), or (None, None).
+        :rtype: list
+        """
+        try:
+            checks = self.conn.describe_trusted_advisor_checks(
+                language='en'
+            )['checks']
+        except ClientError as ex:
+            if ex.response['Error']['Code'] == 'SubscriptionRequiredException':
+                logger.warning(
+                    "Cannot check TrustedAdvisor: %s",
+                    ex.response['Error']['Message']
+                )
+                self.have_ta = False
+                return []
+            else:
+                raise ex
+        return [(check['id'], check['metadata']) for check in checks \
+                if check['name'].startswith(sname)]
+
+    def _get_ta_limit(self, check_id, metadata, ta_results):
+        """
+        Poll Trusted Advisor (Support) API for limit checks.
+
+        Update a dict of service name (string) keys to nested dict vals, where
+        each key is a limit name and each value the current numeric limit.
+
+        Inspired by the _poll function, but takes the current state of
+        ta_results dict as a parameter and simply updates it.
+        """
+        if not self.have_ta:
+            logger.info('TrustedAdvisor.have_ta is False; not polling TA')
+            ta_results = {}
+            return
+        if check_id is None:
+            logger.critical("Unable to find 'Service Limits' Trusted Advisor "
+                            "check; not using Trusted Advisor data.")
+            ta_results = {}
+            return
+        checks = self._get_refreshed_check_result(check_id)
+        region = self.ta_region or self.conn._client_config.region_name
+        if checks['result'].get('status', '') == 'not_available':
+            logger.warning(
+                'Trusted Advisor returned status "not_available" for '
+                'service limit check; cannot retrieve limits from TA.'
+            )
+            ta_results = {}
+            return
+        if 'flaggedResources' not in checks['result']:
+            logger.warning(
+                'Trusted Advisor returned no results for '
+                'service limit check; cannot retrieve limits from TA.'
+            )
+            ta_results = {}
+            return
+        for check in checks['result']['flaggedResources']:
+            if 'region' in check and check['region'] != region:
+                continue
+            data = dict(zip(metadata, check['metadata']))
+            if data['Service'] not in ta_results:
+                ta_results[data['Service']] = {}
+            try:
+                val = int(data['Limit Amount'])
+            except ValueError:
+                val = data['Limit Amount']
+                if val != 'Unlimited':
+                    logger.error('TrustedAdvisor returned unknown Limit '
+                                 'Amount %s for %s - %s', val, data['Service'],
+                                 data['Limit Name'])
+                    continue
+                else:
+                    logger.debug('TrustedAdvisor setting explicit "Unlimited" '
+                                 'limit for %s - %s', data['Service'],
+                                 data['Limit Name'])
+            ta_results[data['Service']][data['Limit Name']] = val
+        logger.info("Finished TrustedAdvisor poll")
 
     def _poll(self):
         """
@@ -409,7 +524,7 @@ class TrustedAdvisor(Connectable):
         :param services: dict of service names to _AwsService objects
         :type services: dict
         """
-        logger.debug("Updating TA limits on all services")
+        logger.debug("Updating TA limits")
         for svc_name in sorted(ta_results.keys()):
             svc_results = ta_results[svc_name]
             if svc_name not in self.ta_services:
@@ -429,7 +544,7 @@ class TrustedAdvisor(Connectable):
                     svc_limits[lim_name]._set_ta_unlimited()
                 else:
                     svc_limits[lim_name]._set_ta_limit(val)
-        logger.info("Done updating TA limits on all services")
+        logger.info("Done updating TA limits")
 
     def _make_ta_service_dict(self):
         """
