@@ -201,8 +201,8 @@ class TrustedAdvisor(Connectable):
                 return []
             else:
                 raise ex
-        return [(check['id'], check['metadata']) for check in checks \
-                if check['name'].startswith(sname) and \
+        return [(check['id'], check['metadata']) for check in checks
+                if check['name'].startswith(sname) and
                 'Limit Amount' in check['metadata']]
 
     def _get_ta_limit(self, check_id, metadata, ta_results):
@@ -525,7 +525,7 @@ class TrustedAdvisor(Connectable):
         :param services: dict of service names to _AwsService objects
         :type services: dict
         """
-        logger.debug("Updating TA limits")
+        logger.debug("Updating TA limits on all services")
         for svc_name in sorted(ta_results.keys()):
             svc_results = ta_results[svc_name]
             if svc_name not in self.ta_services:
@@ -545,7 +545,7 @@ class TrustedAdvisor(Connectable):
                     svc_limits[lim_name]._set_ta_unlimited()
                 else:
                     svc_limits[lim_name]._set_ta_limit(val)
-        logger.info("Done updating TA limits")
+        logger.info("Done updating TA limits on all services")
 
     def _make_ta_service_dict(self):
         """
