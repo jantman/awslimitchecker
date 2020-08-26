@@ -63,7 +63,9 @@ class AlertManager(AlertProvider):
         :param description: event description
         :type description: str
         """
-        # region in the label 'instance' due to currntly awslimitchecker supports only check per region and  grouping by instance is default behavior in alertmanager. 
+        # region in the label 'instance' due to currently awslimitchecker supports
+        # only check per region and grouping by instance is default behavior
+        # in alertmanager.
         # datetime in UTC format to simplify the code
         event = '''[{
                     "labels": {
@@ -109,6 +111,8 @@ class AlertManager(AlertProvider):
 
     def _generate_description(self, problems) -> str:
         """
+        Generate description from dict of problems for an event
+
         :param problems: dict of service name to nested dict of limit name to
           limit, same format as the return value of
           :py:meth:`~.AwsLimitChecker.check_thresholds`. ``None`` if ``exc`` is
@@ -153,7 +157,7 @@ class AlertManager(AlertProvider):
         :type duration: float
         """
         if exc:
-            description = 'failed with an exception: %s' % exc.__repr__()
+            description = 'the check script failed with an exception'
         else:
             description = self._generate_description(problems)
         self._send_event("critical", description)
