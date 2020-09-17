@@ -66,9 +66,11 @@ class _LambdaService(_AwsService):
             logger.warn('Skipping Lambda: %s', str(ex))
             return
         self.limits['Function Count']._add_current_usage(
-            resp['AccountUsage']['FunctionCount'])
+            resp['AccountUsage']['FunctionCount']
+        )
         self.limits['Total Code Size (MiB)']._add_current_usage(
-            int((resp['AccountUsage']['TotalCodeSize'])/1048576))
+            int((resp['AccountUsage']['TotalCodeSize']) / 1048576)
+        )
         self._have_usage = True
 
     def get_limits(self):
@@ -98,15 +100,20 @@ class _LambdaService(_AwsService):
         self.connect()
         lims = self.conn.get_account_settings()['AccountLimit']
         self.limits['Total Code Size (MiB)']._set_api_limit(
-            (lims['TotalCodeSize']/1048576))
+            (lims['TotalCodeSize'] / 1048576)
+        )
         self.limits['Code Size Unzipped (MiB) per Function']._set_api_limit(
-            (lims['CodeSizeUnzipped']/1048576))
+            (lims['CodeSizeUnzipped'] / 1048576)
+        )
         self.limits['Unreserved Concurrent Executions']._set_api_limit(
-            lims['UnreservedConcurrentExecutions'])
+            lims['UnreservedConcurrentExecutions']
+        )
         self.limits['Concurrent Executions']._set_api_limit(
-            lims['ConcurrentExecutions'])
+            lims['ConcurrentExecutions']
+        )
         self.limits['Code Size Zipped (MiB) per Function']._set_api_limit(
-            (lims['CodeSizeZipped']/1048576))
+            (lims['CodeSizeZipped'] / 1048576)
+        )
 
     def _construct_limits(self):
         self.limits = {}

@@ -348,13 +348,13 @@ class TrustedAdvisor(Connectable):
                     ex.response['Error']['Message']
                 )
                 self.have_ta = False
-                return (None, None)
+                return None, None
             else:
                 raise ex
         for check in checks:
             if (
-                            check['category'] == 'performance' and
-                            check['name'] == 'Service Limits'
+                check['category'] == 'performance' and
+                check['name'] == 'Service Limits'
             ):
                 logger.debug("Found TA check; id=%s", check['id'])
                 return (

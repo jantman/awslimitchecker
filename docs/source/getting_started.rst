@@ -62,7 +62,7 @@ Requirements
 
 **Either Docker in order to run via the** :ref:`docker image <docker>`, **or:**
 
-* Python 3.5 or newer. Python 2.7 will not be supported as of January 1, 2010.
+* Python 3.5 or newer.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.4.6 and its dependency `botocore <https://botocore.readthedocs.io/en/latest/>`_ >= 1.6.0.
 

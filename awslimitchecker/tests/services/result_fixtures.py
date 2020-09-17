@@ -91,6 +91,7 @@ def get_boto3_resource_model(service_name, resource_name):
     )
     return resource_cls
 
+
 # get some resource models for specs...
 Instance = get_boto3_resource_model('ec2', 'Instance')
 SecurityGroup = get_boto3_resource_model('ec2', 'SecurityGroup')
@@ -1139,8 +1140,8 @@ class ElasticBeanstalk(object):
                     'version-2'
                 ],
                 'ConfigurationTemplates': [
-                     'config-1',
-                     'config-2'
+                    'config-1',
+                    'config-2'
                 ]
             },
             {
@@ -1153,8 +1154,8 @@ class ElasticBeanstalk(object):
                     'version-2'
                 ],
                 'ConfigurationTemplates': [
-                     'config-1',
-                     'config-2'
+                    'config-1',
+                    'config-2'
                 ]
             }
         ]
@@ -1298,54 +1299,54 @@ class ElasticBeanstalk(object):
 class ELB(object):
 
     test_find_usage = {
-            # this is a subset of response items
-            'LoadBalancerDescriptions': [
-                {
-                    'LoadBalancerName': 'elb-1',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': []
-                },
-                {
-                    'LoadBalancerName': 'elb-2',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [
-                        {'InstanceId': 'i-1'},
-                        {'InstanceId': 'i-2'},
-                        {'InstanceId': 'i-3'},
-                        {'InstanceId': 'i-4'},
-                    ]
-                },
-                {
-                    'LoadBalancerName': 'elb-3',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [{'InstanceId': 'i-5'}]
-                },
-                {
-                    'LoadBalancerName': 'elb-4',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [
-                        {'InstanceId': 'i-6'},
-                        {'InstanceId': 'i-7'}
-                    ]
-                }
-            ],
-        }
+        # this is a subset of response items
+        'LoadBalancerDescriptions': [
+            {
+                'LoadBalancerName': 'elb-1',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                ],
+                'Instances': []
+            },
+            {
+                'LoadBalancerName': 'elb-2',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [
+                    {'InstanceId': 'i-1'},
+                    {'InstanceId': 'i-2'},
+                    {'InstanceId': 'i-3'},
+                    {'InstanceId': 'i-4'},
+                ]
+            },
+            {
+                'LoadBalancerName': 'elb-3',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [{'InstanceId': 'i-5'}]
+            },
+            {
+                'LoadBalancerName': 'elb-4',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [
+                    {'InstanceId': 'i-6'},
+                    {'InstanceId': 'i-7'}
+                ]
+            }
+        ],
+    }
 
     test_update_limits_elb = {
         'ResponseMetadata': {
@@ -4378,98 +4379,98 @@ class Route53(object):
 class CloudTrail(object):
 
     mock_describe_trails = {
-            'trailList': [
-                {
-                    'Name': 'trail1',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'thisregion',
-                    'TrailARN': 'trailarn1',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': False
-                },
-                {
-                    'Name': 'trail2',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'thisregion',
-                    'TrailARN': 'trailarn2',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True
-                },
-                {
-                    'Name': 'trail3',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'otherRegion',
-                    'TrailARN': 'trailarn3',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True
-                },
-                {
-                    'Name': 'trail4',
-                    'TrailARN': 'trailarn4',
-                    'HomeRegion': 'thisregion'
-                }
-            ],
+        'trailList': [
+            {
+                'Name': 'trail1',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'thisregion',
+                'TrailARN': 'trailarn1',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': False
+            },
+            {
+                'Name': 'trail2',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'thisregion',
+                'TrailARN': 'trailarn2',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': True
+            },
+            {
+                'Name': 'trail3',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'otherRegion',
+                'TrailARN': 'trailarn3',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': True
+            },
+            {
+                'Name': 'trail4',
+                'TrailARN': 'trailarn4',
+                'HomeRegion': 'thisregion'
+            }
+        ],
     }
 
     mock_get_event_selectors = {
-            'TrailARN': 'string',
-            'EventSelectors': [
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True,
-                    'DataResources': [
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        }
-                    ]
-                },
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True,
-                    'DataResources': []
-                },
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True
-                }
-            ]
+        'TrailARN': 'string',
+        'EventSelectors': [
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True,
+                'DataResources': [
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    },
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    },
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    }
+                ]
+            },
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True,
+                'DataResources': []
+            },
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True
+            }
+        ]
     }

@@ -5,3 +5,4 @@ awslimitchecker.services.elasticache module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

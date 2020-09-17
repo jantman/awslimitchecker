@@ -5,3 +5,4 @@ awslimitchecker.alerts.dummy module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
