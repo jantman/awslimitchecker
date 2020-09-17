@@ -5,3 +5,4 @@ awslimitchecker.services.lambdafunc module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

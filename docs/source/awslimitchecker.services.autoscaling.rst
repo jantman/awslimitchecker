@@ -5,3 +5,4 @@ awslimitchecker.services.autoscaling module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

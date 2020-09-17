@@ -5,3 +5,4 @@ awslimitchecker.metrics.base module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

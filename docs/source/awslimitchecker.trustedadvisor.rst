@@ -5,3 +5,4 @@ awslimitchecker.trustedadvisor module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

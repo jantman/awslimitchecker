@@ -5,3 +5,4 @@ awslimitchecker.services.ec2 module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

@@ -5,3 +5,4 @@ awslimitchecker.services.elasticbeanstalk module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
