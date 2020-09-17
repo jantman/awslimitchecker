@@ -5,3 +5,4 @@ awslimitchecker.services.route53 module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

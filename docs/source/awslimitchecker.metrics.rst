@@ -5,11 +5,13 @@ awslimitchecker.metrics package
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    awslimitchecker.metrics.base
    awslimitchecker.metrics.datadog

@@ -231,8 +231,9 @@ class Test_RDSService(object):
         assert usage[0].get_value() == 2
         assert usage[0].aws_type == 'AWS::RDS::DBSecurityGroup'
 
-        usage = sorted(cls.limits[
-                           'Max auths per security group'].get_current_usage())
+        usage = sorted(
+            cls.limits['Max auths per security group'].get_current_usage()
+        )
         assert len(usage) == 5
         assert usage[0].get_value() == 0
         assert usage[0].resource_id == 'MyEmptySecurityGroup'
