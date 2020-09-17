@@ -117,32 +117,36 @@ class _EbsService(_AwsService):
             piops,
             aws_type='AWS::EC2::Volume'
         )
-        self.limits['Provisioned IOPS (SSD) storage '
-                    '(GiB)']._add_current_usage(
-                        piops_gb,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['General Purpose (SSD) volume storage '
-                    '(GiB)']._add_current_usage(
-                        gp_gb,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['Magnetic volume storage '
-                    '(GiB)']._add_current_usage(
-                        mag_gb,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['Throughput Optimized (HDD) volume storage '
-                    '(GiB)']._add_current_usage(
-                        st_gb,
-                        aws_type='AWS::EC2::Volume'
-                    )
-        self.limits['Cold (HDD) volume storage '
-                    '(GiB)']._add_current_usage(
-                        sc_gb,
-                        aws_type='AWS::EC2::Volume'
-                    )
-
+        self.limits[
+            'Provisioned IOPS (SSD) storage (GiB)'
+        ]._add_current_usage(
+            piops_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'General Purpose (SSD) volume storage (GiB)'
+        ]._add_current_usage(
+            gp_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'Magnetic volume storage (GiB)'
+        ]._add_current_usage(
+            mag_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'Throughput Optimized (HDD) volume storage (GiB)'
+        ]._add_current_usage(
+            st_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'Cold (HDD) volume storage (GiB)'
+        ]._add_current_usage(
+            sc_gb,
+            aws_type='AWS::EC2::Volume'
+        )
         self.limits['Active volumes']._add_current_usage(
             vols,
             aws_type='AWS::EC2::Volume'

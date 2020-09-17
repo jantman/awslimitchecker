@@ -106,8 +106,9 @@ class Test_SesService(object):
         assert cls._have_usage is True
         assert mock_conn.mock_calls == [call.get_send_quota()]
         assert len(cls.limits['Daily sending quota'].get_current_usage()) == 1
-        assert cls.limits['Daily sending quota'].get_current_usage()[
-                   0].get_value() == 122.0
+        assert cls.limits[
+            'Daily sending quota'
+        ].get_current_usage()[0].get_value() == 122.0
 
     def test_find_usage_invalid_region(self):
         def se_get():

@@ -698,12 +698,13 @@ class _Ec2Service(_AwsService):
         for iface in ints:
             if iface.vpc is None:
                 continue
-            self.limits['VPC security groups per elastic network '
-                        'interface']._add_current_usage(
-                            len(iface.groups),
-                            aws_type='AWS::EC2::NetworkInterface',
-                            resource_id=iface.id,
-                        )
+            self.limits[
+                'VPC security groups per elastic network interface'
+            ]._add_current_usage(
+                len(iface.groups),
+                aws_type='AWS::EC2::NetworkInterface',
+                resource_id=iface.id,
+            )
 
     def _get_limits_networking(self):
         """
