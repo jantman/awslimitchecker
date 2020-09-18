@@ -266,11 +266,11 @@ class _EbsService(_AwsService):
         limits['Active snapshots'] = AwsLimit(
             'Active snapshots',
             self,
-            10000,
+            100000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::VolumeSnapshot',
-            quotas_name='Number of EBS snapshots'
+            quotas_name='Snapshots Per Region'
         )
         limits['Active volumes'] = AwsLimit(
             'Active volumes',
