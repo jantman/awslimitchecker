@@ -1,6 +1,18 @@
 Changelog
 =========
 
+.. _changelog.8_1_0:
+
+8.1.0 (2020-09-18)
+------------------
+
+* Internal testing changes:
+
+  * Stop testing under Python 2.7 and Python 3.4.
+  * Switch from deprecated pep8 / pytest-pep8 to pycodestyle / pytest-pycodestyle.
+  * Pin pytest to ``<6.0.0`` to avoid some breaking changes for now.
+  * Switch integration test environment from Python 3.7 to Python 3.8.
+
 .. _changelog.8_0_2:
 
 8.0.2 (2020-03-03)

@@ -5,3 +5,4 @@ awslimitchecker.services.ebs module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

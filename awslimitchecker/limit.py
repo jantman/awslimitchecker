@@ -288,13 +288,13 @@ class AwsLimit(object):
         "<unknown>".
 
         If the limit has only one current usage instance, this will be
-        that instance's :py:meth:`~.AwsLimitUsage.__str__` value.
+        that instance's ``AwsLimitUsage.__str__`` value.
 
         If the limit has more than one current usage instance, this
         will be the a string of the form ``max: X (Y)`` where ``X`` is
-        the :py:meth:`~.AwsLimitUsage.__str__` value of the instance
+        the ``AwsLimitUsage.__str__`` value of the instance
         with the maximum value, and ``Y`` is a comma-separated list
-        of the :py:meth:`~.AwsLimitUsage.__str__` values of all usage
+        of the ``AwsLimitUsage.__str__`` values of all usage
         instances in ascending order.
 
         :returns: representation of current usage

@@ -5,3 +5,4 @@ awslimitchecker.services.rds module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
