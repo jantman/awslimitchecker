@@ -6,6 +6,7 @@ Changelog
 8.1.0 (2020-09-18)
 ------------------
 
+* `PR #468 <https://github.com/jantman/awslimitchecker/pull/468>`_ - Fix transposed headings in CLI Usage documentation. Thanks to `@owenmann <https://github.com/owenmann>`__.
 * Internal testing changes:
 
   * Stop testing under Python 2.7 and Python 3.4.
