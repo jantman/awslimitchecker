@@ -7,6 +7,7 @@ Changelog
 ------------------
 
 * `PR #468 <https://github.com/jantman/awslimitchecker/pull/468>`_ - Fix transposed headings in CLI Usage documentation. Thanks to `@owenmann <https://github.com/owenmann>`__.
+* `PR #470 <https://github.com/jantman/awslimitchecker/pull/470>`_ - Fix new EBS "Active snapshots" limit (bumped from 10,000 to 100,000) and Quotas Service name. Thanks to `@rashidamiri <https://github.com/rashidamiri>`__.
 * Internal testing changes:
 
   * Stop testing under Python 2.7 and Python 3.4.
