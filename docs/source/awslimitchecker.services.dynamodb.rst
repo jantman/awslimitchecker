@@ -5,3 +5,4 @@ awslimitchecker.services.dynamodb module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

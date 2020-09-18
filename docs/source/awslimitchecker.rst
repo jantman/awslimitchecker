@@ -5,11 +5,13 @@ awslimitchecker package
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    awslimitchecker.alerts
    awslimitchecker.metrics
@@ -19,6 +21,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    awslimitchecker.checker
    awslimitchecker.connectable

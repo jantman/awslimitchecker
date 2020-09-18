@@ -315,10 +315,9 @@ linkcheck_ignore = [
     r'https?://.*readthedocs\.org.*',
     r'https?://.*readthedocs\.io.*',
     r'https?://waffle\.io.*',
-    r'https?://github\.com/pytest-dev/pytest/blob/master/CHANGELOG\.rst',
-    r'https?://github\.com/jantman/awslimitchecker/releases/tag/.*',
-    r'https?://github\.com/jantman/awslimitchecker/tree/master/.*',
     r'https?://docs\.aws\.amazon\.com/.*#.*',
+    # this sucks, but we're getting 429 rate limited by github.com checking all these links
+    r'https?://github\.com/.*'
 ]
 
 # exclude module docstrings - see http://stackoverflow.com/a/18031024/211734

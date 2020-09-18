@@ -327,7 +327,7 @@ class TestGetLimitCheckId(object):
             call.describe_trusted_advisor_checks(language='en')
         ]
         assert excinfo.value.response['ResponseMetadata'][
-                   'HTTPStatusCode'] == 400
+            'HTTPStatusCode'] == 400
         assert excinfo.value.response['Error']['Message'] == 'foo'
         assert excinfo.value.response['Error']['Code'] == 'SomeOtherException'
 

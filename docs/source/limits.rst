@@ -128,7 +128,7 @@ EBS
 =============================================== =============== ======== ======= ======
 Limit                                           Trusted Advisor Quotas   API     Default
 =============================================== =============== ======== ======= ======
-Active snapshots                                |check|         |check|          10000 
+Active snapshots                                                |check|          100000
 Active volumes                                                                   5000  
 Cold (HDD) volume storage (GiB)                                 |check|          307200
 General Purpose (SSD) volume storage (GiB)      |check|         |check|          307200
