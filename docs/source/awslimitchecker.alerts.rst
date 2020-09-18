@@ -5,11 +5,13 @@ awslimitchecker.alerts package
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    awslimitchecker.alerts.base
    awslimitchecker.alerts.dummy

@@ -1,6 +1,20 @@
 Changelog
 =========
 
+.. _changelog.8_1_0:
+
+8.1.0 (2020-09-18)
+------------------
+
+* `PR #468 <https://github.com/jantman/awslimitchecker/pull/468>`_ - Fix transposed headings in CLI Usage documentation. Thanks to `@owenmann <https://github.com/owenmann>`__.
+* `PR #470 <https://github.com/jantman/awslimitchecker/pull/470>`_ - Fix new EBS "Active snapshots" limit (bumped from 10,000 to 100,000) and Quotas Service name. Thanks to `@rashidamiri <https://github.com/rashidamiri>`__.
+* Internal testing changes:
+
+  * Stop testing under Python 2.7 and Python 3.4.
+  * Switch from deprecated pep8 / pytest-pep8 to pycodestyle / pytest-pycodestyle.
+  * Pin pytest to ``<6.0.0`` to avoid some breaking changes for now.
+  * Switch integration test environment from Python 3.7 to Python 3.8.
+
 .. _changelog.8_0_2:
 
 8.0.2 (2020-03-03)
