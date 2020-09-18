@@ -42,8 +42,9 @@ import logging
 
 from .base import _AwsService
 from ..limit import AwsLimit
-from botocore.exceptions import EndpointConnectionError
-from botocore.exceptions import ClientError
+from botocore.exceptions import (
+    EndpointConnectionError, ClientError, ConnectTimeoutError
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,9 @@ class _SesService(_AwsService):
                 logger.warning('Skipping SES: %s', ex)
                 return
             raise
+        except ConnectTimeoutError as ex:
+            logger.warning('Skipping SES: %s', str(ex))
+            return
         self.limits['Daily sending quota']._add_current_usage(
             resp['SentLast24Hours']
         )
@@ -117,6 +121,9 @@ class _SesService(_AwsService):
                 logger.warning('Skipping SES: %s', ex)
                 return
             raise
+        except ConnectTimeoutError as ex:
+            logger.warning('Skipping SES: %s', str(ex))
+            return
         self.limits['Daily sending quota']._set_api_limit(resp['Max24HourSend'])
 
     def required_iam_permissions(self):
