@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Unreleased Changes
+------------------
+
+**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity``
+
+* `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - EC2 instances running on Dedicated Hosts (tenancy "host") or single-tenant hardware (tenancy "dedicated") do not count towards On-Demand Instances limits. They were previously being counted towards these limits; they are now excluded from the count.
+* `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - For all VPC resources that support the ``owner-id`` filter, supply that filter when describing them, set to the current account ID. This will prevent shared resources from other accounts from being counted against the limits.
+* `Issue #475 <https://github.com/jantman/awslimitchecker/issues/475>`__ - When an Alert Provider is used, only exit non-zero if an exception is encountered. Exit zero even if there are warnings and/or criticals.
+* `Issue #467 <https://github.com/jantman/awslimitchecker/issues/467>`__ - Fix the Service Quotas quota name for VPC "NAT Gateways per AZ" limit.
+* `Issue #457 <https://github.com/jantman/awslimitchecker/issues/457>`__ - In the required IAM permissions, replace ``support:*`` with the specific permissions that we need.
+
 .. _changelog.8_1_0:
 
 8.1.0 (2020-09-18)
@@ -8,6 +19,9 @@ Changelog
 
 * `PR #468 <https://github.com/jantman/awslimitchecker/pull/468>`_ - Fix transposed headings in CLI Usage documentation. Thanks to `@owenmann <https://github.com/owenmann>`__.
 * `PR #470 <https://github.com/jantman/awslimitchecker/pull/470>`_ - Fix new EBS "Active snapshots" limit (bumped from 10,000 to 100,000) and Quotas Service name. Thanks to `@rashidamiri <https://github.com/rashidamiri>`__.
+* `Issue #464 <https://github.com/jantman/awslimitchecker/issues/464>`_ - Fix bug where SES was causing ``ConnectTimeoutError`` in some regions. This has been added to the list of SES exceptions that we catch and silently ignore. This is a new exception thrown by regions that do not have SES support.
+* Add ``.dockerignore`` file to make local builds quite a bit smaller.
+* `Issue #465 <https://github.com/jantman/awslimitchecker/issues/465>`_ - Fixed via `versionfinder 1.1.1 <https://github.com/jantman/versionfinder/pull/13>`_.
 * Internal testing changes:
 
   * Stop testing under Python 2.7 and Python 3.4.

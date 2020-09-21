@@ -39,6 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc
 import logging
+import boto3
 from awslimitchecker.connectable import Connectable
 
 logger = logging.getLogger(__name__)
@@ -90,6 +91,27 @@ class _AwsService(Connectable):
         self.limits = {}
         self.limits = self.get_limits()
         self._have_usage = False
+        self._current_account_id = None
+
+    @property
+    def current_account_id(self):
+        """
+        Return the numeric Account ID for the account that we are currently
+        running against.
+
+        :return: current account ID
+        :rtype: str
+        """
+        if self._current_account_id is not None:
+            return self._current_account_id
+        kwargs = dict(self._boto3_connection_kwargs)
+        sts = boto3.client('sts', **kwargs)
+        logger.info(
+            "Connected to STS in region %s", sts._client_config.region_name
+        )
+        cid = sts.get_caller_identity()
+        self._current_account_id = cid['Account']
+        return cid['Account']
 
     @abc.abstractmethod
     def find_usage(self):
