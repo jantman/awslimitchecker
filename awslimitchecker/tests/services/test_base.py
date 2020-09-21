@@ -102,6 +102,7 @@ class Test_AwsService(object):
         assert cls._have_usage is False
         assert cls._boto3_connection_kwargs == {}
         assert cls._quotas_client == m_quota
+        assert cls._current_account_id is None
 
     def test_init_subclass_boto_xargs(self):
         boto_args = {'region_name': 'myregion',
@@ -117,6 +118,7 @@ class Test_AwsService(object):
         assert cls._have_usage is False
         assert cls._boto3_connection_kwargs == boto_args
         assert cls._quotas_client is None
+        assert cls._current_account_id is None
 
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -374,6 +376,40 @@ class Test_AwsService(object):
         assert mock_limit1.mock_calls == []
         assert mock_limit2.mock_calls == []
 
+    def test_current_account_id_needed(self):
+        mock_conf = Mock(region_name='foo')
+        mock_sts = Mock(_client_config=mock_conf)
+        mock_sts.get_caller_identity.return_value = {
+            'UserId': 'something',
+            'Account': '123456789',
+            'Arn': 'something'
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        cls._current_account_id = '987654321'
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            m_boto.return_value = mock_sts
+            res = cls.current_account_id
+        assert res == '987654321'
+        assert m_boto.mock_calls == []
+
+    def test_current_account_id_stored(self):
+        mock_conf = Mock(region_name='foo')
+        mock_sts = Mock(_client_config=mock_conf)
+        mock_sts.get_caller_identity.return_value = {
+            'UserId': 'something',
+            'Account': '123456789',
+            'Arn': 'something'
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            m_boto.return_value = mock_sts
+            res = cls.current_account_id
+        assert res == '123456789'
+        assert m_boto.mock_calls == [
+            call('sts', foo='bar'),
+            call().get_caller_identity()
+        ]
+
 
 class Test_AwsServiceSubclasses(object):
 
@@ -397,6 +433,7 @@ class Test_AwsServiceSubclasses(object):
         assert inst.warning_threshold == 3
         assert inst.critical_threshold == 7
         assert not inst._boto3_connection_kwargs
+        assert inst._current_account_id is None
 
         boto_args = dict(region_name='myregion',
                          aws_access_key_id='myaccesskey',

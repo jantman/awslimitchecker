@@ -851,6 +851,7 @@ class TestAwsLimitChecker(object):
                     'foo:perm1',
                     'foo:perm2',
                     'servicequotas:ListServiceQuotas',
+                    'sts:GetCallerIdentity',
                     'support:*',
                     'trustedadvisor:Describe*',
                     'trustedadvisor:RefreshCheck'
