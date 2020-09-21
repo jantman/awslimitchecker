@@ -852,7 +852,11 @@ class TestAwsLimitChecker(object):
                     'foo:perm2',
                     'servicequotas:ListServiceQuotas',
                     'sts:GetCallerIdentity',
-                    'support:*',
+                    'support:DescribeTrustedAdvisorCheckRefreshStatuses',
+                    'support:DescribeTrustedAdvisorCheckResult',
+                    'support:DescribeTrustedAdvisorCheckSummaries',
+                    'support:DescribeTrustedAdvisorChecks',
+                    'support:RefreshTrustedAdvisorCheck',
                     'trustedadvisor:Describe*',
                     'trustedadvisor:RefreshCheck'
                 ],
