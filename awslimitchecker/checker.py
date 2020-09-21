@@ -650,6 +650,7 @@ class AwsLimitChecker(object):
         required_actions = [
             'servicequotas:ListServiceQuotas',
             'support:*',
+            'sts:GetCallerIdentity',
             'trustedadvisor:Describe*',
             'trustedadvisor:RefreshCheck'
         ]

@@ -314,6 +314,12 @@ class _Ec2Service(_AwsService):
                 logger.info("Spot instance found (%s); skipping from "
                             "Running On-Demand Instances count", inst.id)
                 continue
+            if inst.placement.get('Tenancy', 'default') != 'default':
+                logger.info(
+                    'Skipping instance %s with Tenancy %s',
+                    inst.id, inst.placement['Tenancy']
+                )
+                continue
             if inst.state['Name'] in ['stopped', 'terminated']:
                 logger.debug("Ignoring instance %s in state %s", inst.id,
                              inst.state['Name'])
@@ -346,6 +352,12 @@ class _Ec2Service(_AwsService):
             if inst.spot_instance_request_id:
                 logger.info("Spot instance found (%s); skipping from "
                             "Running On-Demand Instances count", inst.id)
+                continue
+            if inst.placement.get('Tenancy', 'default') != 'default':
+                logger.info(
+                    'Skipping instance %s with Tenancy %s',
+                    inst.id, inst.placement['Tenancy']
+                )
                 continue
             if inst.state['Name'] in ['stopped', 'terminated']:
                 logger.debug("Ignoring instance %s in state %s", inst.id,
