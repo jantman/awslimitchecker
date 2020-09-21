@@ -540,6 +540,8 @@ class Runner(object):
                 )
             else:
                 alerter.on_success(duration=time.time() - start_time)
+            # with alert provider, always exit zero
+            raise SystemExit(0)
         raise SystemExit(res)
 
 

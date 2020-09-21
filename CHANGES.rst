@@ -8,6 +8,7 @@ Unreleased Changes
 
 * `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - EC2 instances running on Dedicated Hosts (tenancy "host") or single-tenant hardware (tenancy "dedicated") do not count towards On-Demand Instances limits. They were previously being counted towards these limits; they are now excluded from the count.
 * `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - For all VPC resources that support the ``owner-id`` filter, supply that filter when describing them, set to the current account ID. This will prevent shared resources from other accounts from being counted against the limits.
+* `Issue #475 <https://github.com/jantman/awslimitchecker/issues/475>`__ - When an Alert Provider is used, only exit non-zero if an exception is encountered. Exit zero even if there are warnings and/or criticals.
 
 .. _changelog.8_1_0:
 
