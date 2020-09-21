@@ -142,6 +142,7 @@ class Test_VpcService(object):
         mock_conn.describe_vpcs.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_vpcs()
@@ -149,7 +150,9 @@ class Test_VpcService(object):
         assert len(cls.limits['VPCs'].get_current_usage()) == 1
         assert cls.limits['VPCs'].get_current_usage()[0].get_value() == 2
         assert mock_conn.mock_calls == [
-            call.describe_vpcs()
+            call.describe_vpcs(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_subnets(self):
@@ -158,6 +161,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_subnets.return_value = response
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         res = cls._find_usage_subnets()
@@ -174,7 +178,9 @@ class Test_VpcService(object):
         assert usage[1].get_value() == 2
         assert usage[1].resource_id == 'vpc-1'
         assert mock_conn.mock_calls == [
-            call.describe_subnets()
+            call.describe_subnets(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_acls(self):
@@ -182,6 +188,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         mock_conn.describe_network_acls.return_value = response
@@ -203,7 +210,9 @@ class Test_VpcService(object):
         assert entries[2].resource_id == 'acl-3'
         assert entries[2].get_value() == 5
         assert mock_conn.mock_calls == [
-            call.describe_network_acls()
+            call.describe_network_acls(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_route_tables(self):
@@ -213,6 +222,7 @@ class Test_VpcService(object):
         mock_conn.describe_route_tables.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_route_tables()
@@ -233,7 +243,9 @@ class Test_VpcService(object):
         assert entries[2].resource_id == 'rt-3'
         assert entries[2].get_value() == 3
         assert mock_conn.mock_calls == [
-            call.describe_route_tables()
+            call.describe_route_tables(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_internet_gateways(self):
@@ -243,6 +255,7 @@ class Test_VpcService(object):
         mock_conn.describe_internet_gateways.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_gateways()
@@ -251,7 +264,9 @@ class Test_VpcService(object):
         assert cls.limits['Internet gateways'].get_current_usage()[
             0].get_value() == 2
         assert mock_conn.mock_calls == [
-            call.describe_internet_gateways()
+            call.describe_internet_gateways(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_nat_gateways(self):
@@ -263,6 +278,7 @@ class Test_VpcService(object):
 
         with patch('%s.logger' % self.pbm) as mock_logger:
             cls = _VpcService(21, 43, {}, None)
+            cls._current_account_id = '0123456789'
             cls.conn = mock_conn
             cls._find_usage_nat_gateways(subnets)
 
@@ -300,6 +316,7 @@ class Test_VpcService(object):
         mock_conn.describe_nat_gateways.side_effect = se_exc
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
@@ -322,6 +339,7 @@ class Test_VpcService(object):
         mock_conn.describe_vpn_gateways.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usages_vpn_gateways()
@@ -349,6 +367,7 @@ class Test_VpcService(object):
         mock_conn.describe_network_interfaces.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_network_interfaces()
@@ -358,7 +377,9 @@ class Test_VpcService(object):
         assert cls.limits['Network interfaces per Region'].get_current_usage()[
             0].get_value() == 1
         assert mock_conn.mock_calls == [
-            call.describe_network_interfaces(),
+            call.describe_network_interfaces(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }]),
         ]
 
     def test_update_limits_from_api_high_max_instances(self):
