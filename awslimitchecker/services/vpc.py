@@ -328,6 +328,7 @@ class _VpcService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::NatGateway',
+            quotas_name='NAT gateways per Availability Zone'
         )
 
         limits['Virtual private gateways'] = AwsLimit(
