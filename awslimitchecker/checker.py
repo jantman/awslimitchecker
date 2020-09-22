@@ -648,6 +648,7 @@ class AwsLimitChecker(object):
         :rtype: dict
         """
         required_actions = [
+            'cloudwatch:GetMetricData',
             'servicequotas:ListServiceQuotas',
             'support:DescribeTrustedAdvisorCheckRefreshStatuses',
             'support:DescribeTrustedAdvisorCheckResult',

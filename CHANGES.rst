@@ -4,7 +4,7 @@ Changelog
 Unreleased Changes
 ------------------
 
-**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity``
+**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity`` and ``cloudwatch:GetMetricData``
 
 **Important:** This release includes updates for major changes to ECS limits, which includes the renaming of some existing limits.
 
