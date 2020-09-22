@@ -850,6 +850,7 @@ class TestAwsLimitChecker(object):
                 'Effect': 'Allow',
                 'Resource': '*',
                 'Action': [
+                    'cloudwatch:GetMetricData',
                     'ec2:bar',
                     'ec2:foo',
                     'foo:perm1',
