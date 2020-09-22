@@ -42,6 +42,10 @@ from awslimitchecker.limit import AwsLimit
 from awslimitchecker.quotas import ServiceQuotasClient
 import pytest
 import sys
+from datetime import datetime
+from dateutil.tz import tzutc
+from freezegun import freeze_time
+from botocore.exceptions import ClientError
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -102,6 +106,8 @@ class Test_AwsService(object):
         assert cls._have_usage is False
         assert cls._boto3_connection_kwargs == {}
         assert cls._quotas_client == m_quota
+        assert cls._current_account_id is None
+        assert cls._cloudwatch_client is None
 
     def test_init_subclass_boto_xargs(self):
         boto_args = {'region_name': 'myregion',
@@ -117,6 +123,43 @@ class Test_AwsService(object):
         assert cls._have_usage is False
         assert cls._boto3_connection_kwargs == boto_args
         assert cls._quotas_client is None
+        assert cls._current_account_id is None
+        assert cls._cloudwatch_client is None
+
+    def test_current_account_id_stored(self):
+        mock_conf = Mock(region_name='foo')
+        mock_sts = Mock(_client_config=mock_conf)
+        mock_sts.get_caller_identity.return_value = {
+            'UserId': 'something',
+            'Account': '123456789',
+            'Arn': 'something'
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        cls._current_account_id = '987654321'
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            m_boto.return_value = mock_sts
+            res = cls.current_account_id
+        assert res == '987654321'
+        assert m_boto.mock_calls == []
+
+    def test_current_account_id_needed(self):
+        mock_conf = Mock(region_name='foo')
+        mock_sts = Mock(_client_config=mock_conf)
+        mock_sts.get_caller_identity.return_value = {
+            'UserId': 'something',
+            'Account': '123456789',
+            'Arn': 'something'
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            m_boto.return_value = mock_sts
+            res = cls.current_account_id
+        assert res == '123456789'
+        assert cls._current_account_id == '123456789'
+        assert m_boto.mock_calls == [
+            call('sts', foo='bar'),
+            call().get_caller_identity()
+        ]
 
     def test_set_limit_override(self):
         mock_limit = Mock(spec_set=AwsLimit)
@@ -374,6 +417,374 @@ class Test_AwsService(object):
         assert mock_limit1.mock_calls == []
         assert mock_limit2.mock_calls == []
 
+    def test_cloudwatch_connection_needed(self):
+        mock_conf = Mock(region_name='foo')
+        mock_cw = Mock(_client_config=mock_conf)
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        assert cls._cloudwatch_client is None
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            m_boto.return_value = mock_cw
+            res = cls._cloudwatch_connection()
+        assert res == mock_cw
+        assert cls._cloudwatch_client == mock_cw
+        assert m_boto.mock_calls == [
+            call.client('cloudwatch', foo='bar')
+        ]
+
+    def test_cloudwatch_connection_needed_max_retries(self):
+        mock_conf = Mock(region_name='foo')
+        mock_cw = Mock(_client_config=mock_conf)
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        assert cls._cloudwatch_client is None
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            with patch(
+                'awslimitchecker.connectable.Connectable._max_retries_config',
+                new_callable=PropertyMock
+            ) as m_mrc:
+                m_mrc.return_value = {'retries': 5}
+                m_boto.return_value = mock_cw
+                res = cls._cloudwatch_connection()
+        assert res == mock_cw
+        assert cls._cloudwatch_client == mock_cw
+        assert m_boto.mock_calls == [
+            call.client('cloudwatch', foo='bar', config={'retries': 5})
+        ]
+
+    def test_cloudwatch_connection_stored(self):
+        mock_conf = Mock(region_name='foo')
+        mock_cw = Mock(_client_config=mock_conf)
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        cls._cloudwatch_client = mock_cw
+        with patch('awslimitchecker.services.base.boto3.client') as m_boto:
+            m_boto.return_value = mock_cw
+            res = cls._cloudwatch_connection()
+        assert res == mock_cw
+        assert cls._cloudwatch_client == mock_cw
+        assert m_boto.mock_calls == []
+
+
+class TestGetCloudwatchUsageLatest:
+
+    @freeze_time("2020-09-22 12:26:00", tz_offset=0)
+    def test_defaults(self):
+        mock_conn = Mock()
+        mock_conn.get_metric_data.return_value = {
+            'MetricDataResults': [
+                {
+                    'Id': 'id',
+                    'Label': 'ResourceCount',
+                    'Timestamps': [
+                        datetime(2020, 9, 22, 12, 25, tzinfo=tzutc())
+                    ],
+                    'Values': [3.0],
+                    'StatusCode': 'PartialData'
+                }
+            ],
+            'NextToken': 'foo',
+            'Messages': [],
+            'ResponseMetadata': {
+                'RequestId': '77a86d3c-16e1-47c5-b2d1-0f7d81d48a05',
+                'HTTPStatusCode': 200,
+                'HTTPHeaders': {
+                    'x-amzn-requestid': '70f7d81d48a05',
+                    'content-type': 'text/xml',
+                    'content-length': '796',
+                    'date': 'Tue, 22 Sep 2020 12:26:36 GMT'
+                },
+                'RetryAttempts': 0
+            }
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch(
+            'awslimitchecker.services.base._AwsService._cloudwatch_connection',
+            autospec=True
+        ) as m_cw_conn:
+            m_cw_conn.return_value = mock_conn
+            res = cls._get_cloudwatch_usage_latest([
+                {'Name': 'foo', 'Value': 'bar'},
+                {'Name': 'baz', 'Value': 'blam'}
+            ])
+        assert res == 3.0
+        assert m_cw_conn.mock_calls == [
+            call(cls)
+        ]
+        assert mock_conn.mock_calls == [
+            call.get_metric_data(
+                MetricDataQueries=[
+                    {
+                        'Id': 'id',
+                        'MetricStat': {
+                            'Metric': {
+                                'Namespace': 'AWS/Usage',
+                                'MetricName': 'ResourceCount',
+                                'Dimensions': [
+                                    {'Name': 'foo', 'Value': 'bar'},
+                                    {'Name': 'baz', 'Value': 'blam'}
+                                ]
+                            },
+                            'Period': 60,
+                            'Stat': 'Average'
+                        }
+                    }
+                ],
+                StartTime=datetime(2020, 9, 22, 11, 26, 00),
+                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                ScanBy='TimestampDescending',
+                MaxDatapoints=1
+            )
+        ]
+
+    @freeze_time("2020-09-22 12:26:00", tz_offset=0)
+    def test_non_default(self):
+        mock_conn = Mock()
+        mock_conn.get_metric_data.return_value = {
+            'MetricDataResults': [
+                {
+                    'Id': 'id',
+                    'Label': 'ResourceCount',
+                    'Timestamps': [
+                        datetime(2020, 9, 22, 12, 25, tzinfo=tzutc())
+                    ],
+                    'Values': [3.0],
+                    'StatusCode': 'PartialData'
+                }
+            ],
+            'NextToken': 'foo',
+            'Messages': [],
+            'ResponseMetadata': {
+                'RequestId': '77a86d3c-16e1-47c5-b2d1-0f7d81d48a05',
+                'HTTPStatusCode': 200,
+                'HTTPHeaders': {
+                    'x-amzn-requestid': '70f7d81d48a05',
+                    'content-type': 'text/xml',
+                    'content-length': '796',
+                    'date': 'Tue, 22 Sep 2020 12:26:36 GMT'
+                },
+                'RetryAttempts': 0
+            }
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch(
+            'awslimitchecker.services.base._AwsService._cloudwatch_connection',
+            autospec=True
+        ) as m_cw_conn:
+            m_cw_conn.return_value = mock_conn
+            res = cls._get_cloudwatch_usage_latest([
+                {'Name': 'foo', 'Value': 'bar'},
+                {'Name': 'baz', 'Value': 'blam'}
+            ], metric_name='MyMetric', period=3600)
+        assert res == 3.0
+        assert m_cw_conn.mock_calls == [
+            call(cls)
+        ]
+        assert mock_conn.mock_calls == [
+            call.get_metric_data(
+                MetricDataQueries=[
+                    {
+                        'Id': 'id',
+                        'MetricStat': {
+                            'Metric': {
+                                'Namespace': 'AWS/Usage',
+                                'MetricName': 'MyMetric',
+                                'Dimensions': [
+                                    {'Name': 'foo', 'Value': 'bar'},
+                                    {'Name': 'baz', 'Value': 'blam'}
+                                ]
+                            },
+                            'Period': 3600,
+                            'Stat': 'Average'
+                        }
+                    }
+                ],
+                StartTime=datetime(2020, 9, 22, 11, 26, 00),
+                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                ScanBy='TimestampDescending',
+                MaxDatapoints=1
+            )
+        ]
+
+    @freeze_time("2020-09-22 12:26:00", tz_offset=0)
+    def test_exception(self):
+        mock_conn = Mock()
+        mock_conn.get_metric_data.side_effect = ClientError(
+            {
+                'ResponseMetadata': {
+                    'HTTPStatusCode': 503,
+                    'RequestId': '7d74c6f0-c789-11e5-82fe-a96cdaa6d564'
+                },
+                'Error': {
+                    'Message': 'Service Unavailable',
+                    'Code': '503'
+                }
+            },
+            'GetMetricData'
+        )
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch(
+            'awslimitchecker.services.base._AwsService._cloudwatch_connection',
+            autospec=True
+        ) as m_cw_conn:
+            m_cw_conn.return_value = mock_conn
+            res = cls._get_cloudwatch_usage_latest([
+                {'Name': 'foo', 'Value': 'bar'},
+                {'Name': 'baz', 'Value': 'blam'}
+            ], metric_name='MyMetric', period=3600)
+        assert res == 0
+        assert m_cw_conn.mock_calls == [
+            call(cls)
+        ]
+        assert mock_conn.mock_calls == [
+            call.get_metric_data(
+                MetricDataQueries=[
+                    {
+                        'Id': 'id',
+                        'MetricStat': {
+                            'Metric': {
+                                'Namespace': 'AWS/Usage',
+                                'MetricName': 'MyMetric',
+                                'Dimensions': [
+                                    {'Name': 'foo', 'Value': 'bar'},
+                                    {'Name': 'baz', 'Value': 'blam'}
+                                ]
+                            },
+                            'Period': 3600,
+                            'Stat': 'Average'
+                        }
+                    }
+                ],
+                StartTime=datetime(2020, 9, 22, 11, 26, 00),
+                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                ScanBy='TimestampDescending',
+                MaxDatapoints=1
+            )
+        ]
+
+    @freeze_time("2020-09-22 12:26:00", tz_offset=0)
+    def test_no_data(self):
+        mock_conn = Mock()
+        mock_conn.get_metric_data.return_value = {
+            'MetricDataResults': [],
+            'NextToken': 'foo',
+            'Messages': [],
+            'ResponseMetadata': {
+                'RequestId': '77a86d3c-16e1-47c5-b2d1-0f7d81d48a05',
+                'HTTPStatusCode': 200,
+                'HTTPHeaders': {
+                    'x-amzn-requestid': '70f7d81d48a05',
+                    'content-type': 'text/xml',
+                    'content-length': '796',
+                    'date': 'Tue, 22 Sep 2020 12:26:36 GMT'
+                },
+                'RetryAttempts': 0
+            }
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch(
+            'awslimitchecker.services.base._AwsService._cloudwatch_connection',
+            autospec=True
+        ) as m_cw_conn:
+            m_cw_conn.return_value = mock_conn
+            res = cls._get_cloudwatch_usage_latest([
+                {'Name': 'foo', 'Value': 'bar'},
+                {'Name': 'baz', 'Value': 'blam'}
+            ], metric_name='MyMetric', period=3600)
+        assert res == 0
+        assert m_cw_conn.mock_calls == [
+            call(cls)
+        ]
+        assert mock_conn.mock_calls == [
+            call.get_metric_data(
+                MetricDataQueries=[
+                    {
+                        'Id': 'id',
+                        'MetricStat': {
+                            'Metric': {
+                                'Namespace': 'AWS/Usage',
+                                'MetricName': 'MyMetric',
+                                'Dimensions': [
+                                    {'Name': 'foo', 'Value': 'bar'},
+                                    {'Name': 'baz', 'Value': 'blam'}
+                                ]
+                            },
+                            'Period': 3600,
+                            'Stat': 'Average'
+                        }
+                    }
+                ],
+                StartTime=datetime(2020, 9, 22, 11, 26, 00),
+                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                ScanBy='TimestampDescending',
+                MaxDatapoints=1
+            )
+        ]
+
+    @freeze_time("2020-09-22 12:26:00", tz_offset=0)
+    def test_no_values(self):
+        mock_conn = Mock()
+        mock_conn.get_metric_data.return_value = {
+            'MetricDataResults': [
+                {
+                    'Id': 'id',
+                    'Label': 'ResourceCount',
+                    'Timestamps': [],
+                    'Values': [],
+                    'StatusCode': 'PartialData'
+                }
+            ],
+            'NextToken': 'foo',
+            'Messages': [],
+            'ResponseMetadata': {
+                'RequestId': '77a86d3c-16e1-47c5-b2d1-0f7d81d48a05',
+                'HTTPStatusCode': 200,
+                'HTTPHeaders': {
+                    'x-amzn-requestid': '70f7d81d48a05',
+                    'content-type': 'text/xml',
+                    'content-length': '796',
+                    'date': 'Tue, 22 Sep 2020 12:26:36 GMT'
+                },
+                'RetryAttempts': 0
+            }
+        }
+        cls = AwsServiceTester(1, 2, {'foo': 'bar'}, None)
+        with patch(
+            'awslimitchecker.services.base._AwsService._cloudwatch_connection',
+            autospec=True
+        ) as m_cw_conn:
+            m_cw_conn.return_value = mock_conn
+            res = cls._get_cloudwatch_usage_latest([
+                {'Name': 'foo', 'Value': 'bar'},
+                {'Name': 'baz', 'Value': 'blam'}
+            ], metric_name='MyMetric', period=3600)
+        assert res == 0
+        assert m_cw_conn.mock_calls == [
+            call(cls)
+        ]
+        assert mock_conn.mock_calls == [
+            call.get_metric_data(
+                MetricDataQueries=[
+                    {
+                        'Id': 'id',
+                        'MetricStat': {
+                            'Metric': {
+                                'Namespace': 'AWS/Usage',
+                                'MetricName': 'MyMetric',
+                                'Dimensions': [
+                                    {'Name': 'foo', 'Value': 'bar'},
+                                    {'Name': 'baz', 'Value': 'blam'}
+                                ]
+                            },
+                            'Period': 3600,
+                            'Stat': 'Average'
+                        }
+                    }
+                ],
+                StartTime=datetime(2020, 9, 22, 11, 26, 00),
+                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                ScanBy='TimestampDescending',
+                MaxDatapoints=1
+            )
+        ]
+
 
 class Test_AwsServiceSubclasses(object):
 
@@ -397,6 +808,8 @@ class Test_AwsServiceSubclasses(object):
         assert inst.warning_threshold == 3
         assert inst.critical_threshold == 7
         assert not inst._boto3_connection_kwargs
+        assert inst._current_account_id is None
+        assert inst._cloudwatch_client is None
 
         boto_args = dict(region_name='myregion',
                          aws_access_key_id='myaccesskey',

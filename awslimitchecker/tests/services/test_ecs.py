@@ -74,8 +74,9 @@ class Test_EcsService(object):
         assert sorted(res.keys()) == sorted([
             'Clusters',
             'Container Instances per Cluster',
-            'EC2 Tasks per Service (desired count)',
-            'Fargate Tasks',
+            'Tasks per service',
+            'Fargate On-Demand resource count',
+            'Fargate Spot resource count',
             'Services per Cluster',
         ])
         for name, limit in res.items():
@@ -96,7 +97,8 @@ class Test_EcsService(object):
             pb,
             autospec=True,
             connect=DEFAULT,
-            _find_usage_clusters=DEFAULT
+            _find_usage_clusters=DEFAULT,
+            _find_usage_fargate=DEFAULT
         ) as mocks:
             cls = _EcsService(21, 43, {}, None)
             assert cls._have_usage is False
@@ -104,6 +106,35 @@ class Test_EcsService(object):
         assert mocks['connect'].mock_calls == [call(cls)]
         assert cls._have_usage is True
         assert mocks['connect'].return_value.mock_calls == []
+        assert mocks['_find_usage_clusters'].mock_calls == [call(cls)]
+        assert mocks['_find_usage_fargate'].mock_calls == [call(cls)]
+
+    def test_find_usage_fargate(self):
+
+        def se_gcul(klass, dims, metric_name='ResourceCount', period=60):
+            dim_dict = {x['Name']: x['Value'] for x in dims}
+            if dim_dict['Resource'] == 'OnDemand':
+                return 6.0
+            if dim_dict['Resource'] == 'Spot':
+                return 2.0
+            return 0
+
+        with patch(
+            '%s._get_cloudwatch_usage_latest' % pb, autospec=True
+        ) as m_gcul:
+            m_gcul.side_effect = se_gcul
+            cls = _EcsService(21, 43, {}, None)
+            cls._find_usage_fargate()
+        ondemand = cls.limits[
+            'Fargate On-Demand resource count'
+        ].get_current_usage()
+        assert len(ondemand) == 1
+        assert ondemand[0].get_value() == 6.0
+        assert ondemand[0].resource_id is None
+        spot = cls.limits['Fargate Spot resource count'].get_current_usage()
+        assert len(spot) == 1
+        assert spot[0].get_value() == 2.0
+        assert spot[0].resource_id is None
 
     def test_find_usage_clusters(self):
         def se_clusters(*_, **kwargs):
@@ -175,6 +206,10 @@ class Test_EcsService(object):
                 clusters=['c2arn'], include=['STATISTICS']
             )
         ]
+        assert m_fuoc.mock_calls == [
+            call(cls, 'c1name'),
+            call(cls, 'c2name')
+        ]
         c = cls.limits['Container Instances per Cluster'].get_current_usage()
         assert len(c) == 2
         assert c[0].get_value() == 11
@@ -191,14 +226,6 @@ class Test_EcsService(object):
         assert len(u) == 1
         assert u[0].get_value() == 2
         assert u[0].resource_id is None
-        f = cls.limits['Fargate Tasks'].get_current_usage()
-        assert len(f) == 1
-        assert f[0].get_value() == 4
-        assert f[0].resource_id is None
-        assert m_fuoc.mock_calls == [
-            call(cls, 'c1name'),
-            call(cls, 'c2name')
-        ]
 
     def test_find_usage_one_cluster(self):
 
@@ -263,15 +290,18 @@ class Test_EcsService(object):
             call.describe_services(cluster='cName', services=['s3arn'])
         ]
         u = cls.limits[
-            'EC2 Tasks per Service (desired count)'
+            'Tasks per service'
         ].get_current_usage()
-        assert len(u) == 2
+        assert len(u) == 3
         assert u[0].get_value() == 4
         assert u[0].resource_id == 'cluster=cName; service=s1'
         assert u[0].aws_type == 'AWS::ECS::Service'
-        assert u[1].get_value() == 8
-        assert u[1].resource_id == 'cluster=cName; service=s3'
+        assert u[1].get_value() == 26
+        assert u[1].resource_id == 'cluster=cName; service=s2'
         assert u[1].aws_type == 'AWS::ECS::Service'
+        assert u[2].get_value() == 8
+        assert u[2].resource_id == 'cluster=cName; service=s3'
+        assert u[2].aws_type == 'AWS::ECS::Service'
 
     def test_required_iam_permissions(self):
         cls = _EcsService(21, 43, {}, None)

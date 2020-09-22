@@ -39,6 +39,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import abc
 import logging
+import boto3
+from datetime import datetime, timedelta
 from awslimitchecker.connectable import Connectable
 
 logger = logging.getLogger(__name__)
@@ -90,6 +92,28 @@ class _AwsService(Connectable):
         self.limits = {}
         self.limits = self.get_limits()
         self._have_usage = False
+        self._current_account_id = None
+        self._cloudwatch_client = None
+
+    @property
+    def current_account_id(self):
+        """
+        Return the numeric Account ID for the account that we are currently
+        running against.
+
+        :return: current account ID
+        :rtype: str
+        """
+        if self._current_account_id is not None:
+            return self._current_account_id
+        kwargs = dict(self._boto3_connection_kwargs)
+        sts = boto3.client('sts', **kwargs)
+        logger.info(
+            "Connected to STS in region %s", sts._client_config.region_name
+        )
+        cid = sts.get_caller_identity()
+        self._current_account_id = cid['Account']
+        return cid['Account']
 
     @abc.abstractmethod
     def find_usage(self):
@@ -278,3 +302,80 @@ class _AwsService(Connectable):
             )
             if val is not None:
                 lim._set_quotas_limit(val)
+
+    def _cloudwatch_connection(self):
+        """
+        Return a connected CloudWatch client instance. ONLY to be used by
+        :py:meth:`_get_cloudwatch_usage_latest`.
+        """
+        if self._cloudwatch_client is not None:
+            return self._cloudwatch_client
+        kwargs = dict(self._boto3_connection_kwargs)
+        if self._max_retries_config is not None:
+            kwargs['config'] = self._max_retries_config
+        self._cloudwatch_client = boto3.client('cloudwatch', **kwargs)
+        logger.info(
+            "Connected to cloudwatch in region %s",
+            self._cloudwatch_client._client_config.region_name
+        )
+        return self._cloudwatch_client
+
+    def _get_cloudwatch_usage_latest(
+        self, dimensions, metric_name='ResourceCount', period=60
+    ):
+        """
+        Given some metric dimensions, return the value of the latest data point
+        for the ``AWS/Usage`` metric specified.
+
+        :param dimensions: list of dicts; dimensions for the metric
+        :type dimensions: list
+        :param metric_name: AWS/Usage metric name to get
+        :type metric_name: str
+        :param period: metric period
+        :type period: int
+        :return: return the metric value (float or int), or None if it cannot
+          be retrieved
+        :rtype: ``float, int or None``
+        """
+        conn = self._cloudwatch_connection()
+        kwargs = dict(
+            MetricDataQueries=[
+                {
+                    'Id': 'id',
+                    'MetricStat': {
+                        'Metric': {
+                            'Namespace': 'AWS/Usage',
+                            'MetricName': metric_name,
+                            'Dimensions': dimensions
+                        },
+                        'Period': period,
+                        'Stat': 'Average'
+                    }
+                }
+            ],
+            StartTime=datetime.utcnow() - timedelta(hours=1),
+            EndTime=datetime.utcnow(),
+            ScanBy='TimestampDescending',
+            MaxDatapoints=1
+        )
+        try:
+            logger.debug('Querying CloudWatch GetMetricData: %s', kwargs)
+            resp = conn.get_metric_data(**kwargs)
+        except Exception as ex:
+            logger.error(
+                'Error querying CloudWatch GetMetricData for AWS/Usage %s: %s',
+                metric_name, ex
+            )
+            return 0
+        results = resp.get('MetricDataResults', [])
+        if len(results) < 1 or len(results[0]['Values']) < 1:
+            logger.warning(
+                'No data points found for AWS/Usage metric %s with dimensions '
+                '%s; using value of zero!', metric_name, dimensions
+            )
+            return 0
+        logger.debug(
+            'CloudWatch metric query returned value of %s with timestamp %s',
+            results[0]['Values'][0], results[0]['Timestamps'][0]
+        )
+        return results[0]['Values'][0]
