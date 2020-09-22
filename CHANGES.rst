@@ -19,6 +19,10 @@ Unreleased Changes
   * The default of ``Clusters`` has increased from 2,000 to 10,000.
   * The default of ``Services per Cluster`` has increased from 1,000 to 2,000.
   * The ``Fargate Tasks`` limit has been removed.
+  * The ``Fargate On-Demand resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks and EKS pods running concurrently on Fargate. The current usage for this metric is obtained from CloudWatch.
+  * The ``Fargate Spot resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks running concurrently on Fargate Spot. The current usage for this metric is obtained from CloudWatch.
+
+* Add internal helper method to :py:class:`~._AwsService` to get Service Quotas usage information from CloudWatch.
 
 .. _changelog.8_1_0:
 
