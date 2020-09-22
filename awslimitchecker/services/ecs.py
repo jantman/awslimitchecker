@@ -127,7 +127,7 @@ class _EcsService(_AwsService):
         :param cluster_name: name of the cluster to find usage for
         :type cluster_name: str
         """
-        tps_lim = self.limits['EC2 Tasks per Service (desired count)']
+        tps_lim = self.limits['Tasks per service']
         paginator = self.conn.get_paginator('list_services')
         for page in paginator.paginate(
             cluster=cluster_name, launchType='EC2'
@@ -136,8 +136,6 @@ class _EcsService(_AwsService):
                 svc = self.conn.describe_services(
                     cluster=cluster_name, services=[svc_arn]
                 )['services'][0]
-                if svc['launchType'] != 'EC2':
-                    continue
                 tps_lim._add_current_usage(
                     svc['desiredCount'],
                     aws_type='AWS::ECS::Service',
@@ -181,10 +179,10 @@ class _EcsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::ECS::Service'
         )
-        limits['EC2 Tasks per Service (desired count)'] = AwsLimit(
-            'EC2 Tasks per Service (desired count)',
+        limits['Tasks per service'] = AwsLimit(
+            'Tasks per service',
             self,
-            1000,
+            2000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',

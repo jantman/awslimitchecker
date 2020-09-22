@@ -74,7 +74,7 @@ class Test_EcsService(object):
         assert sorted(res.keys()) == sorted([
             'Clusters',
             'Container Instances per Cluster',
-            'EC2 Tasks per Service (desired count)',
+            'Tasks per service',
             'Fargate Tasks',
             'Services per Cluster',
         ])
@@ -263,15 +263,18 @@ class Test_EcsService(object):
             call.describe_services(cluster='cName', services=['s3arn'])
         ]
         u = cls.limits[
-            'EC2 Tasks per Service (desired count)'
+            'Tasks per service'
         ].get_current_usage()
-        assert len(u) == 2
+        assert len(u) == 3
         assert u[0].get_value() == 4
         assert u[0].resource_id == 'cluster=cName; service=s1'
         assert u[0].aws_type == 'AWS::ECS::Service'
-        assert u[1].get_value() == 8
-        assert u[1].resource_id == 'cluster=cName; service=s3'
+        assert u[1].get_value() == 26
+        assert u[1].resource_id == 'cluster=cName; service=s2'
         assert u[1].aws_type == 'AWS::ECS::Service'
+        assert u[2].get_value() == 8
+        assert u[2].resource_id == 'cluster=cName; service=s3'
+        assert u[2].aws_type == 'AWS::ECS::Service'
 
     def test_required_iam_permissions(self):
         cls = _EcsService(21, 43, {}, None)
