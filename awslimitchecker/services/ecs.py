@@ -158,7 +158,7 @@ class _EcsService(_AwsService):
         limits['Clusters'] = AwsLimit(
             'Clusters',
             self,
-            2000,
+            10000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Cluster',
@@ -174,7 +174,7 @@ class _EcsService(_AwsService):
         limits['Services per Cluster'] = AwsLimit(
             'Services per Cluster',
             self,
-            1000,
+            2000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Service'

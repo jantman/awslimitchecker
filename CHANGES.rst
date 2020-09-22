@@ -15,7 +15,10 @@ Unreleased Changes
 * `Issue #457 <https://github.com/jantman/awslimitchecker/issues/457>`__ - In the required IAM permissions, replace ``support:*`` with the specific permissions that we need.
 * `Issue #463 <https://github.com/jantman/awslimitchecker/issues/463>`__ - Updates for the major changes to ECS limits `in August 2020 <https://github.com/awsdocs/amazon-ecs-developer-guide/commit/3ba9bc24b3f667557f43a49b9001fea3538311ad#diff-d98743b56c4036e0baeb5e15901d2a73>`__
 
-  * The ``EC2 Tasks per Service (desired count)`` has been replaced with ``Tasks per service``, which measures the desired count of tasks of all launch types (EC2 or Fargate). The default value of this limit has increased from 1000 to 2000.
+  * The ``EC2 Tasks per Service (desired count)`` limit has been replaced with ``Tasks per service``, which measures the desired count of tasks of all launch types (EC2 or Fargate). The default value of this limit has increased from 1000 to 2000.
+  * The default of ``Clusters`` has increased from 2,000 to 10,000.
+  * The default of ``Services per Cluster`` has increased from 1,000 to 2,000.
+  * The ``Fargate Tasks`` limit has been removed.
 
 .. _changelog.8_1_0:
 
