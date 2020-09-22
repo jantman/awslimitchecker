@@ -4,13 +4,25 @@ Changelog
 Unreleased Changes
 ------------------
 
-**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity``
+**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity`` and ``cloudwatch:GetMetricData``
+
+**Important:** This release includes updates for major changes to ECS limits, which includes the renaming of some existing limits.
 
 * `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - EC2 instances running on Dedicated Hosts (tenancy "host") or single-tenant hardware (tenancy "dedicated") do not count towards On-Demand Instances limits. They were previously being counted towards these limits; they are now excluded from the count.
 * `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - For all VPC resources that support the ``owner-id`` filter, supply that filter when describing them, set to the current account ID. This will prevent shared resources from other accounts from being counted against the limits.
 * `Issue #475 <https://github.com/jantman/awslimitchecker/issues/475>`__ - When an Alert Provider is used, only exit non-zero if an exception is encountered. Exit zero even if there are warnings and/or criticals.
 * `Issue #467 <https://github.com/jantman/awslimitchecker/issues/467>`__ - Fix the Service Quotas quota name for VPC "NAT Gateways per AZ" limit.
 * `Issue #457 <https://github.com/jantman/awslimitchecker/issues/457>`__ - In the required IAM permissions, replace ``support:*`` with the specific permissions that we need.
+* `Issue #463 <https://github.com/jantman/awslimitchecker/issues/463>`__ - Updates for the major changes to ECS limits `in August 2020 <https://github.com/awsdocs/amazon-ecs-developer-guide/commit/3ba9bc24b3f667557f43a49b9001fea3538311ad#diff-d98743b56c4036e0baeb5e15901d2a73>`__
+
+  * The ``EC2 Tasks per Service (desired count)`` limit has been replaced with ``Tasks per service``, which measures the desired count of tasks of all launch types (EC2 or Fargate). The default value of this limit has increased from 1000 to 2000.
+  * The default of ``Clusters`` has increased from 2,000 to 10,000.
+  * The default of ``Services per Cluster`` has increased from 1,000 to 2,000.
+  * The ``Fargate Tasks`` limit has been removed.
+  * The ``Fargate On-Demand resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks and EKS pods running concurrently on Fargate. The current usage for this metric is obtained from CloudWatch.
+  * The ``Fargate Spot resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks running concurrently on Fargate Spot. The current usage for this metric is obtained from CloudWatch.
+
+* Add internal helper method to :py:class:`~._AwsService` to get Service Quotas usage information from CloudWatch.
 
 .. _changelog.8_1_0:
 
