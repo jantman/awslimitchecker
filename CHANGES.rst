@@ -1,7 +1,9 @@
 Changelog
 =========
 
-Unreleased Changes
+.. _changelog.9_0_0:
+
+9.0.0 (2020-09-22)
 ------------------
 
 **Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity`` and ``cloudwatch:GetMetricData``
