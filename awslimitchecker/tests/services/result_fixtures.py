@@ -4564,3 +4564,13 @@ class CloudTrail(object):
             }
         ]
     }
+
+
+class EKS(object):
+
+    test_find_clusters = {
+        'clusters': [
+            'devel',
+            'prod',
+        ]
+    }
