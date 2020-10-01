@@ -63,19 +63,35 @@ class _EksService(_AwsService):
         self.connect()
         for lim in self.limits.values():
             lim._reset_usage()
-        self._find_clusters()
+        self._find_clusters_usage()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
-    def _find_clusters(self):
-        usage = paginate_dict(
+    def _find_clusters_usage(self):
+        clusters_info = paginate_dict(
             self.conn.list_clusters,
             alc_marker_path=['NextToken'],
             alc_data_path=['ResourceListName'],
             alc_marker_param='NextToken'
         )
+
+        cluster_list = clusters_info['clusters']
+
+        for cluster in cluster_list:
+            describe_cluster_response = self.conn.describe_cluster(
+                name=cluster
+            )
+            security_group_id_list = describe_cluster_response['cluster'][
+                'resourcesVpcConfig']['securityGroupIds']
+            self.limits[
+                'Control plane security groups per cluster']._add_current_usage(
+                len(security_group_id_list),
+                resource_id=cluster,
+                aws_type='AWS::EKS::Cluster'
+            )
+
         self.limits['Clusters']._add_current_usage(
-            len(usage['clusters']),
+            len(cluster_list),
             resource_id=self._boto3_connection_kwargs['region_name'],
             aws_type='AWS::EKS::Cluster')
 
@@ -98,6 +114,14 @@ class _EksService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EKS::Cluster',
         )
+        limits['Control plane security groups per cluster'] = AwsLimit(
+            'Control plane security groups per cluster',
+            self,
+            4,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EKS::Cluster',
+        )
         self.limits = limits
         return limits
 
@@ -112,4 +136,5 @@ class _EksService(_AwsService):
         """
         return [
             "eks:ListClusters",
+            "eks:DescribeCluster"
         ]

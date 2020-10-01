@@ -4568,9 +4568,34 @@ class CloudTrail(object):
 
 class EKS(object):
 
-    test_find_clusters = {
+    test_find_clusters_usage_list = {
         'clusters': [
             'devel',
             'prod',
         ]
     }
+
+    test_find_clusters_usage_describe = [
+        {
+            'cluster': {
+                'name': 'devel',
+                'resourcesVpcConfig': {
+                    'securityGroupIds': [
+                        'abc-1234',
+
+                    ],
+                },
+            }
+        },
+        {
+            'cluster': {
+                'name': 'prod',
+                'resourcesVpcConfig': {
+                    'securityGroupIds': [
+                        'foo-1234',
+                        'bar-1234'
+                    ],
+                },
+            }
+        }
+    ]

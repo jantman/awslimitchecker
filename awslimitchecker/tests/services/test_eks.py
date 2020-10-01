@@ -47,9 +47,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock, DEFAULT
+    from mock import patch, call, Mock, DEFAULT, ANY
 else:
-    from unittest.mock import patch, call, Mock, DEFAULT
+    from unittest.mock import patch, call, Mock, DEFAULT, ANY
 
 
 pbm = 'awslimitchecker.services.eks'  # module patch base
@@ -73,6 +73,7 @@ class Test_EksService(object):
         res = cls.get_limits()
         assert sorted(res.keys()) == sorted([
             'Clusters',
+            'Control plane security groups per cluster',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -93,7 +94,7 @@ class Test_EksService(object):
         with patch('%s.connect' % pb) as mock_connect:
             with patch.multiple(
                 pb,
-                _find_clusters=DEFAULT,
+                _find_clusters_usage=DEFAULT,
             ) as mocks:
                 cls = _EksService(21, 43, {}, None)
                 cls.conn = mock_conn
@@ -103,30 +104,43 @@ class Test_EksService(object):
         assert cls._have_usage is True
         assert mock_conn.mock_calls == []
         for x in [
-            '_find_clusters',
+            '_find_clusters_usage',
         ]:
             assert mocks[x].mock_calls == [call()]
 
-    def test_find_clusters(self):
-        response = result_fixtures.EKS.test_find_clusters
-        limit_key = 'Clusters'
+    def test_find_clusters_usage(self):
+        list_clusters = result_fixtures.EKS.test_find_clusters_usage_list
+        describe_cluster = result_fixtures.EKS.test_find_clusters_usage_describe
+        clusters_limit_key = 'Clusters'
+        security_group_limit_key = 'Control plane security groups per cluster'
 
         mock_conn = Mock()
-        mock_conn.list_clusters.return_value = response
+        mock_conn.list_clusters.return_value = list_clusters
+        mock_conn.describe_cluster.side_effect = describe_cluster
 
         cls = _EksService(21, 43, {'region_name': 'us-west-2'}, None)
         cls.conn = mock_conn
-        cls._find_clusters()
+        cls._find_clusters_usage()
 
         assert mock_conn.mock_calls == [
-            call.list_clusters()
+            call.list_clusters(),
+            call.describe_cluster(name=ANY),
+            call.describe_cluster(name=ANY)
         ]
-        assert len(cls.limits[limit_key].get_current_usage()) == 1
-        assert cls.limits[limit_key].get_current_usage()[
+        assert len(cls.limits[clusters_limit_key].get_current_usage()) == 1
+        assert cls.limits[clusters_limit_key].get_current_usage()[
             0].get_value() == 2
+
+        assert len(cls.limits[
+            security_group_limit_key].get_current_usage()) == 2
+        assert cls.limits[security_group_limit_key].get_current_usage()[
+            0].get_value() == 1
+        assert cls.limits[security_group_limit_key].get_current_usage()[
+            1].get_value() == 2
 
     def test_required_iam_permissions(self):
         cls = _EksService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
-            "eks:ListClusters"
+            "eks:ListClusters",
+            "eks:DescribeCluster"
         ]
