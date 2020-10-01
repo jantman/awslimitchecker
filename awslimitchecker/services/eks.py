@@ -70,9 +70,9 @@ class _EksService(_AwsService):
     def _find_clusters_usage(self):
         clusters_info = paginate_dict(
             self.conn.list_clusters,
-            alc_marker_path=['NextToken'],
-            alc_data_path=['ResourceListName'],
-            alc_marker_param='NextToken'
+            alc_marker_path=['nextToken'],
+            alc_data_path=['clusters'],
+            alc_marker_param='nextToken'
         )
 
         cluster_list = clusters_info['clusters']
@@ -89,6 +89,19 @@ class _EksService(_AwsService):
                 resource_id=cluster,
                 aws_type='AWS::EKS::Cluster'
             )
+
+            list_nodegroup_response = paginate_dict(
+                self.conn.list_nodegroups,
+                clusterName=cluster,
+                alc_marker_path=['nextToken'],
+                alc_data_path=['nodegroups'],
+                alc_marker_param='nextToken'
+            )
+            nodegroup_list = list_nodegroup_response['nodegroups']
+            self.limits['Managed node groups per cluster']._add_current_usage(
+                len(nodegroup_list),
+                resource_id=cluster,
+                aws_type='AWS::EKS::Cluster')
 
         self.limits['Clusters']._add_current_usage(
             len(cluster_list),
@@ -122,6 +135,14 @@ class _EksService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EKS::Cluster',
         )
+        limits['Managed node groups per cluster'] = AwsLimit(
+            'Managed node groups per cluster',
+            self,
+            30,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EKS::Nodegroup',
+        )
         self.limits = limits
         return limits
 
@@ -136,5 +157,6 @@ class _EksService(_AwsService):
         """
         return [
             "eks:ListClusters",
-            "eks:DescribeCluster"
+            "eks:DescribeCluster",
+            "eks:ListNodegroups"
         ]

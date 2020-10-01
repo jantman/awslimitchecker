@@ -4599,3 +4599,17 @@ class EKS(object):
             }
         }
     ]
+
+    test_find_clusters_usage_nodegrps = [
+        {
+            'nodegroups': [
+                'managed-ng-1',
+                'managed-ng-2'
+            ]
+        },
+        {
+            'nodegroups': [
+                'managed-ng-3',
+            ]
+        }
+    ]

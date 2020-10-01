@@ -74,6 +74,7 @@ class Test_EksService(object):
         assert sorted(res.keys()) == sorted([
             'Clusters',
             'Control plane security groups per cluster',
+            'Managed node groups per cluster',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -111,12 +112,16 @@ class Test_EksService(object):
     def test_find_clusters_usage(self):
         list_clusters = result_fixtures.EKS.test_find_clusters_usage_list
         describe_cluster = result_fixtures.EKS.test_find_clusters_usage_describe
+        list_nodegroups = result_fixtures.EKS.test_find_clusters_usage_nodegrps
+
         clusters_limit_key = 'Clusters'
         security_group_limit_key = 'Control plane security groups per cluster'
+        nodegroup_limit_key = 'Managed node groups per cluster'
 
         mock_conn = Mock()
         mock_conn.list_clusters.return_value = list_clusters
         mock_conn.describe_cluster.side_effect = describe_cluster
+        mock_conn.list_nodegroups.side_effect = list_nodegroups
 
         cls = _EksService(21, 43, {'region_name': 'us-west-2'}, None)
         cls.conn = mock_conn
@@ -125,7 +130,9 @@ class Test_EksService(object):
         assert mock_conn.mock_calls == [
             call.list_clusters(),
             call.describe_cluster(name=ANY),
-            call.describe_cluster(name=ANY)
+            call.list_nodegroups(clusterName=ANY),
+            call.describe_cluster(name=ANY),
+            call.list_nodegroups(clusterName=ANY),
         ]
         assert len(cls.limits[clusters_limit_key].get_current_usage()) == 1
         assert cls.limits[clusters_limit_key].get_current_usage()[
@@ -138,9 +145,17 @@ class Test_EksService(object):
         assert cls.limits[security_group_limit_key].get_current_usage()[
             1].get_value() == 2
 
+        assert len(cls.limits[
+            nodegroup_limit_key].get_current_usage()) == 2
+        assert cls.limits[nodegroup_limit_key].get_current_usage()[
+            0].get_value() == 2
+        assert cls.limits[nodegroup_limit_key].get_current_usage()[
+            1].get_value() == 1
+
     def test_required_iam_permissions(self):
         cls = _EksService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "eks:ListClusters",
-            "eks:DescribeCluster"
+            "eks:DescribeCluster",
+            "eks:ListNodegroups"
         ]
