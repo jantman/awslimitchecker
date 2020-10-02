@@ -189,6 +189,14 @@ class _EksService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EKS::Nodegroup',
         )
+        limits['Nodes per managed node group'] = AwsLimit(
+            'Nodes per managed node group',
+            self,
+            100,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EKS::Cluster',
+        )
         limits['Public endpoint access CIDR ranges per cluster'] = AwsLimit(
             'Public endpoint access CIDR ranges per cluster',
             self,

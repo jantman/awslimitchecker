@@ -75,6 +75,7 @@ class Test_EksService(object):
             'Clusters',
             'Control plane security groups per cluster',
             'Managed node groups per cluster',
+            'Nodes per managed node group',
             'Public endpoint access CIDR ranges per cluster',
             'Fargate profiles per cluster',
             'Selectors per Fargate profile',
