@@ -78,6 +78,7 @@ class Test_EksService(object):
             'Public endpoint access CIDR ranges per cluster',
             'Fargate profiles per cluster',
             'Selectors per Fargate profile',
+            'Label pairs per Fargate profile selector',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -125,6 +126,7 @@ class Test_EksService(object):
         public_cidr_limit_key = 'Public endpoint access CIDR ranges per cluster'
         fargate_profiles_limit_key = 'Fargate profiles per cluster'
         selectors_limit_key = 'Selectors per Fargate profile'
+        label_pairs_limit_key = 'Label pairs per Fargate profile selector'
 
         mock_conn = Mock()
         mock_conn.list_clusters.return_value = list_clusters
@@ -198,6 +200,21 @@ class Test_EksService(object):
             1].get_value() == 2
         assert cls.limits[selectors_limit_key].get_current_usage()[
             2].get_value() == 3
+
+        assert len(cls.limits[
+            label_pairs_limit_key].get_current_usage()) == 6
+        assert cls.limits[label_pairs_limit_key].get_current_usage()[
+            0].get_value() == 1
+        assert cls.limits[label_pairs_limit_key].get_current_usage()[
+            1].get_value() == 1
+        assert cls.limits[label_pairs_limit_key].get_current_usage()[
+            2].get_value() == 2
+        assert cls.limits[label_pairs_limit_key].get_current_usage()[
+            3].get_value() == 1
+        assert cls.limits[label_pairs_limit_key].get_current_usage()[
+            4].get_value() == 2
+        assert cls.limits[label_pairs_limit_key].get_current_usage()[
+            5].get_value() == 3
 
     def test_required_iam_permissions(self):
         cls = _EksService(21, 43, {}, None)
