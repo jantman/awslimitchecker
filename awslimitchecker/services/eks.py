@@ -89,12 +89,12 @@ class _EksService(_AwsService):
                 resource_id=cluster,
                 aws_type='AWS::EKS::Cluster'
             )
-            publicAccessCidrs_list = describe_cluster_response['cluster'][
+            public_access_cidrs_list = describe_cluster_response['cluster'][
                 'resourcesVpcConfig']['publicAccessCidrs']
             self.limits[
                 'Public endpoint access CIDR ranges per cluster'
             ]._add_current_usage(
-                len(publicAccessCidrs_list),
+                len(public_access_cidrs_list),
                 resource_id=cluster,
                 aws_type='AWS::EKS::Cluster'
             )
