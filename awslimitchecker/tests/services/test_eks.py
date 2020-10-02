@@ -75,6 +75,7 @@ class Test_EksService(object):
             'Clusters',
             'Control plane security groups per cluster',
             'Managed node groups per cluster',
+            'Public endpoint access CIDR ranges per cluster',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -117,6 +118,7 @@ class Test_EksService(object):
         clusters_limit_key = 'Clusters'
         security_group_limit_key = 'Control plane security groups per cluster'
         nodegroup_limit_key = 'Managed node groups per cluster'
+        public_cidr_limit_key = 'Public endpoint access CIDR ranges per cluster'
 
         mock_conn = Mock()
         mock_conn.list_clusters.return_value = list_clusters
@@ -150,6 +152,13 @@ class Test_EksService(object):
         assert cls.limits[nodegroup_limit_key].get_current_usage()[
             0].get_value() == 2
         assert cls.limits[nodegroup_limit_key].get_current_usage()[
+            1].get_value() == 1
+
+        assert len(cls.limits[
+            public_cidr_limit_key].get_current_usage()) == 2
+        assert cls.limits[public_cidr_limit_key].get_current_usage()[
+            0].get_value() == 3
+        assert cls.limits[public_cidr_limit_key].get_current_usage()[
             1].get_value() == 1
 
     def test_required_iam_permissions(self):

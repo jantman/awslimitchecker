@@ -4584,6 +4584,11 @@ class EKS(object):
                         'abc-1234',
 
                     ],
+                    'publicAccessCidrs': [
+                        '1.1.1.1/32',
+                        '2.2.2.0/24',
+                        '203.0.113.5/32'
+                    ]
                 },
             }
         },
@@ -4595,6 +4600,9 @@ class EKS(object):
                         'foo-1234',
                         'bar-1234'
                     ],
+                    'publicAccessCidrs': [
+                        '1.1.1.1/32',
+                    ]
                 },
             }
         }

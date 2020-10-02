@@ -89,7 +89,15 @@ class _EksService(_AwsService):
                 resource_id=cluster,
                 aws_type='AWS::EKS::Cluster'
             )
-
+            publicAccessCidrs_list = describe_cluster_response['cluster'][
+                'resourcesVpcConfig']['publicAccessCidrs']
+            self.limits[
+                'Public endpoint access CIDR ranges per cluster'
+            ]._add_current_usage(
+                len(publicAccessCidrs_list),
+                resource_id=cluster,
+                aws_type='AWS::EKS::Cluster'
+            )
             list_nodegroup_response = paginate_dict(
                 self.conn.list_nodegroups,
                 clusterName=cluster,
@@ -142,6 +150,14 @@ class _EksService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EKS::Nodegroup',
+        )
+        limits['Public endpoint access CIDR ranges per cluster'] = AwsLimit(
+            'Public endpoint access CIDR ranges per cluster',
+            self,
+            40,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EKS::Cluster',
         )
         self.limits = limits
         return limits
