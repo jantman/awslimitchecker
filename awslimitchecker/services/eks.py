@@ -127,6 +127,17 @@ class _EksService(_AwsService):
                 resource_id=cluster,
                 aws_type='AWS::EKS::FargateProfile')
 
+            for fargate_profile_name in fargate_profiles_list:
+                fargate_info = self.conn.describe_fargate_profile(
+                    clusterName=cluster,
+                    fargateProfileName=fargate_profile_name
+                )
+                profile_selectors = fargate_info['fargateProfile']['selectors']
+                self.limits['Selectors per Fargate profile']._add_current_usage(
+                    len(profile_selectors),
+                    resource_id=f"{cluster}.{fargate_profile_name}",
+                    aws_type='AWS::EKS::FargateProfile')
+
         self.limits['Clusters']._add_current_usage(
             len(cluster_list),
             resource_id=self._boto3_connection_kwargs['region_name'],
@@ -183,6 +194,14 @@ class _EksService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EKS::FargateProfile',
         )
+        limits['Selectors per Fargate profile'] = AwsLimit(
+            'Selectors per Fargate profile',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EKS::FargateProfile',
+        )
         self.limits = limits
         return limits
 
@@ -199,5 +218,6 @@ class _EksService(_AwsService):
             "eks:ListClusters",
             "eks:DescribeCluster",
             "eks:ListNodegroups",
-            "eks:ListFargateProfiles"
+            "eks:ListFargateProfiles",
+            "eks:DescribeFargateProfile",
         ]

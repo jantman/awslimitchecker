@@ -4635,3 +4635,67 @@ class EKS(object):
             ]
         }
     ]
+
+    test_find_clusters_usage_fargate_prof = [
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'foo',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'bar',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace2",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'baz',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace2",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace3",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                            'key3': 'value3',
+                        }
+                    },
+                ],
+            }
+        }
+    ]
