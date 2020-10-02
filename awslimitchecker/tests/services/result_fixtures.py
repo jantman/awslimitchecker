@@ -4621,3 +4621,17 @@ class EKS(object):
             ]
         }
     ]
+
+    test_find_clusters_usage_fargates = [
+        {
+            'fargateProfileNames': [
+                'foo',
+            ]
+        },
+        {
+            'fargateProfileNames': [
+                'bar',
+                'baz',
+            ]
+        }
+    ]

@@ -98,6 +98,7 @@ class _EksService(_AwsService):
                 resource_id=cluster,
                 aws_type='AWS::EKS::Cluster'
             )
+
             list_nodegroup_response = paginate_dict(
                 self.conn.list_nodegroups,
                 clusterName=cluster,
@@ -110,6 +111,21 @@ class _EksService(_AwsService):
                 len(nodegroup_list),
                 resource_id=cluster,
                 aws_type='AWS::EKS::Cluster')
+
+            list_fargate_profiles_response = paginate_dict(
+                self.conn.list_fargate_profiles,
+                clusterName=cluster,
+                alc_marker_path=['nextToken'],
+                alc_data_path=['fargateProfileNames'],
+                alc_marker_param='nextToken'
+            )
+            fargate_profiles_list = list_fargate_profiles_response[
+                'fargateProfileNames'
+            ]
+            self.limits['Fargate profiles per cluster']._add_current_usage(
+                len(fargate_profiles_list),
+                resource_id=cluster,
+                aws_type='AWS::EKS::FargateProfile')
 
         self.limits['Clusters']._add_current_usage(
             len(cluster_list),
@@ -159,6 +175,14 @@ class _EksService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EKS::Cluster',
         )
+        limits['Fargate profiles per cluster'] = AwsLimit(
+            'Fargate profiles per cluster',
+            self,
+            10,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EKS::FargateProfile',
+        )
         self.limits = limits
         return limits
 
@@ -174,5 +198,6 @@ class _EksService(_AwsService):
         return [
             "eks:ListClusters",
             "eks:DescribeCluster",
-            "eks:ListNodegroups"
+            "eks:ListNodegroups",
+            "eks:ListFargateProfiles"
         ]

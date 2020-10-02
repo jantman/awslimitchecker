@@ -76,6 +76,7 @@ class Test_EksService(object):
             'Control plane security groups per cluster',
             'Managed node groups per cluster',
             'Public endpoint access CIDR ranges per cluster',
+            'Fargate profiles per cluster',
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -114,16 +115,19 @@ class Test_EksService(object):
         list_clusters = result_fixtures.EKS.test_find_clusters_usage_list
         describe_cluster = result_fixtures.EKS.test_find_clusters_usage_describe
         list_nodegroups = result_fixtures.EKS.test_find_clusters_usage_nodegrps
+        list_fargates = result_fixtures.EKS.test_find_clusters_usage_fargates
 
         clusters_limit_key = 'Clusters'
         security_group_limit_key = 'Control plane security groups per cluster'
         nodegroup_limit_key = 'Managed node groups per cluster'
         public_cidr_limit_key = 'Public endpoint access CIDR ranges per cluster'
+        fargate_profiles_limit_key = 'Fargate profiles per cluster'
 
         mock_conn = Mock()
         mock_conn.list_clusters.return_value = list_clusters
         mock_conn.describe_cluster.side_effect = describe_cluster
         mock_conn.list_nodegroups.side_effect = list_nodegroups
+        mock_conn.list_fargate_profiles.side_effect = list_fargates
 
         cls = _EksService(21, 43, {'region_name': 'us-west-2'}, None)
         cls.conn = mock_conn
@@ -133,8 +137,10 @@ class Test_EksService(object):
             call.list_clusters(),
             call.describe_cluster(name=ANY),
             call.list_nodegroups(clusterName=ANY),
+            call.list_fargate_profiles(clusterName=ANY),
             call.describe_cluster(name=ANY),
             call.list_nodegroups(clusterName=ANY),
+            call.list_fargate_profiles(clusterName=ANY)
         ]
         assert len(cls.limits[clusters_limit_key].get_current_usage()) == 1
         assert cls.limits[clusters_limit_key].get_current_usage()[
@@ -161,10 +167,18 @@ class Test_EksService(object):
         assert cls.limits[public_cidr_limit_key].get_current_usage()[
             1].get_value() == 1
 
+        assert len(cls.limits[
+            fargate_profiles_limit_key].get_current_usage()) == 2
+        assert cls.limits[fargate_profiles_limit_key].get_current_usage()[
+            0].get_value() == 1
+        assert cls.limits[fargate_profiles_limit_key].get_current_usage()[
+            1].get_value() == 2
+
     def test_required_iam_permissions(self):
         cls = _EksService(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
             "eks:ListClusters",
             "eks:DescribeCluster",
-            "eks:ListNodegroups"
+            "eks:ListNodegroups",
+            "eks:ListFargateProfiles"
         ]
