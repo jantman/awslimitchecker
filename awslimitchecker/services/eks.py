@@ -135,7 +135,7 @@ class _EksService(_AwsService):
                 profile_selectors = fargate_info['fargateProfile']['selectors']
                 self.limits['Selectors per Fargate profile']._add_current_usage(
                     len(profile_selectors),
-                    resource_id=f"{cluster}.{fargate_profile_name}",
+                    resource_id="{}.{}".format(cluster, fargate_profile_name),
                     aws_type='AWS::EKS::FargateProfile')
 
                 for selector in profile_selectors:
@@ -145,7 +145,11 @@ class _EksService(_AwsService):
                     ]._add_current_usage(
                         len(label_pairs),
                         resource_id=(
-                            f"{cluster}.{fargate_profile_name}.{selector}"
+                            "{}.{}.{}".format(
+                                cluster,
+                                fargate_profile_name,
+                                selector
+                            )
                         ),
                         aws_type='AWS::EKS::FargateProfile')
 
