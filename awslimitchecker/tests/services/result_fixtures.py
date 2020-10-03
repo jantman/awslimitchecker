@@ -4564,3 +4564,10 @@ class CloudTrail(object):
             }
         ]
     }
+
+
+class Kinesis(object):
+    mock_describe_limits = {
+        'ShardLimit': 700,
+        'OpenShardCount': 555
+    }
