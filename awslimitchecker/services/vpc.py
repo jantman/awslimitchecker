@@ -309,7 +309,7 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Route',
             limit_subtype='AWS::EC2::RouteTable',
-            quota_name='Routes per route table'
+            quotas_name='Routes per route table'
         )
 
         limits['Internet gateways'] = AwsLimit(
