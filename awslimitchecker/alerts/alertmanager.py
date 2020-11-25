@@ -216,7 +216,8 @@ class AlertManager(AlertProvider):
         :type duration: float
         """
         if exc:
-            description = 'the check script failed with an exception'
+            # crash the script if exception arrives. The script health should be monitored from outside 
+            raise exc
         else:
             description = self._generate_description(problems)
         self._send_event("critical", description)
