@@ -5,11 +5,13 @@ awslimitchecker.services package
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    awslimitchecker.services.apigateway
    awslimitchecker.services.autoscaling

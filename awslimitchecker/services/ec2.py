@@ -314,6 +314,12 @@ class _Ec2Service(_AwsService):
                 logger.info("Spot instance found (%s); skipping from "
                             "Running On-Demand Instances count", inst.id)
                 continue
+            if inst.placement.get('Tenancy', 'default') != 'default':
+                logger.info(
+                    'Skipping instance %s with Tenancy %s',
+                    inst.id, inst.placement['Tenancy']
+                )
+                continue
             if inst.state['Name'] in ['stopped', 'terminated']:
                 logger.debug("Ignoring instance %s in state %s", inst.id,
                              inst.state['Name'])
@@ -346,6 +352,12 @@ class _Ec2Service(_AwsService):
             if inst.spot_instance_request_id:
                 logger.info("Spot instance found (%s); skipping from "
                             "Running On-Demand Instances count", inst.id)
+                continue
+            if inst.placement.get('Tenancy', 'default') != 'default':
+                logger.info(
+                    'Skipping instance %s with Tenancy %s',
+                    inst.id, inst.placement['Tenancy']
+                )
                 continue
             if inst.state['Name'] in ['stopped', 'terminated']:
                 logger.debug("Ignoring instance %s in state %s", inst.id,
@@ -698,12 +710,13 @@ class _Ec2Service(_AwsService):
         for iface in ints:
             if iface.vpc is None:
                 continue
-            self.limits['VPC security groups per elastic network '
-                        'interface']._add_current_usage(
-                            len(iface.groups),
-                            aws_type='AWS::EC2::NetworkInterface',
-                            resource_id=iface.id,
-                        )
+            self.limits[
+                'VPC security groups per elastic network interface'
+            ]._add_current_usage(
+                len(iface.groups),
+                aws_type='AWS::EC2::NetworkInterface',
+                resource_id=iface.id,
+            )
 
     def _get_limits_networking(self):
         """

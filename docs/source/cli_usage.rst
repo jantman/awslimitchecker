@@ -227,19 +227,19 @@ and limits followed by ``(API)`` have been obtained from the service's API.
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   AutoScaling/Auto Scaling groups                                           1500 (API)
+   AutoScaling/Auto Scaling groups                                           200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
 
-Disabling Trusted Advisor Checks
+Disabling Service Quotas service
 ++++++++++++++++++++++++++++++++
 
 Using the ``--skip-quotas`` option will disable attempting to query limit information
@@ -254,17 +254,17 @@ from the Service Quotas service.
    ApiGateway/Documentation parts per API                                    2000
    ApiGateway/Edge APIs per account                                          120
    (...)
-   AutoScaling/Auto Scaling groups                                           1500 (API)
+   AutoScaling/Auto Scaling groups                                           200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
    VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000 (TA)
+   VPC/VPCs                                                                  5
    VPC/Virtual private gateways                                              5
 
 
 
-Disabling Service Quotas service
+Disabling Trusted Advisor Checks
 ++++++++++++++++++++++++++++++++
 
 Using the ``--skip-ta`` option will disable attempting to query limit information
@@ -277,14 +277,14 @@ from Trusted Advisor for all commands.
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   AutoScaling/Auto Scaling groups                                           1500 (API)
+   AutoScaling/Auto Scaling groups                                           200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
@@ -342,15 +342,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   ApiGateway/API keys per account                                           22
-   ApiGateway/Client certificates per account                                3
-   ApiGateway/Custom authorizers per API                                     max: 00e87qs7ci=2 (00e87qs (...)
-   ApiGateway/Documentation parts per API                                    max: 00e87qs7ci=2 (00e87qs (...)
-   ApiGateway/Edge APIs per account                                          207
+   ApiGateway/API keys per account                                           2
+   ApiGateway/Client certificates per account                                0
+   ApiGateway/Custom authorizers per API                                     max: 2d7q4kzcmh=2 (2d7q4kz (...)
+   ApiGateway/Documentation parts per API                                    max: 2d7q4kzcmh=2 (2d7q4kz (...)
+   ApiGateway/Edge APIs per account                                          9
    (...)
-   VPC/Subnets per VPC                                                       max: vpc-c89074a9=41 (vpc- (...)
-   VPC/VPCs                                                                  39
-   VPC/Virtual private gateways                                              4
+   VPC/Subnets per VPC                                                       max: vpc-f4279a92=6 (vpc-f (...)
+   VPC/VPCs                                                                  2
+   VPC/Virtual private gateways                                              1
 
 
 
@@ -379,14 +379,14 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   CloudFormation/Stacks                                                     4000 (API)
+   CloudFormation/Stacks                                                     200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
@@ -414,10 +414,10 @@ Using a command like:
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 

@@ -186,7 +186,7 @@ def _get_dict_value_by_path(d, path):
             k = tmp_path.pop(0)
             d = d[k]
         return d
-    except:
+    except Exception:
         return None
 
 

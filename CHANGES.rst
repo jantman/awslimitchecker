@@ -1,6 +1,48 @@
 Changelog
 =========
 
+.. _changelog.9_0_0:
+
+9.0.0 (2020-09-22)
+------------------
+
+**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity`` and ``cloudwatch:GetMetricData``
+
+**Important:** This release includes updates for major changes to ECS limits, which includes the renaming of some existing limits.
+
+* `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - EC2 instances running on Dedicated Hosts (tenancy "host") or single-tenant hardware (tenancy "dedicated") do not count towards On-Demand Instances limits. They were previously being counted towards these limits; they are now excluded from the count. Thanks to `pritam2277 <https://github.com/pritam2277>`__ for reporting this issue and providing details and test data.
+* `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - For all VPC resources that support the ``owner-id`` filter, supply that filter when describing them, set to the current account ID. This will prevent shared resources from other accounts from being counted against the limits. Thanks to `pritam2277 <https://github.com/pritam2277>`__ for reporting this issue and providing details and test data.
+* `Issue #475 <https://github.com/jantman/awslimitchecker/issues/475>`__ - When an Alert Provider is used, only exit non-zero if an exception is encountered. Exit zero even if there are warnings and/or criticals. Thanks to `varuzam <https://github.com/varuzam>`__ for this feature request.
+* `Issue #467 <https://github.com/jantman/awslimitchecker/issues/467>`__ - Fix the Service Quotas quota name for VPC "NAT Gateways per AZ" limit. Thanks to `xRokco <https://github.com/xRokco>`__ for reporting this issue, as well as the required fix.
+* `Issue #457 <https://github.com/jantman/awslimitchecker/issues/457>`__ - In the required IAM permissions, replace ``support:*`` with the specific permissions that we need.
+* `Issue #463 <https://github.com/jantman/awslimitchecker/issues/463>`__ - Updates for the major changes to ECS limits `in August 2020 <https://github.com/awsdocs/amazon-ecs-developer-guide/commit/3ba9bc24b3f667557f43a49b9001fea3538311ad#diff-d98743b56c4036e0baeb5e15901d2a73>`__. Thanks to `vincentclee <https://github.com/vincentclee>`__ for reporting this issue.
+
+  * The ``EC2 Tasks per Service (desired count)`` limit has been replaced with ``Tasks per service``, which measures the desired count of tasks of all launch types (EC2 or Fargate). The default value of this limit has increased from 1000 to 2000.
+  * The default of ``Clusters`` has increased from 2,000 to 10,000.
+  * The default of ``Services per Cluster`` has increased from 1,000 to 2,000.
+  * The ``Fargate Tasks`` limit has been removed.
+  * The ``Fargate On-Demand resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks and EKS pods running concurrently on Fargate. The current usage for this metric is obtained from CloudWatch.
+  * The ``Fargate Spot resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks running concurrently on Fargate Spot. The current usage for this metric is obtained from CloudWatch.
+
+* Add internal helper method to :py:class:`~._AwsService` to get Service Quotas usage information from CloudWatch.
+
+.. _changelog.8_1_0:
+
+8.1.0 (2020-09-18)
+------------------
+
+* `PR #468 <https://github.com/jantman/awslimitchecker/pull/468>`_ - Fix transposed headings in CLI Usage documentation. Thanks to `@owenmann <https://github.com/owenmann>`__.
+* `PR #470 <https://github.com/jantman/awslimitchecker/pull/470>`_ - Fix new EBS "Active snapshots" limit (bumped from 10,000 to 100,000) and Quotas Service name. Thanks to `@rashidamiri <https://github.com/rashidamiri>`__.
+* `Issue #464 <https://github.com/jantman/awslimitchecker/issues/464>`_ - Fix bug where SES was causing ``ConnectTimeoutError`` in some regions. This has been added to the list of SES exceptions that we catch and silently ignore. This is a new exception thrown by regions that do not have SES support.
+* Add ``.dockerignore`` file to make local builds quite a bit smaller.
+* `Issue #465 <https://github.com/jantman/awslimitchecker/issues/465>`_ - Fixed via `versionfinder 1.1.1 <https://github.com/jantman/versionfinder/pull/13>`_.
+* Internal testing changes:
+
+  * Stop testing under Python 2.7 and Python 3.4.
+  * Switch from deprecated pep8 / pytest-pep8 to pycodestyle / pytest-pycodestyle.
+  * Pin pytest to ``<6.0.0`` to avoid some breaking changes for now.
+  * Switch integration test environment from Python 3.7 to Python 3.8.
+
 .. _changelog.8_0_2:
 
 8.0.2 (2020-03-03)

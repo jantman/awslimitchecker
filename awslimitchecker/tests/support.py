@@ -159,6 +159,12 @@ class LogRecordHelper(object):
                     r.funcName == 'quotas_for_service' and
                     'Attempted to retrieve Service Quotas' in r.msg):
                 continue
+            if (
+                r.levelno == logging.WARNING and r.module == 'base' and
+                r.funcName == '_get_cloudwatch_usage_latest' and
+                'No data points found for AWS/Usage metric' in r.msg
+            ):
+                continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,
                 r.module,

@@ -5,3 +5,4 @@ awslimitchecker.services.vpc module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

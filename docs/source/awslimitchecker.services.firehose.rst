@@ -5,3 +5,4 @@ awslimitchecker.services.firehose module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

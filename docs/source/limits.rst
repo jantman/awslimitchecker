@@ -128,7 +128,7 @@ EBS
 =============================================== =============== ======== ======= ======
 Limit                                           Trusted Advisor Quotas   API     Default
 =============================================== =============== ======== ======= ======
-Active snapshots                                |check|         |check|          10000 
+Active snapshots                                                |check|          100000
 Active volumes                                                                   5000  
 Cold (HDD) volume storage (GiB)                                 |check|          307200
 General Purpose (SSD) volume storage (GiB)      |check|         |check|          307200
@@ -179,7 +179,6 @@ Max launch specifications per spot fleet                                        
 Max spot instance requests per region                                                                 20  
 Max target capacity for all spot fleets in region                                                     5000
 Max target capacity per spot fleet                                                                    3000
-Rules per VPC security group                                                                          50  
 Rules per VPC security group                                                                          60  
 Running On-Demand All F instances                                                    |check|          128 
 Running On-Demand All G instances                                                    |check|          128 
@@ -495,15 +494,16 @@ VPC security groups per elastic network interface                 |check| 5
 ECS
 ----
 
-===================================== =============== ======== ======= ====
-Limit                                 Trusted Advisor Quotas   API     Default
-===================================== =============== ======== ======= ====
-Clusters                                                               2000
-Container Instances per Cluster                                        2000
-EC2 Tasks per Service (desired count)                                  1000
-Fargate Tasks                                                          50  
-Services per Cluster                                                   1000
-===================================== =============== ======== ======= ====
+================================ =============== ======== ======= =====
+Limit                            Trusted Advisor Quotas   API     Default
+================================ =============== ======== ======= =====
+Clusters                                                          10000
+Container Instances per Cluster                                   2000 
+Fargate On-Demand resource count                                  500  
+Fargate Spot resource count                                       500  
+Services per Cluster                                              2000 
+Tasks per service                                                 2000 
+================================ =============== ======== ======= =====
 
 .. _limits.EFS:
 

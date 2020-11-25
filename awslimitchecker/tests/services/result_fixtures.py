@@ -91,6 +91,7 @@ def get_boto3_resource_model(service_name, resource_name):
     )
     return resource_cls
 
+
 # get some resource models for specs...
 Instance = get_boto3_resource_model('ec2', 'Instance')
 SecurityGroup = get_boto3_resource_model('ec2', 'SecurityGroup')
@@ -1139,8 +1140,8 @@ class ElasticBeanstalk(object):
                     'version-2'
                 ],
                 'ConfigurationTemplates': [
-                     'config-1',
-                     'config-2'
+                    'config-1',
+                    'config-2'
                 ]
             },
             {
@@ -1153,8 +1154,8 @@ class ElasticBeanstalk(object):
                     'version-2'
                 ],
                 'ConfigurationTemplates': [
-                     'config-1',
-                     'config-2'
+                    'config-1',
+                    'config-2'
                 ]
             }
         ]
@@ -1298,54 +1299,54 @@ class ElasticBeanstalk(object):
 class ELB(object):
 
     test_find_usage = {
-            # this is a subset of response items
-            'LoadBalancerDescriptions': [
-                {
-                    'LoadBalancerName': 'elb-1',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': []
-                },
-                {
-                    'LoadBalancerName': 'elb-2',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [
-                        {'InstanceId': 'i-1'},
-                        {'InstanceId': 'i-2'},
-                        {'InstanceId': 'i-3'},
-                        {'InstanceId': 'i-4'},
-                    ]
-                },
-                {
-                    'LoadBalancerName': 'elb-3',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [{'InstanceId': 'i-5'}]
-                },
-                {
-                    'LoadBalancerName': 'elb-4',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [
-                        {'InstanceId': 'i-6'},
-                        {'InstanceId': 'i-7'}
-                    ]
-                }
-            ],
-        }
+        # this is a subset of response items
+        'LoadBalancerDescriptions': [
+            {
+                'LoadBalancerName': 'elb-1',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                ],
+                'Instances': []
+            },
+            {
+                'LoadBalancerName': 'elb-2',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [
+                    {'InstanceId': 'i-1'},
+                    {'InstanceId': 'i-2'},
+                    {'InstanceId': 'i-3'},
+                    {'InstanceId': 'i-4'},
+                ]
+            },
+            {
+                'LoadBalancerName': 'elb-3',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [{'InstanceId': 'i-5'}]
+            },
+            {
+                'LoadBalancerName': 'elb-4',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [
+                    {'InstanceId': 'i-6'},
+                    {'InstanceId': 'i-7'}
+                ]
+            }
+        ],
+    }
 
     test_update_limits_elb = {
         'ResponseMetadata': {
@@ -1848,54 +1849,88 @@ class EC2(object):
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 't2.micro'
         type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
 
         mock_inst1B = Mock(spec_set=Instance)
         type(mock_inst1B).id = '1B'
         type(mock_inst1B).instance_type = 'r3.2xlarge'
         type(mock_inst1B).spot_instance_request_id = None
-        type(mock_inst1B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1B).state = {'Code': 0, 'Name': 'pending'}
+
+        mock_inst1C = Mock(spec_set=Instance)
+        type(mock_inst1C).id = '1C'
+        type(mock_inst1C).instance_type = 't2.micro'
+        type(mock_inst1C).spot_instance_request_id = None
+        type(mock_inst1C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'host'
+        }
+        type(mock_inst1C).state = {'Code': 16, 'Name': 'running'}
+
+        mock_inst1D = Mock(spec_set=Instance)
+        type(mock_inst1D).id = '1D'
+        type(mock_inst1D).instance_type = 't2.micro'
+        type(mock_inst1D).spot_instance_request_id = None
+        type(mock_inst1D).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'dedicated'
+        }
+        type(mock_inst1D).state = {'Code': 16, 'Name': 'running'}
 
         mock_inst2A = Mock(spec_set=Instance)
         type(mock_inst2A).id = '2A'
         type(mock_inst2A).instance_type = 'c4.4xlarge'
         type(mock_inst2A).spot_instance_request_id = None
-        type(mock_inst2A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2A).state = {'Code': 32, 'Name': 'shutting-down'}
 
         mock_inst2B = Mock(spec_set=Instance)
         type(mock_inst2B).id = '2B'
         type(mock_inst2B).instance_type = 't2.micro'
         type(mock_inst2B).spot_instance_request_id = '1234'
-        type(mock_inst2B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2B).state = {'Code': 64, 'Name': 'stopping'}
 
         mock_inst2C = Mock(spec_set=Instance)
         type(mock_inst2C).id = '2C'
         type(mock_inst2C).instance_type = 'm4.8xlarge'
         type(mock_inst2C).spot_instance_request_id = None
-        type(mock_inst2C).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2C).state = {'Code': 16, 'Name': 'running'}
 
         mock_instStopped = Mock(spec_set=Instance)
         type(mock_instStopped).id = '2C'
         type(mock_instStopped).instance_type = 'm4.8xlarge'
         type(mock_instStopped).spot_instance_request_id = None
-        type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instStopped).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instStopped).state = {'Code': 80, 'Name': 'stopped'}
 
         mock_instTerm = Mock(spec_set=Instance)
         type(mock_instTerm).id = '2C'
         type(mock_instTerm).instance_type = 'm4.8xlarge'
         type(mock_instTerm).spot_instance_request_id = None
-        type(mock_instTerm).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instTerm).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instTerm).state = {'Code': 48, 'Name': 'terminated'}
 
         return_value = [
             mock_inst1A,
             mock_inst1B,
+            mock_inst1C,
+            mock_inst1D,
             mock_inst2A,
             mock_inst2B,
             mock_inst2C,
@@ -1910,7 +1945,9 @@ class EC2(object):
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 't2.micro'
         type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst1A).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
 
@@ -1918,9 +1955,31 @@ class EC2(object):
         type(mock_inst1B).id = '1B'
         type(mock_inst1B).instance_type = 'r3.2xlarge'
         type(mock_inst1B).spot_instance_request_id = None
-        type(mock_inst1B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1B).state = {'Code': 0, 'Name': 'pending'}
         type(mock_inst1B).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
+
+        mock_inst1C = Mock(spec_set=Instance)
+        type(mock_inst1C).id = '1C'
+        type(mock_inst1C).instance_type = 't2.micro'
+        type(mock_inst1C).spot_instance_request_id = None
+        type(mock_inst1C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'host'
+        }
+        type(mock_inst1C).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst1C).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
+
+        mock_inst1D = Mock(spec_set=Instance)
+        type(mock_inst1D).id = '1D'
+        type(mock_inst1D).instance_type = 't2.micro'
+        type(mock_inst1D).spot_instance_request_id = None
+        type(mock_inst1D).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'dedicated'
+        }
+        type(mock_inst1D).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst1D).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
 
         mock_inst2A = Mock(spec_set=Instance)
         type(mock_inst2A).id = '2A'
@@ -1934,7 +1993,9 @@ class EC2(object):
         type(mock_inst2B).id = '2B'
         type(mock_inst2B).instance_type = 't2.micro'
         type(mock_inst2B).spot_instance_request_id = '1234'
-        type(mock_inst2B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2B).state = {'Code': 64, 'Name': 'stopping'}
         type(mock_inst2B).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
 
@@ -1942,7 +2003,9 @@ class EC2(object):
         type(mock_inst2C).id = '2C'
         type(mock_inst2C).instance_type = 'm4.8xlarge'
         type(mock_inst2C).spot_instance_request_id = None
-        type(mock_inst2C).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2C).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2C).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -1950,7 +2013,9 @@ class EC2(object):
         type(mock_instStopped).id = 'instStopped'
         type(mock_instStopped).instance_type = 'm4.8xlarge'
         type(mock_instStopped).spot_instance_request_id = None
-        type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instStopped).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instStopped).state = {'Code': 80, 'Name': 'stopped'}
         type(mock_instStopped).cpu_options = {
             'CoreCount': 16, 'ThreadsPerCore': 2
@@ -1960,7 +2025,9 @@ class EC2(object):
         type(mock_instTerm).id = '2C'
         type(mock_instTerm).instance_type = 'm4.8xlarge'
         type(mock_instTerm).spot_instance_request_id = None
-        type(mock_instTerm).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instTerm).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instTerm).state = {'Code': 48, 'Name': 'terminated'}
         type(mock_instTerm).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -1968,7 +2035,9 @@ class EC2(object):
         type(mock_inst2D).id = '2D'
         type(mock_inst2D).instance_type = 'f1.16xlarge'
         type(mock_inst2D).spot_instance_request_id = None
-        type(mock_inst2D).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2D).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2D).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
 
@@ -1976,7 +2045,9 @@ class EC2(object):
         type(mock_inst2E).id = '2E'
         type(mock_inst2E).instance_type = 'f1.2xlarge'
         type(mock_inst2E).spot_instance_request_id = None
-        type(mock_inst2E).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2E).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2E).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2E).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
 
@@ -1984,7 +2055,9 @@ class EC2(object):
         type(mock_inst2F).id = '2F'
         type(mock_inst2F).instance_type = 'g4dn.12xlarge'
         type(mock_inst2F).spot_instance_request_id = None
-        type(mock_inst2F).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2F).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2F).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2F).cpu_options = {'CoreCount': 12, 'ThreadsPerCore': 4}
 
@@ -1992,7 +2065,9 @@ class EC2(object):
         type(mock_inst1A).id = '3A'
         type(mock_inst3A).instance_type = 'p2.16xlarge'
         type(mock_inst3A).spot_instance_request_id = None
-        type(mock_inst3A).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3A).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3A).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3A).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
 
@@ -2000,7 +2075,9 @@ class EC2(object):
         type(mock_inst3F).id = '3F'
         type(mock_inst3F).instance_type = 'p2.8xlarge'
         type(mock_inst3F).spot_instance_request_id = None
-        type(mock_inst3F).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3F).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3F).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3F).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -2008,7 +2085,9 @@ class EC2(object):
         type(mock_inst3G).id = '3G'
         type(mock_inst3G).instance_type = 'p2.8xlarge'
         type(mock_inst3G).spot_instance_request_id = None
-        type(mock_inst3G).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3G).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3G).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3G).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -2016,7 +2095,9 @@ class EC2(object):
         type(mock_inst3B).id = '3B'
         type(mock_inst3B).instance_type = 'r3.2xlarge'
         type(mock_inst3B).spot_instance_request_id = None
-        type(mock_inst3B).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3B).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3B).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3B).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
 
@@ -2024,7 +2105,9 @@ class EC2(object):
         type(mock_inst3C).id = '3C'
         type(mock_inst3C).instance_type = 'x1e.32xlarge'
         type(mock_inst3C).spot_instance_request_id = None
-        type(mock_inst3C).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3C).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3C).state = {'Code': 32, 'Name': 'stopped'}
         type(mock_inst3C).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
@@ -2032,7 +2115,9 @@ class EC2(object):
         type(mock_inst3D).id = '3D'
         type(mock_inst3D).instance_type = 'x1e.32xlarge'
         type(mock_inst3D).spot_instance_request_id = None
-        type(mock_inst3D).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3D).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3D).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
@@ -2040,13 +2125,17 @@ class EC2(object):
         type(mock_inst3E).id = '3E'
         type(mock_inst3E).instance_type = 'x1e.32xlarge'
         type(mock_inst3E).spot_instance_request_id = None
-        type(mock_inst3E).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3E).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3E).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3E).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
         return_value = [
             mock_inst1A,
             mock_inst1B,
+            mock_inst1C,
+            mock_inst1D,
             mock_inst2A,
             mock_inst2B,
             mock_inst2C,
@@ -2071,7 +2160,9 @@ class EC2(object):
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 'foobar'
         type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
         return [mock_inst1A]
 
@@ -4378,98 +4469,98 @@ class Route53(object):
 class CloudTrail(object):
 
     mock_describe_trails = {
-            'trailList': [
-                {
-                    'Name': 'trail1',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'thisregion',
-                    'TrailARN': 'trailarn1',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': False
-                },
-                {
-                    'Name': 'trail2',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'thisregion',
-                    'TrailARN': 'trailarn2',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True
-                },
-                {
-                    'Name': 'trail3',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'otherRegion',
-                    'TrailARN': 'trailarn3',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True
-                },
-                {
-                    'Name': 'trail4',
-                    'TrailARN': 'trailarn4',
-                    'HomeRegion': 'thisregion'
-                }
-            ],
+        'trailList': [
+            {
+                'Name': 'trail1',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'thisregion',
+                'TrailARN': 'trailarn1',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': False
+            },
+            {
+                'Name': 'trail2',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'thisregion',
+                'TrailARN': 'trailarn2',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': True
+            },
+            {
+                'Name': 'trail3',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'otherRegion',
+                'TrailARN': 'trailarn3',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': True
+            },
+            {
+                'Name': 'trail4',
+                'TrailARN': 'trailarn4',
+                'HomeRegion': 'thisregion'
+            }
+        ],
     }
 
     mock_get_event_selectors = {
-            'TrailARN': 'string',
-            'EventSelectors': [
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True,
-                    'DataResources': [
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        }
-                    ]
-                },
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True,
-                    'DataResources': []
-                },
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True
-                }
-            ]
+        'TrailARN': 'string',
+        'EventSelectors': [
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True,
+                'DataResources': [
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    },
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    },
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    }
+                ]
+            },
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True,
+                'DataResources': []
+            },
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True
+            }
+        ]
     }

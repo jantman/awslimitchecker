@@ -71,8 +71,36 @@ class _EcsService(_AwsService):
         for lim in self.limits.values():
             lim._reset_usage()
         self._find_usage_clusters()
+        self._find_usage_fargate()
         self._have_usage = True
         logger.debug("Done checking usage.")
+
+    def _find_usage_fargate(self):
+        """
+        Find the usage for Fargate, via CloudWatch.
+        """
+        self.limits['Fargate On-Demand resource count']._add_current_usage(
+            self._get_cloudwatch_usage_latest(
+                [
+                    {'Name': 'Type', 'Value': 'Resource'},
+                    {'Name': 'Resource', 'Value': 'OnDemand'},
+                    {'Name': 'Service', 'Value': 'Fargate'},
+                    {'Name': 'Class', 'Value': 'None'},
+                ],
+            ),
+            aws_type='AWS::ECS::TaskDefinition'
+        )
+        self.limits['Fargate Spot resource count']._add_current_usage(
+            self._get_cloudwatch_usage_latest(
+                [
+                    {'Name': 'Type', 'Value': 'Resource'},
+                    {'Name': 'Resource', 'Value': 'Spot'},
+                    {'Name': 'Service', 'Value': 'Fargate'},
+                    {'Name': 'Class', 'Value': 'None'},
+                ],
+            ),
+            aws_type='AWS::ECS::TaskDefinition'
+        )
 
     def _find_usage_clusters(self):
         """
@@ -80,7 +108,6 @@ class _EcsService(_AwsService):
         :py:meth:`~._find_usage_one_cluster` for each cluster.
         """
         count = 0
-        fargate_task_count = 0
         paginator = self.conn.get_paginator('list_clusters')
         for page in paginator.paginate():
             for cluster_arn in page['clusterArns']:
@@ -101,21 +128,7 @@ class _EcsService(_AwsService):
                     aws_type='AWS::ECS::Service',
                     resource_id=cluster['clusterName']
                 )
-                # Note: 'statistics' is not always present in API responses,
-                # even if requested. As far as I can tell, it's omitted if
-                # a cluster has no Fargate tasks.
-                for stat in cluster.get('statistics', []):
-                    if stat['name'] != 'runningFargateTasksCount':
-                        continue
-                    logger.debug(
-                        'Found %s Fargate tasks in cluster %s',
-                        stat['value'], cluster_arn
-                    )
-                    fargate_task_count += int(stat['value'])
                 self._find_usage_one_cluster(cluster['clusterName'])
-        self.limits['Fargate Tasks']._add_current_usage(
-            fargate_task_count, aws_type='AWS::ECS::Task'
-        )
         self.limits['Clusters']._add_current_usage(
             count, aws_type='AWS::ECS::Cluster'
         )
@@ -127,7 +140,7 @@ class _EcsService(_AwsService):
         :param cluster_name: name of the cluster to find usage for
         :type cluster_name: str
         """
-        tps_lim = self.limits['EC2 Tasks per Service (desired count)']
+        tps_lim = self.limits['Tasks per service']
         paginator = self.conn.get_paginator('list_services')
         for page in paginator.paginate(
             cluster=cluster_name, launchType='EC2'
@@ -136,8 +149,6 @@ class _EcsService(_AwsService):
                 svc = self.conn.describe_services(
                     cluster=cluster_name, services=[svc_arn]
                 )['services'][0]
-                if svc['launchType'] != 'EC2':
-                    continue
                 tps_lim._add_current_usage(
                     svc['desiredCount'],
                     aws_type='AWS::ECS::Service',
@@ -160,7 +171,7 @@ class _EcsService(_AwsService):
         limits['Clusters'] = AwsLimit(
             'Clusters',
             self,
-            2000,
+            10000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Cluster',
@@ -176,28 +187,37 @@ class _EcsService(_AwsService):
         limits['Services per Cluster'] = AwsLimit(
             'Services per Cluster',
             self,
-            1000,
+            2000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Service'
         )
-        limits['EC2 Tasks per Service (desired count)'] = AwsLimit(
-            'EC2 Tasks per Service (desired count)',
+        limits['Tasks per service'] = AwsLimit(
+            'Tasks per service',
             self,
-            1000,
+            2000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
             limit_subtype='EC2'
         )
-        limits['Fargate Tasks'] = AwsLimit(
-            'Fargate Tasks',
+        limits['Fargate On-Demand resource count'] = AwsLimit(
+            'Fargate On-Demand resource count',
             self,
-            50,
+            500,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
             limit_subtype='Fargate'
+        )
+        limits['Fargate Spot resource count'] = AwsLimit(
+            'Fargate Spot resource count',
+            self,
+            500,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::ECS::TaskDefinition',
+            limit_subtype='FargateSpot'
         )
         self.limits = limits
         return limits
