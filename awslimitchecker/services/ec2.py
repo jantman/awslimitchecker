@@ -119,7 +119,6 @@ class _Ec2Service(_AwsService):
             self._find_usage_instances_vcpu()
         else:
             self._find_usage_instances_nonvcpu()
-        self._find_usage_networking_sgs()
         self._find_usage_networking_eips()
         self._find_usage_networking_eni_sg()
         self._find_usage_spot_instances()
@@ -637,58 +636,6 @@ class _Ec2Service(_AwsService):
         )
         return limits
 
-    def _find_usage_networking_sgs(self):
-        """calculate usage for VPC-related things"""
-        logger.debug("Getting usage for EC2 VPC resources")
-        sgs_per_vpc = defaultdict(int)
-        rules_per_sg = defaultdict(int)
-        for sg in self.resource_conn.security_groups.all():
-            if sg.vpc_id is None:
-                continue
-            sgs_per_vpc[sg.vpc_id] += 1
-            """
-            see: https://github.com/jantman/awslimitchecker/issues/431
-
-            The value for each of ingress and egress is the count of all
-            PrefixListIds in all rules, plus the count of all
-            UserIdGroupPairs in all rules, plus the maximum of:
-              the count of all IpRanges in all rules
-                 -or-
-              the count of all Ipv6Ranges in all rules
-
-            The limit that we alert on is the maximum of those values for
-            ingress and egress.
-
-            In short, behind the scenes, there are four firewall rulesets
-            per SG: (IPv4|IPv6) (ingress|egress)
-            Each can have a maximum of <limit> entries. PrefixListIds and
-            UserIdGroupPairs count towards both IPv4 and IPv6.
-            """
-            counts = []
-            for perm in [sg.ip_permissions, sg.ip_permissions_egress]:
-                counts.append(
-                    max(
-                        sum([len(x.get('IpRanges', [])) for x in perm]),
-                        sum([len(x.get('Ipv6Ranges', [])) for x in perm])
-                    ) +
-                    sum([len(x.get('PrefixListIds', [])) for x in perm]) +
-                    sum([len(x.get('UserIdGroupPairs', [])) for x in perm])
-                )
-            rules_per_sg[sg.id] = max(counts)
-        # set usage
-        for vpc_id, count in sgs_per_vpc.items():
-            self.limits['Security groups per VPC']._add_current_usage(
-                count,
-                aws_type='AWS::EC2::VPC',
-                resource_id=vpc_id,
-            )
-        for sg_id, count in rules_per_sg.items():
-            self.limits['Rules per VPC security group']._add_current_usage(
-                count,
-                aws_type='AWS::EC2::SecurityGroupRule',
-                resource_id=sg_id,
-            )
-
     def _find_usage_networking_eips(self):
         logger.debug("Getting usage for EC2 EIPs")
         vpc_addrs = self.resource_conn.vpc_addresses.all()
@@ -727,24 +674,6 @@ class _Ec2Service(_AwsService):
         :rtype: dict
         """
         limits = {}
-        limits['Security groups per VPC'] = AwsLimit(
-            'Security groups per VPC',
-            self,
-            500,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::SecurityGroup',
-            limit_subtype='AWS::EC2::VPC',
-        )
-        limits['Rules per VPC security group'] = AwsLimit(
-            'Rules per VPC security group',
-            self,
-            60,
-            self.warning_threshold,
-            self.critical_threshold,
-            limit_type='AWS::EC2::SecurityGroup',
-            limit_subtype='AWS::EC2::VPC',
-        )
         limits['VPC Elastic IP addresses (EIPs)'] = AwsLimit(
             'VPC Elastic IP addresses (EIPs)',
             self,
