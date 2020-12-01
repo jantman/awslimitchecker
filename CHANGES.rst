@@ -16,6 +16,7 @@ Changelog
   * This release **disables Trusted Advisor by default outside China and GovCloud**, as it provides no additional information outside of these regions/partitions.
   * If you are running in China or GovCloud and have issues with awslimitchecker retrieving information from Trusted Advisor, please `open an issue <https://github.com/jantman/awslimitchecker/issues>`__.
   * My current intent is to leave Trusted Advisor support in this state until Service Quotas is available in China and GovCloud, at which point I plan on completely removing all Trusted Advisor support.
+* Migrate CI builds from travis-ci.org to travis-ci.com.
 
 .. _changelog.9_0_0:
 
