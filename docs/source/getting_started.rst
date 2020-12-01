@@ -153,6 +153,9 @@ to check limits in multiple regions, simply run the script multiple times, once 
 Trusted Advisor
 ---------------
 
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
+
 awslimitchecker supports retrieving your current service limits via the
 `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
 `"Service Limits" performance check <https://aws.amazon.com/premiumsupport/trustedadvisor/best-practices/#Performance>`_

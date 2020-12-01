@@ -1,6 +1,22 @@
 Changelog
 =========
 
+.. _changelog.10_0_0:
+
+10.0.0 (2020-12-07)
+-------------------
+
+**Important:** This release makes significant changes to how Trusted Advisor is used.
+
+* `Issue #466 <https://github.com/jantman/awslimitchecker/issues/466>`__ - **Significant** changes to Trusted Advisor support.
+
+  * In June 2019, AWS `announced <https://aws.amazon.com/about-aws/whats-new/2019/06/introducing-service-quotas-view-and-manage-quotas-for-aws-services-from-one-location/>`__ the new Service Quotas service (great name) that allows us to retrieve limit/quota information from a unified API. In addition, many individual services now provide limit information via their own APIs. At this point (late 2020) all of the limit/quota information that was previously available via Trusted Advisor is now available via a combination of the individual service APIs and Service Quotas.
+  * In February 2020, the layout of Trusted Advisor checks was changed, and the "Performance / Service Limits" check that we previously used to obtain limit information was moved to its own category in Trusted Advisor. While I can't confirm this, as far as I can tell, this change was only made in the standard AWS regions/partitions (i.e. not GovCloud or China).
+  * awslimitchecker still has not been updated for this new Trusted Advisor layout.
+  * This release **disables Trusted Advisor by default outside China and GovCloud**, as it provides no additional information outside of these regions/partitions.
+  * If you are running in China or GovCloud and have issues with awslimitchecker retrieving information from Trusted Advisor, please `open an issue <https://github.com/jantman/awslimitchecker/issues>`__.
+  * My current intent is to leave Trusted Advisor support in this state until Service Quotas is available in China and GovCloud, at which point I plan on completely removing all Trusted Advisor support.
+
 .. _changelog.9_0_0:
 
 9.0.0 (2020-09-22)

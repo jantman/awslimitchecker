@@ -206,6 +206,9 @@ include 'NextToken' or another pagination marker, should be called through
 Trusted Advisor Checks
 ----------------------
 
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
+
 So long as the ``Service`` and ``Limit`` name strings returned by the Trusted Advisor (Support) API exactly match
 how they are set on the corresponding :py:class:`~._AwsService` and :py:class:`~.AwsLimit` objects, no code changes
 are needed to support new limit checks from TA.
