@@ -163,7 +163,7 @@ class ConfirmTravisAndCoverage(BaseStep):
                  'and then re-run.' % (build.number, build.id))
         logger.info('OK, Travis build passed.')
         logger.info(
-            'Build URL: <https://travis-ci.org/jantman/awslimitchecker/'
+            'Build URL: <https://travis-ci.com/jantman/awslimitchecker/'
             'builds/%s>', build.id
         )
         if not prompt_user(
@@ -316,7 +316,7 @@ class PullRequest(BaseStep):
         headsha = pr.head.sha
         while True:
             for s in self._gh._repo.statuses(sha=headsha):
-                if s.context == 'continuous-integration/travis-ci/pr':
+                if s.context == 'Travis CI - Pull Request':
                     logger.info(
                         'Last TravisCI PR status: %s <%s> (at %s)',
                         s.state, s.target_url, s.updated_at
