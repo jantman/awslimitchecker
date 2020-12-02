@@ -777,18 +777,13 @@ class TestFindUsageNetworkingSgs(object):
         assert mock_logger.mock_calls == [
             call.debug("Getting usage for EC2 VPC resources"),
         ]
-        limit = cls.limits['Security groups per VPC']
+        limit = cls.limits['VPC security groups per Region']
         # relies on AwsLimitUsage sorting by numeric usage value
         sorted_usage = sorted(limit.get_current_usage())
-        assert len(sorted_usage) == 2
+        assert len(sorted_usage) == 1
         assert sorted_usage[0].limit == limit
-        assert sorted_usage[0].get_value() == 1
-        assert sorted_usage[0].resource_id == 'vpc-bbb'
-        assert sorted_usage[0].aws_type == 'AWS::EC2::VPC'
-        assert sorted_usage[1].limit == limit
-        assert sorted_usage[1].get_value() == 2
-        assert sorted_usage[1].resource_id == 'vpc-aaa'
-        assert sorted_usage[1].aws_type == 'AWS::EC2::VPC'
+        assert sorted_usage[0].get_value() == 3
+        assert sorted_usage[0].aws_type == 'AWS::EC2::SecurityGroup'
 
         limit = cls.limits['Rules per VPC security group']
         sorted_usage = sorted(limit.get_current_usage())
@@ -886,7 +881,7 @@ class TestGetLimitsNetworking(object):
         cls = _Ec2Service(21, 43, {}, None)
         limits = cls._get_limits_networking()
         expected = [
-            'Security groups per VPC',
+            'VPC security groups per Region',
             'Rules per VPC security group',
             'VPC Elastic IP addresses (EIPs)',
             'Elastic IP addresses (EIPs)',
@@ -913,6 +908,10 @@ class TestGetLimitsNetworking(object):
         assert limits[
             'Elastic IP addresses (EIPs)'
         ].quotas_unit == 'None'
+        vpcsg = limits['VPC security groups per Region']
+        assert vpcsg.quota_name == 'VPC security groups per Region'
+        assert vpcsg.quotas_service_code == 'vpc'
+        assert vpcsg.default_limit == 2500
 
 
 class TestGetLimitsSpot(object):
