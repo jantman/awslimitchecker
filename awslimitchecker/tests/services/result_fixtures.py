@@ -1114,6 +1114,26 @@ class RDS(object):
                 'Used': 6
             },
             {
+                'Max': 11,
+                'AccountQuotaName': 'DBInstanceRoles',
+                'Used': 1
+            },
+            {
+                'Max': 12,
+                'AccountQuotaName': 'DBClusterRoles',
+                'Used': 2
+            },
+            {
+                'Max': 13,
+                'AccountQuotaName': 'CustomEndpointsPerDBCluster',
+                'Used': 3
+            },
+            {
+                'Max': 101,
+                'AccountQuotaName': 'ManualClusterSnapshots',
+                'Used': 5
+            },
+            {
                 'Max': 98,
                 'AccountQuotaName': 'Foo',
                 'Used': 99
