@@ -37,6 +37,8 @@ All Changes
   * Remove the ``EC2/Security groups per VPC`` limit, which no longer exists.
   * Add the new ``EC2/VPC security groups per Region`` limit.
 
+* `Issue #501 <https://github.com/jantman/awslimitchecker/issues/501>`__ - Update ``VPC/Network interfaces per Region`` limit for new calculation method.
+
 .. _changelog.9_0_0:
 
 9.0.0 (2020-09-22)
