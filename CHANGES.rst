@@ -17,6 +17,7 @@ Changelog
   * If you are running in China or GovCloud and have issues with awslimitchecker retrieving information from Trusted Advisor, please `open an issue <https://github.com/jantman/awslimitchecker/issues>`__.
   * My current intent is to leave Trusted Advisor support in this state until Service Quotas is available in China and GovCloud, at which point I plan on completely removing all Trusted Advisor support.
 * Migrate CI builds from travis-ci.org to travis-ci.com.
+* `Issue #503 <https://github.com/jantman/awslimitchecker/issues/503>`__ - Fix ``Units set to "None"`` error when retrieving load balancer data from Service Quotas. We now allow the (A|E)LB per Region quota with a unit of either "Count" (prior to November 2020) or "None" (November 2020 on).
 
 .. _changelog.9_0_0:
 
