@@ -8,7 +8,7 @@ Changelog
 
 **Important:** This release makes significant changes to how Trusted Advisor is used; see below.
 
-**Important:** This release requires the following new IAM permissions: ``eks:ListClusters``, ``eks:DescribeCluster``, ``eks:ListNodegroups``, ``eks:ListFargateProfiles``, ``eks:DescribeFargateProfile``.
+**Important:** This release requires the following new IAM permissions: ``eks:ListClusters``, ``eks:DescribeCluster``, ``eks:ListNodegroups``, ``eks:ListFargateProfiles``, ``eks:DescribeFargateProfile``, ``kinesis:DescribeLimits``.
 
 **Important:** This release introduces a number of new limits, as well as new services. Please see below for details.
 
@@ -25,6 +25,7 @@ Changelog
 * `Issue #489 <https://github.com/jantman/awslimitchecker/issues/489>`__ / `PR #490 <https://github.com/jantman/awslimitchecker/pull/490>`__ - Add missing RDS limits: ``Manual Cluster Snapshots``, ``Custom Endpoints Per DB Cluster``, ``DB Instance Roles``, and ``DB Cluster Roles``. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
 * `Issue #472 <https://github.com/jantman/awslimitchecker/issues/472>`__ / `PR #494 <https://github.com/jantman/awslimitchecker/pull/494>`__ - Add support for the ``EKS`` service, and 8 new limits for it. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
 * `Issue #495 <https://github.com/jantman/awslimitchecker/issues/495>`__ / `PR #496 <https://github.com/jantman/awslimitchecker/pull/496>`__ - Add support for the ``Kinesis`` service, and one new limit for it. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `PR #499 <https://github.com/jantman/awslimitchecker/pull/499>`__ - Set quota_name for VPC "Entries per route table" limit, so that the current limit will be automatically retrieved from Service Quotas. Thanks to `patuck <https://github.com/patuck>`__ for this contribution!
 
 .. _changelog.9_0_0:
 
