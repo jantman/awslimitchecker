@@ -267,6 +267,9 @@ from the Service Quotas service.
 Disabling Trusted Advisor Checks
 ++++++++++++++++++++++++++++++++
 
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
+
 Using the ``--skip-ta`` option will disable attempting to query limit information
 from Trusted Advisor for all commands.
 
@@ -683,6 +686,9 @@ between your account and the 123456789012 destination account; see the
 
 Partitions and Trusted Advisor Regions
 ++++++++++++++++++++++++++++++++++++++
+
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
 
 awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``--role-partition`` option to awslimitchecker, like ``--role-partition=aws-cn`` for the China (Beijing) partition. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``--ta-api-region`` option, like ``--ta-api-region=us-gov-west-1``.
 

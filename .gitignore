@@ -72,3 +72,4 @@ results/
 .release_position.json
 dev/terraform.tfstate
 man/
+share/
