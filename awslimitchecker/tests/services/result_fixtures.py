@@ -4586,6 +4586,13 @@ class CloudTrail(object):
     }
 
 
+class Kinesis(object):
+    mock_describe_limits = {
+        'ShardLimit': 700,
+        'OpenShardCount': 555
+    }
+
+
 class EKS(object):
 
     test_find_clusters_usage_list = {
