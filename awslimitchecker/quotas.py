@@ -145,10 +145,11 @@ class ServiceQuotasClient(Connectable):
                 return converter(val, svc[quota_name.lower()]['Unit'], units)
             logger.error(
                 'ERROR: Service Quota service_code=%s QuotaName="%s" has '
-                'Units set to "%s"; awslimitchecker does not know how to '
+                'Units set to "%s", but expected units to be "%s"; '
+                'awslimitchecker does not know how to '
                 'handle this. This quota will be ignored. Please open a bug '
                 'report.', service_code, quota_name,
-                svc[quota_name.lower()]['Unit']
+                svc[quota_name.lower()]['Unit'], units
             )
             return None
         return val
