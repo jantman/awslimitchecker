@@ -18,6 +18,7 @@ Changelog
   * My current intent is to leave Trusted Advisor support in this state until Service Quotas is available in China and GovCloud, at which point I plan on completely removing all Trusted Advisor support.
 * Migrate CI builds from travis-ci.org to travis-ci.com.
 * `Issue #503 <https://github.com/jantman/awslimitchecker/issues/503>`__ - Fix ``Units set to "None"`` error when retrieving load balancer data from Service Quotas. We now allow the (A|E)LB per Region quota with a unit of either "Count" (prior to November 2020) or "None" (November 2020 on).
+* `PR #490 <https://github.com/jantman/awslimitchecker/pull/490>`__ - Add missing RDS limits: ``Manual Cluster Snapshots``, ``Custom Endpoints Per DB Cluster``, ``DB Instance Roles``, and ``DB Cluster Roles``. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
 
 .. _changelog.9_0_0:
 
