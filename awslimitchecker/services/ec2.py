@@ -744,6 +744,8 @@ class _Ec2Service(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::SecurityGroup',
             limit_subtype='AWS::EC2::VPC',
+            quotas_name='Inbound or outbound rules per security group',
+            quotas_service_code='vpc'
         )
         limits['VPC Elastic IP addresses (EIPs)'] = AwsLimit(
             'VPC Elastic IP addresses (EIPs)',
