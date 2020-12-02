@@ -40,6 +40,9 @@ to the services and limits without any connection to AWS. This is utilized by th
 Trusted Advisor
 ---------------
 
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
+
 When :py:class:`~awslimitchecker.checker.AwsLimitChecker` is initialized, it also initializes an instance of
 :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`. In :py:meth:`~.AwsLimitChecker.get_limits`,
 :py:meth:`~.AwsLimitChecker.find_usage` and :py:meth:`~.AwsLimitChecker.check_thresholds`, when called with

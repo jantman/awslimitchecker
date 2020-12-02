@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.elb import _ElbService
+from awslimitchecker.services.elb import _ElbService, allow_count_or_none_units
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -54,6 +54,18 @@ else:
 
 pbm = 'awslimitchecker.services.elb'  # patch base path - module
 pb = '%s._ElbService' % pbm  # patch base path
+
+
+class TestAllowCountOrNoneUnits:
+
+    def test_none(self):
+        assert allow_count_or_none_units(10, 'None', 'Count') == 10
+
+    def test_count(self):
+        assert allow_count_or_none_units(10, 'Count', 'Count') == 10
+
+    def test_other(self):
+        assert allow_count_or_none_units(10, 'Other', 'Count') is None
 
 
 class Test_ElbService(object):
@@ -86,6 +98,13 @@ class Test_ElbService(object):
             assert limit.service == cls
             assert limit.def_warning_threshold == 21
             assert limit.def_critical_threshold == 43
+            if name in [
+                'Application load balancers',
+                'Classic load balancers',
+            ]:
+                assert limit.quotas_unit_converter == allow_count_or_none_units
+            else:
+                assert limit.quotas_unit_converter is None
 
     def test_get_limits_again(self):
         """test that existing limits dict is returned on subsequent calls"""
