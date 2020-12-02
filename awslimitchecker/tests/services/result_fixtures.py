@@ -1114,6 +1114,26 @@ class RDS(object):
                 'Used': 6
             },
             {
+                'Max': 11,
+                'AccountQuotaName': 'DBInstanceRoles',
+                'Used': 1
+            },
+            {
+                'Max': 12,
+                'AccountQuotaName': 'DBClusterRoles',
+                'Used': 2
+            },
+            {
+                'Max': 13,
+                'AccountQuotaName': 'CustomEndpointsPerDBCluster',
+                'Used': 3
+            },
+            {
+                'Max': 101,
+                'AccountQuotaName': 'ManualClusterSnapshots',
+                'Used': 5
+            },
+            {
                 'Max': 98,
                 'AccountQuotaName': 'Foo',
                 'Used': 99
@@ -4571,3 +4591,138 @@ class Kinesis(object):
         'ShardLimit': 700,
         'OpenShardCount': 555
     }
+
+
+class EKS(object):
+
+    test_find_clusters_usage_list = {
+        'clusters': [
+            'devel',
+            'prod',
+        ]
+    }
+
+    test_find_clusters_usage_describe = [
+        {
+            'cluster': {
+                'name': 'devel',
+                'resourcesVpcConfig': {
+                    'securityGroupIds': [
+                        'abc-1234',
+
+                    ],
+                    'publicAccessCidrs': [
+                        '1.1.1.1/32',
+                        '2.2.2.0/24',
+                        '203.0.113.5/32'
+                    ]
+                },
+            }
+        },
+        {
+            'cluster': {
+                'name': 'prod',
+                'resourcesVpcConfig': {
+                    'securityGroupIds': [
+                        'foo-1234',
+                        'bar-1234'
+                    ],
+                    'publicAccessCidrs': [
+                        '1.1.1.1/32',
+                    ]
+                },
+            }
+        }
+    ]
+
+    test_find_clusters_usage_nodegrps = [
+        {
+            'nodegroups': [
+                'managed-ng-1',
+                'managed-ng-2'
+            ]
+        },
+        {
+            'nodegroups': [
+                'managed-ng-3',
+            ]
+        }
+    ]
+
+    test_find_clusters_usage_fargates = [
+        {
+            'fargateProfileNames': [
+                'foo',
+            ]
+        },
+        {
+            'fargateProfileNames': [
+                'bar',
+                'baz',
+            ]
+        }
+    ]
+
+    test_find_clusters_usage_fargate_prof = [
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'foo',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'bar',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace2",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'baz',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace2",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace3",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                            'key3': 'value3',
+                        }
+                    },
+                ],
+            }
+        }
+    ]

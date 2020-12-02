@@ -51,6 +51,7 @@ from awslimitchecker.services.efs import _EfsService
 from awslimitchecker.services.elasticache import _ElastiCacheService
 from awslimitchecker.services.elasticbeanstalk import _ElasticBeanstalkService
 from awslimitchecker.services.elb import _ElbService
+from awslimitchecker.services.eks import _EksService
 from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.iam import _IamService
 from awslimitchecker.services.kinesis import _KinesisService
