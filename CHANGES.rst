@@ -38,6 +38,7 @@ All Changes
   * Add the new ``EC2/VPC security groups per Region`` limit.
 
 * `Issue #501 <https://github.com/jantman/awslimitchecker/issues/501>`__ - Update ``VPC/Network interfaces per Region`` limit for new calculation method.
+* `Issue #488 <https://github.com/jantman/awslimitchecker/issues/488>`__ / `PR #491 <https://github.com/jantman/awslimitchecker/pull/491>`__ - Update new ElastiCache default limits. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
 
 .. _changelog.9_0_0:
 
