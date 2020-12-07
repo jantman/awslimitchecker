@@ -6,7 +6,16 @@ Changelog
 10.0.0 (2020-12-07)
 -------------------
 
-**Important:** This release makes significant changes to how Trusted Advisor is used.
+IMPORTANT - Breaking Changes
+++++++++++++++++++++++++++++
+
+* This release makes significant changes to how Trusted Advisor is used; see below.
+* This release requires the following new IAM permissions: ``eks:ListClusters``, ``eks:DescribeCluster``, ``eks:ListNodegroups``, ``eks:ListFargateProfiles``, ``eks:DescribeFargateProfile``, ``kinesis:DescribeLimits``.
+* This release introduces a number of new limits, as well as new services. Please see below for details.
+* This release **removes** the ``EC2/Security groups per VPC`` limit, which no longer exists, and adds the new ``EC2/VPC security groups per Region`` limit.
+
+All Changes
++++++++++++
 
 * `Issue #466 <https://github.com/jantman/awslimitchecker/issues/466>`__ - **Significant** changes to Trusted Advisor support.
 
@@ -18,7 +27,17 @@ Changelog
   * My current intent is to leave Trusted Advisor support in this state until Service Quotas is available in China and GovCloud, at which point I plan on completely removing all Trusted Advisor support.
 * Migrate CI builds from travis-ci.org to travis-ci.com.
 * `Issue #503 <https://github.com/jantman/awslimitchecker/issues/503>`__ - Fix ``Units set to "None"`` error when retrieving load balancer data from Service Quotas. We now allow the (A|E)LB per Region quota with a unit of either "Count" (prior to November 2020) or "None" (November 2020 on).
-* `PR #490 <https://github.com/jantman/awslimitchecker/pull/490>`__ - Add missing RDS limits: ``Manual Cluster Snapshots``, ``Custom Endpoints Per DB Cluster``, ``DB Instance Roles``, and ``DB Cluster Roles``. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `Issue #489 <https://github.com/jantman/awslimitchecker/issues/489>`__ / `PR #490 <https://github.com/jantman/awslimitchecker/pull/490>`__ - Add missing RDS limits: ``Manual Cluster Snapshots``, ``Custom Endpoints Per DB Cluster``, ``DB Instance Roles``, and ``DB Cluster Roles``. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `Issue #472 <https://github.com/jantman/awslimitchecker/issues/472>`__ / `PR #494 <https://github.com/jantman/awslimitchecker/pull/494>`__ - Add support for the ``EKS`` service, and 8 new limits for it. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `Issue #495 <https://github.com/jantman/awslimitchecker/issues/495>`__ / `PR #496 <https://github.com/jantman/awslimitchecker/pull/496>`__ - Add support for the ``Kinesis`` service, and one new limit for it. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `PR #499 <https://github.com/jantman/awslimitchecker/pull/499>`__ - Set quota_name for VPC "Entries per route table" limit, so that the current limit will be automatically retrieved from Service Quotas. Thanks to `patuck <https://github.com/patuck>`__ for this contribution!
+* `Issue #498 <https://github.com/jantman/awslimitchecker/issues/498>`__ - Fix multiple issues relating to VPC limits:
+
+  * Update the EC2 / ``Rules per VPC security group`` limit to support retrieving the current limit value from Service Quotas.
+  * Remove the ``EC2/Security groups per VPC`` limit, which no longer exists.
+  * Add the new ``EC2/VPC security groups per Region`` limit.
+
+* `Issue #501 <https://github.com/jantman/awslimitchecker/issues/501>`__ - Update ``VPC/Network interfaces per Region`` limit for new calculation method.
 
 .. _changelog.9_0_0:
 
