@@ -48,8 +48,6 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_ENI_LIMIT = 350
-
 
 class _VpcService(_AwsService):
 
@@ -309,6 +307,7 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Route',
             limit_subtype='AWS::EC2::RouteTable',
+            quotas_name='Routes per route table'
         )
 
         limits['Internet gateways'] = AwsLimit(
@@ -343,35 +342,13 @@ class _VpcService(_AwsService):
         limits['Network interfaces per Region'] = AwsLimit(
             'Network interfaces per Region',
             self,
-            DEFAULT_ENI_LIMIT,
+            5000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::NetworkInterface'
         )
         self.limits = limits
         return limits
-
-    def _update_limits_from_api(self):
-        """
-        Query EC2's DescribeAccountAttributes API action and
-        update the network interface limit, as needed. Updates ``self.limits``.
-
-        More info on the network interface limit, from the docs:
-        'This limit is the greater of either the default limit (350) or your
-        On-Demand Instance limit multiplied by 5.
-        The default limit for On-Demand Instances is 20.'
-        """
-        self.connect()
-        self.connect_resource()
-        logger.info("Querying EC2 DescribeAccountAttributes for limits")
-        attribs = self.conn.describe_account_attributes()
-        for attrib in attribs['AccountAttributes']:
-            if attrib['AttributeName'] == 'max-instances':
-                val = attrib['AttributeValues'][0]['AttributeValue']
-                if int(val) * 5 > DEFAULT_ENI_LIMIT:
-                    limit_name = 'Network interfaces per Region'
-                    self.limits[limit_name]._set_api_limit(int(val) * 5)
-        logger.debug("Done setting limits from API")
 
     def required_iam_permissions(self):
         """

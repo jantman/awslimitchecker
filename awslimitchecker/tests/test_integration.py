@@ -181,8 +181,8 @@ class TestIntegration(object):
         assert len(records) == 0, "awslimitchecker emitted unexpected log " \
             "messages at WARN or higher: \n%s" % "\n".join(records)
         polls = logs.num_ta_polls
-        assert polls == 1, "awslimitchecker should have polled Trusted " \
-            "Advisor once, but polled %s times" % polls
+        assert polls == 0, "awslimitchecker should have polled Trusted " \
+            "Advisor ZERO times, but polled %s times" % polls
 
     @pytest.mark.integration
     @skip_if_pr

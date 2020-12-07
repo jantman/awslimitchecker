@@ -168,7 +168,7 @@ class _ElastiCacheService(_AwsService):
         limits['Nodes'] = AwsLimit(
             'Nodes',
             self,
-            100,
+            300,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElastiCache::CacheNode',
@@ -186,7 +186,7 @@ class _ElastiCacheService(_AwsService):
         limits['Subnet Groups'] = AwsLimit(
             'Subnet Groups',
             self,
-            50,
+            150,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElastiCache::SubnetGroup',
@@ -204,7 +204,7 @@ class _ElastiCacheService(_AwsService):
         limits['Parameter Groups'] = AwsLimit(
             'Parameter Groups',
             self,
-            20,
+            150,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElastiCache::ParameterGroup',

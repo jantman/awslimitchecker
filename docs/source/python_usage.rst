@@ -56,6 +56,9 @@ parameter to the class constructor:
 Refreshing Trusted Advisor Check Results
 ++++++++++++++++++++++++++++++++++++++++
 
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
+
 Trusted Advisor check refresh behavior is controlled by the ``ta_refresh_mode``
 and ``ta_refresh_timeout`` parameters on the :py:class:`~awslimitchecker.checker.AwsLimitChecker`
 constructor, which are passed through to the :py:class:`~awslimitchecker.trustedadvisor.TrustedAdvisor`
@@ -235,6 +238,9 @@ crossed the critical threshold:
 Disabling Trusted Advisor
 ++++++++++++++++++++++++++
 
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
+
 To disable querying Trusted Advisor for limit information, call :py:meth:`~.AwsLimitChecker.get_limits`
 or :py:meth:`~.AwsLimitChecker.check_thresholds` with ``use_ta=False``:
 
@@ -258,6 +264,9 @@ in to the :py:class:`~.AwsLimitChecker` class constructor:
 
 Partitions and Trusted Advisor Regions
 ++++++++++++++++++++++++++++++++++++++
+
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
 
 awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``role_partition`` keyword argument to the :py:class:`~.AwsLimitChecker` class. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``ta_api_region`` keyword argument to the :py:class:`~.AwsLimitChecker` class.
 

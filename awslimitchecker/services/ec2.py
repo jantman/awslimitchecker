@@ -640,12 +640,12 @@ class _Ec2Service(_AwsService):
     def _find_usage_networking_sgs(self):
         """calculate usage for VPC-related things"""
         logger.debug("Getting usage for EC2 VPC resources")
-        sgs_per_vpc = defaultdict(int)
+        sg_count = 0
         rules_per_sg = defaultdict(int)
         for sg in self.resource_conn.security_groups.all():
             if sg.vpc_id is None:
                 continue
-            sgs_per_vpc[sg.vpc_id] += 1
+            sg_count += 1
             """
             see: https://github.com/jantman/awslimitchecker/issues/431
 
@@ -676,12 +676,10 @@ class _Ec2Service(_AwsService):
                 )
             rules_per_sg[sg.id] = max(counts)
         # set usage
-        for vpc_id, count in sgs_per_vpc.items():
-            self.limits['Security groups per VPC']._add_current_usage(
-                count,
-                aws_type='AWS::EC2::VPC',
-                resource_id=vpc_id,
-            )
+        self.limits['VPC security groups per Region']._add_current_usage(
+            sg_count,
+            aws_type='AWS::EC2::SecurityGroup',
+        )
         for sg_id, count in rules_per_sg.items():
             self.limits['Rules per VPC security group']._add_current_usage(
                 count,
@@ -727,14 +725,16 @@ class _Ec2Service(_AwsService):
         :rtype: dict
         """
         limits = {}
-        limits['Security groups per VPC'] = AwsLimit(
-            'Security groups per VPC',
+        limits['VPC security groups per Region'] = AwsLimit(
+            'VPC security groups per Region',
             self,
-            500,
+            2500,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::SecurityGroup',
             limit_subtype='AWS::EC2::VPC',
+            quotas_name='VPC security groups per Region',
+            quotas_service_code='vpc'
         )
         limits['Rules per VPC security group'] = AwsLimit(
             'Rules per VPC security group',
@@ -744,6 +744,8 @@ class _Ec2Service(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::SecurityGroup',
             limit_subtype='AWS::EC2::VPC',
+            quotas_name='Inbound or outbound rules per security group',
+            quotas_service_code='vpc'
         )
         limits['VPC Elastic IP addresses (EIPs)'] = AwsLimit(
             'VPC Elastic IP addresses (EIPs)',
