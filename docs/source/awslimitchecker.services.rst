@@ -24,11 +24,13 @@ Submodules
    awslimitchecker.services.ec2
    awslimitchecker.services.ecs
    awslimitchecker.services.efs
+   awslimitchecker.services.eks
    awslimitchecker.services.elasticache
    awslimitchecker.services.elasticbeanstalk
    awslimitchecker.services.elb
    awslimitchecker.services.firehose
    awslimitchecker.services.iam
+   awslimitchecker.services.kinesis
    awslimitchecker.services.lambdafunc
    awslimitchecker.services.rds
    awslimitchecker.services.redshift
