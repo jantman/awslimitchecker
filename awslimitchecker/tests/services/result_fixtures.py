@@ -4618,6 +4618,7 @@ class EKS(object):
             'fargateProfileNames': [
                 'bar',
                 'baz',
+                'profile_no_labels',
             ]
         }
     ]
@@ -4680,6 +4681,16 @@ class EKS(object):
                             'key2': 'value2',
                             'key3': 'value3',
                         }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'profile_no_labels',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
                     },
                 ],
             }
