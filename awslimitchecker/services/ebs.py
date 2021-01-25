@@ -222,8 +222,8 @@ class _EbsService(_AwsService):
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
-        limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
-            'General Purpose (SSD) volume storage (GiB)',
+        limits['General Purpose (SSD gp2) volume storage (GiB)'] = AwsLimit(
+            'General Purpose (SSD gp2) volume storage (GiB)',
             self,
             307200,
             self.warning_threshold,
@@ -231,7 +231,20 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
             ta_limit_name='General Purpose SSD (gp2) volume storage (GiB)',
-            quotas_name='General Purpose (SSD) volume storage',
+            quotas_name='Storage for General Purpose SSD (gp2) volumes',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
+        )
+        limits['General Purpose (SSD gp3) volume storage (GiB)'] = AwsLimit(
+            'General Purpose (SSD gp3) volume storage (GiB)',
+            self,
+            307200,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='gp3',
+            ta_limit_name='General Purpose SSD (gp3) volume storage (GiB)',
+            quotas_name='Storage for General Purpose SSD (gp3) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
