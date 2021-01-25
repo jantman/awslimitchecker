@@ -83,7 +83,8 @@ class _EbsService(_AwsService):
         vols = 0
         piops = 0
         piops_gb = 0
-        gp_gb = 0
+        gp2_gb = 0
+        gp3_gb = 0
         mag_gb = 0
         st_gb = 0
         sc_gb = 0
@@ -100,7 +101,9 @@ class _EbsService(_AwsService):
                 piops_gb += vol['Size']
                 piops += vol['Iops']
             elif vol['VolumeType'] == 'gp2':
-                gp_gb += vol['Size']
+                gp2_gb += vol['Size']
+            elif vol['VolumeType'] == 'gp3':
+                gp3_gb += vol['Size']
             elif vol['VolumeType'] == 'standard':
                 mag_gb += vol['Size']
             elif vol['VolumeType'] == 'st1':
@@ -124,9 +127,15 @@ class _EbsService(_AwsService):
             aws_type='AWS::EC2::Volume'
         )
         self.limits[
-            'General Purpose (SSD) volume storage (GiB)'
+            'General Purpose (SSD gp2) volume storage (GiB)'
         ]._add_current_usage(
-            gp_gb,
+            gp2_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'General Purpose (SSD gp3) volume storage (GiB)'
+        ]._add_current_usage(
+            gp3_gb,
             aws_type='AWS::EC2::Volume'
         )
         self.limits[
