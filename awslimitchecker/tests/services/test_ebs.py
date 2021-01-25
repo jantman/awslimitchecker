@@ -101,11 +101,17 @@ class Test_EbsService(object):
         assert piops_tb.limit_type == 'AWS::EC2::Volume'
         assert piops_tb.limit_subtype == 'io1'
         assert piops_tb.default_limit == 307200
-        gp_tb = limits['General Purpose (SSD) volume storage (GiB)']
+        gp2_tb = limits['General Purpose (SSD gp2) volume storage (GiB)']
         assert gp_tb.limit_type == 'AWS::EC2::Volume'
         assert gp_tb.limit_subtype == 'gp2'
         assert gp_tb.default_limit == 307200
         assert gp_tb.ta_limit_name == 'General Purpose SSD (gp2) ' \
+                                      'volume storage (GiB)'
+        gp_tb = limits['General Purpose (SSD gp3) volume storage (GiB)']
+        assert gp_tb.limit_type == 'AWS::EC2::Volume'
+        assert gp_tb.limit_subtype == 'gp3'
+        assert gp_tb.default_limit == 307200
+        assert gp_tb.ta_limit_name == 'General Purpose SSD (gp3) ' \
                                       'volume storage (GiB)'
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
@@ -165,7 +171,9 @@ class Test_EbsService(object):
                               '(GiB)'].get_current_usage()) == 1
         assert cls.limits['Provisioned IOPS (SSD) storage '
                           '(GiB)'].get_current_usage()[0].get_value() == 500
-        assert len(cls.limits['General Purpose (SSD) volume storage '
+        assert len(cls.limits['General Purpose (SSD gp2) volume storage '
+                              '(GiB)'].get_current_usage()) == 1
+        assert len(cls.limits['General Purpose (SSD gp3) volume storage '
                               '(GiB)'].get_current_usage()) == 1
         assert cls.limits['General Purpose (SSD) volume storage '
                           '(GiB)'].get_current_usage()[0].get_value() == 45
