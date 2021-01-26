@@ -192,7 +192,7 @@ class EBS(object):
             {
                 'VolumeId': 'vol-3',
                 'Size': 10,
-                'VolumeType': 'gp2',
+                'VolumeType': 'gp3',
                 'Iops': 30,
             },
             # 30G general purpose SSD gp3, 90 IOPS
