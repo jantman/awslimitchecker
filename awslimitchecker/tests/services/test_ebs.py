@@ -173,10 +173,12 @@ class Test_EbsService(object):
                           '(GiB)'].get_current_usage()[0].get_value() == 500
         assert len(cls.limits['General Purpose (SSD gp2) volume storage '
                               '(GiB)'].get_current_usage()) == 1
+        assert cls.limits['General Purpose (SSD gp2) volume storage '
+                          '(GiB)'].get_current_usage()[0].get_value() == 45
         assert len(cls.limits['General Purpose (SSD gp3) volume storage '
                               '(GiB)'].get_current_usage()) == 1
-        assert cls.limits['General Purpose (SSD) volume storage '
-                          '(GiB)'].get_current_usage()[0].get_value() == 45
+        assert cls.limits['General Purpose (SSD gp3) volume storage '
+                          '(GiB)'].get_current_usage()[0].get_value() == 40
         assert len(cls.limits['Magnetic volume storage '
                               '(GiB)'].get_current_usage()) == 1
         assert cls.limits['Magnetic volume storage '
