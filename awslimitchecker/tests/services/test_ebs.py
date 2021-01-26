@@ -92,7 +92,7 @@ class Test_EbsService(object):
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
             assert limits[x].service == cls
-        assert len(limits) == 8
+        assert len(limits) == 9
         piops = limits['Provisioned IOPS']
         assert piops.limit_type == 'AWS::EC2::Volume'
         assert piops.limit_subtype == 'io1'
