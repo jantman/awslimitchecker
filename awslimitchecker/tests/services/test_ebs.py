@@ -106,13 +106,13 @@ class Test_EbsService(object):
         assert gp2_tb.limit_subtype == 'gp2'
         assert gp2_tb.default_limit == 307200
         assert gp2_tb.ta_limit_name == 'General Purpose SSD (gp2) ' \
-                                      'volume storage (GiB)'
+                                       'volume storage (GiB)'
         gp3_tb = limits['General Purpose (SSD gp3) volume storage (GiB)']
         assert gp3_tb.limit_type == 'AWS::EC2::Volume'
         assert gp3_tb.limit_subtype == 'gp3'
         assert gp3_tb.default_limit == 307200
         assert gp3_tb.ta_limit_name == 'General Purpose SSD (gp3) ' \
-                                      'volume storage (GiB)'
+                                       'volume storage (GiB)'
         mag_tb = limits['Magnetic volume storage (GiB)']
         assert mag_tb.limit_type == 'AWS::EC2::Volume'
         assert mag_tb.limit_subtype == 'standard'
