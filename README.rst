@@ -108,6 +108,8 @@ Requirements
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.4.6 and its dependency `botocore <https://botocore.readthedocs.io/en/latest/>`_ >= 1.6.0.
 
+Alternatively, awslimitchecker may be installed through `conda <https://docs.conda.io/en/latest/>`_ with ``conda install -c conda-forge awslimitchecker``. This will automatically install the required dependencies as well.
+
 Installation and Usage
 -----------------------
 
