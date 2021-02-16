@@ -103,7 +103,7 @@ Once activated, ``awslimitchecker`` can then be installed with
     conda install awslimitchecker
 
 We recommend installing awslimitchecker into a separate
-`conda environment<https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#>`_
+`conda environment <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#>`_
 .
 
 Version Specification
