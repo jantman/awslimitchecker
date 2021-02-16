@@ -25,6 +25,10 @@ awslimitchecker
    :alt: gitter.im chat
    :target: https://gitter.im/awslimitchecker/Lobby
 
+.. image:: https://img.shields.io/conda/v/conda-forge/awslimitchecker
+   :alt: Conda
+   :target: https://anaconda.org/conda-forge/awslimitchecker
+
 Master:
 
 .. image:: https://api.travis-ci.com/jantman/awslimitchecker.svg?branch=master
