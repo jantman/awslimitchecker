@@ -169,6 +169,20 @@ class EBS(object):
                 'VolumeType': 'io1',
                 'Iops': 300,
             },
+            # 400G PIOPS, 700 IOPS
+            {
+                'VolumeId': 'vol-5',
+                'Size': 400,
+                'VolumeType': 'io2',
+                'Iops': 700,
+            },
+            # 100G PIOPS, 300 IOPS
+            {
+                'VolumeId': 'vol-6',
+                'Size': 100,
+                'VolumeType': 'io2',
+                'Iops': 300,
+            },
             # othertype
             {
                 'VolumeId': 'vol-7',

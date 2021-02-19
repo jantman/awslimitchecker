@@ -92,15 +92,23 @@ class Test_EbsService(object):
             assert isinstance(limits[x], AwsLimit)
             assert x == limits[x].name
             assert limits[x].service == cls
-        assert len(limits) == 9
-        piops = limits['Provisioned IOPS']
-        assert piops.limit_type == 'AWS::EC2::Volume'
-        assert piops.limit_subtype == 'io1'
-        assert piops.default_limit == 200000
-        piops_tb = limits['Provisioned IOPS (SSD) storage (GiB)']
-        assert piops_tb.limit_type == 'AWS::EC2::Volume'
-        assert piops_tb.limit_subtype == 'io1'
-        assert piops_tb.default_limit == 307200
+        assert len(limits) == 11
+        piops_io1 = limits['Provisioned IOPS (io1)']
+        assert piops_io1.limit_type == 'AWS::EC2::Volume'
+        assert piops_io1.limit_subtype == 'io1'
+        assert piops_io1.default_limit == 300000
+        piops_io1_tb = limits['Provisioned IOPS SSD (io1) storage (GiB)']
+        assert piops_io1_tb.limit_type == 'AWS::EC2::Volume'
+        assert piops_io1_tb.limit_subtype == 'io1'
+        assert piops_io1_tb.default_limit == 307200
+        piops_io2 = limits['Provisioned IOPS (io2)']
+        assert piops_io2.limit_type == 'AWS::EC2::Volume'
+        assert piops_io2.limit_subtype == 'io2'
+        assert piops_io2.default_limit == 100000
+        piops_io2_tb = limits['Provisioned IOPS SSD (io2) storage (GiB)']
+        assert piops_io2_tb.limit_type == 'AWS::EC2::Volume'
+        assert piops_io2_tb.limit_subtype == 'io2'
+        assert piops_io2_tb.default_limit == 20480
         gp2_tb = limits['General Purpose (SSD gp2) volume storage (GiB)']
         assert gp2_tb.limit_type == 'AWS::EC2::Volume'
         assert gp2_tb.limit_subtype == 'gp2'
@@ -164,12 +172,21 @@ class Test_EbsService(object):
                 "ERROR - unknown volume type '%s' for volume "
                 "%s; not counting", 'othertype', 'vol-7')
         ]
-        assert len(cls.limits['Provisioned IOPS'].get_current_usage()) == 1
-        assert cls.limits['Provisioned IOPS'
+        assert len(cls.limits['Provisioned IOPS (io1)'
+                              ''].get_current_usage()) == 1
+        assert cls.limits['Provisioned IOPS (io1)'
                           ''].get_current_usage()[0].get_value() == 1000
-        assert len(cls.limits['Provisioned IOPS (SSD) storage '
+        assert len(cls.limits['Provisioned IOPS SSD (io1) storage '
                               '(GiB)'].get_current_usage()) == 1
-        assert cls.limits['Provisioned IOPS (SSD) storage '
+        assert cls.limits['Provisioned IOPS SSD (io1) storage '
+                          '(GiB)'].get_current_usage()[0].get_value() == 500
+        assert len(cls.limits['Provisioned IOPS (io2)'
+                              ''].get_current_usage()) == 1
+        assert cls.limits['Provisioned IOPS (io2)'
+                          ''].get_current_usage()[0].get_value() == 1000
+        assert len(cls.limits['Provisioned IOPS SSD (io2) storage '
+                              '(GiB)'].get_current_usage()) == 1
+        assert cls.limits['Provisioned IOPS SSD (io2) storage '
                           '(GiB)'].get_current_usage()[0].get_value() == 500
         assert len(cls.limits['General Purpose (SSD gp2) volume storage '
                               '(GiB)'].get_current_usage()) == 1
