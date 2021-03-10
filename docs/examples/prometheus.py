@@ -2,7 +2,6 @@ import logging
 import time
 import os
 
-from string import maketrans
 from awslimitchecker.checker import AwsLimitChecker
 from prometheus_client import start_http_server, Summary, Gauge
 
@@ -12,7 +11,7 @@ REQUEST_TIME = Summary(
                         'Time spent querying aws for limits'
                     )
 gauges = {}
-trantab = maketrans(' -.', '___')
+trantab = str.maketrans(' -.', '___')
 
 
 def main():
@@ -26,7 +25,7 @@ def main():
         checkers[region] = AwsLimitChecker(region=region)
 
     start_http_server(port)
-    for region, checker in checkers.iteritems():
+    for region, checker in checkers.items():
         update(checker, region)
         time.sleep(interval)
 
