@@ -76,3 +76,4 @@ results/
 dev/terraform.tfstate
 man/
 share/
+pyvenv.cfg
