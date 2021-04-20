@@ -9,7 +9,8 @@ Changelog
 IMPORTANT - Breaking Changes
 ++++++++++++++++++++++++++++
 
-* Foo.
+* This release **removes** the EBS ``General Purpose (SSD) volume storage (GiB)`` limit in favor of ``General Purpose (SSD gp2) volume storage (GiB)`` and ``General Purpose (SSD gp3) volume storage (GiB)`` limits, to account for the new gp3 volume type and corresponding AWS service limits.
+* This release **removes** the EBS ``Provisioned IOPS`` and ``Provisioned IOPS (SSD) storage (GiB)`` limits in favor of ``Provisioned IOPS (io1)`` and ``Provisioned IOPS (io2)``, and ``Provisioned IOPS SSD (io1) storage (GiB)`` and ``Provisioned IOPS SSD (io2) storage (GiB)``, respectively, to account for the new ``io2`` EBS volume type and corresponding AWS service limtits.
 
 IMPORTANT - Seeking New Maintainer
 ++++++++++++++++++++++++++++++++++
@@ -19,6 +20,13 @@ As I commented in `Issue #500 <https://github.com/jantman/awslimitchecker/issues
 All Changes
 +++++++++++
 
+* `PR #519 <https://github.com/jantman/awslimitchecker/pull/519>`__ - Add support for ``gp3`` EBS volume type. Thanks to `spockNinja <https://github.com/spockNinja>`__ for this contribution!
+* `Issue #514 <https://github.com/jantman/awslimitchecker/issues/514>`__ / `PR #517 <https://github.com/jantman/awslimitchecker/pull/517>`__ - Fix EKS Fargate profile usage check exception (``KeyError: 'labels'``). Thanks to `jwu2 <https://github.com/jwu2>`__ for first reporting this issue and `sebasrp <https://github.com/sebasrp>`__ for the fix!
+* `Issue #520 <https://github.com/jantman/awslimitchecker/issues/520>`__ / `PR #522 <https://github.com/jantman/awslimitchecker/pull/522>`__ - Add awslimitchecker to `conda-forge <https://github.com/conda-forge/awslimitchecker-feedstock>`__ so it can be installed via `Conda <https://conda.io/>`__. Thanks to `BastianZim <https://github.com/BastianZim>`__ for this.
+* `PR #525 <https://github.com/jantman/awslimitchecker/pull/525>`_ - Fix Prometheus example in docs, thanks to `felixkrohn <https://github.com/felixkrohn>`__.
+* `PR #526 <https://github.com/jantman/awslimitchecker/pull/526>`__ - Fix possible ``KeyError: 'LaunchSpecifications'`` in EC2 service. Thanks to `nitrocode <https://github.com/nitrocode>`__ for this.
+* `PR #528 <https://github.com/jantman/awslimitchecker/pull/528>`_ - Update ECS default limits. Thanks to `arturpriz <https://github.com/arturpriz>`__ for this contribution.
+* `PR #523 <https://github.com/jantman/awslimitchecker/pull/523>`_ - Add support for io2 type EBS volumes. Thanks to `andyjp <https://github.com/andyjp>`__ for this contribution.
 * Add tox and TravisCI support for testing against Python 3.9; bump the ``docker``, ``docs``, and ``integration3`` tox environments from 3.8 to 3.9.
 * Bump the base Docker image from Python 3.8 to 3.9.
 
