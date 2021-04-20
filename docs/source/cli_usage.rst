@@ -461,8 +461,6 @@ threshold only, and another has crossed the critical threshold):
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=5, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) WARNING: 4
 
-
-
 .. _cli_usage.threshold_overrides:
 
 Set Custom Thresholds
@@ -481,8 +479,6 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
    RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
    S3/Buckets                                             (limit 100) CRITICAL: 946
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=5, us-east-1c= (...)
-
-
 
 You can also set custom thresholds on a per-limit basis using the
 ``--threshold-override-json`` CLI option, which accepts the path to a JSON file
@@ -530,16 +526,14 @@ Using a command like:
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-override-json=s3://bucketname/path/overrides.json
-   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some_app_name_here=5
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some_app_name (...)
    DynamoDB/Tables Per Region                             (limit 256) CRITICAL: 554
-   EC2/Rules per VPC security group                       (limit 50) CRITICAL: sg-aaaaaaaa=49, sg-bbbbb (...)
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-cccccccc=726, vpc-c (...)
+   EC2/Rules per VPC security group                       (limit 50) CRITICAL: sg-cccccccc=49, sg-eeeee (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-dddddddd=726, vpc-c (...)
    (...)
    RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
    S3/Buckets                                             (limit 100) CRITICAL: 946
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=5, us-east-1c= (...)
-
-
 
 .. _cli_usage.metrics:
 

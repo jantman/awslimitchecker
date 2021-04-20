@@ -160,6 +160,10 @@ class Test_EksService(object):
                 clusterName=ANY,
                 fargateProfileName=ANY
             ),
+            call.describe_fargate_profile(
+                clusterName=ANY,
+                fargateProfileName=ANY
+            ),
         ]
         assert len(cls.limits[clusters_limit_key].get_current_usage()) == 1
         assert cls.limits[clusters_limit_key].get_current_usage()[
@@ -191,10 +195,10 @@ class Test_EksService(object):
         assert cls.limits[fargate_profiles_limit_key].get_current_usage()[
             0].get_value() == 1
         assert cls.limits[fargate_profiles_limit_key].get_current_usage()[
-            1].get_value() == 2
+            1].get_value() == 3
 
         assert len(cls.limits[
-            selectors_limit_key].get_current_usage()) == 3
+            selectors_limit_key].get_current_usage()) == 4
         assert cls.limits[selectors_limit_key].get_current_usage()[
             0].get_value() == 1
         assert cls.limits[selectors_limit_key].get_current_usage()[

@@ -85,6 +85,27 @@ can be whatever you want):
     source limitchecker/bin/activate
     pip install awslimitchecker
 
+Alternatively, you may also install awslimitchecker through
+`conda <https://docs.conda.io/en/latest/>`_
+using the
+`conda-forge <https://conda-forge.org>`_
+channel.
+This can be achieved by adding ``conda-forge`` to your channels with
+
+.. code-block:: bash
+
+    conda config --add channels conda-forge
+
+Once activated, ``awslimitchecker`` can then be installed with
+
+.. code-block:: bash
+
+    conda install awslimitchecker
+
+We recommend installing awslimitchecker into a separate
+`conda environment <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#>`_
+.
+
 Version Specification
 +++++++++++++++++++++
 
