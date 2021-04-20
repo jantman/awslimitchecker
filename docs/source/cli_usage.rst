@@ -24,10 +24,9 @@ use as a Nagios-compatible plugin).
 .. code-block:: console
 
    (venv)$ awslimitchecker --help
-   usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
-                          [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
-                          [-s] [-l] [--list-defaults] [-L LIMIT]
-                          [--limit-override-json LIMIT_OVERRIDE_JSON]
+   usage: awslimitchecker [-h] [-S [SERVICE ...]] [--skip-service SKIP_SERVICE]
+                          [--skip-check SKIP_CHECK] [-s] [-l] [--list-defaults]
+                          [-L LIMIT] [--limit-override-json LIMIT_OVERRIDE_JSON]
                           [--threshold-override-json THRESHOLD_OVERRIDE_JSON]
                           [-u] [--iam-policy] [-W WARNING_THRESHOLD]
                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
@@ -50,7 +49,7 @@ use as a Nagios-compatible plugin).
    <http://awslimitchecker.readthedocs.org/>
    optional arguments:
      -h, --help            show this help message and exit
-     -S [SERVICE [SERVICE ...]], --service [SERVICE [SERVICE ...]]
+     -S [SERVICE ...], --service [SERVICE ...]
                            perform action for only the specified service name;
                            see -s|--list-services for valid names
      --skip-service SKIP_SERVICE

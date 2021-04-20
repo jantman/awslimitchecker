@@ -130,12 +130,15 @@ Limit                                           Trusted Advisor Quotas   API    
 =============================================== =============== ======== ======= ======
 Active snapshots                                                |check|          100000
 Active volumes                                                                   5000  
-Cold (HDD) volume storage (GiB)                                 |check|          307200
-General Purpose (SSD) volume storage (GiB)      |check|         |check|          307200
-Magnetic volume storage (GiB)                   |check|         |check|          307200
-Provisioned IOPS                                |check|         |check|          200000
-Provisioned IOPS (SSD) storage (GiB)            |check|         |check|          307200
-Throughput Optimized (HDD) volume storage (GiB)                 |check|          307200
+Cold (HDD) volume storage (GiB)                                                  307200
+General Purpose (SSD gp2) volume storage (GiB)                  |check|          307200
+General Purpose (SSD gp3) volume storage (GiB)                  |check|          307200
+Magnetic volume storage (GiB)                                                    307200
+Provisioned IOPS (io1)                                                           300000
+Provisioned IOPS (io2)                                                           100000
+Provisioned IOPS SSD (io1) storage (GiB)                                         307200
+Provisioned IOPS SSD (io2) storage (GiB)                                         20480 
+Throughput Optimized (HDD) volume storage (GiB)                                  307200
 =============================================== =============== ======== ======= ======
 
 .. _limits.EC2:
@@ -499,10 +502,10 @@ Limit                            Trusted Advisor Quotas   API     Default
 ================================ =============== ======== ======= =====
 Clusters                                                          10000
 Container Instances per Cluster                                   2000 
-Fargate On-Demand resource count                                  500  
-Fargate Spot resource count                                       500  
-Services per Cluster                                              2000 
-Tasks per service                                                 2000 
+Fargate On-Demand resource count                                  1000 
+Fargate Spot resource count                                       1000 
+Services per Cluster                                              5000 
+Tasks per service                                                 5000 
 ================================ =============== ======== ======= =====
 
 .. _limits.EFS:
@@ -602,13 +605,13 @@ IAM
 ====================== =============== ======== ======= =====
 Limit                  Trusted Advisor Quotas   API     Default
 ====================== =============== ======== ======= =====
-Groups                 |check|         |check|  |check| 300  
-Instance profiles      |check|         |check|  |check| 1000 
-Policies               |check|         |check|  |check| 1500 
+Groups                                 |check|  |check| 300  
+Instance profiles                      |check|  |check| 1000 
+Policies                               |check|  |check| 1500 
 Policy Versions In Use                          |check| 10000
-Roles                  |check|         |check|  |check| 1000 
-Server certificates    |check|         |check|  |check| 20   
-Users                  |check|         |check|  |check| 5000 
+Roles                                  |check|  |check| 1000 
+Server certificates                    |check|  |check| 20   
+Users                                  |check|  |check| 5000 
 ====================== =============== ======== ======= =====
 
 .. _limits.Kinesis:
