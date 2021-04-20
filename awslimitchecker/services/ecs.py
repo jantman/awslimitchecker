@@ -187,7 +187,7 @@ class _EcsService(_AwsService):
         limits['Services per Cluster'] = AwsLimit(
             'Services per Cluster',
             self,
-            2000,
+            5000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::Service'
@@ -195,7 +195,7 @@ class _EcsService(_AwsService):
         limits['Tasks per service'] = AwsLimit(
             'Tasks per service',
             self,
-            2000,
+            5000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
@@ -204,7 +204,7 @@ class _EcsService(_AwsService):
         limits['Fargate On-Demand resource count'] = AwsLimit(
             'Fargate On-Demand resource count',
             self,
-            500,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
@@ -213,7 +213,7 @@ class _EcsService(_AwsService):
         limits['Fargate Spot resource count'] = AwsLimit(
             'Fargate Spot resource count',
             self,
-            500,
+            1000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
