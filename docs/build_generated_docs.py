@@ -167,7 +167,7 @@ def limits_for_ec2():
     regions still use the old per-instance-type limits. Please see the sections
     for either :ref:`limits.ec2-standard` or :ref:`limits.ec2-nonvcpu` for
     details.
-    
+
     """)
     limit_info += '.. _limits.ec2-standard:\n\n'
     limit_info += "EC2 - Standard Regions\n"
@@ -180,10 +180,10 @@ def limits_for_ec2():
     (On-Demand, Reserved, etc.). The value that awslimitchecker reports
     for Running On-Demand Instances current usage will *not* match the
     number of instances you see in the Console or API.
-    
+
     **Important:** The limits for **Running On-Demand Instances** are now
     measured in vCPU count per instance family, not instance count per instance
-    type. 
+    type.
     """) + "\n"
     limit_info += "\n"
     limit_info += format_limits_for_service(
@@ -299,9 +299,6 @@ def build_runner_examples():
             '--limit="AutoScaling/Launch configurations"=456',
             '-l',
         ],
-        'check_thresholds': ['awslimitchecker', '--no-color'],
-        'check_thresholds_custom': ['awslimitchecker', '-W', '97',
-                                    '--critical=98', '--no-color'],
         'iam_policy': ['awslimitchecker', '--iam-policy'],
         'list_metrics': ['awslimitchecker', '--list-metrics-providers'],
         'list_alerts': ['awslimitchecker', '--list-alert-providers'],

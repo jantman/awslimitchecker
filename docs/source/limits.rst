@@ -167,26 +167,26 @@ number of instances you see in the Console or API.
 
 **Important:** The limits for **Running On-Demand Instances** are now
 measured in vCPU count per instance family, not instance count per instance
-type. 
+type.
 
 
 ==================================================================== =============== ======== ======= ====
 Limit                                                                Trusted Advisor Quotas   API     Default
 ==================================================================== =============== ======== ======= ====
-Elastic IP addresses (EIPs)                                          |check|         |check|  |check| 5   
+Elastic IP addresses (EIPs)                                                                   |check| 5   
 Max active spot fleets per region                                                                     1000
 Max launch specifications per spot fleet                                                              50  
 Max spot instance requests per region                                                                 20  
 Max target capacity for all spot fleets in region                                                     5000
 Max target capacity per spot fleet                                                                    3000
-Rules per VPC security group                                                                          60  
+Rules per VPC security group                                                         |check|          60  
 Running On-Demand All F instances                                                    |check|          128 
 Running On-Demand All G instances                                                    |check|          128 
 Running On-Demand All P instances                                                    |check|          128 
 Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances                 |check|          1152
 Running On-Demand All X instances                                                    |check|          128 
-Security groups per VPC                                                                               500 
-VPC Elastic IP addresses (EIPs)                                      |check|         |check|  |check| 5   
+VPC Elastic IP addresses (EIPs)                                                               |check| 5   
+VPC security groups per Region                                                       |check|          2500
 VPC security groups per elastic network interface                                             |check| 5   
 ==================================================================== =============== ======== ======= ====
 
@@ -516,6 +516,24 @@ Limit        Trusted Advisor Quotas   API     Default
 File systems                 |check|          1000
 ============ =============== ======== ======= ====
 
+.. _limits.EKS:
+
+EKS
+----
+
+============================================== =============== ======== ======= ===
+Limit                                          Trusted Advisor Quotas   API     Default
+============================================== =============== ======== ======= ===
+Clusters                                                       |check|          100
+Control plane security groups per cluster                      |check|          4  
+Fargate profiles per cluster                                   |check|          10 
+Label pairs per Fargate profile selector                       |check|          5  
+Managed node groups per cluster                                |check|          30 
+Nodes per managed node group                                   |check|          100
+Public endpoint access CIDR ranges per cluster                 |check|          40 
+Selectors per Fargate profile                                  |check|          5  
+============================================== =============== ======== ======= ===
+
 .. _limits.ELB:
 
 ELB
@@ -544,11 +562,11 @@ ElastiCache
 ======================== =============== ======== ======= ===
 Limit                    Trusted Advisor Quotas   API     Default
 ======================== =============== ======== ======= ===
-Nodes                                                     100
+Nodes                                                     300
 Nodes per Cluster                                         20 
-Parameter Groups                                          20 
+Parameter Groups                                          150
 Security Groups                                           50 
-Subnet Groups                                             50 
+Subnet Groups                                             150
 Subnets per subnet group                                  20 
 ======================== =============== ======== ======= ===
 
@@ -593,6 +611,17 @@ Server certificates    |check|         |check|  |check| 20
 Users                  |check|         |check|  |check| 5000 
 ====================== =============== ======== ======= =====
 
+.. _limits.Kinesis:
+
+Kinesis
+--------
+
+================= =============== ======== ======= ===
+Limit             Trusted Advisor Quotas   API     Default
+================= =============== ======== ======= ===
+Shards per Region                 |check|  |check| 500
+================= =============== ======== ======= ===
+
 .. _limits.Lambda:
 
 Lambda
@@ -614,25 +643,29 @@ Unreserved Concurrent Executions                               |check| 1000
 RDS
 ----
 
-============================ =============== ======== ======= ======
-Limit                        Trusted Advisor Quotas   API     Default
-============================ =============== ======== ======= ======
-DB Cluster Parameter Groups  |check|         |check|  |check| 50    
-DB Clusters                  |check|         |check|  |check| 40    
-DB instances                 |check|         |check|  |check| 40    
-DB parameter groups          |check|         |check|  |check| 50    
-DB security groups           |check|         |check|  |check| 25    
-DB snapshots per user                        |check|  |check| 100   
-Event Subscriptions          |check|         |check|  |check| 20    
-Max auths per security group |check|         |check|  |check| 20    
-Option Groups                                |check|  |check| 20    
-Read replicas per master     |check|         |check|  |check| 5     
-Reserved Instances                           |check|  |check| 40    
-Storage quota (GB)           |check|         |check|  |check| 100000
-Subnet Groups                |check|         |check|  |check| 50    
-Subnets per Subnet Group     |check|         |check|  |check| 20    
-VPC Security Groups                                           5     
-============================ =============== ======== ======= ======
+=============================== =============== ======== ======= ======
+Limit                           Trusted Advisor Quotas   API     Default
+=============================== =============== ======== ======= ======
+Custom Endpoints Per DB Cluster                          |check| 5     
+DB Cluster Parameter Groups                     |check|  |check| 50    
+DB Cluster Roles                                         |check| 5     
+DB Clusters                                     |check|  |check| 40    
+DB Instance Roles                                        |check| 5     
+DB instances                                    |check|  |check| 40    
+DB parameter groups                             |check|  |check| 50    
+DB security groups                              |check|  |check| 25    
+DB snapshots per user                                    |check| 100   
+Event Subscriptions                             |check|  |check| 20    
+Manual Cluster Snapshots                                 |check| 100   
+Max auths per security group                    |check|  |check| 20    
+Option Groups                                   |check|  |check| 20    
+Read replicas per master                        |check|  |check| 5     
+Reserved Instances                              |check|  |check| 40    
+Storage quota (GB)                              |check|  |check| 100000
+Subnet Groups                                   |check|  |check| 50    
+Subnets per Subnet Group                        |check|  |check| 20    
+VPC Security Groups                                              5     
+=============================== =============== ======== ======= ======
 
 .. _limits.Redshift:
 
@@ -661,7 +694,7 @@ zone. As such, each zone may have a different limit value.
 Limit                            Trusted Advisor Quotas   API     Default
 ================================ =============== ======== ======= =====
 Record sets per hosted zone                               |check| 10000
-VPC associations per hosted zone                          |check| 100  
+VPC associations per hosted zone                                  100  
 ================================ =============== ======== ======= =====
 
 .. _limits.S3:
@@ -683,7 +716,7 @@ SES
 =================== =============== ======== ======= ===
 Limit               Trusted Advisor Quotas   API     Default
 =================== =============== ======== ======= ===
-Daily sending quota |check|                  |check| 200
+Daily sending quota                          |check| 200
 =================== =============== ======== ======= ===
 
 .. _limits.VPC:
@@ -691,20 +724,20 @@ Daily sending quota |check|                  |check| 200
 VPC
 ----
 
-============================= =============== ======== ======= ===
+============================= =============== ======== ======= ====
 Limit                         Trusted Advisor Quotas   API     Default
-============================= =============== ======== ======= ===
-Entries per route table                                        50 
-Internet gateways             |check|         |check|          5  
-NAT Gateways per AZ                                            5  
-Network ACLs per VPC                                           200
-Network interfaces per Region                          |check| 350
-Route tables per VPC                                           200
-Rules per network ACL                                          20 
-Subnets per VPC                                                200
-VPCs                          |check|         |check|          5  
-Virtual private gateways                                       5  
-============================= =============== ======== ======= ===
+============================= =============== ======== ======= ====
+Entries per route table                       |check|          50  
+Internet gateways                             |check|          5   
+NAT Gateways per AZ                           |check|          5   
+Network ACLs per VPC                          |check|          200 
+Network interfaces per Region                 |check|          5000
+Route tables per VPC                          |check|          200 
+Rules per network ACL                         |check|          20  
+Subnets per VPC                               |check|          200 
+VPCs                                          |check|          5   
+Virtual private gateways                                       5   
+============================= =============== ======== ======= ====
 
 
 

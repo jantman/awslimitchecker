@@ -106,7 +106,7 @@ class InitialChecks(BaseStep):
             for line in fh.readlines():
                 line = line.strip()
                 if (
-                    line == '------------------' and
+                    line == '-' * len(expected) and
                     last_line == expected
                 ):
                     have_ver = True
