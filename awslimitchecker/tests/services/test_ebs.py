@@ -211,7 +211,7 @@ class Test_EbsService(object):
 
         assert len(cls.limits['Active volumes'].get_current_usage()) == 1
         assert cls.limits['Active volumes'
-                          ''].get_current_usage()[0].get_value() == 11
+                          ''].get_current_usage()[0].get_value() == 13
         assert mock_conn.mock_calls == []
         assert mock_paginate.mock_calls == [
             call(
