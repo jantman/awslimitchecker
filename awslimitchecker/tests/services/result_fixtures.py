@@ -141,14 +141,14 @@ class EBS(object):
                 'VolumeType': 'standard',
                 'Iops': None,
             },
-            # 15G general purpose SSD, 45 IOPS
+            # 15G general purpose SSD gp2, 45 IOPS
             {
                 'VolumeId': 'vol-3',
                 'Size': 15,
                 'VolumeType': 'gp2',
                 'Iops': 45,
             },
-            # 30G general purpose SSD, 90 IOPS
+            # 30G general purpose SSD gp2, 90 IOPS
             {
                 'VolumeId': 'vol-4',
                 'Size': 30,
@@ -187,6 +187,20 @@ class EBS(object):
                 'Size': 1000,
                 'VolumeType': 'sc1',
                 'Iops': None,
+            },
+            # 10G general purpose SSD gp3, 30 IOPS
+            {
+                'VolumeId': 'vol-3',
+                'Size': 10,
+                'VolumeType': 'gp3',
+                'Iops': 30,
+            },
+            # 30G general purpose SSD gp3, 90 IOPS
+            {
+                'VolumeId': 'vol-4',
+                'Size': 30,
+                'VolumeType': 'gp3',
+                'Iops': 90,
             },
         ]
     }
@@ -4618,6 +4632,7 @@ class EKS(object):
             'fargateProfileNames': [
                 'bar',
                 'baz',
+                'profile_no_labels',
             ]
         }
     ]
@@ -4680,6 +4695,16 @@ class EKS(object):
                             'key2': 'value2',
                             'key3': 'value3',
                         }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'profile_no_labels',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
                     },
                 ],
             }
