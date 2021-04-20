@@ -139,7 +139,9 @@ class _EksService(_AwsService):
                     aws_type='AWS::EKS::FargateProfile')
 
                 for selector in profile_selectors:
-                    label_pairs = selector['labels']
+                    label_pairs = selector.get('labels')
+                    if label_pairs is None:
+                        continue
                     self.limits[
                         'Label pairs per Fargate profile selector'
                     ]._add_current_usage(
