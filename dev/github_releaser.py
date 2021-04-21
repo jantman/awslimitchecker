@@ -52,7 +52,7 @@ from distutils.spawn import find_executable
 try:
     from github3 import login
 except ImportError:
-    raise SystemExit('ERROR: you must "pip install github3.py==1.0.0a4"')
+    raise SystemExit('ERROR: you must "pip install \'github3.py>=1.3.0\'"')
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ class GithubReleaser(object):
         md = self._get_markdown()
         print("Markdown:\n%s\n" % md)
         try:
-            raw_input(
+            input(
                 'Does this look right? <Enter> to continue or Ctrl+C otherwise'
             )
         except Exception:
