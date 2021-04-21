@@ -98,7 +98,7 @@ class TravisChecker(object):
                 'Please export your GitHub PAT as the "GITHUB_TOKEN" env var'
             )
         logger.debug('Connecting to TravisCI API...')
-        self._travis = TravisPy.github_auth(token, uri=PRIVATE)
+        self._travis = TravisPy.github_auth(token)
 
     def commit_latest_build_status(self, commit):
         """
