@@ -65,6 +65,9 @@ include/
 *.iml
 .idea/
 
+# VSCode
+.vscode
+
 dev/.terraform
 dev/iam_policy.json
 dev/terraform.tfstate.backup
@@ -73,3 +76,4 @@ results/
 dev/terraform.tfstate
 man/
 share/
+pyvenv.cfg

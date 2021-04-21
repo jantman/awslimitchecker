@@ -1,6 +1,35 @@
 Changelog
 =========
 
+.. _changelog.11_0_0:
+
+11.0.0 (2021-04-20)
+-------------------
+
+IMPORTANT - Breaking Changes
+++++++++++++++++++++++++++++
+
+* This release **removes** the EBS ``General Purpose (SSD) volume storage (GiB)`` limit in favor of ``General Purpose (SSD gp2) volume storage (GiB)`` and ``General Purpose (SSD gp3) volume storage (GiB)`` limits, to account for the new gp3 volume type and corresponding AWS service limits.
+* This release **removes** the EBS ``Provisioned IOPS`` and ``Provisioned IOPS (SSD) storage (GiB)`` limits in favor of ``Provisioned IOPS (io1)`` and ``Provisioned IOPS (io2)``, and ``Provisioned IOPS SSD (io1) storage (GiB)`` and ``Provisioned IOPS SSD (io2) storage (GiB)``, respectively, to account for the new ``io2`` EBS volume type and corresponding AWS service limtits.
+
+IMPORTANT - Seeking New Maintainer
+++++++++++++++++++++++++++++++++++
+
+As I commented in `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__, I'm looking for someone to share (and perhaps take over) maintenance of this project. awslimitchecker is, and has always been, a personal-time-only project for me; the only time I've done work on it during my day job is when my employer was experiencing an issue or requested a specific feature. Because of a variety of issues, including changing personal interests and my employer relying on this project much less (following an AWS account restructuring that largely avoids service limits), I've been spending much less time on this project than it deserves. As a result, I'm looking for someone to help with maintenance... at the very least, helping review PRs and get them to a merge-able state. If you're interested, please comment on `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__ or contact me directly. While I am *incredibly* flattered by the offers I've received for sponsorship, paid support, or other financial incentive, I'd ask that anyone who's willing to make that commitment instead dedicate a few hours to working on issues or PRs. I, for my part, will make a concerted effort to quickly merge and release any PRs that meet all of the :ref:`development.pull_request_guidelines`.
+
+All Changes
++++++++++++
+
+* `PR #519 <https://github.com/jantman/awslimitchecker/pull/519>`__ - Add support for ``gp3`` EBS volume type. Thanks to `spockNinja <https://github.com/spockNinja>`__ for this contribution!
+* `Issue #514 <https://github.com/jantman/awslimitchecker/issues/514>`__ / `PR #517 <https://github.com/jantman/awslimitchecker/pull/517>`__ - Fix EKS Fargate profile usage check exception (``KeyError: 'labels'``). Thanks to `jwu2 <https://github.com/jwu2>`__ for first reporting this issue and `sebasrp <https://github.com/sebasrp>`__ for the fix!
+* `Issue #520 <https://github.com/jantman/awslimitchecker/issues/520>`__ / `PR #522 <https://github.com/jantman/awslimitchecker/pull/522>`__ - Add awslimitchecker to `conda-forge <https://github.com/conda-forge/awslimitchecker-feedstock>`__ so it can be installed via `Conda <https://conda.io/>`__. Thanks to `BastianZim <https://github.com/BastianZim>`__ for this.
+* `PR #525 <https://github.com/jantman/awslimitchecker/pull/525>`_ - Fix Prometheus example in docs, thanks to `felixkrohn <https://github.com/felixkrohn>`__.
+* `PR #526 <https://github.com/jantman/awslimitchecker/pull/526>`__ - Fix possible ``KeyError: 'LaunchSpecifications'`` in EC2 service. Thanks to `nitrocode <https://github.com/nitrocode>`__ for this.
+* `PR #528 <https://github.com/jantman/awslimitchecker/pull/528>`_ - Update ECS default limits. Thanks to `arturpriz <https://github.com/arturpriz>`__ for this contribution.
+* `PR #523 <https://github.com/jantman/awslimitchecker/pull/523>`_ - Add support for io2 type EBS volumes. Thanks to `andyjp <https://github.com/andyjp>`__ for this contribution.
+* Add tox and TravisCI support for testing against Python 3.9; bump the ``docker``, ``docs``, and ``integration3`` tox environments from 3.8 to 3.9.
+* Bump the base Docker image from Python 3.8 to 3.9.
+
 .. _changelog.10_0_0:
 
 10.0.0 (2020-12-07)

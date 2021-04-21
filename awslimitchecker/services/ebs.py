@@ -81,9 +81,12 @@ class _EbsService(_AwsService):
     def _find_usage_ebs(self):
         """calculate usage for all EBS limits and update Limits"""
         vols = 0
-        piops = 0
-        piops_gb = 0
-        gp_gb = 0
+        piops_io1 = 0
+        piops_io1_gb = 0
+        piops_io2 = 0
+        piops_io2_gb = 0
+        gp2_gb = 0
+        gp3_gb = 0
         mag_gb = 0
         st_gb = 0
         sc_gb = 0
@@ -97,10 +100,15 @@ class _EbsService(_AwsService):
         for vol in results['Volumes']:
             vols += 1
             if vol['VolumeType'] == 'io1':
-                piops_gb += vol['Size']
-                piops += vol['Iops']
+                piops_io1_gb += vol['Size']
+                piops_io1 += vol['Iops']
+            elif vol['VolumeType'] == 'io2':
+                piops_io2_gb += vol['Size']
+                piops_io2 += vol['Iops']
             elif vol['VolumeType'] == 'gp2':
-                gp_gb += vol['Size']
+                gp2_gb += vol['Size']
+            elif vol['VolumeType'] == 'gp3':
+                gp3_gb += vol['Size']
             elif vol['VolumeType'] == 'standard':
                 mag_gb += vol['Size']
             elif vol['VolumeType'] == 'st1':
@@ -113,20 +121,36 @@ class _EbsService(_AwsService):
                     " not counting",
                     vol['VolumeType'],
                     vol['VolumeId'])
-        self.limits['Provisioned IOPS']._add_current_usage(
-            piops,
+        self.limits['Provisioned IOPS (io1)']._add_current_usage(
+            piops_io1,
             aws_type='AWS::EC2::Volume'
         )
         self.limits[
-            'Provisioned IOPS (SSD) storage (GiB)'
+            'Provisioned IOPS SSD (io1) storage (GiB)'
         ]._add_current_usage(
-            piops_gb,
+            piops_io1_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits['Provisioned IOPS (io2)']._add_current_usage(
+            piops_io2,
             aws_type='AWS::EC2::Volume'
         )
         self.limits[
-            'General Purpose (SSD) volume storage (GiB)'
+            'Provisioned IOPS SSD (io2) storage (GiB)'
         ]._add_current_usage(
-            gp_gb,
+            piops_io2_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'General Purpose (SSD gp2) volume storage (GiB)'
+        ]._add_current_usage(
+            gp2_gb,
+            aws_type='AWS::EC2::Volume'
+        )
+        self.limits[
+            'General Purpose (SSD gp3) volume storage (GiB)'
+        ]._add_current_usage(
+            gp3_gb,
             aws_type='AWS::EC2::Volume'
         )
         self.limits[
@@ -191,18 +215,18 @@ class _EbsService(_AwsService):
         :rtype: dict
         """
         limits = {}
-        limits['Provisioned IOPS'] = AwsLimit(
-            'Provisioned IOPS',
+        limits['Provisioned IOPS (io1)'] = AwsLimit(
+            'Provisioned IOPS (io1)',
             self,
-            200000,
+            300000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
-            quotas_name='Provisioned IOPS'
+            quotas_name='Provisioned IOPS (io1)'
         )
-        limits['Provisioned IOPS (SSD) storage (GiB)'] = AwsLimit(
-            'Provisioned IOPS (SSD) storage (GiB)',
+        limits['Provisioned IOPS SSD (io1) storage (GiB)'] = AwsLimit(
+            'Provisioned IOPS SSD (io1) storage (GiB)',
             self,
             307200,
             self.warning_threshold,
@@ -213,8 +237,30 @@ class _EbsService(_AwsService):
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
-        limits['General Purpose (SSD) volume storage (GiB)'] = AwsLimit(
-            'General Purpose (SSD) volume storage (GiB)',
+        limits['Provisioned IOPS (io2)'] = AwsLimit(
+            'Provisioned IOPS (io2)',
+            self,
+            100000,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='io2',
+            quotas_name='Provisioned IOPS (io2)'
+        )
+        limits['Provisioned IOPS SSD (io2) storage (GiB)'] = AwsLimit(
+            'Provisioned IOPS SSD (io2) storage (GiB)',
+            self,
+            20480,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='io2',
+            quotas_name='Provisioned IOPS SSD (io2) volume storage',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
+        )
+        limits['General Purpose (SSD gp2) volume storage (GiB)'] = AwsLimit(
+            'General Purpose (SSD gp2) volume storage (GiB)',
             self,
             307200,
             self.warning_threshold,
@@ -222,7 +268,20 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='gp2',
             ta_limit_name='General Purpose SSD (gp2) volume storage (GiB)',
-            quotas_name='General Purpose (SSD) volume storage',
+            quotas_name='Storage for General Purpose SSD (gp2) volumes',
+            quotas_unit='GiB',
+            quotas_unit_converter=convert_TiB_to_GiB
+        )
+        limits['General Purpose (SSD gp3) volume storage (GiB)'] = AwsLimit(
+            'General Purpose (SSD gp3) volume storage (GiB)',
+            self,
+            307200,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::Volume',
+            limit_subtype='gp3',
+            ta_limit_name='General Purpose SSD (gp3) volume storage (GiB)',
+            quotas_name='Storage for General Purpose SSD (gp3) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )

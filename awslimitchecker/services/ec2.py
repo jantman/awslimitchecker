@@ -249,7 +249,7 @@ class _Ec2Service(_AwsService):
             active_fleets += 1
             cap = fleet['SpotFleetRequestConfig']['TargetCapacity']
             launch_specs = len(
-                fleet['SpotFleetRequestConfig']['LaunchSpecifications'])
+                fleet['SpotFleetRequestConfig'].get('LaunchSpecifications', []))
             total_target_cap += cap
             lim_cap_per_fleet._add_current_usage(
                 cap, resource_id=_id, aws_type='AWS::EC2::SpotFleetRequest')
