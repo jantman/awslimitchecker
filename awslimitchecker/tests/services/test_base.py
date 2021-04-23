@@ -527,8 +527,8 @@ class TestGetCloudwatchUsageLatest:
                         }
                     }
                 ],
-                StartTime=datetime(2020, 9, 22, 11, 26, 00),
-                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                StartTime=datetime(2020, 9, 22, 11, 25, 00),
+                EndTime=datetime(2020, 9, 22, 12, 25, 00),
                 ScanBy='TimestampDescending',
                 MaxDatapoints=1
             )
@@ -596,8 +596,8 @@ class TestGetCloudwatchUsageLatest:
                         }
                     }
                 ],
-                StartTime=datetime(2020, 9, 22, 11, 26, 00),
-                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                StartTime=datetime(2020, 9, 22, 11, 25, 00),
+                EndTime=datetime(2020, 9, 22, 12, 25, 00),
                 ScanBy='TimestampDescending',
                 MaxDatapoints=1
             )
@@ -652,8 +652,8 @@ class TestGetCloudwatchUsageLatest:
                         }
                     }
                 ],
-                StartTime=datetime(2020, 9, 22, 11, 26, 00),
-                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                StartTime=datetime(2020, 9, 22, 11, 25, 00),
+                EndTime=datetime(2020, 9, 22, 12, 25, 00),
                 ScanBy='TimestampDescending',
                 MaxDatapoints=1
             )
@@ -711,8 +711,8 @@ class TestGetCloudwatchUsageLatest:
                         }
                     }
                 ],
-                StartTime=datetime(2020, 9, 22, 11, 26, 00),
-                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                StartTime=datetime(2020, 9, 22, 11, 25, 00),
+                EndTime=datetime(2020, 9, 22, 12, 25, 00),
                 ScanBy='TimestampDescending',
                 MaxDatapoints=1
             )
@@ -778,8 +778,8 @@ class TestGetCloudwatchUsageLatest:
                         }
                     }
                 ],
-                StartTime=datetime(2020, 9, 22, 11, 26, 00),
-                EndTime=datetime(2020, 9, 22, 12, 26, 00),
+                StartTime=datetime(2020, 9, 22, 11, 25, 00),
+                EndTime=datetime(2020, 9, 22, 12, 25, 00),
                 ScanBy='TimestampDescending',
                 MaxDatapoints=1
             )

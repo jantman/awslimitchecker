@@ -353,8 +353,8 @@ class _AwsService(Connectable):
                     }
                 }
             ],
-            StartTime=datetime.utcnow() - timedelta(hours=1),
-            EndTime=datetime.utcnow(),
+            StartTime=datetime.utcnow() - timedelta(hours=1, minutes=1),
+            EndTime=datetime.utcnow() - timedelta(minutes=1),
             ScanBy='TimestampDescending',
             MaxDatapoints=1
         )
