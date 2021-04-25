@@ -145,9 +145,9 @@ class Test_Connectable(object):
                 with patch('%s.boto3.client' % pbm) as mock_client:
                     with patch('%s.Config' % pbm) as m_conf:
                         with patch(
-                            '%s._max_retries_config' % pb, new_callable=PropertyMock
+                            '%s._max_retries_config' % pb, new_callable=PropertyMock    # noqa - ignore line length
                         ) as m_mrc:
-                            m_conf.return_value.merge.return_value = mock_botoconfig
+                            m_conf.return_value.merge.return_value = mock_botoconfig    # noqa - ignore line length
                             mock_client.return_value = mock_conn
                             cls.connect()
         assert mock_kwargs.mock_calls == [call()]
@@ -188,9 +188,9 @@ class Test_Connectable(object):
                 with patch('%s.boto3.client' % pbm) as mock_client:
                     with patch('%s.Config' % pbm) as m_conf:
                         with patch(
-                            '%s._max_retries_config' % pb, new_callable=PropertyMock
+                            '%s._max_retries_config' % pb, new_callable=PropertyMock    # noqa - ignore line length
                         ) as m_mrc:
-                            m_conf.return_value.merge.return_value = mock_botoconfig
+                            m_conf.return_value.merge.return_value = mock_botoconfig    # noqa - ignore line length
                             m_mrc.return_value = mock_conf
                             mock_client.return_value = mock_conn
                             cls.connect()
@@ -314,7 +314,7 @@ class Test_Connectable(object):
                                 '%s._max_retries_config' % pb,
                                 new_callable=PropertyMock
                         ) as m_mrc:
-                            m_conf.return_value.merge.return_value = mock_botoconfig
+                            m_conf.return_value.merge.return_value = mock_botoconfig    # noqa - ignore line length
                             m_mrc.return_value = mock_conf
                             mock_resource.return_value = mock_conn
                             cls.connect_resource()
