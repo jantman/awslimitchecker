@@ -371,12 +371,72 @@ class VPC(object):
             {
                 'NetworkAclId': 'acl-2',
                 'VpcId': 'vpc-1',
-                'Entries': [1],
+                'Entries': [
+                    {
+                        'Egress': True,
+                        'CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'CidrBlock': 'string'
+                    },
+                ],
             },
             {
                 'NetworkAclId': 'acl-3',
                 'VpcId': 'vpc-2',
-                'Entries': [1, 2, 3, 4, 5],
+                'Entries': [
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    }
+                ],
+            },
+            {
+                'NetworkAclId': 'acl-4',
+                'VpcId': 'vpc-1',
+                'Entries': [
+                    {
+                        'Egress': False,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'Ipv6CidrBlock': 'string'
+                    }
+                ],
             },
         ]
     }
