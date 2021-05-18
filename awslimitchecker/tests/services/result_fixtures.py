@@ -1363,6 +1363,862 @@ class ElasticBeanstalk(object):
     }
 
 
+class CloudFront(object):
+    test_find_usage_distributions_empty = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 0
+        }
+    }
+    test_find_usage_distributions = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-000',
+                    'Aliases': {
+                        'Quantity': 3,
+                        'Items': [
+                            'string1', 'string2', 'string3'
+                        ]
+                    },
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {},
+                    'CacheBehaviors': {
+                        'Quantity': 4,
+                        'Items': [
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'Origins': {
+                        'Quantity': 3,
+                        'Items': [
+                            {'Id': 'string'},
+                            {'Id': 'string'},
+                            {'Id': 'string'},
+                        ]
+                    },
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-003',
+                    'OriginGroups': {
+                        'Quantity': 1,
+                        'Items': [
+                            {
+                                'Id': 'string',
+                                'FailoverCriteria': {},
+                                'Members': {}
+                            },
+                        ]
+                    },
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-100',
+                    'ARN': 'string',
+                    'Status': 'string',
+                    'LastModifiedTime': datetime(2015, 1, 1),
+                    'DomainName': 'string',
+                    'Aliases': {
+                        'Quantity': 2,
+                        'Items': [
+                            'string1',
+                            'string2',
+                        ]
+                    },
+                    'Origins': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'Id': 'string',
+                                'DomainName': 'string',
+                                'OriginPath': 'string',
+                                'CustomHeaders': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'HeaderName': 'string',
+                                            'HeaderValue': 'string'
+                                        },
+                                    ]
+                                },
+                                'S3OriginConfig': {
+                                    'OriginAccessIdentity': 'string'
+                                },
+                                'CustomOriginConfig': {
+                                    'HTTPPort': 123,
+                                    'HTTPSPort': 123,
+                                    'OriginProtocolPolicy': 'https-only',
+                                    'OriginSslProtocols': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'SSLv3', 'TLSv1', 'TLSv1.1',
+                                            'TLSv1.2',
+                                        ]
+                                    },
+                                    'OriginReadTimeout': 123,
+                                    'OriginKeepaliveTimeout': 123
+                                },
+                                'ConnectionAttempts': 123,
+                                'ConnectionTimeout': 123,
+                                'OriginShield': {
+                                    'Enabled': False,
+                                    'OriginShieldRegion': 'string'
+                                }
+                            },
+                        ]
+                    },
+                    'OriginGroups': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'Id': 'string',
+                                'FailoverCriteria': {
+                                    'StatusCodes': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            123,
+                                        ]
+                                    }
+                                },
+                                'Members': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'OriginId': 'string'
+                                        },
+                                    ]
+                                }
+                            },
+                        ]
+                    },
+                    'DefaultCacheBehavior': {
+                        'TargetOriginId': 'string',
+                        'TrustedSigners': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': [
+                                'string',
+                            ]
+                        },
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': [
+                                'string',
+                            ]
+                        },
+                        'ViewerProtocolPolicy': 'https-only',
+                        'AllowedMethods': {
+                            'Quantity': 123,
+                            'Items': [
+                                'GET', 'HEAD', 'POST', 'PUT', 'PATCH',
+                                'OPTIONS', 'DELETE',
+                            ],
+                            'CachedMethods': {
+                                'Quantity': 123,
+                                'Items': [
+                                    'GET', 'HEAD', 'POST', 'PUT', 'PATCH',
+                                    'OPTIONS', 'DELETE',
+                                ]
+                            }
+                        },
+                        'SmoothStreaming': False,
+                        'Compress': False,
+                        'LambdaFunctionAssociations': {
+                            'Quantity': 123,
+                            'Items': [
+                                {
+                                    'LambdaFunctionARN': 'string',
+                                    'EventType': 'viewer-request',
+                                    'IncludeBody': True
+                                },
+                            ]
+                        },
+                        'FunctionAssociations': {
+                            'Quantity': 123,
+                            'Items': [
+                                {
+                                    'FunctionARN': 'string',
+                                    'EventType': 'viewer-request'
+                                },
+                            ]
+                        },
+                        'FieldLevelEncryptionId': 'string',
+                        'RealtimeLogConfigArn': 'string',
+                        'CachePolicyId': 'string',
+                        'OriginRequestPolicyId': 'string',
+                        'ForwardedValues': {
+                            'QueryString': True,
+                            'Cookies': {
+                                'Forward': 'whitelist',
+                                'WhitelistedNames': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'string',
+                                    ]
+                                }
+                            },
+                            'Headers': {
+                                'Quantity': 123,
+                                'Items': [
+                                    'string',
+                                ]
+                            },
+                            'QueryStringCacheKeys': {
+                                'Quantity': 123,
+                                'Items': [
+                                    'string',
+                                ]
+                            }
+                        },
+                        'MinTTL': 123,
+                        'DefaultTTL': 123,
+                        'MaxTTL': 123
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'string',
+                                'TargetOriginId': 'string',
+                                'TrustedSigners': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'string',
+                                    ]
+                                },
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'string',
+                                    ]
+                                },
+                                'ViewerProtocolPolicy': 'https-only',
+                                'AllowedMethods': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'GET', 'HEAD', 'POST', 'PUT', 'PATCH',
+                                        'OPTIONS', 'DELETE',
+                                    ],
+                                    'CachedMethods': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'GET', 'HEAD', 'POST', 'PUT',
+                                            'PATCH', 'OPTIONS', 'DELETE',
+                                        ]
+                                    }
+                                },
+                                'SmoothStreaming': False,
+                                'Compress': False,
+                                'LambdaFunctionAssociations': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'LambdaFunctionARN': 'string',
+                                            'EventType': 'viewer-request',
+                                            'IncludeBody': True
+                                        },
+                                    ]
+                                },
+                                'FunctionAssociations': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'FunctionARN': 'string',
+                                            'EventType': 'viewer-request'
+                                        },
+                                    ]
+                                },
+                                'FieldLevelEncryptionId': 'string',
+                                'RealtimeLogConfigArn': 'string',
+                                'CachePolicyId': 'string',
+                                'OriginRequestPolicyId': 'string',
+                                'ForwardedValues': {
+                                    'QueryString': True,
+                                    'Cookies': {
+                                        'Forward': 'whitelist',
+                                        'WhitelistedNames': {
+                                            'Quantity': 123,
+                                            'Items': [
+                                                'string',
+                                            ]
+                                        }
+                                    },
+                                    'Headers': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'string',
+                                        ]
+                                    },
+                                    'QueryStringCacheKeys': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'string',
+                                        ]
+                                    }
+                                },
+                                'MinTTL': 123,
+                                'DefaultTTL': 123,
+                                'MaxTTL': 123
+                            },
+                        ]
+                    },
+                    'CustomErrorResponses': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'ErrorCode': 123,
+                                'ResponsePagePath': 'string',
+                                'ResponseCode': 'string',
+                                'ErrorCachingMinTTL': 123
+                            },
+                        ]
+                    },
+                    'Comment': 'string',
+                    'PriceClass': 'PriceClass_100',
+                    'Enabled': True,
+                    'ViewerCertificate': {
+                        'CloudFrontDefaultCertificate': True,
+                        'IAMCertificateId': 'string',
+                        'ACMCertificateArn': 'string',
+                        'SSLSupportMethod': 'sni-only',
+                        'MinimumProtocolVersion': 'SSLv3',
+                        'Certificate': 'string',
+                        'CertificateSource': 'cloudfront'
+                    },
+                    'Restrictions': {
+                        'GeoRestriction': {
+                            'RestrictionType': 'whitelist',
+                            'Quantity': 123,
+                            'Items': [
+                                'string',
+                            ]
+                        }
+                    },
+                    'WebACLId': 'string',
+                    'HttpVersion': 'http1.1',
+                    'IsIPV6Enabled': False,
+                    'AliasICPRecordals': [
+                        {
+                            'CNAME': 'string',
+                            'ICPRecordalStatus': 'APPROVED'
+                        },
+                    ]
+                },
+            ]
+        }
+    }
+
+    test_find_usage_distributions_keygroups = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 2,
+                            'Items': [
+                                'A', 'B',
+                            ]
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 2,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 0,
+                                    'Items': []
+                                }
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 3,
+                                    'Items': ['A', 'B', 'C']
+                                },
+                            }
+                        ]
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_keygroups = {
+        'KeyGroupList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'KeyGroup': {
+                        'Id': 'kg01',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'KeyGroupConfig': {
+                            'Name': 'string',
+                            'Items': ['key01', 'key02', 'key03', 'key04'],
+                            'Comment': 'string'
+                        }
+                    }
+                },
+                {
+                    'KeyGroup': {
+                        'Id': 'kg02',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'KeyGroupConfig': {}
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_keygroups_empty = {
+        'KeyGroupList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 0,
+        }
+    }
+
+    test_find_usage_origin_access_identities = {
+        'CloudFrontOriginAccessIdentityList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 3,
+            'Items': [
+                {'Id': 'oai01', 'S3CanonicalUserId': 'string', 'Comment': ''},
+                {'Id': 'oai02', 'S3CanonicalUserId': 'string', 'Comment': ''},
+                {'Id': 'oai03', 'S3CanonicalUserId': 'string', 'Comment': ''}
+            ]
+        }
+    }
+
+    test_find_usage_origin_access_identities_empty = {
+        'CloudFrontOriginAccessIdentityList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 0,
+        }
+    }
+
+    test_find_usage_cache_policies = {
+        'CachePolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 4,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP01', 'CachePolicyConfig': {}}
+                },
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP02', 'CachePolicyConfig': {}}
+                },
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP03', 'CachePolicyConfig': {}}
+                },
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP04', 'CachePolicyConfig': {}}
+                },
+            ]
+        }
+    }
+
+    test_find_usage_cache_policies_empty = {
+        'CachePolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 0
+        }
+    }
+
+    test_find_usage_cache_policies_config = {
+        'CachePolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 123,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {
+                        'Id': 'CP01',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'CachePolicyConfig': {
+                            'Comment': 'string',
+                            'Name': 'string',
+                            'DefaultTTL': 123,
+                            'MaxTTL': 123,
+                            'MinTTL': 123,
+                            'ParametersInCacheKeyAndForwardedToOrigin': {
+                                'EnableAcceptEncodingGzip': True,
+                                'EnableAcceptEncodingBrotli': True,
+                                'HeadersConfig': {
+                                    'HeaderBehavior': 'whitelist',
+                                    'Headers': {
+                                        'Quantity': 3,
+                                        'Items': ['a', 'b', 'c']
+                                    },
+                                },
+                                'CookiesConfig': {
+                                    'CookieBehavior': 'whitelist',
+                                    'Cookies': {
+                                        'Quantity': 2,
+                                        'Items': ['1', '2']
+                                    }
+                                },
+                                'QueryStringsConfig': {
+                                    'QueryStringBehavior': 'allExcept',
+                                    'QueryStrings': {
+                                        'Quantity': 1,
+                                        'Items': ['string']
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_origin_request_policies = {
+        'OriginRequestPolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'OriginRequestPolicy': {
+                        'Id': 'ORP01', 'OriginRequestPolicyConfig': {}
+                    }
+                },
+                {
+                    'Type': 'custom',
+                    'OriginRequestPolicy': {
+                        'Id': 'ORP02', 'OriginRequestPolicyConfig': {}
+                    }
+                }
+            ]
+        }
+    }
+
+    test_find_usage_origin_request_policies_empty = {
+        'OriginRequestPolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 0
+        }
+    }
+
+    test_find_usage_origin_request_policies_config = {
+        'OriginRequestPolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 123,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'OriginRequestPolicy': {
+                        'Id': 'ORP01',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'OriginRequestPolicyConfig': {
+                            'Comment': 'string',
+                            'Name': 'string',
+                            'HeadersConfig': {
+                                'HeaderBehavior': 'whitelist',
+                                'Headers': {
+                                    'Quantity': 3,
+                                    'Items': ['a', 'b', 'c']
+                                },
+                            },
+                            'CookiesConfig': {
+                                'CookieBehavior': 'whitelist',
+                                'Cookies': {
+                                    'Quantity': 2,
+                                    'Items': ['1', '2']
+                                }
+                            },
+                            'QueryStringsConfig': {
+                                'QueryStringBehavior': 'allExcept',
+                                'QueryStrings': {
+                                    'Quantity': 1,
+                                    'Items': ['string']
+                                }
+                            }
+                        }
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_per_cache_behavior = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 1,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-100',
+                    'DefaultCacheBehavior': {
+                        'ForwardedValues': {
+                            'QueryString': True,
+                            'Cookies': {
+                                'Forward': 'whitelist',
+                                'WhitelistedNames': {
+                                    'Quantity': 3,
+                                    'Items': ['a', 'b', 'c']
+                                }
+                            },
+                            'Headers': {
+                                'Quantity': 4,
+                                'Items': ['a', 'b', 'c', 'd']
+                            },
+                            'QueryStringCacheKeys': {
+                                'Quantity': 5,
+                                'Items': ['a', 'b', 'c', 'd', 'e']
+                            }
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 1,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'ForwardedValues': {
+                                    'QueryString': True,
+                                    'Cookies': {
+                                        'Forward': 'whitelist',
+                                        'WhitelistedNames': {
+                                            'Quantity': 1,
+                                            'Items': ['']
+                                        }
+                                    },
+                                    'Headers': {
+                                        'Quantity': 2,
+                                        'Items': ['', '']
+                                    },
+                                    'QueryStringCacheKeys': {
+                                        'Quantity': 3,
+                                        'Items': ['', '', '']
+                                    }
+                                }
+                            },
+                        ]
+                    },
+                },
+            ]
+        }
+    }
+
+    test_find_usage_distributions_per_key_group = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': ['A', 'B', 'C']
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': ['A', 'B']
+                                },
+                            },
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': ['A']
+                                },
+                            },
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'DefaultCacheBehavior': {
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': ['A']
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': []
+                                },
+                            },
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': []
+                                },
+                            },
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    test_find_usage_distributions_per_cache_policy = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'CachePolicyId': 'A',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'CachePolicyId': 'A',
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'CachePolicyId': 'B',
+                            },
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'DefaultCacheBehavior': {
+                        'CachePolicyId': 'D',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'CachePolicyId': 'A',
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'CachePolicyId': 'C',
+                            },
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    test_find_usage_distributions_per_origin_req_policy = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'OriginRequestPolicyId': 'A',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'OriginRequestPolicyId': 'A',
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'OriginRequestPolicyId': 'B',
+                            },
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'DefaultCacheBehavior': {
+                        'OriginRequestPolicyId': 'A',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'OriginRequestPolicyId': 'C',
+                            },
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+
 class ELB(object):
 
     test_find_usage = {

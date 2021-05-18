@@ -77,6 +77,40 @@ Limit  Trusted Advisor Quotas   API     Default
 Stacks |check|         |check|  |check| 200
 ====== =============== ======== ======= ===
 
+.. _limits.CloudFront:
+
+CloudFront
+-----------
+
+============================================================ =============== ======== ======= ===
+Limit                                                        Trusted Advisor Quotas   API     Default
+============================================================ =============== ======== ======= ===
+Alternate domain names (CNAMEs) per distribution                                              100
+Cache behaviors per distribution                                                              25 
+Cache policies per AWS account                                                                20 
+Cookies per cache policy                                                                      10 
+Cookies per origin request policy                                                             10 
+Distributions associated with a single key group                                              100
+Distributions associated with the same cache policy                                           100
+Distributions associated with the same origin request policy                                  100
+Distributions per AWS account                                                                 200
+Headers per cache policy                                                                      10 
+Headers per origin request policy                                                             10 
+Key groups associated with a single cache behavior                                            4  
+Key groups associated with a single distribution                                              4  
+Key groups per AWS account                                                                    10 
+Origin access identities per account                                                          100
+Origin groups per distribution                                                                10 
+Origin request policies per AWS account                                                       20 
+Origins per distribution                                                                      25 
+Public keys in a single key group                                                             5  
+Query strings per cache policy                                                                10 
+Query strings per origin request policy                                                       10 
+Whitelisted cookies per cache behavior                                                        10 
+Whitelisted headers per cache behavior                                                        10 
+Whitelisted query strings per cache behavior                                                  10 
+============================================================ =============== ======== ======= ===
+
 .. _limits.CloudTrail:
 
 CloudTrail
