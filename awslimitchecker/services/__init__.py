@@ -40,6 +40,8 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.apigateway import _ApigatewayService
 from awslimitchecker.services.autoscaling import _AutoscalingService
+from awslimitchecker.services.certificatemanager import \
+    _CertificatemanagerService
 from awslimitchecker.services.cloudformation import _CloudformationService
 from awslimitchecker.services.cloudtrail import _CloudTrailService
 from awslimitchecker.services.directoryservice import _DirectoryserviceService

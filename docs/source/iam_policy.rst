@@ -31,6 +31,7 @@ services that do not affect the results of this program.
       "Statement": [
         {
           "Action": [
+            "acm:ListCertificates",
             "apigateway:GET",
             "apigateway:HEAD",
             "apigateway:OPTIONS",

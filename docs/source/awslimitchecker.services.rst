@@ -16,6 +16,7 @@ Submodules
    awslimitchecker.services.apigateway
    awslimitchecker.services.autoscaling
    awslimitchecker.services.base
+   awslimitchecker.services.certificatemanager
    awslimitchecker.services.cloudformation
    awslimitchecker.services.cloudtrail
    awslimitchecker.services.directoryservice
