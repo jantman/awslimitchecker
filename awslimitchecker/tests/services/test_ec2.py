@@ -753,11 +753,11 @@ class TestRequiredIamPermissions(object):
             "ec2:DescribeSpotFleetInstances",
             "ec2:DescribeSpotFleetRequestHistory",
             "ec2:DescribeSpotFleetRequests",
-            "ec2:DescribeSpotInstanceRequests",
             "ec2:DescribeSpotPriceHistory",
             "ec2:DescribeSubnets",
             "ec2:DescribeVolumes",
             "ec2:DescribeVpcs",
+            "cloudwatch:GetMetricData",
         ]
 
 
@@ -923,7 +923,12 @@ class TestGetLimitsSpot(object):
         cls = _Ec2Service(21, 43, {}, None)
         limits = cls._get_limits_spot()
         expected = [
-            'Max spot instance requests per region',
+            'All F Spot Instance Requests',
+            'All G Spot Instance Requests',
+            'All Inf Spot Instance Requests',
+            'All P Spot Instance Requests',
+            'All X Spot Instance Requests',
+            'All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests',
             'Max active spot fleets per region',
             'Max launch specifications per spot fleet',
             'Max target capacity per spot fleet',
@@ -934,70 +939,66 @@ class TestGetLimitsSpot(object):
 
 class TestFindUsageSpotInstances(object):
 
-    def test_happy_path(self):
-        data = fixtures.test_find_usage_spot_instances
-        mock_conn = Mock()
-        mock_client_conn = Mock()
-        mock_client_conn.describe_spot_instance_requests.return_value = data
-        cls = _Ec2Service(21, 43, {}, None)
-        cls.resource_conn = mock_conn
-        cls.conn = mock_client_conn
-        with patch('awslimitchecker.services.ec2.logger') as mock_logger:
+    def test_find_usage_spot_instances(self):
+        def get_cw_usage(klass, dims, metric_name='ResourceCount', period=60):
+            dim_dict = {x['Name']: x['Value'] for x in dims}
+            if dim_dict['Class'] == 'F/Spot':
+                return 2.0
+            if dim_dict['Class'] == 'G/Spot':
+                return 3.0
+            if dim_dict['Class'] == 'Inf/Spot':
+                return 4.0
+            if dim_dict['Class'] == 'P/Spot':
+                return 5.0
+            if dim_dict['Class'] == 'X/Spot':
+                return 6.0
+            if dim_dict['Class'] == 'Standard/Spot':
+                return 7.0
+            return 0
+
+        with patch(
+            '%s._get_cloudwatch_usage_latest' % pb, autospec=True
+        ) as mock:
+            mock.side_effect = get_cw_usage
+            cls = _Ec2Service(21, 43, {}, None)
             cls._find_usage_spot_instances()
-        assert mock_conn.mock_calls == []
-        assert mock_client_conn.mock_calls == [
-            call.describe_spot_instance_requests()
-        ]
-        lim = cls.limits['Max spot instance requests per region']
-        usage = lim.get_current_usage()
+
+        usage = cls.limits['All F Spot Instance Requests']\
+            .get_current_usage()
         assert len(usage) == 1
-        assert usage[0].get_value() == 2
-        assert mock_logger.mock_calls == [
-            call.debug('Getting spot instance request usage'),
-            call.debug('NOT counting spot instance request %s state=%s',
-                       'reqID1', 'closed'),
-            call.debug('Counting spot instance request %s state=%s',
-                       'reqID2', 'active'),
-            call.debug('Counting spot instance request %s state=%s',
-                       'reqID3', 'open'),
-            call.debug('NOT counting spot instance request %s state=%s',
-                       'reqID4', 'failed')
-        ]
+        assert usage[0].get_value() == 2.0
+        assert usage[0].resource_id is None
 
-    def test_unsupported(self):
-        mock_client_conn = Mock()
-        err = botocore.exceptions.ClientError(
-            {'Error': {'Code': 'UnsupportedOperation'}},
-            'operation',
-        )
-        mock_client_conn.describe_spot_instance_requests.side_effect = err
-        cls = _Ec2Service(21, 43, {}, None)
-        cls.conn = mock_client_conn
-        cls._find_usage_spot_instances()
-        lim = cls.limits['Max spot instance requests per region']
-        usage = lim.get_current_usage()
-        assert len(usage) == 0
+        usage = cls.limits['All G Spot Instance Requests']\
+            .get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 3.0
+        assert usage[0].resource_id is None
 
-    def test_unknown_code(self):
-        mock_client_conn = Mock()
-        err = botocore.exceptions.ClientError(
-            {'Error': {'Code': 'SomeCode'}},
-            'operation',
-        )
-        mock_client_conn.describe_spot_instance_requests.side_effect = err
-        cls = _Ec2Service(21, 43, {}, None)
-        cls.conn = mock_client_conn
-        with pytest.raises(botocore.exceptions.ClientError):
-            cls._find_usage_spot_instances()
+        usage = cls.limits['All Inf Spot Instance Requests']\
+            .get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 4.0
+        assert usage[0].resource_id is None
 
-    def test_unknown_error(self):
-        mock_client_conn = Mock()
-        err = RuntimeError
-        mock_client_conn.describe_spot_instance_requests.side_effect = err
-        cls = _Ec2Service(21, 43, {}, None)
-        cls.conn = mock_client_conn
-        with pytest.raises(RuntimeError):
-            cls._find_usage_spot_instances()
+        usage = cls.limits['All P Spot Instance Requests']\
+            .get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 5.0
+        assert usage[0].resource_id is None
+
+        usage = cls.limits['All X Spot Instance Requests']\
+            .get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 6.0
+        assert usage[0].resource_id is None
+
+        usage = cls.limits[
+            'All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests'
+        ].get_current_usage()
+        assert len(usage) == 1
+        assert usage[0].get_value() == 7.0
+        assert usage[0].resource_id is None
 
 
 class TestFindUsageSpotFleets(object):

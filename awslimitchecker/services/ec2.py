@@ -104,6 +104,16 @@ class _Ec2Service(_AwsService):
         'u-24tb1.metal'
     ]
 
+    instance_family_to_spot_limit_name = {
+        'F': 'All F Spot Instance Requests',
+        'G': 'All G Spot Instance Requests',
+        'Inf': 'All Inf Spot Instance Requests',
+        'P': 'All P Spot Instance Requests',
+        'X': 'All X Spot Instance Requests',
+        'Standard': 'All Standard (A, C, D, H, I, M, R, T, Z)'
+                    ' Spot Instance Requests'
+    }
+
     def find_usage(self):
         """
         Determine the current usage for each limit of this service,
@@ -202,25 +212,20 @@ class _Ec2Service(_AwsService):
     def _find_usage_spot_instances(self):
         """calculate spot instance request usage and update Limits"""
         logger.debug('Getting spot instance request usage')
-        try:
-            res = self.conn.describe_spot_instance_requests()
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == 'UnsupportedOperation':
-                return
-            raise
-        count = 0
-        for req in res['SpotInstanceRequests']:
-            if req['State'] in ['open', 'active']:
-                count += 1
-                logger.debug('Counting spot instance request %s state=%s',
-                             req['SpotInstanceRequestId'], req['State'])
-            else:
-                logger.debug('NOT counting spot instance request %s state=%s',
-                             req['SpotInstanceRequestId'], req['State'])
-        self.limits['Max spot instance requests per region']._add_current_usage(
-            count,
-            aws_type='AWS::EC2::SpotInstanceRequest'
-        )
+        for key in self.instance_family_to_spot_limit_name.keys():
+            self.limits[
+                self.instance_family_to_spot_limit_name[key]
+            ]._add_current_usage(
+                self._get_cloudwatch_usage_latest(
+                    [
+                        {'Name': 'Type', 'Value': 'Resource'},
+                        {'Name': 'Resource', 'Value': 'vCPU'},
+                        {'Name': 'Service', 'Value': 'EC2'},
+                        {'Name': 'Class', 'Value': '{}/Spot'.format(key)},
+                    ],
+                    period=300
+                )
+            )
 
     def _find_usage_spot_fleets(self):
         """calculate spot fleet request usage and update Limits"""
@@ -595,13 +600,56 @@ class _Ec2Service(_AwsService):
         :rtype: dict
         """
         limits = {}
-        limits['Max spot instance requests per region'] = AwsLimit(
-            'Max spot instance requests per region',
+
+        limits['All F Spot Instance Requests'] = AwsLimit(
+            'All F Spot Instance Requests',
             self,
-            20,
+            128,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='Spot instance requests'
+            limit_subtype='F'
+        )
+        limits['All G Spot Instance Requests'] = AwsLimit(
+            'All G Spot Instance Requests',
+            self,
+            64,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_subtype='G'
+        )
+        limits['All Inf Spot Instance Requests'] = AwsLimit(
+            'All Inf Spot Instance Requests',
+            self,
+            64,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_subtype='Inf'
+        )
+        limits['All P Spot Instance Requests'] = AwsLimit(
+            'All P Spot Instance Requests',
+            self,
+            128,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_subtype='P'
+        )
+        limits['All X Spot Instance Requests'] = AwsLimit(
+            'All X Spot Instance Requests',
+            self,
+            128,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_subtype='X'
+        )
+        limits[
+            'All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests'
+        ] = AwsLimit(
+            'All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests',
+            self,
+            640,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_subtype='Standard'
         )
 
         limits['Max active spot fleets per region'] = AwsLimit(
@@ -806,11 +854,11 @@ class _Ec2Service(_AwsService):
             "ec2:DescribeSpotFleetInstances",
             "ec2:DescribeSpotFleetRequestHistory",
             "ec2:DescribeSpotFleetRequests",
-            "ec2:DescribeSpotInstanceRequests",
             "ec2:DescribeSpotPriceHistory",
             "ec2:DescribeSubnets",
             "ec2:DescribeVolumes",
             "ec2:DescribeVpcs",
+            "cloudwatch:GetMetricData"
         ]
 
     def _instance_types(self):

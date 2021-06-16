@@ -176,10 +176,15 @@ type.
 ==================================================================== =============== ======== ======= ====
 Limit                                                                Trusted Advisor Quotas   API     Default
 ==================================================================== =============== ======== ======= ====
+All F Spot Instance Requests                                                         |check|          128 
+All G Spot Instance Requests                                                         |check|          64  
+All Inf Spot Instance Requests                                                       |check|          64  
+All P Spot Instance Requests                                                         |check|          128 
+All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests                      |check|          640 
+All X Spot Instance Requests                                                         |check|          128 
 Elastic IP addresses (EIPs)                                                                   |check| 5   
 Max active spot fleets per region                                                                     1000
 Max launch specifications per spot fleet                                                              50  
-Max spot instance requests per region                                                                 20  
 Max target capacity for all spot fleets in region                                                     5000
 Max target capacity per spot fleet                                                                    3000
 Rules per VPC security group                                                         |check|          60  
