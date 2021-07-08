@@ -767,9 +767,10 @@ class TestFindUsageNetworkingSgs(object):
         mocks = fixtures.test_find_usage_networking_sgs
 
         mock_conn = Mock()
-        mock_conn.security_groups.all.return_value = mocks
+        mock_conn.security_groups.filter.return_value = mocks
 
         cls = _Ec2Service(21, 43, {}, None)
+        cls._current_account_id = "1234567890"
         cls.resource_conn = mock_conn
 
         with patch('awslimitchecker.services.ec2.logger') as mock_logger:
@@ -802,7 +803,7 @@ class TestFindUsageNetworkingSgs(object):
         # egress: IPv4 = 22; IPv6 = 29
         assert sorted_usage[2].get_value() == 29
         assert mock_conn.mock_calls == [
-            call.security_groups.all()
+            call.security_groups.filter(owner_id='1234567890')
         ]
 
 
@@ -895,7 +896,7 @@ class TestGetLimitsNetworking(object):
         ].quotas_service_code == 'ec2'
         assert limits[
             'VPC Elastic IP addresses (EIPs)'
-        ].quota_name == 'Number of EIPs - VPC EIPs'
+        ].quota_name == 'EC2-VPC Elastic IPs'
         assert limits[
             'VPC Elastic IP addresses (EIPs)'
         ].quotas_unit == 'None'
@@ -904,7 +905,7 @@ class TestGetLimitsNetworking(object):
         ].quotas_service_code == 'ec2'
         assert limits[
             'Elastic IP addresses (EIPs)'
-        ].quota_name == 'Elastic IP addresses for EC2-Classic'
+        ].quota_name == 'EC2-Classic Elastic IPs'
         assert limits[
             'Elastic IP addresses (EIPs)'
         ].quotas_unit == 'None'
