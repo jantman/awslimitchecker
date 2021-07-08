@@ -896,7 +896,7 @@ class TestGetLimitsNetworking(object):
         ].quotas_service_code == 'ec2'
         assert limits[
             'VPC Elastic IP addresses (EIPs)'
-        ].quota_name == 'Number of EIPs - VPC EIPs'
+        ].quota_name == 'EC2-VPC Elastic IPs'
         assert limits[
             'VPC Elastic IP addresses (EIPs)'
         ].quotas_unit == 'None'
@@ -905,7 +905,7 @@ class TestGetLimitsNetworking(object):
         ].quotas_service_code == 'ec2'
         assert limits[
             'Elastic IP addresses (EIPs)'
-        ].quota_name == 'Elastic IP addresses for EC2-Classic'
+        ].quota_name == 'EC2-Classic Elastic IPs'
         assert limits[
             'Elastic IP addresses (EIPs)'
         ].quotas_unit == 'None'
