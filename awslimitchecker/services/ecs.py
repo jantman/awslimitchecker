@@ -51,6 +51,7 @@ class _EcsService(_AwsService):
 
     service_name = 'ECS'
     api_name = 'ecs'  # AWS API name to connect to (boto3.client)
+    quotas_service_code = 'ecs'
 
     def find_usage(self):
         """
@@ -208,7 +209,9 @@ class _EcsService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
-            limit_subtype='Fargate'
+            limit_subtype='Fargate',
+            quotas_name='Fargate On-Demand resource count',
+            quotas_service_code='fargate'
         )
         limits['Fargate Spot resource count'] = AwsLimit(
             'Fargate Spot resource count',
@@ -217,7 +220,9 @@ class _EcsService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ECS::TaskDefinition',
-            limit_subtype='FargateSpot'
+            limit_subtype='FargateSpot',
+            quotas_name='Fargate Spot resource count',
+            quotas_service_code='fargate'
         )
         self.limits = limits
         return limits
