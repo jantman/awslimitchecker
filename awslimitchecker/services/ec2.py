@@ -643,7 +643,7 @@ class _Ec2Service(_AwsService):
         sg_count = 0
         rules_per_sg = defaultdict(int)
         for sg in self.resource_conn.security_groups.filter(
-            owner_id=self.current_account_id
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
         ):
             if sg.vpc_id is None:
                 continue
