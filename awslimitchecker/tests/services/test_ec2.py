@@ -803,7 +803,9 @@ class TestFindUsageNetworkingSgs(object):
         # egress: IPv4 = 22; IPv6 = 29
         assert sorted_usage[2].get_value() == 29
         assert mock_conn.mock_calls == [
-            call.security_groups.filter(owner_id='1234567890')
+            call.security_groups.filter(
+                Filters=[{'Name': 'owner-id', 'Values': ['1234567890']}]
+            )
         ]
 
 
