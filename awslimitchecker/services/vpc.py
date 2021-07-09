@@ -114,8 +114,21 @@ class _VpcService(_AwsService):
         )['NetworkAcls']:
             acls[acl['VpcId']] += 1
             # Rules per network ACL
+            egress_ipv4 = sum(map(
+                lambda x: x["Egress"] and "CidrBlock" in x, acl['Entries']
+            ))
+            ingress_ipv4 = sum(map(
+                lambda x: not x["Egress"] and "CidrBlock" in x, acl['Entries']
+            ))
+            egress_ipv6 = sum(map(
+                lambda x: x["Egress"] and "Ipv6CidrBlock" in x, acl['Entries']
+            ))
+            ingress_ipv6 = sum(map(
+                lambda x: not x["Egress"] and "Ipv6CidrBlock" in x,
+                acl['Entries']
+            ))
             self.limits['Rules per network ACL']._add_current_usage(
-                len(acl['Entries']),
+                max(egress_ipv4, ingress_ipv4, egress_ipv6, ingress_ipv6),
                 aws_type='AWS::EC2::NetworkAcl',
                 resource_id=acl['NetworkAclId']
             )
