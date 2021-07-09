@@ -113,7 +113,7 @@ class Connectable(object):
         if self.conn is not None:
             return
 
-        default_config = Config(retries={'mode': 'standard'})
+        default_config = Config(retries={'mode': 'adaptive'})
         kwargs = dict(self._boto3_connection_kwargs)
         kwargs['config'] = default_config
 
@@ -137,7 +137,7 @@ class Connectable(object):
         if self.resource_conn is not None:
             return
 
-        default_config = Config(retries={'mode': 'standard'})
+        default_config = Config(retries={'mode': 'adaptive'})
         kwargs = dict(self._boto3_connection_kwargs)
         kwargs['config'] = default_config
 
