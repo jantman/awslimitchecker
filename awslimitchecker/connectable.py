@@ -112,9 +112,13 @@ class Connectable(object):
         """
         if self.conn is not None:
             return
+
+        default_config = Config(retries={'mode': 'adaptive'})
         kwargs = dict(self._boto3_connection_kwargs)
+        kwargs['config'] = default_config
+
         if self._max_retries_config is not None:
-            kwargs['config'] = self._max_retries_config
+            kwargs['config'] = default_config.merge(self._max_retries_config)
         self.conn = boto3.client(self.api_name, **kwargs)
         logger.info("Connected to %s in region %s",
                     self.api_name, self.conn._client_config.region_name)
@@ -132,9 +136,14 @@ class Connectable(object):
         """
         if self.resource_conn is not None:
             return
+
+        default_config = Config(retries={'mode': 'adaptive'})
         kwargs = dict(self._boto3_connection_kwargs)
+        kwargs['config'] = default_config
+
         if self._max_retries_config is not None:
-            kwargs['config'] = self._max_retries_config
+            kwargs['config'] = default_config.merge(self._max_retries_config)
+
         self.resource_conn = boto3.resource(self.api_name, **kwargs)
         logger.info("Connected to %s (resource) in region %s", self.api_name,
                     self.resource_conn.meta.client._client_config.region_name)
