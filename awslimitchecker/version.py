@@ -47,7 +47,7 @@ try:
 except ImportError:
     logger.error("Unable to import versionfinder", exc_info=True)
 
-_VERSION_TUP = (11, 0, 0)
+_VERSION_TUP = (11, 1, 0)
 _VERSION = '.'.join([str(x) for x in _VERSION_TUP])
 _PROJECT_URL = 'https://github.com/jantman/awslimitchecker'
 
