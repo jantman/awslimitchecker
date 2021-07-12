@@ -604,7 +604,7 @@ class _Ec2Service(_AwsService):
         limits['All F Spot Instance Requests'] = AwsLimit(
             'All F Spot Instance Requests',
             self,
-            128,
+            11,
             self.warning_threshold,
             self.critical_threshold,
             limit_subtype='F'
@@ -612,7 +612,7 @@ class _Ec2Service(_AwsService):
         limits['All G Spot Instance Requests'] = AwsLimit(
             'All G Spot Instance Requests',
             self,
-            64,
+            11,
             self.warning_threshold,
             self.critical_threshold,
             limit_subtype='G'
@@ -628,7 +628,7 @@ class _Ec2Service(_AwsService):
         limits['All P Spot Instance Requests'] = AwsLimit(
             'All P Spot Instance Requests',
             self,
-            128,
+            16,
             self.warning_threshold,
             self.critical_threshold,
             limit_subtype='P'
@@ -636,7 +636,7 @@ class _Ec2Service(_AwsService):
         limits['All X Spot Instance Requests'] = AwsLimit(
             'All X Spot Instance Requests',
             self,
-            128,
+            21,
             self.warning_threshold,
             self.critical_threshold,
             limit_subtype='X'
@@ -646,7 +646,7 @@ class _Ec2Service(_AwsService):
         ] = AwsLimit(
             'All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests',
             self,
-            640,
+            1440,
             self.warning_threshold,
             self.critical_threshold,
             limit_subtype='Standard'
