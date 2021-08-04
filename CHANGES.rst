@@ -3,8 +3,21 @@ Changelog
 
 .. _changelog.12_0_0:
 
-11.1.0 (2021-07-10)
+12.0.0 (2021-08-04)
 -------------------
+
+IMPORTANT - Breaking Changes
+++++++++++++++++++++++++++++
+
+* This release **removes** the ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, in favor of six new vCPU-based limits: ``All F Spot Instance Requests``, ``All G Spot Instance Requests``, ``All Inf Spot Instance Requests``, ``All P Spot Instance Requests``,  ``All X Spot Instance Requests``, and ``All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests``.
+
+IMPORTANT - Seeking New Maintainer
+++++++++++++++++++++++++++++++++++
+
+As I commented in `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__, I'm looking for someone to share (and perhaps take over) maintenance of this project. awslimitchecker is, and has always been, a personal-time-only project for me; the only time I've done work on it during my day job is when my employer was experiencing an issue or requested a specific feature. Because of a variety of issues, including changing personal interests and my employer relying on this project much less (following an AWS account restructuring that largely avoids service limits), I've been spending much less time on this project than it deserves. As a result, I'm looking for someone to help with maintenance... at the very least, helping review PRs and get them to a merge-able state. If you're interested, please comment on `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__ or contact me directly. While I am *incredibly* flattered by the offers I've received for sponsorship, paid support, or other financial incentive, I'd ask that anyone who's willing to make that commitment instead dedicate a few hours to working on issues or PRs. I, for my part, will make a concerted effort to quickly merge and release any PRs that meet all of the :ref:`development.pull_request_guidelines`.
+
+All Changes
++++++++++++
 
 * `PR #532 <https://github.com/jantman/awslimitchecker/pull/532>`__ - Add Quotas Service support for ECS Fargate quotas. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
 * `PR #533 <https://github.com/jantman/awslimitchecker/pull/533>`__ - Fix Quotas Service quota names for EIPs. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
@@ -13,6 +26,7 @@ Changelog
 * `PR #536 <https://github.com/jantman/awslimitchecker/pull/536>`__ / Fixes `Issue #512 <https://github.com/jantman/awslimitchecker/issues/512>`__ - Fix CloudWatch metrics queries to get data from one minute ago, to fix bug where GetMetricData is not yet populated. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
 * `PR #543 <https://github.com/jantman/awslimitchecker/pull/543>`__ / Fixes `Issue #538 <https://github.com/jantman/awslimitchecker/issues/538>`__ - Fix issue with calculation of usage for EC2 Rules Per Network ACL. Thanks to `jwu2 <https://github.com/jwu2>`__ for this contribution.
 * `PR #537 <https://github.com/jantman/awslimitchecker/pull/537>`__ - Use boto3 adaptive retry mode. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #547 <https://github.com/jantman/awslimitchecker/pull/547>`__ / Fixes `Issue #502 <https://github.com/jantman/awslimitchecker/issues/502>`__ - Replace ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, with new vCPU-based spot instance requests limits. This also switches to using CloudWatch metric data to retrieve current usage. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
 
 .. _changelog.11_0_0:
 
