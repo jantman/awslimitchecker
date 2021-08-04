@@ -31,6 +31,7 @@ All Changes
 * `PR #547 <https://github.com/jantman/awslimitchecker/pull/547>`__ / Fixes `Issue #502 <https://github.com/jantman/awslimitchecker/issues/502>`__ - Replace ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, with new vCPU-based spot instance requests limits. This also switches to using CloudWatch metric data to retrieve current usage. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
 * `PR #546 <https://github.com/jantman/awslimitchecker/pull/546>`__ / Fixes `Issue #540 <https://github.com/jantman/awslimitchecker/issues/540>`__ - Add support for ACM (Certificate Manager) limits. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
 * `PR #545 <https://github.com/jantman/awslimitchecker/pull/545>`__ / Fixes `Issue #539 <https://github.com/jantman/awslimitchecker/issues/539>`__ - Add support for CloudFront limits. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
+* `Issue #551 <https://github.com/jantman/awslimitchecker/issues/551>`__ - Allow custom host for Datadog metric provider.
 
 .. _changelog.11_0_0:
 
