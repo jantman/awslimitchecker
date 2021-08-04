@@ -61,7 +61,6 @@ services that do not affect the results of this program.
             "ec2:DescribeSpotFleetInstances",
             "ec2:DescribeSpotFleetRequestHistory",
             "ec2:DescribeSpotFleetRequests",
-            "ec2:DescribeSpotInstanceRequests",
             "ec2:DescribeSpotPriceHistory",
             "ec2:DescribeSubnets",
             "ec2:DescribeVolumes",
