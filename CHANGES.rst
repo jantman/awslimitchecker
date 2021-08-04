@@ -22,8 +22,8 @@ All Changes
 +++++++++++
 
 * `PR #532 <https://github.com/jantman/awslimitchecker/pull/532>`__ - Add Quotas Service support for ECS Fargate quotas. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
-* `PR #533 <https://github.com/jantman/awslimitchecker/pull/533>`__ - Fix Quotas Service quota names for EIPs. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
-* `PR #534 <https://github.com/jantman/awslimitchecker/pull/534>`__ - Update Quotas Service quota names for EBS. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #533 <https://github.com/jantman/awslimitchecker/pull/533>`__ / Fixes `Issue #527 <https://github.com/jantman/awslimitchecker/issues/527>`__ - Fix Quotas Service quota names for EIPs. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #534 <https://github.com/jantman/awslimitchecker/pull/534>`__ / Fixes `Issue #521 <https://github.com/jantman/awslimitchecker/issues/521>`__ - Update Quotas Service quota names for EBS. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
 * `PR #535 <https://github.com/jantman/awslimitchecker/pull/535>`__ / Fixes `Issue #518 <https://github.com/jantman/awslimitchecker/issues/518>`__ - Fix EC2 Security Group counts to only include groups owned by the current account. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
 * `PR #536 <https://github.com/jantman/awslimitchecker/pull/536>`__ / Fixes `Issue #512 <https://github.com/jantman/awslimitchecker/issues/512>`__ - Fix CloudWatch metrics queries to get data from one minute ago, to fix bug where GetMetricData is not yet populated. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
 * `PR #543 <https://github.com/jantman/awslimitchecker/pull/543>`__ / Fixes `Issue #538 <https://github.com/jantman/awslimitchecker/issues/538>`__ - Fix issue with calculation of usage for EC2 Rules Per Network ACL. Thanks to `jwu2 <https://github.com/jwu2>`__ for this contribution.
