@@ -10,6 +10,8 @@ IMPORTANT - Breaking Changes
 ++++++++++++++++++++++++++++
 
 * This release **removes** the ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, in favor of six new vCPU-based limits: ``All F Spot Instance Requests``, ``All G Spot Instance Requests``, ``All Inf Spot Instance Requests``, ``All P Spot Instance Requests``,  ``All X Spot Instance Requests``, and ``All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests``.
+* This release **adds two new services**: ``CertificateManager`` (ACM) and ``CloudFront``.
+* This release **requires additional IAM permissions**: ``acm:ListCertificates``, ``cloudfront:ListCloudFrontOriginAccessIdentities``, ``cloudfront:ListKeyGroups``, ``cloudfront:ListDistributions``, ``cloudfront:ListCachePolicies``, and ``cloudfront:ListOriginRequestPolicies``.
 
 IMPORTANT - Seeking New Maintainer
 ++++++++++++++++++++++++++++++++++
@@ -27,6 +29,8 @@ All Changes
 * `PR #543 <https://github.com/jantman/awslimitchecker/pull/543>`__ / Fixes `Issue #538 <https://github.com/jantman/awslimitchecker/issues/538>`__ - Fix issue with calculation of usage for EC2 Rules Per Network ACL. Thanks to `jwu2 <https://github.com/jwu2>`__ for this contribution.
 * `PR #537 <https://github.com/jantman/awslimitchecker/pull/537>`__ - Use boto3 adaptive retry mode. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
 * `PR #547 <https://github.com/jantman/awslimitchecker/pull/547>`__ / Fixes `Issue #502 <https://github.com/jantman/awslimitchecker/issues/502>`__ - Replace ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, with new vCPU-based spot instance requests limits. This also switches to using CloudWatch metric data to retrieve current usage. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
+* `PR #546 <https://github.com/jantman/awslimitchecker/pull/546>`__ / Fixes `Issue #540 <https://github.com/jantman/awslimitchecker/issues/540>`__ - Add support for ACM (Certificate Manager) limits. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
+* `PR #545 <https://github.com/jantman/awslimitchecker/pull/545>`__ / Fixes `Issue #539 <https://github.com/jantman/awslimitchecker/issues/539>`__ - Add support for CloudFront limits. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
 
 .. _changelog.11_0_0:
 
