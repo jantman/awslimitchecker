@@ -4784,3 +4784,26 @@ class EKS(object):
             }
         }
     ]
+
+
+class CertificateManager(object):
+    test_find_usage_certificates_empty = {
+    }
+
+    test_find_usage_certificates = {
+        'NextToken': 'string',
+        'CertificateSummaryList': [
+            {
+                'CertificateArn': 'string1',
+                'DomainName': 'string1'
+            },
+            {
+                'CertificateArn': 'string2',
+                'DomainName': 'string2'
+            },
+            {
+                'CertificateArn': 'string3',
+                'DomainName': 'string3'
+            },
+        ]
+    }
