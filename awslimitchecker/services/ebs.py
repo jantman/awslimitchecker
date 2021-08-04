@@ -223,7 +223,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
-            quotas_name='Provisioned IOPS (io1)'
+            quotas_name='IOPS for Provisioned IOPS SSD (io1) volumes'
         )
         limits['Provisioned IOPS SSD (io1) storage (GiB)'] = AwsLimit(
             'Provisioned IOPS SSD (io1) storage (GiB)',
@@ -233,7 +233,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io1',
-            quotas_name='Provisioned IOPS (SSD) volume storage',
+            quotas_name='Storage for Provisioned IOPS SSD (io1) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
@@ -245,7 +245,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io2',
-            quotas_name='Provisioned IOPS (io2)'
+            quotas_name='IOPS for Provisioned IOPS SSD (io2) volumes'
         )
         limits['Provisioned IOPS SSD (io2) storage (GiB)'] = AwsLimit(
             'Provisioned IOPS SSD (io2) storage (GiB)',
@@ -255,7 +255,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='io2',
-            quotas_name='Provisioned IOPS SSD (io2) volume storage',
+            quotas_name='Storage for Provisioned IOPS SSD (io2) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
@@ -294,7 +294,7 @@ class _EbsService(_AwsService):
             limit_type='AWS::EC2::Volume',
             limit_subtype='standard',
             ta_limit_name='Magnetic (standard) volume storage (GiB)',
-            quotas_name='Magnetic volume storage',
+            quotas_name='Storage for Magnetic (standard) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
@@ -306,7 +306,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='st1',
-            quotas_name='Max Throughput Optimized HDD (ST1) Storage',
+            quotas_name='Storage for Throughput Optimized HDD (st1) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )
@@ -318,7 +318,7 @@ class _EbsService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Volume',
             limit_subtype='sc1',
-            quotas_name='Max Cold HDD (SC1) Storage',
+            quotas_name='Storage for Cold HDD (sc1) volumes',
             quotas_unit='GiB',
             quotas_unit_converter=convert_TiB_to_GiB
         )

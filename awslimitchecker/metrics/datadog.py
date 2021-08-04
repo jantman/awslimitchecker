@@ -53,7 +53,7 @@ class Datadog(MetricsProvider):
 
     def __init__(
         self, region_name, prefix='awslimitchecker.', api_key=None,
-        extra_tags=None
+        extra_tags=None, host='https://api.datadoghq.com'
     ):
         """
         Initialize the Datadog metrics provider. This class does not have any
@@ -68,6 +68,11 @@ class Datadog(MetricsProvider):
         :param api_key: Datadog API key. May alternatively be specified by the
           ``DATADOG_API_KEY`` environment variable.
         :type api_key: str
+        :param host: The datadog host URL to use; defaults to
+          ``https://api.datadoghq.com``. This parameter is overridden by the
+          ``DATADOG_HOST`` environment variable, if set. This must NOT end with
+          a trailing slash.
+        :type host: str
         :param extra_tags: CSV list of additional tags to send with metrics.
           All metrics will automatically be tagged with ``region:<region name>``
         :type extra_tags: str
@@ -78,6 +83,7 @@ class Datadog(MetricsProvider):
         if extra_tags is not None:
             self._tags.extend(extra_tags.split(','))
         self._api_key = os.environ.get('DATADOG_API_KEY')
+        self._host = os.environ.get('DATADOG_HOST', host)
         if api_key is not None:
             self._api_key = api_key
         if self._api_key is None:
@@ -88,7 +94,7 @@ class Datadog(MetricsProvider):
         self._validate_auth(self._api_key)
 
     def _validate_auth(self, api_key):
-        url = 'https://api.datadoghq.com/api/v1/validate?api_key=%s'
+        url = self._host + '/api/v1/validate?api_key=%s'
         logger.debug('Validating Datadog API key: GET %s', url)
         url = url % api_key
         r = self._http.request('GET', url)
@@ -149,8 +155,7 @@ class Datadog(MetricsProvider):
         logger.info('POSTing %d metrics to datadog', len(series))
         data = {'series': series}
         encoded = json.dumps(data).encode('utf-8')
-        url = 'https://api.datadoghq.com/api/v1/series' \
-              '?api_key=%s' % self._api_key
+        url = self._host + '/api/v1/series?api_key=%s' % self._api_key
         resp = self._http.request(
             'POST', url,
             headers={'Content-type': 'application/json'},

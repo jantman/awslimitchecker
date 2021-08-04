@@ -129,6 +129,8 @@ class Test_Connectable(object):
     def test_connect(self):
         mock_conn = Mock()
         mock_cc = Mock()
+        mock_botoconfig = Mock()
+
         type(mock_cc).region_name = 'myregion'
         type(mock_conn)._client_config = mock_cc
 
@@ -141,12 +143,13 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.client' % pbm) as mock_client:
-                    with patch(
-                        '%s._max_retries_config' % pb, new_callable=PropertyMock
-                    ) as m_mrc:
-                        m_mrc.return_value = None
-                        mock_client.return_value = mock_conn
-                        cls.connect()
+                    with patch('%s.Config' % pbm) as m_conf:
+                        with patch(
+                            '%s._max_retries_config' % pb, new_callable=PropertyMock    # noqa - ignore line length
+                        ) as m_mrc:
+                            m_conf.return_value.merge.return_value = mock_botoconfig    # noqa - ignore line length
+                            mock_client.return_value = mock_conn
+                            cls.connect()
         assert mock_kwargs.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.info("Connected to %s in region %s",
@@ -157,15 +160,19 @@ class Test_Connectable(object):
             call(
                 'myapi',
                 foo='fooval',
-                bar='barval'
+                bar='barval',
+                config=mock_botoconfig,
             )
         ]
-        assert m_mrc.mock_calls == [call()]
+        assert m_mrc.mock_calls == [call(), call()]
         assert cls.conn == mock_client.return_value
 
     def test_connect_with_retries(self):
         mock_conn = Mock()
         mock_cc = Mock()
+        mock_conf = Mock()
+        mock_botoconfig = Mock()
+
         type(mock_cc).region_name = 'myregion'
         type(mock_conn)._client_config = mock_cc
 
@@ -179,12 +186,14 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.client' % pbm) as mock_client:
-                    with patch(
-                        '%s._max_retries_config' % pb, new_callable=PropertyMock
-                    ) as m_mrc:
-                        m_mrc.return_value = mock_conf
-                        mock_client.return_value = mock_conn
-                        cls.connect()
+                    with patch('%s.Config' % pbm) as m_conf:
+                        with patch(
+                            '%s._max_retries_config' % pb, new_callable=PropertyMock    # noqa - ignore line length
+                        ) as m_mrc:
+                            m_conf.return_value.merge.return_value = mock_botoconfig    # noqa - ignore line length
+                            m_mrc.return_value = mock_conf
+                            mock_client.return_value = mock_conn
+                            cls.connect()
         assert mock_kwargs.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.info("Connected to %s in region %s",
@@ -196,7 +205,7 @@ class Test_Connectable(object):
                 'myapi',
                 foo='fooval',
                 bar='barval',
-                config=mock_conf
+                config=mock_botoconfig
             )
         ]
         assert m_mrc.mock_calls == [call(), call()]
@@ -236,6 +245,8 @@ class Test_Connectable(object):
         mock_meta = Mock()
         mock_client = Mock()
         mock_cc = Mock()
+        mock_botoconfig = Mock()
+
         type(mock_cc).region_name = 'myregion'
         type(mock_client)._client_config = mock_cc
         type(mock_meta).client = mock_client
@@ -250,13 +261,15 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.resource' % pbm) as mock_resource:
-                    with patch(
-                            '%s._max_retries_config' % pb,
-                            new_callable=PropertyMock
-                    ) as m_mrc:
-                        m_mrc.return_value = None
-                        mock_resource.return_value = mock_conn
-                        cls.connect_resource()
+                    with patch('%s.Config' % pbm) as m_conf:
+                        with patch(
+                                '%s._max_retries_config' % pb,
+                                new_callable=PropertyMock
+                        ) as m_mrc:
+                            m_conf.return_value = mock_botoconfig
+                            m_mrc.return_value = None
+                            mock_resource.return_value = mock_conn
+                            cls.connect_resource()
         assert mock_kwargs.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.info("Connected to %s (resource) in region %s",
@@ -267,7 +280,8 @@ class Test_Connectable(object):
             call(
                 'myapi',
                 foo='fooval',
-                bar='barval'
+                bar='barval',
+                config=mock_botoconfig,
             )
         ]
         assert m_mrc.mock_calls == [call()]
@@ -278,6 +292,8 @@ class Test_Connectable(object):
         mock_meta = Mock()
         mock_client = Mock()
         mock_cc = Mock()
+        mock_botoconfig = Mock()
+
         type(mock_cc).region_name = 'myregion'
         type(mock_client)._client_config = mock_cc
         type(mock_meta).client = mock_client
@@ -293,13 +309,15 @@ class Test_Connectable(object):
             mock_kwargs.return_value = kwargs
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.resource' % pbm) as mock_resource:
-                    with patch(
-                            '%s._max_retries_config' % pb,
-                            new_callable=PropertyMock
-                    ) as m_mrc:
-                        m_mrc.return_value = mock_conf
-                        mock_resource.return_value = mock_conn
-                        cls.connect_resource()
+                    with patch('%s.Config' % pbm) as m_conf:
+                        with patch(
+                                '%s._max_retries_config' % pb,
+                                new_callable=PropertyMock
+                        ) as m_mrc:
+                            m_conf.return_value.merge.return_value = mock_botoconfig    # noqa - ignore line length
+                            m_mrc.return_value = mock_conf
+                            mock_resource.return_value = mock_conn
+                            cls.connect_resource()
         assert mock_kwargs.mock_calls == [call()]
         assert mock_logger.mock_calls == [
             call.info("Connected to %s (resource) in region %s",
@@ -311,7 +329,7 @@ class Test_Connectable(object):
                 'myapi',
                 foo='fooval',
                 bar='barval',
-                config=mock_conf
+                config=mock_botoconfig
             )
         ]
         assert m_mrc.mock_calls == [call(), call()]

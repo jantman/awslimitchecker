@@ -207,7 +207,7 @@ class LogRecordHelper(object):
                                               "to be us-east-1 but got %s" \
                                               "" % support_region
         for svc, rname in service_regions.items():
-            if svc == 'route53':
+            if svc in ['route53', 'cloudfront']:
                 continue
             assert rname == region_name, "Expected service %s to connect to " \
                                          "region %s, but connected to %s" % (

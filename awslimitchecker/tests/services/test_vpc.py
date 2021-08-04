@@ -198,17 +198,19 @@ class Test_VpcService(object):
         assert len(usage) == 2
         assert usage[0].get_value() == 1
         assert usage[0].resource_id == 'vpc-2'
-        assert usage[1].get_value() == 2
+        assert usage[1].get_value() == 3
         assert usage[1].resource_id == 'vpc-1'
         entries = sorted(cls.limits['Rules per network '
                                     'ACL'].get_current_usage())
-        assert len(entries) == 3
+        assert len(entries) == 4
         assert entries[0].resource_id == 'acl-2'
         assert entries[0].get_value() == 1
         assert entries[1].resource_id == 'acl-1'
-        assert entries[1].get_value() == 3
-        assert entries[2].resource_id == 'acl-3'
-        assert entries[2].get_value() == 5
+        assert entries[1].get_value() == 2
+        assert entries[2].resource_id == 'acl-4'
+        assert entries[2].get_value() == 3
+        assert entries[3].resource_id == 'acl-3'
+        assert entries[3].get_value() == 4
         assert mock_conn.mock_calls == [
             call.describe_network_acls(Filters=[{
                 'Name': 'owner-id', 'Values': ['0123456789']

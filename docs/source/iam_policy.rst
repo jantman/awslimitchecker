@@ -31,6 +31,7 @@ services that do not affect the results of this program.
       "Statement": [
         {
           "Action": [
+            "acm:ListCertificates",
             "apigateway:GET",
             "apigateway:HEAD",
             "apigateway:OPTIONS",
@@ -39,6 +40,11 @@ services that do not affect the results of this program.
             "autoscaling:DescribeLaunchConfigurations",
             "cloudformation:DescribeAccountLimits",
             "cloudformation:DescribeStacks",
+            "cloudfront:ListCachePolicies",
+            "cloudfront:ListCloudFrontOriginAccessIdentities",
+            "cloudfront:ListDistributions",
+            "cloudfront:ListKeyGroups",
+            "cloudfront:ListOriginRequestPolicies",
             "cloudtrail:DescribeTrails",
             "cloudtrail:GetEventSelectors",
             "cloudwatch:GetMetricData",
@@ -61,7 +67,6 @@ services that do not affect the results of this program.
             "ec2:DescribeSpotFleetInstances",
             "ec2:DescribeSpotFleetRequestHistory",
             "ec2:DescribeSpotFleetRequests",
-            "ec2:DescribeSpotInstanceRequests",
             "ec2:DescribeSpotPriceHistory",
             "ec2:DescribeSubnets",
             "ec2:DescribeVolumes",

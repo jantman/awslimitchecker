@@ -48,7 +48,7 @@ Documentation parts per API                                      2000
 Edge APIs per account                           |check|          120 
 Private APIs per account                        |check|          600 
 Regional APIs per account                       |check|          600 
-Resources per API                               |check|          300 
+Resources per API                                                300 
 Stages per API                                  |check|          10  
 Usage plans per account                         |check|          300 
 VPC Links per account                           |check|          5   
@@ -62,9 +62,20 @@ AutoScaling
 ===================== =============== ======== ======= ===
 Limit                 Trusted Advisor Quotas   API     Default
 ===================== =============== ======== ======= ===
-Auto Scaling groups   |check|         |check|  |check| 200
-Launch configurations |check|         |check|  |check| 200
+Auto Scaling groups                   |check|  |check| 200
+Launch configurations                 |check|  |check| 200
 ===================== =============== ======== ======= ===
+
+.. _limits.CertificateManager:
+
+CertificateManager
+-------------------
+
+================ =============== ======== ======= ====
+Limit            Trusted Advisor Quotas   API     Default
+================ =============== ======== ======= ====
+ACM certificates                                  1000
+================ =============== ======== ======= ====
 
 .. _limits.CloudFormation:
 
@@ -74,8 +85,42 @@ CloudFormation
 ====== =============== ======== ======= ===
 Limit  Trusted Advisor Quotas   API     Default
 ====== =============== ======== ======= ===
-Stacks |check|         |check|  |check| 200
+Stacks                 |check|  |check| 200
 ====== =============== ======== ======= ===
+
+.. _limits.CloudFront:
+
+CloudFront
+-----------
+
+============================================================ =============== ======== ======= ===
+Limit                                                        Trusted Advisor Quotas   API     Default
+============================================================ =============== ======== ======= ===
+Alternate domain names (CNAMEs) per distribution                                              100
+Cache behaviors per distribution                                                              25 
+Cache policies per AWS account                                                                20 
+Cookies per cache policy                                                                      10 
+Cookies per origin request policy                                                             10 
+Distributions associated with a single key group                                              100
+Distributions associated with the same cache policy                                           100
+Distributions associated with the same origin request policy                                  100
+Distributions per AWS account                                                                 200
+Headers per cache policy                                                                      10 
+Headers per origin request policy                                                             10 
+Key groups associated with a single cache behavior                                            4  
+Key groups associated with a single distribution                                              4  
+Key groups per AWS account                                                                    10 
+Origin access identities per account                                                          100
+Origin groups per distribution                                                                10 
+Origin request policies per AWS account                                                       20 
+Origins per distribution                                                                      25 
+Public keys in a single key group                                                             5  
+Query strings per cache policy                                                                10 
+Query strings per origin request policy                                                       10 
+Whitelisted cookies per cache behavior                                                        10 
+Whitelisted headers per cache behavior                                                        10 
+Whitelisted query strings per cache behavior                                                  10 
+============================================================ =============== ======== ======= ===
 
 .. _limits.CloudTrail:
 
@@ -131,11 +176,11 @@ Limit                                           Trusted Advisor Quotas   API    
 Active snapshots                                                |check|          100000
 Active volumes                                                                   5000  
 Cold (HDD) volume storage (GiB)                                                  307200
-General Purpose (SSD gp2) volume storage (GiB)                  |check|          307200
-General Purpose (SSD gp3) volume storage (GiB)                  |check|          307200
+General Purpose (SSD gp2) volume storage (GiB)                                   307200
+General Purpose (SSD gp3) volume storage (GiB)                                   307200
 Magnetic volume storage (GiB)                                                    307200
-Provisioned IOPS (io1)                                                           300000
-Provisioned IOPS (io2)                                                           100000
+Provisioned IOPS (io1)                                          |check|          300000
+Provisioned IOPS (io2)                                          |check|          100000
 Provisioned IOPS SSD (io1) storage (GiB)                                         307200
 Provisioned IOPS SSD (io2) storage (GiB)                                         20480 
 Throughput Optimized (HDD) volume storage (GiB)                                  307200
@@ -176,10 +221,15 @@ type.
 ==================================================================== =============== ======== ======= ====
 Limit                                                                Trusted Advisor Quotas   API     Default
 ==================================================================== =============== ======== ======= ====
-Elastic IP addresses (EIPs)                                                                   |check| 5   
+All F Spot Instance Requests                                                         |check|          11  
+All G Spot Instance Requests                                                         |check|          11  
+All Inf Spot Instance Requests                                                       |check|          64  
+All P Spot Instance Requests                                                         |check|          16  
+All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests                      |check|          1440
+All X Spot Instance Requests                                                         |check|          21  
+Elastic IP addresses (EIPs)                                                          |check|  |check| 5   
 Max active spot fleets per region                                                                     1000
 Max launch specifications per spot fleet                                                              50  
-Max spot instance requests per region                                                                 20  
 Max target capacity for all spot fleets in region                                                     5000
 Max target capacity per spot fleet                                                                    3000
 Rules per VPC security group                                                         |check|          60  
@@ -188,7 +238,7 @@ Running On-Demand All G instances                                               
 Running On-Demand All P instances                                                    |check|          128 
 Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances                 |check|          1152
 Running On-Demand All X instances                                                    |check|          128 
-VPC Elastic IP addresses (EIPs)                                                               |check| 5   
+VPC Elastic IP addresses (EIPs)                                                      |check|  |check| 5   
 VPC security groups per Region                                                       |check|          2500
 VPC security groups per elastic network interface                                             |check| 5   
 ==================================================================== =============== ======== ======= ====
@@ -502,8 +552,8 @@ Limit                            Trusted Advisor Quotas   API     Default
 ================================ =============== ======== ======= =====
 Clusters                                                          10000
 Container Instances per Cluster                                   2000 
-Fargate On-Demand resource count                                  1000 
-Fargate Spot resource count                                       1000 
+Fargate On-Demand resource count                 |check|          1000 
+Fargate Spot resource count                      |check|          1000 
 Services per Cluster                                              5000 
 Tasks per service                                                 5000 
 ================================ =============== ======== ======= =====
@@ -546,14 +596,14 @@ ELB
 Limit                                      Trusted Advisor Quotas   API     Default
 ========================================== =============== ======== ======= ====
 Application load balancers                                 |check|  |check| 20  
-Certificates per application load balancer                                  25  
+Certificates per application load balancer                 |check|          25  
 Classic load balancers                                     |check|  |check| 20  
-Listeners per application load balancer                             |check| 50  
+Listeners per application load balancer                    |check|  |check| 50  
 Listeners per load balancer                                         |check| 100 
-Listeners per network load balancer                                 |check| 50  
+Listeners per network load balancer                        |check|  |check| 50  
 Network load balancers                                              |check| 20  
 Registered instances per load balancer                              |check| 1000
-Rules per application load balancer                                 |check| 100 
+Rules per application load balancer                        |check|  |check| 100 
 Target groups                                                       |check| 3000
 ========================================== =============== ======== ======= ====
 
