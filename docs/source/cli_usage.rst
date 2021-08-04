@@ -176,10 +176,9 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    (venv)$ awslimitchecker -s
    ApiGateway
    AutoScaling
+   CertificateManager
    CloudFormation
    CloudFront
-   CloudTrail
-   Directory Service
    (...)
    Route53
    S3
@@ -384,7 +383,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    ApiGateway/Documentation parts per API                                    2000
    ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   CloudFormation/Stacks                                                     200 (API)
+   CloudFormation/Stacks                                                     2000 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
@@ -629,7 +628,7 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "apigateway:GET",
+           "acm:ListCertificates",
    (...)
        }
      ],
