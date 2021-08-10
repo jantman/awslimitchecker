@@ -105,22 +105,24 @@ class Datadog(MetricsProvider):
                 )
             )
 
-    def _name_for_metric(self, service, limit):
+    def _tag_for_metric(self, *argv):
         """
-        Return a metric name that's safe for datadog
+        Return a metric tag that's safe for datadog
 
-        :param service: service name
-        :type service: str
-        :param limit: limit name
-        :type limit: str
-        :return: datadog metric name
+        :param argv: service group name, service name
+        :type argv: list
+        :return: datadog service tag
         :rtype: str
         """
-        return ('%s%s.%s' % (
-            self._prefix,
-            re.sub(r'[^0-9a-zA-Z]+', '_', service),
-            re.sub(r'[^0-9a-zA-Z]+', '_', limit)
+
+        tag = ('%s' % (
+            re.sub(r'[^0-9a-zA-Z]+', '_', argv[0])
         )).lower()
+        for S in argv[1:]:
+            tag = tag + ('.%s' % (
+                re.sub(r'[^0-9a-zA-Z]+', '_', S)
+            )).lower()
+        return tag
 
     def flush(self):
         ts = int(time.time())
@@ -137,20 +139,27 @@ class Datadog(MetricsProvider):
                 max_usage = 0
             else:
                 max_usage = max(u).get_value()
-            mname = self._name_for_metric(lim.service.service_name, lim.name)
+            svc_tag = self._tag_for_metric(lim.service.service_name)
+            sub_svc_tag = self._tag_for_metric(
+                lim.service.service_name, lim.name
+            )
+            local_tags = self._tags.copy()
+            local_tags.append('service:' + sub_svc_tag)
+            local_tags.append('service_group:' + svc_tag)
+            local_tags.append(svc_tag)
             series.append({
-                'metric': '%s.max_usage' % mname,
+                'metric': '%susage' % self._prefix,
                 'points': [[ts, max_usage]],
                 'type': 'gauge',
-                'tags': self._tags
+                'tags': local_tags
             })
             limit = lim.get_limit()
             if limit is not None:
                 series.append({
-                    'metric': '%s.limit' % mname,
+                    'metric': '%slimit' % self._prefix,
                     'points': [[ts, limit]],
                     'type': 'gauge',
-                    'tags': self._tags
+                    'tags': local_tags
                 })
         logger.info('POSTing %d metrics to datadog', len(series))
         data = {'series': series}

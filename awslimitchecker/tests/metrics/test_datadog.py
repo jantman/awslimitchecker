@@ -219,13 +219,13 @@ class TestValidateAuth(DatadogTester):
         ]
 
 
-class TestNameForMetric(DatadogTester):
+class TestTagForMetric(DatadogTester):
 
     def test_simple(self):
         self.cls._prefix = 'foobar.'
-        assert self.cls._name_for_metric(
-            'Service Name*', 'limit NAME .'
-        ) == 'foobar.service_name_.limit_name_'
+        assert self.cls._tag_for_metric(
+            'Service Group Name*', 'service NAME .'
+        ) == 'service_group_name_.service_name_'
 
 
 class TestFlush(DatadogTester):
@@ -268,22 +268,34 @@ class TestFlush(DatadogTester):
                     'tags': ['tag1', 'tag:2']
                 },
                 {
-                    'metric': 'prefix.svc1.limita.max_usage',
+                    'metric': 'prefix.usage',
                     'points': [[ts, 0]],
                     'type': 'gauge',
-                    'tags': ['tag1', 'tag:2']
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1.limita',
+                             'service_group:svc1',
+                             'svc1'
+                             ]
                 },
                 {
-                    'metric': 'prefix.svc1.limitb.max_usage',
+                    'metric': 'prefix.usage',
                     'points': [[ts, 6]],
                     'type': 'gauge',
-                    'tags': ['tag1', 'tag:2']
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1.limitb',
+                             'service_group:svc1',
+                             'svc1'
+                             ]
                 },
                 {
-                    'metric': 'prefix.svc1.limitb.limit',
+                    'metric': 'prefix.limit',
                     'points': [[ts, 10]],
                     'type': 'gauge',
-                    'tags': ['tag1', 'tag:2']
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1.limitb',
+                             'service_group:svc1',
+                             'svc1'
+                             ]
                 }
             ]
         }
@@ -339,22 +351,34 @@ class TestFlush(DatadogTester):
                     'tags': ['tag1', 'tag:2']
                 },
                 {
-                    'metric': 'prefix.svc1.limita.max_usage',
+                    'metric': 'prefix.usage',
                     'points': [[ts, 0]],
                     'type': 'gauge',
-                    'tags': ['tag1', 'tag:2']
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1.limita',
+                             'service_group:svc1',
+                             'svc1'
+                             ]
                 },
                 {
-                    'metric': 'prefix.svc1.limitb.max_usage',
+                    'metric': 'prefix.usage',
                     'points': [[ts, 6]],
                     'type': 'gauge',
-                    'tags': ['tag1', 'tag:2']
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1.limitb',
+                             'service_group:svc1',
+                             'svc1'
+                             ]
                 },
                 {
-                    'metric': 'prefix.svc1.limitb.limit',
+                    'metric': 'prefix.limit',
                     'points': [[ts, 10]],
                     'type': 'gauge',
-                    'tags': ['tag1', 'tag:2']
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1.limitb',
+                             'service_group:svc1',
+                             'svc1'
+                             ]
                 }
             ]
         }
