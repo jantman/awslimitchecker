@@ -97,7 +97,7 @@ class Test_CognitoService(object):
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
-        assert mock_conn.mock_calls == [call.list_user_pools()]
+        assert mock_conn.mock_calls == [call.list_user_pools(MaxResults=60)]
         assert cls._have_usage is True
         usp = cls.limits["User Pools"].get_current_usage()
         print(len(usp))
