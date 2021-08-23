@@ -20,6 +20,7 @@ Submodules
    awslimitchecker.services.cloudformation
    awslimitchecker.services.cloudfront
    awslimitchecker.services.cloudtrail
+   awslimitchecker.services.cognito
    awslimitchecker.services.directoryservice
    awslimitchecker.services.dynamodb
    awslimitchecker.services.ebs

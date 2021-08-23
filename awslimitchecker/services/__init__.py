@@ -45,6 +45,7 @@ from awslimitchecker.services.certificatemanager import \
 from awslimitchecker.services.cloudformation import _CloudformationService
 from awslimitchecker.services.cloudfront import _CloudfrontService
 from awslimitchecker.services.cloudtrail import _CloudTrailService
+from awslimitchecker.services.cognito import _CognitoService
 from awslimitchecker.services.directoryservice import _DirectoryserviceService
 from awslimitchecker.services.dynamodb import _DynamodbService
 from awslimitchecker.services.ebs import _EbsService

@@ -135,6 +135,17 @@ Event Selectors Per Trail                                  5
 Trails Per Region                                          5  
 ========================= =============== ======== ======= ===
 
+.. _limits.Cognito:
+
+Cognito
+--------
+
+====================== =============== ======== ======= ==
+Limit                  Trusted Advisor Quotas   API     Default
+====================== =============== ======== ======= ==
+User pools per account                 |check|          10
+====================== =============== ======== ======= ==
+
 .. _limits.Directory Service:
 
 Directory Service
@@ -747,7 +758,7 @@ zone. As such, each zone may have a different limit value.
 Limit                            Trusted Advisor Quotas   API     Default
 ================================ =============== ======== ======= =====
 Record sets per hosted zone                               |check| 10000
-VPC associations per hosted zone                                  100  
+VPC associations per hosted zone                          |check| 100  
 ================================ =============== ======== ======= =====
 
 .. _limits.S3:

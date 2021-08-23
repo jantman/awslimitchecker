@@ -75,7 +75,8 @@
         "ses:GetSendQuota",
         "support:*",
         "trustedadvisor:Describe*",
-        "trustedadvisor:RefreshCheck"
+        "trustedadvisor:RefreshCheck",
+        "cognito-idp:ListUserPools"
       ],
       "Effect": "Allow",
       "Resource": "*"

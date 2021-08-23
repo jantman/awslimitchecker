@@ -5663,3 +5663,16 @@ class CertificateManager(object):
             },
         ]
     }
+
+
+class Cognito(object):
+    test_find_usage_user_pools = {
+        'UserPools': [
+            {
+                'Id': 'foo',
+            },
+            {
+                'Id': 'bar',
+            },
+        ]
+    }
