@@ -78,23 +78,6 @@ class _CognitoService(_AwsService):
         self._have_usage = True
         logger.debug("Done checking usage.")
 
-    def _find_usage_user_pools(self):
-        """
-        List Cognito User Pools by calling AWS list_user_pools, and
-        update usage in self.limits for the following limits:
-
-        Global:
-        - User pools per account
-
-
-        TODO:
-        Per User Pool:
-        - App clients per user pool per user pool
-        - User import jobs per user pool
-        - Identity providers per user pool
-        - Resource servers per user pools
-        """
-
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
