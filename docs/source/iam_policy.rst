@@ -48,6 +48,7 @@ services that do not affect the results of this program.
             "cloudtrail:DescribeTrails",
             "cloudtrail:GetEventSelectors",
             "cloudwatch:GetMetricData",
+            "cognito-idp:ListUserPools",
             "ds:GetDirectoryLimits",
             "dynamodb:DescribeLimits",
             "dynamodb:DescribeTable",

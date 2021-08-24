@@ -135,6 +135,17 @@ Event Selectors Per Trail                                  5
 Trails Per Region                                          5  
 ========================= =============== ======== ======= ===
 
+.. _limits.Cognito:
+
+Cognito
+--------
+
+====================== =============== ======== ======= ==
+Limit                  Trusted Advisor Quotas   API     Default
+====================== =============== ======== ======= ==
+User pools per account                 |check|          1000
+====================== =============== ======== ======= ==
+
 .. _limits.Directory Service:
 
 Directory Service
