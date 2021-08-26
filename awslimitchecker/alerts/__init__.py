@@ -40,3 +40,4 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 from .base import AlertProvider
 from .dummy import Dummy
 from .pagerdutyv1 import PagerDutyV1
+from .alertmanager import AlertManager
