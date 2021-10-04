@@ -81,7 +81,7 @@ class Test_VpcService(object):
             'Rules per network ACL',
             'Route tables per VPC',
             'Virtual private gateways',
-            'Customer gateways'
+            'Customer gateways',
             'Network interfaces per Region',
         ])
         for name, limit in res.items():
@@ -424,5 +424,6 @@ class Test_VpcService(object):
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
             'ec2:DescribeVpnGateways',
+            'ec2:DescribeCustomerGateways',            
             'ec2:DescribeNetworkInterfaces',
         ]
