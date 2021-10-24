@@ -5,8 +5,8 @@ awslimitchecker
    :target: https://pypi.python.org/pypi/awslimitchecker
    :alt: PyPi package version
 
-.. image:: http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/awslimitchecker/per-month.svg
-   :target: http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/awslimitchecker/index.html
+.. image:: https://pepy.tech/badge/awslimitchecker/month
+   :target: https://pypistats.org/packages/awslimitchecker
    :alt: PyPi downloads
 
 .. image:: https://img.shields.io/github/forks/jantman/awslimitchecker.svg
