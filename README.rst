@@ -32,7 +32,7 @@ awslimitchecker
 Master:
 
 .. image:: https://api.travis-ci.com/jantman/awslimitchecker.svg?branch=master
-   :target: http://travis-ci.com/jantman/awslimitchecker
+   :target: https://app.travis-ci.com/github/jantman/awslimitchecker
    :alt: travis-ci for master branch
 
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=master
@@ -46,7 +46,7 @@ Master:
 Develop:
 
 .. image:: https://api.travis-ci.com/jantman/awslimitchecker.svg?branch=develop
-   :target: http://travis-ci.com/jantman/awslimitchecker
+   :target: https://app.travis-ci.com/github/jantman/awslimitchecker
    :alt: travis-ci for develop branch
 
 .. image:: https://codecov.io/github/jantman/awslimitchecker/coverage.svg?branch=develop
