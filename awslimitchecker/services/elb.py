@@ -304,7 +304,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
-            limit_subtype='LoadBalancerListener'
+            limit_subtype='LoadBalancerListener',
+            quotas_name='Listeners per Classic Load Balancer'
         )
         limits['Registered instances per load balancer'] = AwsLimit(
             'Registered instances per load balancer',
@@ -313,7 +314,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
-            limit_subtype='Instance'
+            limit_subtype='Instance',
+            quotas_name='Registered Instances per Classic Load Balancer'
         )
         # ELBv2 (ALB) limits
         limits['Application load balancers'] = AwsLimit(
@@ -334,7 +336,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
-            limit_subtype='LoadBalancerTargetGroup'
+            limit_subtype='LoadBalancerTargetGroup',
+            quotas_name='Target Groups per Application Load Balancer'
         )
         limits['Listeners per application load balancer'] = AwsLimit(
             'Listeners per application load balancer',
@@ -343,7 +346,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
-            limit_subtype='LoadBalancerListener'
+            limit_subtype='LoadBalancerListener',
+            quotas_name='Listeners per Application Load Balancer'
         )
         limits['Certificates per application load balancer'] = AwsLimit(
             'Certificates per application load balancer',
@@ -352,7 +356,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
-            limit_subtype='Certificate'
+            limit_subtype='Certificate',
+            quotas_name='Certificates per Application Load Balancer'
         )
         limits['Rules per application load balancer'] = AwsLimit(
             'Rules per application load balancer',
@@ -361,7 +366,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
-            limit_subtype='LoadBalancerRule'
+            limit_subtype='LoadBalancerRule',
+            quotas_name='Rules per Application Load Balancer'
         )
         limits['Network load balancers'] = AwsLimit(
             'Network load balancers',
@@ -370,6 +376,7 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancing::NetworkLoadBalancer',
+            quotas_name='Network Load Balancers per Region'
         )
         limits['Listeners per network load balancer'] = AwsLimit(
             'Listeners per network load balancer',
@@ -378,7 +385,8 @@ class _ElbService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::NetworkLoadBalancer',
-            limit_subtype='LoadBalancerListener'
+            limit_subtype='LoadBalancerListener',
+            quotas_name='Listeners per Network Load Balancer'
         )
         self.limits = limits
         return limits
