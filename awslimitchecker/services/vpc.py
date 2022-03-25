@@ -349,7 +349,9 @@ class _VpcService(_AwsService):
             5,
             self.warning_threshold,
             self.critical_threshold,
-            limit_type='AWS::EC2::VPNGateway'
+            limit_type='AWS::EC2::VPNGateway',
+            quotas_service_code='ec2',
+            quotas_name='Virtual private gateways per region'
         )
 
         limits['Network interfaces per Region'] = AwsLimit(
