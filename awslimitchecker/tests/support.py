@@ -159,6 +159,12 @@ class LogRecordHelper(object):
                     r.funcName == 'quotas_for_service' and
                     'Attempted to retrieve Service Quotas' in r.msg):
                 continue
+            if (
+                r.levelno == logging.WARNING and r.module == 'base' and
+                r.funcName == '_get_cloudwatch_usage_latest' and
+                'No data points found for AWS/Usage metric' in r.msg
+            ):
+                continue
             res.append('%s:%s.%s (%s:%s) %s - %s %s' % (
                 r.name,
                 r.module,
@@ -201,7 +207,7 @@ class LogRecordHelper(object):
                                               "to be us-east-1 but got %s" \
                                               "" % support_region
         for svc, rname in service_regions.items():
-            if svc == 'route53':
+            if svc in ['route53', 'cloudfront']:
                 continue
             assert rname == region_name, "Expected service %s to connect to " \
                                          "region %s, but connected to %s" % (

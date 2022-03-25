@@ -52,6 +52,27 @@ logger = logging.getLogger(__name__)
 ELBV2_MAX_RETRY_ATTEMPTS = 12
 
 
+def allow_count_or_none_units(value, in_unit, out_unit):
+    """
+    This is a unit converter for Service Quotas; see
+    :py:meth:`.ServiceQuotasClient.get_quota_value` for details.
+
+    This is a work-around for
+    https://github.com/jantman/awslimitchecker/issues/503 where, sometime
+    between 2020-11-02 and 2020-11-09, the quota unit for Application Load
+    Balancers per Region and Classic Load Balancers per Region changed, without
+    announcement or warning, from "Count" to "None". This converter allows both
+    options and treats them identically.
+    """
+    if in_unit not in ['None', 'Count'] or out_unit != 'Count':
+        logger.error(
+            'ERROR: cannot convert Service Quotas (A|E)LB limit value from '
+            'units of "%s" to units of "%s"', in_unit, out_unit
+        )
+        return None
+    return value
+
+
 class _ElbService(_AwsService):
     """
     Note that ELB (ELBv1) and ALB (ELBv2) are combined in the same service.
@@ -273,7 +294,8 @@ class _ElbService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancing::LoadBalancer',
             quotas_name='Classic Load Balancers per Region',
-            quotas_unit='Count'
+            quotas_unit='Count',
+            quotas_unit_converter=allow_count_or_none_units
         )
         limits['Listeners per load balancer'] = AwsLimit(
             'Listeners per load balancer',
@@ -302,7 +324,8 @@ class _ElbService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::ElasticLoadBalancingV2::LoadBalancer',
             quotas_name='Application Load Balancers per Region',
-            quotas_unit='Count'
+            quotas_unit='Count',
+            quotas_unit_converter=allow_count_or_none_units
         )
         limits['Target groups'] = AwsLimit(
             'Target groups',

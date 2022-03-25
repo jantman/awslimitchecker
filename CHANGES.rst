@@ -1,6 +1,148 @@
 Changelog
 =========
 
+.. _changelog.12_0_0:
+
+12.0.0 (2021-08-04)
+-------------------
+
+IMPORTANT - Breaking Changes
+++++++++++++++++++++++++++++
+
+* This release **removes** the ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, in favor of six new vCPU-based limits: ``All F Spot Instance Requests``, ``All G Spot Instance Requests``, ``All Inf Spot Instance Requests``, ``All P Spot Instance Requests``,  ``All X Spot Instance Requests``, and ``All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests``.
+* This release **adds two new services**: ``CertificateManager`` (ACM) and ``CloudFront``.
+* This release **requires additional IAM permissions**: ``acm:ListCertificates``, ``cloudfront:ListCloudFrontOriginAccessIdentities``, ``cloudfront:ListKeyGroups``, ``cloudfront:ListDistributions``, ``cloudfront:ListCachePolicies``, and ``cloudfront:ListOriginRequestPolicies``.
+
+IMPORTANT - Seeking New Maintainer
+++++++++++++++++++++++++++++++++++
+
+As I commented in `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__, I'm looking for someone to share (and perhaps take over) maintenance of this project. awslimitchecker is, and has always been, a personal-time-only project for me; the only time I've done work on it during my day job is when my employer was experiencing an issue or requested a specific feature. Because of a variety of issues, including changing personal interests and my employer relying on this project much less (following an AWS account restructuring that largely avoids service limits), I've been spending much less time on this project than it deserves. As a result, I'm looking for someone to help with maintenance... at the very least, helping review PRs and get them to a merge-able state. If you're interested, please comment on `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__ or contact me directly. While I am *incredibly* flattered by the offers I've received for sponsorship, paid support, or other financial incentive, I'd ask that anyone who's willing to make that commitment instead dedicate a few hours to working on issues or PRs. I, for my part, will make a concerted effort to quickly merge and release any PRs that meet all of the :ref:`development.pull_request_guidelines`.
+
+All Changes
++++++++++++
+
+* `PR #532 <https://github.com/jantman/awslimitchecker/pull/532>`__ - Add Quotas Service support for ECS Fargate quotas. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #533 <https://github.com/jantman/awslimitchecker/pull/533>`__ / Fixes `Issue #527 <https://github.com/jantman/awslimitchecker/issues/527>`__ - Fix Quotas Service quota names for EIPs. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #534 <https://github.com/jantman/awslimitchecker/pull/534>`__ / Fixes `Issue #521 <https://github.com/jantman/awslimitchecker/issues/521>`__ - Update Quotas Service quota names for EBS. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #535 <https://github.com/jantman/awslimitchecker/pull/535>`__ / Fixes `Issue #518 <https://github.com/jantman/awslimitchecker/issues/518>`__ - Fix EC2 Security Group counts to only include groups owned by the current account. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #536 <https://github.com/jantman/awslimitchecker/pull/536>`__ / Fixes `Issue #512 <https://github.com/jantman/awslimitchecker/issues/512>`__ - Fix CloudWatch metrics queries to get data from one minute ago, to fix bug where GetMetricData is not yet populated. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #543 <https://github.com/jantman/awslimitchecker/pull/543>`__ / Fixes `Issue #538 <https://github.com/jantman/awslimitchecker/issues/538>`__ - Fix issue with calculation of usage for EC2 Rules Per Network ACL. Thanks to `jwu2 <https://github.com/jwu2>`__ for this contribution.
+* `PR #537 <https://github.com/jantman/awslimitchecker/pull/537>`__ - Use boto3 adaptive retry mode. Thanks to `robpickerill <https://github.com/robpickerill>`__ for this contribution.
+* `PR #547 <https://github.com/jantman/awslimitchecker/pull/547>`__ / Fixes `Issue #502 <https://github.com/jantman/awslimitchecker/issues/502>`__ - Replace ``EC2 / Max spot instance requests per region`` limit, which has been removed by AWS, with new vCPU-based spot instance requests limits. This also switches to using CloudWatch metric data to retrieve current usage. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
+* `PR #546 <https://github.com/jantman/awslimitchecker/pull/546>`__ / Fixes `Issue #540 <https://github.com/jantman/awslimitchecker/issues/540>`__ - Add support for ACM (Certificate Manager) limits. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
+* `PR #545 <https://github.com/jantman/awslimitchecker/pull/545>`__ / Fixes `Issue #539 <https://github.com/jantman/awslimitchecker/issues/539>`__ - Add support for CloudFront limits. Thanks to `TagadaPoe <https://github.com/TagadaPoe>`__ for this contribution.
+* `Issue #551 <https://github.com/jantman/awslimitchecker/issues/551>`__ - Allow custom host for Datadog metric provider.
+
+.. _changelog.11_0_0:
+
+11.0.0 (2021-04-20)
+-------------------
+
+IMPORTANT - Breaking Changes
+++++++++++++++++++++++++++++
+
+* This release **removes** the EBS ``General Purpose (SSD) volume storage (GiB)`` limit in favor of ``General Purpose (SSD gp2) volume storage (GiB)`` and ``General Purpose (SSD gp3) volume storage (GiB)`` limits, to account for the new gp3 volume type and corresponding AWS service limits.
+* This release **removes** the EBS ``Provisioned IOPS`` and ``Provisioned IOPS (SSD) storage (GiB)`` limits in favor of ``Provisioned IOPS (io1)`` and ``Provisioned IOPS (io2)``, and ``Provisioned IOPS SSD (io1) storage (GiB)`` and ``Provisioned IOPS SSD (io2) storage (GiB)``, respectively, to account for the new ``io2`` EBS volume type and corresponding AWS service limtits.
+
+IMPORTANT - Seeking New Maintainer
+++++++++++++++++++++++++++++++++++
+
+As I commented in `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__, I'm looking for someone to share (and perhaps take over) maintenance of this project. awslimitchecker is, and has always been, a personal-time-only project for me; the only time I've done work on it during my day job is when my employer was experiencing an issue or requested a specific feature. Because of a variety of issues, including changing personal interests and my employer relying on this project much less (following an AWS account restructuring that largely avoids service limits), I've been spending much less time on this project than it deserves. As a result, I'm looking for someone to help with maintenance... at the very least, helping review PRs and get them to a merge-able state. If you're interested, please comment on `Issue #500 <https://github.com/jantman/awslimitchecker/issues/500>`__ or contact me directly. While I am *incredibly* flattered by the offers I've received for sponsorship, paid support, or other financial incentive, I'd ask that anyone who's willing to make that commitment instead dedicate a few hours to working on issues or PRs. I, for my part, will make a concerted effort to quickly merge and release any PRs that meet all of the :ref:`development.pull_request_guidelines`.
+
+All Changes
++++++++++++
+
+* `PR #519 <https://github.com/jantman/awslimitchecker/pull/519>`__ - Add support for ``gp3`` EBS volume type. Thanks to `spockNinja <https://github.com/spockNinja>`__ for this contribution!
+* `Issue #514 <https://github.com/jantman/awslimitchecker/issues/514>`__ / `PR #517 <https://github.com/jantman/awslimitchecker/pull/517>`__ - Fix EKS Fargate profile usage check exception (``KeyError: 'labels'``). Thanks to `jwu2 <https://github.com/jwu2>`__ for first reporting this issue and `sebasrp <https://github.com/sebasrp>`__ for the fix!
+* `Issue #520 <https://github.com/jantman/awslimitchecker/issues/520>`__ / `PR #522 <https://github.com/jantman/awslimitchecker/pull/522>`__ - Add awslimitchecker to `conda-forge <https://github.com/conda-forge/awslimitchecker-feedstock>`__ so it can be installed via `Conda <https://conda.io/>`__. Thanks to `BastianZim <https://github.com/BastianZim>`__ for this.
+* `PR #525 <https://github.com/jantman/awslimitchecker/pull/525>`_ - Fix Prometheus example in docs, thanks to `felixkrohn <https://github.com/felixkrohn>`__.
+* `PR #526 <https://github.com/jantman/awslimitchecker/pull/526>`__ - Fix possible ``KeyError: 'LaunchSpecifications'`` in EC2 service. Thanks to `nitrocode <https://github.com/nitrocode>`__ for this.
+* `PR #528 <https://github.com/jantman/awslimitchecker/pull/528>`_ - Update ECS default limits. Thanks to `arturpriz <https://github.com/arturpriz>`__ for this contribution.
+* `PR #523 <https://github.com/jantman/awslimitchecker/pull/523>`_ - Add support for io2 type EBS volumes. Thanks to `andyjp <https://github.com/andyjp>`__ for this contribution.
+* Add tox and TravisCI support for testing against Python 3.9; bump the ``docker``, ``docs``, and ``integration3`` tox environments from 3.8 to 3.9.
+* Bump the base Docker image from Python 3.8 to 3.9.
+
+.. _changelog.10_0_0:
+
+10.0.0 (2020-12-07)
+-------------------
+
+IMPORTANT - Breaking Changes
+++++++++++++++++++++++++++++
+
+* This release makes significant changes to how Trusted Advisor is used; see below.
+* This release requires the following new IAM permissions: ``eks:ListClusters``, ``eks:DescribeCluster``, ``eks:ListNodegroups``, ``eks:ListFargateProfiles``, ``eks:DescribeFargateProfile``, ``kinesis:DescribeLimits``.
+* This release introduces a number of new limits, as well as new services. Please see below for details.
+* This release **removes** the ``EC2/Security groups per VPC`` limit, which no longer exists, and adds the new ``EC2/VPC security groups per Region`` limit.
+
+All Changes
++++++++++++
+
+* `Issue #466 <https://github.com/jantman/awslimitchecker/issues/466>`__ - **Significant** changes to Trusted Advisor support.
+
+  * In June 2019, AWS `announced <https://aws.amazon.com/about-aws/whats-new/2019/06/introducing-service-quotas-view-and-manage-quotas-for-aws-services-from-one-location/>`__ the new Service Quotas service (great name) that allows us to retrieve limit/quota information from a unified API. In addition, many individual services now provide limit information via their own APIs. At this point (late 2020) all of the limit/quota information that was previously available via Trusted Advisor is now available via a combination of the individual service APIs and Service Quotas.
+  * In February 2020, the layout of Trusted Advisor checks was changed, and the "Performance / Service Limits" check that we previously used to obtain limit information was moved to its own category in Trusted Advisor. While I can't confirm this, as far as I can tell, this change was only made in the standard AWS regions/partitions (i.e. not GovCloud or China).
+  * awslimitchecker still has not been updated for this new Trusted Advisor layout.
+  * This release **disables Trusted Advisor by default outside China and GovCloud**, as it provides no additional information outside of these regions/partitions.
+  * If you are running in China or GovCloud and have issues with awslimitchecker retrieving information from Trusted Advisor, please `open an issue <https://github.com/jantman/awslimitchecker/issues>`__.
+  * My current intent is to leave Trusted Advisor support in this state until Service Quotas is available in China and GovCloud, at which point I plan on completely removing all Trusted Advisor support.
+* Migrate CI builds from travis-ci.org to travis-ci.com.
+* `Issue #503 <https://github.com/jantman/awslimitchecker/issues/503>`__ - Fix ``Units set to "None"`` error when retrieving load balancer data from Service Quotas. We now allow the (A|E)LB per Region quota with a unit of either "Count" (prior to November 2020) or "None" (November 2020 on).
+* `Issue #489 <https://github.com/jantman/awslimitchecker/issues/489>`__ / `PR #490 <https://github.com/jantman/awslimitchecker/pull/490>`__ - Add missing RDS limits: ``Manual Cluster Snapshots``, ``Custom Endpoints Per DB Cluster``, ``DB Instance Roles``, and ``DB Cluster Roles``. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `Issue #472 <https://github.com/jantman/awslimitchecker/issues/472>`__ / `PR #494 <https://github.com/jantman/awslimitchecker/pull/494>`__ - Add support for the ``EKS`` service, and 8 new limits for it. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `Issue #495 <https://github.com/jantman/awslimitchecker/issues/495>`__ / `PR #496 <https://github.com/jantman/awslimitchecker/pull/496>`__ - Add support for the ``Kinesis`` service, and one new limit for it. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+* `PR #499 <https://github.com/jantman/awslimitchecker/pull/499>`__ - Set quota_name for VPC "Entries per route table" limit, so that the current limit will be automatically retrieved from Service Quotas. Thanks to `patuck <https://github.com/patuck>`__ for this contribution!
+* `Issue #498 <https://github.com/jantman/awslimitchecker/issues/498>`__ - Fix multiple issues relating to VPC limits:
+
+  * Update the EC2 / ``Rules per VPC security group`` limit to support retrieving the current limit value from Service Quotas.
+  * Remove the ``EC2/Security groups per VPC`` limit, which no longer exists.
+  * Add the new ``EC2/VPC security groups per Region`` limit.
+
+* `Issue #501 <https://github.com/jantman/awslimitchecker/issues/501>`__ - Update ``VPC/Network interfaces per Region`` limit for new calculation method.
+* `Issue #488 <https://github.com/jantman/awslimitchecker/issues/488>`__ / `PR #491 <https://github.com/jantman/awslimitchecker/pull/491>`__ - Update new ElastiCache default limits. Thanks to `sebasrp <https://github.com/sebasrp>`__ for this contribution!
+
+.. _changelog.9_0_0:
+
+9.0.0 (2020-09-22)
+------------------
+
+**Important:** This release requires new IAM permissions: ``sts:GetCallerIdentity`` and ``cloudwatch:GetMetricData``
+
+**Important:** This release includes updates for major changes to ECS limits, which includes the renaming of some existing limits.
+
+* `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - EC2 instances running on Dedicated Hosts (tenancy "host") or single-tenant hardware (tenancy "dedicated") do not count towards On-Demand Instances limits. They were previously being counted towards these limits; they are now excluded from the count. Thanks to `pritam2277 <https://github.com/pritam2277>`__ for reporting this issue and providing details and test data.
+* `Issue #477 <https://github.com/jantman/awslimitchecker/issues/477>`__ - For all VPC resources that support the ``owner-id`` filter, supply that filter when describing them, set to the current account ID. This will prevent shared resources from other accounts from being counted against the limits. Thanks to `pritam2277 <https://github.com/pritam2277>`__ for reporting this issue and providing details and test data.
+* `Issue #475 <https://github.com/jantman/awslimitchecker/issues/475>`__ - When an Alert Provider is used, only exit non-zero if an exception is encountered. Exit zero even if there are warnings and/or criticals. Thanks to `varuzam <https://github.com/varuzam>`__ for this feature request.
+* `Issue #467 <https://github.com/jantman/awslimitchecker/issues/467>`__ - Fix the Service Quotas quota name for VPC "NAT Gateways per AZ" limit. Thanks to `xRokco <https://github.com/xRokco>`__ for reporting this issue, as well as the required fix.
+* `Issue #457 <https://github.com/jantman/awslimitchecker/issues/457>`__ - In the required IAM permissions, replace ``support:*`` with the specific permissions that we need.
+* `Issue #463 <https://github.com/jantman/awslimitchecker/issues/463>`__ - Updates for the major changes to ECS limits `in August 2020 <https://github.com/awsdocs/amazon-ecs-developer-guide/commit/3ba9bc24b3f667557f43a49b9001fea3538311ad#diff-d98743b56c4036e0baeb5e15901d2a73>`__. Thanks to `vincentclee <https://github.com/vincentclee>`__ for reporting this issue.
+
+  * The ``EC2 Tasks per Service (desired count)`` limit has been replaced with ``Tasks per service``, which measures the desired count of tasks of all launch types (EC2 or Fargate). The default value of this limit has increased from 1000 to 2000.
+  * The default of ``Clusters`` has increased from 2,000 to 10,000.
+  * The default of ``Services per Cluster`` has increased from 1,000 to 2,000.
+  * The ``Fargate Tasks`` limit has been removed.
+  * The ``Fargate On-Demand resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks and EKS pods running concurrently on Fargate. The current usage for this metric is obtained from CloudWatch.
+  * The ``Fargate Spot resource count`` limit has been added, with a default quota value of 500. This limit measures the number of ECS tasks running concurrently on Fargate Spot. The current usage for this metric is obtained from CloudWatch.
+
+* Add internal helper method to :py:class:`~._AwsService` to get Service Quotas usage information from CloudWatch.
+
+.. _changelog.8_1_0:
+
+8.1.0 (2020-09-18)
+------------------
+
+* `PR #468 <https://github.com/jantman/awslimitchecker/pull/468>`_ - Fix transposed headings in CLI Usage documentation. Thanks to `@owenmann <https://github.com/owenmann>`__.
+* `PR #470 <https://github.com/jantman/awslimitchecker/pull/470>`_ - Fix new EBS "Active snapshots" limit (bumped from 10,000 to 100,000) and Quotas Service name. Thanks to `@rashidamiri <https://github.com/rashidamiri>`__.
+* `Issue #464 <https://github.com/jantman/awslimitchecker/issues/464>`_ - Fix bug where SES was causing ``ConnectTimeoutError`` in some regions. This has been added to the list of SES exceptions that we catch and silently ignore. This is a new exception thrown by regions that do not have SES support.
+* Add ``.dockerignore`` file to make local builds quite a bit smaller.
+* `Issue #465 <https://github.com/jantman/awslimitchecker/issues/465>`_ - Fixed via `versionfinder 1.1.1 <https://github.com/jantman/versionfinder/pull/13>`_.
+* Internal testing changes:
+
+  * Stop testing under Python 2.7 and Python 3.4.
+  * Switch from deprecated pep8 / pytest-pep8 to pycodestyle / pytest-pycodestyle.
+  * Pin pytest to ``<6.0.0`` to avoid some breaking changes for now.
+  * Switch integration test environment from Python 3.7 to Python 3.8.
+
 .. _changelog.8_0_2:
 
 8.0.2 (2020-03-03)

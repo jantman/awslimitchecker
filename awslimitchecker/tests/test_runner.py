@@ -1893,7 +1893,7 @@ class TestConsoleEntryPoint(RunnerTester):
                             type(mock_alc.return_value).region_name = mock_rn
                             mock_ct.return_value = 1, {'Foo': 'bar'}, 'FooBar'
                             self.cls.console_entry_point()
-        assert excinfo.value.code == 1
+        assert excinfo.value.code == 0
         assert mock_ct.mock_calls == [
             call(self.cls, None)
         ]
@@ -1929,7 +1929,7 @@ class TestConsoleEntryPoint(RunnerTester):
                             type(mock_alc.return_value).region_name = mock_rn
                             mock_ct.return_value = 2, {'Foo': 'bar'}, 'FooBar'
                             self.cls.console_entry_point()
-        assert excinfo.value.code == 2
+        assert excinfo.value.code == 0
         assert mock_ct.mock_calls == [
             call(self.cls, None)
         ]

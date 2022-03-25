@@ -5,3 +5,4 @@ awslimitchecker.alerts.pagerdutyv1 module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

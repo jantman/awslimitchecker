@@ -76,6 +76,53 @@ class TestInit(object):
             'region:foo', 'foo', 'bar', 'baz:blam'
         ]
         assert cls._http == mock_http
+        assert cls._host == 'https://api.datadoghq.com'
+        assert m_pm.mock_calls == [call()]
+        assert m_va.mock_calls == [call(cls, '1234')]
+
+    @patch.dict('os.environ', {}, clear=True)
+    def test_host_param(self):
+        mock_http = Mock()
+        with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
+            m_pm.return_value = mock_http
+            with patch('%s._validate_auth' % pb, autospec=True) as m_va:
+                cls = Datadog(
+                    'foo', api_key='1234', extra_tags='foo,bar,baz:blam',
+                    host='http://foo.bar'
+                )
+        assert cls._region_name == 'foo'
+        assert cls._duration == 0.0
+        assert cls._limits == []
+        assert cls._api_key == '1234'
+        assert cls._prefix == 'awslimitchecker.'
+        assert cls._tags == [
+            'region:foo', 'foo', 'bar', 'baz:blam'
+        ]
+        assert cls._http == mock_http
+        assert cls._host == 'http://foo.bar'
+        assert m_pm.mock_calls == [call()]
+        assert m_va.mock_calls == [call(cls, '1234')]
+
+    @patch.dict('os.environ', {'DATADOG_HOST': 'http://dd.host'}, clear=True)
+    def test_host_env_var(self):
+        mock_http = Mock()
+        with patch('%s.urllib3.PoolManager' % pbm, autospec=True) as m_pm:
+            m_pm.return_value = mock_http
+            with patch('%s._validate_auth' % pb, autospec=True) as m_va:
+                cls = Datadog(
+                    'foo', api_key='1234', extra_tags='foo,bar,baz:blam',
+                    host='http://foo.bar'
+                )
+        assert cls._region_name == 'foo'
+        assert cls._duration == 0.0
+        assert cls._limits == []
+        assert cls._api_key == '1234'
+        assert cls._prefix == 'awslimitchecker.'
+        assert cls._tags == [
+            'region:foo', 'foo', 'bar', 'baz:blam'
+        ]
+        assert cls._http == mock_http
+        assert cls._host == 'http://dd.host'
         assert m_pm.mock_calls == [call()]
         assert m_va.mock_calls == [call(cls, '1234')]
 
@@ -97,6 +144,7 @@ class TestInit(object):
             'region:foo'
         ]
         assert cls._http == mock_http
+        assert cls._host == 'https://api.datadoghq.com'
         assert m_pm.mock_calls == [call()]
         assert m_va.mock_calls == [call(cls, '5678')]
 
@@ -122,6 +170,7 @@ class DatadogTester(object):
         with patch('%s.__init__' % pb) as m_init:
             m_init.return_value = None
             self.cls = Datadog()
+            self.cls._host = 'https://api.datadoghq.com'
 
 
 class TestValidateAuth(DatadogTester):
@@ -136,6 +185,20 @@ class TestValidateAuth(DatadogTester):
             call.request(
                 'GET',
                 'https://api.datadoghq.com/api/v1/validate?api_key=1234'
+            )
+        ]
+
+    def test_non_default_host(self):
+        mock_http = Mock()
+        mock_resp = Mock(status=200, data=b'{"success": "ok"}')
+        mock_http.request.return_value = mock_resp
+        self.cls._http = mock_http
+        self.cls._host = 'http://my.host'
+        self.cls._validate_auth('1234')
+        assert mock_http.mock_calls == [
+            call.request(
+                'GET',
+                'http://my.host/api/v1/validate?api_key=1234'
             )
         ]
 
@@ -235,11 +298,12 @@ class TestFlush(DatadogTester):
         assert json.loads(c[2]['body'].decode()) == expected
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
-    def test_api_error(self):
+    def test_api_error_non_default_host(self):
         self.cls._prefix = 'prefix.'
         self.cls._tags = ['tag1', 'tag:2']
         self.cls._limits = []
         self.cls._api_key = 'myKey'
+        self.cls._host = 'http://my.host'
         self.cls.set_run_duration(123.45)
         limA = Mock(
             name='limitA', service=Mock(service_name='SVC1')
@@ -298,7 +362,7 @@ class TestFlush(DatadogTester):
         c = mock_http.mock_calls[0]
         assert c[0] == 'request'
         assert c[1] == (
-            'POST', 'https://api.datadoghq.com/api/v1/series?api_key=myKey'
+            'POST', 'http://my.host/api/v1/series?api_key=myKey'
         )
         assert len(c[2]) == 2
         assert c[2]['headers'] == {'Content-type': 'application/json'}

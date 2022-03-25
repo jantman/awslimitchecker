@@ -48,8 +48,6 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_ENI_LIMIT = 350
-
 
 class _VpcService(_AwsService):
 
@@ -81,7 +79,9 @@ class _VpcService(_AwsService):
     def _find_usage_vpcs(self):
         """find usage for VPCs"""
         # overall number of VPCs
-        vpcs = self.conn.describe_vpcs()
+        vpcs = self.conn.describe_vpcs(
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
+        )
         self.limits['VPCs']._add_current_usage(
             len(vpcs['Vpcs']),
             aws_type='AWS::EC2::VPC'
@@ -92,7 +92,9 @@ class _VpcService(_AwsService):
         # subnets per VPC
         subnet_to_az = {}
         subnets = defaultdict(int)
-        for subnet in self.conn.describe_subnets()['Subnets']:
+        for subnet in self.conn.describe_subnets(
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
+        )['Subnets']:
             subnets[subnet['VpcId']] += 1
             subnet_to_az[subnet['SubnetId']] = subnet['AvailabilityZone']
         for vpc_id in subnets:
@@ -107,11 +109,26 @@ class _VpcService(_AwsService):
         """find usage for ACLs"""
         # Network ACLs per VPC
         acls = defaultdict(int)
-        for acl in self.conn.describe_network_acls()['NetworkAcls']:
+        for acl in self.conn.describe_network_acls(
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
+        )['NetworkAcls']:
             acls[acl['VpcId']] += 1
             # Rules per network ACL
+            egress_ipv4 = sum(map(
+                lambda x: x["Egress"] and "CidrBlock" in x, acl['Entries']
+            ))
+            ingress_ipv4 = sum(map(
+                lambda x: not x["Egress"] and "CidrBlock" in x, acl['Entries']
+            ))
+            egress_ipv6 = sum(map(
+                lambda x: x["Egress"] and "Ipv6CidrBlock" in x, acl['Entries']
+            ))
+            ingress_ipv6 = sum(map(
+                lambda x: not x["Egress"] and "Ipv6CidrBlock" in x,
+                acl['Entries']
+            ))
             self.limits['Rules per network ACL']._add_current_usage(
-                len(acl['Entries']),
+                max(egress_ipv4, ingress_ipv4, egress_ipv6, ingress_ipv6),
                 aws_type='AWS::EC2::NetworkAcl',
                 resource_id=acl['NetworkAclId']
             )
@@ -126,7 +143,9 @@ class _VpcService(_AwsService):
         """find usage for route tables"""
         # Route tables per VPC
         tables = defaultdict(int)
-        for table in self.conn.describe_route_tables()['RouteTables']:
+        for table in self.conn.describe_route_tables(
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
+        )['RouteTables']:
             tables[table['VpcId']] += 1
             # Entries per route table
             routes = [
@@ -148,7 +167,9 @@ class _VpcService(_AwsService):
     def _find_usage_gateways(self):
         """find usage for Internet Gateways"""
         # Internet gateways
-        gws = self.conn.describe_internet_gateways()
+        gws = self.conn.describe_internet_gateways(
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
+        )
         self.limits['Internet gateways']._add_current_usage(
             len(gws['InternetGateways']),
             aws_type='AWS::EC2::InternetGateway',
@@ -166,11 +187,11 @@ class _VpcService(_AwsService):
         # "This request has been administratively disabled."
         try:
             gws_per_az = defaultdict(int)
-            for gw in paginate_dict(self.conn.describe_nat_gateways,
-                                    alc_marker_path=['NextToken'],
-                                    alc_data_path=['NatGateways'],
-                                    alc_marker_param='NextToken'
-                                    )['NatGateways']:
+            for gw in paginate_dict(
+                self.conn.describe_nat_gateways,
+                alc_marker_path=['NextToken'], alc_data_path=['NatGateways'],
+                alc_marker_param='NextToken'
+            )['NatGateways']:
                 if gw['State'] not in ['pending', 'available']:
                     logger.debug(
                         'Skipping NAT Gateway %s in state: %s',
@@ -220,7 +241,8 @@ class _VpcService(_AwsService):
             self.conn.describe_network_interfaces,
             alc_marker_path=['NextToken'],
             alc_data_path=['NetworkInterfaces'],
-            alc_marker_param='NextToken'
+            alc_marker_param='NextToken',
+            Filters=[{'Name': 'owner-id', 'Values': [self.current_account_id]}]
         )
 
         self.limits['Network interfaces per Region']._add_current_usage(
@@ -298,6 +320,7 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::Route',
             limit_subtype='AWS::EC2::RouteTable',
+            quotas_name='Routes per route table'
         )
 
         limits['Internet gateways'] = AwsLimit(
@@ -317,6 +340,7 @@ class _VpcService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::NatGateway',
+            quotas_name='NAT gateways per Availability Zone'
         )
 
         limits['Virtual private gateways'] = AwsLimit(
@@ -331,35 +355,13 @@ class _VpcService(_AwsService):
         limits['Network interfaces per Region'] = AwsLimit(
             'Network interfaces per Region',
             self,
-            DEFAULT_ENI_LIMIT,
+            5000,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::EC2::NetworkInterface'
         )
         self.limits = limits
         return limits
-
-    def _update_limits_from_api(self):
-        """
-        Query EC2's DescribeAccountAttributes API action and
-        update the network interface limit, as needed. Updates ``self.limits``.
-
-        More info on the network interface limit, from the docs:
-        'This limit is the greater of either the default limit (350) or your
-        On-Demand Instance limit multiplied by 5.
-        The default limit for On-Demand Instances is 20.'
-        """
-        self.connect()
-        self.connect_resource()
-        logger.info("Querying EC2 DescribeAccountAttributes for limits")
-        attribs = self.conn.describe_account_attributes()
-        for attrib in attribs['AccountAttributes']:
-            if attrib['AttributeName'] == 'max-instances':
-                val = attrib['AttributeValues'][0]['AttributeValue']
-                if int(val) * 5 > DEFAULT_ENI_LIMIT:
-                    limit_name = 'Network interfaces per Region'
-                    self.limits[limit_name]._set_api_limit(int(val) * 5)
-        logger.debug("Done setting limits from API")
 
     def required_iam_permissions(self):
         """

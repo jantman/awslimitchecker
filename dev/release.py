@@ -106,7 +106,7 @@ class InitialChecks(BaseStep):
             for line in fh.readlines():
                 line = line.strip()
                 if (
-                    line == '------------------' and
+                    line == '-' * len(expected) and
                     last_line == expected
                 ):
                     have_ver = True
@@ -163,7 +163,7 @@ class ConfirmTravisAndCoverage(BaseStep):
                  'and then re-run.' % (build.number, build.id))
         logger.info('OK, Travis build passed.')
         logger.info(
-            'Build URL: <https://travis-ci.org/jantman/awslimitchecker/'
+            'Build URL: <https://travis-ci.com/jantman/awslimitchecker/'
             'builds/%s>', build.id
         )
         if not prompt_user(
@@ -315,13 +315,13 @@ class PullRequest(BaseStep):
         pr = self._gh._repo.pull_request(pr_num)
         headsha = pr.head.sha
         while True:
-            for s in self._gh._repo.statuses(sha=headsha):
-                if s.context == 'continuous-integration/travis-ci/pr':
+            for s in self._gh._repo.commit(headsha).check_runs():
+                if s.name == 'Travis CI - Pull Request':
                     logger.info(
                         'Last TravisCI PR status: %s <%s> (at %s)',
-                        s.state, s.target_url, s.updated_at
+                        s.conclusion, s.html_url, s.completed_at
                     )
-                    if s.state == 'success':
+                    if s.conclusion == 'success':
                         return True
             logger.debug('No successful TravisCI PR build; trying again in 15s')
             sleep(15)

@@ -461,12 +461,12 @@ class TestAwsLimitChecker(object):
             with patch('%s.logger' % pbm) as mock_logger:
                 with patch('%s.boto3.Session' % pbm) as mock_sess:
                     with patch.dict('%s._services' % pbm, {}, clear=True):
-                            mock_sess.return_value = mock_session
-                            cls = AwsLimitChecker(profile_name='myprof')
-                            mock_get_sts.reset_mock()
-                            mock_logger.reset_mock()
-                            mock_sess.reset_mock()
-                            res = cls._boto_conn_kwargs
+                        mock_sess.return_value = mock_session
+                        cls = AwsLimitChecker(profile_name='myprof')
+                        mock_get_sts.reset_mock()
+                        mock_logger.reset_mock()
+                        mock_sess.reset_mock()
+                        res = cls._boto_conn_kwargs
         assert mock_get_sts.mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Using credentials profile: %s', 'myprof')
@@ -846,12 +846,18 @@ class TestAwsLimitChecker(object):
                 'Effect': 'Allow',
                 'Resource': '*',
                 'Action': [
+                    'cloudwatch:GetMetricData',
                     'ec2:bar',
                     'ec2:foo',
                     'foo:perm1',
                     'foo:perm2',
                     'servicequotas:ListServiceQuotas',
-                    'support:*',
+                    'sts:GetCallerIdentity',
+                    'support:DescribeTrustedAdvisorCheckRefreshStatuses',
+                    'support:DescribeTrustedAdvisorCheckResult',
+                    'support:DescribeTrustedAdvisorCheckSummaries',
+                    'support:DescribeTrustedAdvisorChecks',
+                    'support:RefreshTrustedAdvisorCheck',
                     'trustedadvisor:Describe*',
                     'trustedadvisor:RefreshCheck'
                 ],

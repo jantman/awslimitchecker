@@ -46,7 +46,7 @@ import requests
 
 try:
     from travispy import TravisPy
-    from travispy.travispy import PUBLIC
+    from travispy.travispy import PRIVATE
 except ImportError:
     raise SystemExit(
         "ERROR: TravisPy not installed. Please run 'pip install TravisPy'"
@@ -98,7 +98,7 @@ class TravisChecker(object):
                 'Please export your GitHub PAT as the "GITHUB_TOKEN" env var'
             )
         logger.debug('Connecting to TravisCI API...')
-        self._travis = TravisPy.github_auth(token)
+        self._travis = TravisPy.github_auth(token, uri=PRIVATE)
 
     def commit_latest_build_status(self, commit):
         """

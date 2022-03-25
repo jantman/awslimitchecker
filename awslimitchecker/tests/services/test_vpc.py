@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import sys
 from awslimitchecker.tests.services import result_fixtures
-from awslimitchecker.services.vpc import _VpcService, DEFAULT_ENI_LIMIT
+from awslimitchecker.services.vpc import _VpcService
 
 from botocore.exceptions import ClientError
 
@@ -142,6 +142,7 @@ class Test_VpcService(object):
         mock_conn.describe_vpcs.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_vpcs()
@@ -149,7 +150,9 @@ class Test_VpcService(object):
         assert len(cls.limits['VPCs'].get_current_usage()) == 1
         assert cls.limits['VPCs'].get_current_usage()[0].get_value() == 2
         assert mock_conn.mock_calls == [
-            call.describe_vpcs()
+            call.describe_vpcs(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_subnets(self):
@@ -158,6 +161,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
         mock_conn.describe_subnets.return_value = response
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         res = cls._find_usage_subnets()
@@ -174,7 +178,9 @@ class Test_VpcService(object):
         assert usage[1].get_value() == 2
         assert usage[1].resource_id == 'vpc-1'
         assert mock_conn.mock_calls == [
-            call.describe_subnets()
+            call.describe_subnets(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_acls(self):
@@ -182,6 +188,7 @@ class Test_VpcService(object):
         mock_conn = Mock()
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         mock_conn.describe_network_acls.return_value = response
@@ -191,19 +198,23 @@ class Test_VpcService(object):
         assert len(usage) == 2
         assert usage[0].get_value() == 1
         assert usage[0].resource_id == 'vpc-2'
-        assert usage[1].get_value() == 2
+        assert usage[1].get_value() == 3
         assert usage[1].resource_id == 'vpc-1'
         entries = sorted(cls.limits['Rules per network '
                                     'ACL'].get_current_usage())
-        assert len(entries) == 3
+        assert len(entries) == 4
         assert entries[0].resource_id == 'acl-2'
         assert entries[0].get_value() == 1
         assert entries[1].resource_id == 'acl-1'
-        assert entries[1].get_value() == 3
-        assert entries[2].resource_id == 'acl-3'
-        assert entries[2].get_value() == 5
+        assert entries[1].get_value() == 2
+        assert entries[2].resource_id == 'acl-4'
+        assert entries[2].get_value() == 3
+        assert entries[3].resource_id == 'acl-3'
+        assert entries[3].get_value() == 4
         assert mock_conn.mock_calls == [
-            call.describe_network_acls()
+            call.describe_network_acls(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_route_tables(self):
@@ -213,6 +224,7 @@ class Test_VpcService(object):
         mock_conn.describe_route_tables.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_route_tables()
@@ -233,7 +245,9 @@ class Test_VpcService(object):
         assert entries[2].resource_id == 'rt-3'
         assert entries[2].get_value() == 3
         assert mock_conn.mock_calls == [
-            call.describe_route_tables()
+            call.describe_route_tables(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_internet_gateways(self):
@@ -243,6 +257,7 @@ class Test_VpcService(object):
         mock_conn.describe_internet_gateways.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_gateways()
@@ -251,7 +266,9 @@ class Test_VpcService(object):
         assert cls.limits['Internet gateways'].get_current_usage()[
             0].get_value() == 2
         assert mock_conn.mock_calls == [
-            call.describe_internet_gateways()
+            call.describe_internet_gateways(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }])
         ]
 
     def test_find_usage_nat_gateways(self):
@@ -263,6 +280,7 @@ class Test_VpcService(object):
 
         with patch('%s.logger' % self.pbm) as mock_logger:
             cls = _VpcService(21, 43, {}, None)
+            cls._current_account_id = '0123456789'
             cls.conn = mock_conn
             cls._find_usage_nat_gateways(subnets)
 
@@ -300,6 +318,7 @@ class Test_VpcService(object):
         mock_conn.describe_nat_gateways.side_effect = se_exc
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         with patch('%s.logger' % self.pbm, autospec=True) as mock_logger:
@@ -322,6 +341,7 @@ class Test_VpcService(object):
         mock_conn.describe_vpn_gateways.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usages_vpn_gateways()
@@ -349,6 +369,7 @@ class Test_VpcService(object):
         mock_conn.describe_network_interfaces.return_value = response
 
         cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
         cls.conn = mock_conn
 
         cls._find_usage_network_interfaces()
@@ -358,58 +379,10 @@ class Test_VpcService(object):
         assert cls.limits['Network interfaces per Region'].get_current_usage()[
             0].get_value() == 1
         assert mock_conn.mock_calls == [
-            call.describe_network_interfaces(),
+            call.describe_network_interfaces(Filters=[{
+                'Name': 'owner-id', 'Values': ['0123456789']
+            }]),
         ]
-
-    def test_update_limits_from_api_high_max_instances(self):
-        fixtures = result_fixtures.VPC()
-        response = fixtures.test_update_limits_from_api_high_max_instances
-
-        mock_conn = Mock()
-        mock_client_conn = Mock()
-        mock_client_conn.describe_account_attributes.return_value = response
-
-        cls = _VpcService(21, 43, {}, None)
-        cls.resource_conn = mock_conn
-        cls.conn = mock_client_conn
-        with patch('awslimitchecker.services.vpc.logger') as mock_logger:
-            cls._update_limits_from_api()
-        assert mock_conn.mock_calls == []
-        assert mock_client_conn.mock_calls == [
-            call.describe_account_attributes()
-        ]
-        assert mock_logger.mock_calls == [
-            call.info("Querying EC2 DescribeAccountAttributes for limits"),
-            call.debug('Done setting limits from API')
-        ]
-        assert cls.limits['Network interfaces per Region'].api_limit == 2000
-        assert cls.limits['Network interfaces per Region'].get_limit() == 2000
-
-    def test_update_limits_from_api_low_max_instances(self):
-        fixtures = result_fixtures.VPC()
-        response = fixtures.test_update_limits_from_api_low_max_instances
-
-        mock_conn = Mock()
-        mock_client_conn = Mock()
-        mock_client_conn.describe_account_attributes.return_value = response
-
-        cls = _VpcService(21, 43, {}, None)
-        cls.resource_conn = mock_conn
-        cls.conn = mock_client_conn
-        with patch('awslimitchecker.services.vpc.logger') as mock_logger:
-            cls._update_limits_from_api()
-        assert mock_conn.mock_calls == []
-        assert mock_client_conn.mock_calls == [
-            call.describe_account_attributes()
-        ]
-        assert mock_logger.mock_calls == [
-            call.info("Querying EC2 DescribeAccountAttributes for limits"),
-            call.debug('Done setting limits from API')
-        ]
-
-        limit_name = 'Network interfaces per Region'
-        assert cls.limits[limit_name].api_limit is None
-        assert cls.limits[limit_name].get_limit() == DEFAULT_ENI_LIMIT
 
     def test_required_iam_permissions(self):
         cls = _VpcService(21, 43, {}, None)

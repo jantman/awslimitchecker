@@ -40,7 +40,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 from awslimitchecker.services.base import _AwsService
 from awslimitchecker.services.apigateway import _ApigatewayService
 from awslimitchecker.services.autoscaling import _AutoscalingService
+from awslimitchecker.services.certificatemanager import \
+    _CertificatemanagerService
 from awslimitchecker.services.cloudformation import _CloudformationService
+from awslimitchecker.services.cloudfront import _CloudfrontService
 from awslimitchecker.services.cloudtrail import _CloudTrailService
 from awslimitchecker.services.directoryservice import _DirectoryserviceService
 from awslimitchecker.services.dynamodb import _DynamodbService
@@ -51,8 +54,10 @@ from awslimitchecker.services.efs import _EfsService
 from awslimitchecker.services.elasticache import _ElastiCacheService
 from awslimitchecker.services.elasticbeanstalk import _ElasticBeanstalkService
 from awslimitchecker.services.elb import _ElbService
+from awslimitchecker.services.eks import _EksService
 from awslimitchecker.services.firehose import _FirehoseService
 from awslimitchecker.services.iam import _IamService
+from awslimitchecker.services.kinesis import _KinesisService
 from awslimitchecker.services.lambdafunc import _LambdaService
 from awslimitchecker.services.rds import _RDSService
 from awslimitchecker.services.redshift import _RedshiftService

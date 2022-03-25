@@ -37,6 +37,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 ################################################################################
 """
 
+import os
 from botocore.exceptions import ClientError
 from dateutil import parser
 import logging
@@ -142,9 +143,38 @@ class TrustedAdvisor(Connectable):
             logger.debug('Already polled TA; skipping update')
             return
         self.connect()
+        if self._dont_use_ta():
+            logger.info(
+                'Not using Trusted Advisor in regions outside of China or '
+                'GovCloud; export FORCE_USE_TA=true to override.'
+            )
+            return
         ta_results = self._poll()
         self._update_services(ta_results)
         self.limits_updated = True
+
+    def _dont_use_ta(self):
+        """
+        If we are connecting to a region outside of China or GovCloud, and do
+        not have the ``FORCE_USE_TA`` environment variable set to ``true``,
+        don't use Trusted Advisor at all.
+
+        :return: whether whether to skip using TA
+        :rtype: bool
+        """
+        if os.environ.get('FORCE_USE_TA', '') == 'true':
+            logger.debug(
+                'Found env var FORCE_USE_TA set to "true"; forcing Trusted '
+                'Advisor polling.'
+            )
+            return False
+        region_name = self.conn._client_config.region_name
+        if region_name.startswith('cn-') or region_name.startswith('us-gov-'):
+            logger.debug(
+                'Using Trusted Advisor in region: %s', region_name
+            )
+            return False
+        return True
 
     def _poll(self):
         """
@@ -232,13 +262,13 @@ class TrustedAdvisor(Connectable):
                     ex.response['Error']['Message']
                 )
                 self.have_ta = False
-                return (None, None)
+                return None, None
             else:
                 raise ex
         for check in checks:
             if (
-                            check['category'] == 'performance' and
-                            check['name'] == 'Service Limits'
+                check['category'] == 'performance' and
+                check['name'] == 'Service Limits'
             ):
                 logger.debug("Found TA check; id=%s", check['id'])
                 return (

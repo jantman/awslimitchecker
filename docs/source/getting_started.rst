@@ -62,7 +62,7 @@ Requirements
 
 **Either Docker in order to run via the** :ref:`docker image <docker>`, **or:**
 
-* Python 3.5 or newer. Python 2.7 will not be supported as of January 1, 2010.
+* Python 3.5 or newer.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 * `boto3 <http://boto3.readthedocs.org/>`_ >= 1.4.6 and its dependency `botocore <https://botocore.readthedocs.io/en/latest/>`_ >= 1.6.0.
 
@@ -84,6 +84,27 @@ can be whatever you want):
     virtualenv limitchecker
     source limitchecker/bin/activate
     pip install awslimitchecker
+
+Alternatively, you may also install awslimitchecker through
+`conda <https://docs.conda.io/en/latest/>`_
+using the
+`conda-forge <https://conda-forge.org>`_
+channel.
+This can be achieved by adding ``conda-forge`` to your channels with
+
+.. code-block:: bash
+
+    conda config --add channels conda-forge
+
+Once activated, ``awslimitchecker`` can then be installed with
+
+.. code-block:: bash
+
+    conda install awslimitchecker
+
+We recommend installing awslimitchecker into a separate
+`conda environment <https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#>`_
+.
 
 Version Specification
 +++++++++++++++++++++
@@ -152,6 +173,9 @@ to check limits in multiple regions, simply run the script multiple times, once 
 
 Trusted Advisor
 ---------------
+
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
 
 awslimitchecker supports retrieving your current service limits via the
 `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_

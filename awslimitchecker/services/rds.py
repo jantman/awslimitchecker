@@ -69,6 +69,10 @@ class _RDSService(_AwsService):
         'ReadReplicasPerMaster': 'Read replicas per master',
         'DBClusters': 'DB Clusters',
         'DBClusterParameterGroups': 'DB Cluster Parameter Groups',
+        'DBInstanceRoles': 'DB Instance Roles',
+        'DBClusterRoles': 'DB Cluster Roles',
+        'CustomEndpointsPerDBCluster': 'Custom Endpoints Per DB Cluster',
+        'ManualClusterSnapshots': 'Manual Cluster Snapshots',
     }
 
     def find_usage(self):
@@ -283,6 +287,42 @@ class _RDSService(_AwsService):
             limit_type='AWS::RDS::DBClusterParameterGroup',
             ta_limit_name='Cluster parameter groups',
             quotas_name='DB cluster parameter groups'
+        )
+        limits['Manual Cluster Snapshots'] = AwsLimit(
+            'Manual Cluster Snapshots',
+            self,
+            100,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::RDS::DBCluster',
+            quotas_name='Manual Cluster Snapshots'
+        )
+        limits['Custom Endpoints Per DB Cluster'] = AwsLimit(
+            'Custom Endpoints Per DB Cluster',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::RDS::DBCluster',
+            quotas_name='Custom Endpoints Per DB Cluster'
+        )
+        limits['DB Instance Roles'] = AwsLimit(
+            'DB Instance Roles',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::RDS::DBInstance',
+            quotas_name='DB Instance Roles'
+        )
+        limits['DB Cluster Roles'] = AwsLimit(
+            'DB Cluster Roles',
+            self,
+            5,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::RDS::DBCluster',
+            quotas_name='DB Cluster Roles'
         )
         self.limits = limits
         return limits

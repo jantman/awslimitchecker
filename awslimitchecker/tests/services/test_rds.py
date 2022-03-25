@@ -86,7 +86,11 @@ class Test_RDSService(object):
             'Event Subscriptions',
             'Read replicas per master',
             'DB Clusters',
-            'DB Cluster Parameter Groups'
+            'DB Cluster Parameter Groups',
+            'DB Cluster Roles',
+            'DB Instance Roles',
+            'Custom Endpoints Per DB Cluster',
+            'Manual Cluster Snapshots'
         ])
         for name, limit in res.items():
             assert limit.service == cls
@@ -231,8 +235,9 @@ class Test_RDSService(object):
         assert usage[0].get_value() == 2
         assert usage[0].aws_type == 'AWS::RDS::DBSecurityGroup'
 
-        usage = sorted(cls.limits[
-                           'Max auths per security group'].get_current_usage())
+        usage = sorted(
+            cls.limits['Max auths per security group'].get_current_usage()
+        )
         assert len(usage) == 5
         assert usage[0].get_value() == 0
         assert usage[0].resource_id == 'MyEmptySecurityGroup'
@@ -339,3 +344,19 @@ class Test_RDSService(object):
         lim = cls.limits['DB Cluster Parameter Groups']
         assert lim.api_limit == 51
         assert lim.get_current_usage()[0].get_value() == 6
+
+        lim = cls.limits['Manual Cluster Snapshots']
+        assert lim.api_limit == 101
+        assert lim.get_current_usage()[0].get_value() == 5
+
+        lim = cls.limits['DB Instance Roles']
+        assert lim.api_limit == 11
+        assert lim.get_current_usage()[0].get_value() == 1
+
+        lim = cls.limits['DB Cluster Roles']
+        assert lim.api_limit == 12
+        assert lim.get_current_usage()[0].get_value() == 2
+
+        lim = cls.limits['Custom Endpoints Per DB Cluster']
+        assert lim.api_limit == 13
+        assert lim.get_current_usage()[0].get_value() == 3

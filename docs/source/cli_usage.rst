@@ -24,10 +24,9 @@ use as a Nagios-compatible plugin).
 .. code-block:: console
 
    (venv)$ awslimitchecker --help
-   usage: awslimitchecker [-h] [-S [SERVICE [SERVICE ...]]]
-                          [--skip-service SKIP_SERVICE] [--skip-check SKIP_CHECK]
-                          [-s] [-l] [--list-defaults] [-L LIMIT]
-                          [--limit-override-json LIMIT_OVERRIDE_JSON]
+   usage: awslimitchecker [-h] [-S [SERVICE ...]] [--skip-service SKIP_SERVICE]
+                          [--skip-check SKIP_CHECK] [-s] [-l] [--list-defaults]
+                          [-L LIMIT] [--limit-override-json LIMIT_OVERRIDE_JSON]
                           [--threshold-override-json THRESHOLD_OVERRIDE_JSON]
                           [-u] [--iam-policy] [-W WARNING_THRESHOLD]
                           [-C CRITICAL_THRESHOLD] [-P PROFILE_NAME]
@@ -50,7 +49,7 @@ use as a Nagios-compatible plugin).
    <http://awslimitchecker.readthedocs.org/>
    optional arguments:
      -h, --help            show this help message and exit
-     -S [SERVICE [SERVICE ...]], --service [SERVICE [SERVICE ...]]
+     -S [SERVICE ...], --service [SERVICE ...]
                            perform action for only the specified service name;
                            see -s|--list-services for valid names
      --skip-service SKIP_SERVICE
@@ -177,9 +176,9 @@ View the AWS services currently supported by ``awslimitchecker`` with the
    (venv)$ awslimitchecker -s
    ApiGateway
    AutoScaling
+   CertificateManager
    CloudFormation
-   CloudTrail
-   Directory Service
+   CloudFront
    (...)
    Route53
    S3
@@ -227,19 +226,19 @@ and limits followed by ``(API)`` have been obtained from the service's API.
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   AutoScaling/Auto Scaling groups                                           1500 (API)
+   AutoScaling/Auto Scaling groups                                           200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
 
-Disabling Trusted Advisor Checks
+Disabling Service Quotas service
 ++++++++++++++++++++++++++++++++
 
 Using the ``--skip-quotas`` option will disable attempting to query limit information
@@ -254,18 +253,21 @@ from the Service Quotas service.
    ApiGateway/Documentation parts per API                                    2000
    ApiGateway/Edge APIs per account                                          120
    (...)
-   AutoScaling/Auto Scaling groups                                           1500 (API)
+   AutoScaling/Auto Scaling groups                                           200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
    VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000 (TA)
+   VPC/VPCs                                                                  5
    VPC/Virtual private gateways                                              5
 
 
 
-Disabling Service Quotas service
+Disabling Trusted Advisor Checks
 ++++++++++++++++++++++++++++++++
+
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
 
 Using the ``--skip-ta`` option will disable attempting to query limit information
 from Trusted Advisor for all commands.
@@ -277,14 +279,14 @@ from Trusted Advisor for all commands.
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   AutoScaling/Auto Scaling groups                                           1500 (API)
+   AutoScaling/Auto Scaling groups                                           200 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
@@ -342,15 +344,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   ApiGateway/API keys per account                                           22
-   ApiGateway/Client certificates per account                                3
-   ApiGateway/Custom authorizers per API                                     max: 00e87qs7ci=2 (00e87qs (...)
-   ApiGateway/Documentation parts per API                                    max: 00e87qs7ci=2 (00e87qs (...)
-   ApiGateway/Edge APIs per account                                          207
+   ApiGateway/API keys per account                                           2
+   ApiGateway/Client certificates per account                                0
+   ApiGateway/Custom authorizers per API                                     max: 2d7q4kzcmh=2 (2d7q4kz (...)
+   ApiGateway/Documentation parts per API                                    max: 2d7q4kzcmh=2 (2d7q4kz (...)
+   ApiGateway/Edge APIs per account                                          9
    (...)
-   VPC/Subnets per VPC                                                       max: vpc-c89074a9=41 (vpc- (...)
-   VPC/VPCs                                                                  39
-   VPC/Virtual private gateways                                              4
+   VPC/Subnets per VPC                                                       max: vpc-f4279a92=6 (vpc-f (...)
+   VPC/VPCs                                                                  2
+   VPC/Virtual private gateways                                              1
 
 
 
@@ -379,14 +381,14 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   CloudFormation/Stacks                                                     4000 (API)
+   CloudFormation/Stacks                                                     2000 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
@@ -414,10 +416,10 @@ Using a command like:
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
-   ApiGateway/Edge APIs per account                                          300.0 (Quotas)
+   ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   VPC/Subnets per VPC                                                       200
-   VPC/VPCs                                                                  1000.0 (Quotas)
+   VPC/Subnets per VPC                                                       200.0 (Quotas)
+   VPC/VPCs                                                                  5.0 (Quotas)
    VPC/Virtual private gateways                                              5
 
 
@@ -458,8 +460,6 @@ threshold only, and another has crossed the critical threshold):
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=5, us-east-1c= (...)
    VPC/Virtual private gateways                           (limit 5) WARNING: 4
 
-
-
 .. _cli_usage.threshold_overrides:
 
 Set Custom Thresholds
@@ -478,8 +478,6 @@ To set the warning threshold of 50% and a critical threshold of 75% when checkin
    RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
    S3/Buckets                                             (limit 100) CRITICAL: 946
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=5, us-east-1c= (...)
-
-
 
 You can also set custom thresholds on a per-limit basis using the
 ``--threshold-override-json`` CLI option, which accepts the path to a JSON file
@@ -527,16 +525,14 @@ Using a command like:
 .. code-block:: console
 
    (venv)$ awslimitchecker -W 97 --critical=98 --no-color --threshold-override-json=s3://bucketname/path/overrides.json
-   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some_app_name_here=5
+   DynamoDB/Local Secondary Indexes                       (limit 5) CRITICAL: some_app_name (...)
    DynamoDB/Tables Per Region                             (limit 256) CRITICAL: 554
-   EC2/Rules per VPC security group                       (limit 50) CRITICAL: sg-aaaaaaaa=49, sg-bbbbb (...)
-   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-cccccccc=726, vpc-c (...)
+   EC2/Rules per VPC security group                       (limit 50) CRITICAL: sg-cccccccc=49, sg-eeeee (...)
+   EC2/Security groups per VPC                            (limit 500) CRITICAL: vpc-dddddddd=726, vpc-c (...)
    (...)
    RDS/VPC Security Groups                                (limit 5) CRITICAL: 5
    S3/Buckets                                             (limit 100) CRITICAL: 946
    VPC/NAT Gateways per AZ                                (limit 5) CRITICAL: us-east-1d=5, us-east-1c= (...)
-
-
 
 .. _cli_usage.metrics:
 
@@ -632,7 +628,7 @@ permissions for it to perform all limit checks. This can be viewed with the
      "Statement": [
        {
          "Action": [
-           "apigateway:GET",
+           "acm:ListCertificates",
    (...)
        }
      ],
@@ -683,6 +679,9 @@ between your account and the 123456789012 destination account; see the
 
 Partitions and Trusted Advisor Regions
 ++++++++++++++++++++++++++++++++++++++
+
+.. attention::
+   Trusted Advisor support in awslimitchecker is deprecated outside of the China and GovCloud regions, and now defaults to disabled/skipped in standard AWS, as the information available from TA can now be retrieved faster and more accurately via other means. See :ref:`changelog.10_0_0` for further information.
 
 awslimitchecker currently supports operating against non-standard `partitions <https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html>`_, such as GovCloud and AWS China (Beijing). Partition names, as seen in the ``partition`` field of ARNs, can be specified with the ``--role-partition`` option to awslimitchecker, like ``--role-partition=aws-cn`` for the China (Beijing) partition. Similarly, the region name to use for the ``support`` API for Trusted Advisor can be specified with the ``--ta-api-region`` option, like ``--ta-api-region=us-gov-west-1``.
 

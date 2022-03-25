@@ -5,3 +5,4 @@ awslimitchecker.connectable module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

@@ -91,6 +91,7 @@ def get_boto3_resource_model(service_name, resource_name):
     )
     return resource_cls
 
+
 # get some resource models for specs...
 Instance = get_boto3_resource_model('ec2', 'Instance')
 SecurityGroup = get_boto3_resource_model('ec2', 'SecurityGroup')
@@ -140,14 +141,14 @@ class EBS(object):
                 'VolumeType': 'standard',
                 'Iops': None,
             },
-            # 15G general purpose SSD, 45 IOPS
+            # 15G general purpose SSD gp2, 45 IOPS
             {
                 'VolumeId': 'vol-3',
                 'Size': 15,
                 'VolumeType': 'gp2',
                 'Iops': 45,
             },
-            # 30G general purpose SSD, 90 IOPS
+            # 30G general purpose SSD gp2, 90 IOPS
             {
                 'VolumeId': 'vol-4',
                 'Size': 30,
@@ -168,6 +169,20 @@ class EBS(object):
                 'VolumeType': 'io1',
                 'Iops': 300,
             },
+            # 400G PIOPS, 700 IOPS
+            {
+                'VolumeId': 'vol-5',
+                'Size': 400,
+                'VolumeType': 'io2',
+                'Iops': 700,
+            },
+            # 100G PIOPS, 300 IOPS
+            {
+                'VolumeId': 'vol-6',
+                'Size': 100,
+                'VolumeType': 'io2',
+                'Iops': 300,
+            },
             # othertype
             {
                 'VolumeId': 'vol-7',
@@ -186,6 +201,20 @@ class EBS(object):
                 'Size': 1000,
                 'VolumeType': 'sc1',
                 'Iops': None,
+            },
+            # 10G general purpose SSD gp3, 30 IOPS
+            {
+                'VolumeId': 'vol-3',
+                'Size': 10,
+                'VolumeType': 'gp3',
+                'Iops': 30,
+            },
+            # 30G general purpose SSD gp3, 90 IOPS
+            {
+                'VolumeId': 'vol-4',
+                'Size': 30,
+                'VolumeType': 'gp3',
+                'Iops': 90,
             },
         ]
     }
@@ -220,6 +249,7 @@ class EBS(object):
 
 
 class VPC(object):
+
     test_find_usage_vpcs = {
         'Vpcs': [
             {
@@ -341,12 +371,72 @@ class VPC(object):
             {
                 'NetworkAclId': 'acl-2',
                 'VpcId': 'vpc-1',
-                'Entries': [1],
+                'Entries': [
+                    {
+                        'Egress': True,
+                        'CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'CidrBlock': 'string'
+                    },
+                ],
             },
             {
                 'NetworkAclId': 'acl-3',
                 'VpcId': 'vpc-2',
-                'Entries': [1, 2, 3, 4, 5],
+                'Entries': [
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    }
+                ],
+            },
+            {
+                'NetworkAclId': 'acl-4',
+                'VpcId': 'vpc-1',
+                'Entries': [
+                    {
+                        'Egress': False,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': True,
+                        'Ipv6CidrBlock': 'string'
+                    },
+                    {
+                        'Egress': False,
+                        'Ipv6CidrBlock': 'string'
+                    }
+                ],
             },
         ]
     }
@@ -617,48 +707,6 @@ class VPC(object):
             'HTTPStatusCode': 200,
             'RequestId': '9cc96e79-3ace-43c2-8a5f-fa1e41017dc0'
         }
-    }
-
-    test_update_limits_from_api_high_max_instances = {
-        'ResponseMetadata': {
-            'HTTPStatusCode': 200,
-            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
-        },
-        'AccountAttributes': [
-            {
-                'AttributeName': 'max-instances',
-                'AttributeValues': [
-                    {
-                        'AttributeValue': '400'
-                    }
-                ]
-            }
-        ]
-    }
-
-    test_update_limits_from_api_low_max_instances = {
-        'ResponseMetadata': {
-            'HTTPStatusCode': 200,
-            'RequestId': '16b85906-ab0d-4134-b8bb-df3e6120c6c7'
-        },
-        'AccountAttributes': [
-            {
-                'AttributeName': 'max-instances',
-                'AttributeValues': [
-                    {
-                        'AttributeValue': '50'
-                    }
-                ]
-            },
-            {
-                'AttributeName': 'something-else',
-                'AttributeValues': [
-                    {
-                        'AttributeValue': '1'
-                    }
-                ]
-            }
-        ]
     }
 
 
@@ -1113,6 +1161,26 @@ class RDS(object):
                 'Used': 6
             },
             {
+                'Max': 11,
+                'AccountQuotaName': 'DBInstanceRoles',
+                'Used': 1
+            },
+            {
+                'Max': 12,
+                'AccountQuotaName': 'DBClusterRoles',
+                'Used': 2
+            },
+            {
+                'Max': 13,
+                'AccountQuotaName': 'CustomEndpointsPerDBCluster',
+                'Used': 3
+            },
+            {
+                'Max': 101,
+                'AccountQuotaName': 'ManualClusterSnapshots',
+                'Used': 5
+            },
+            {
                 'Max': 98,
                 'AccountQuotaName': 'Foo',
                 'Used': 99
@@ -1139,8 +1207,8 @@ class ElasticBeanstalk(object):
                     'version-2'
                 ],
                 'ConfigurationTemplates': [
-                     'config-1',
-                     'config-2'
+                    'config-1',
+                    'config-2'
                 ]
             },
             {
@@ -1153,8 +1221,8 @@ class ElasticBeanstalk(object):
                     'version-2'
                 ],
                 'ConfigurationTemplates': [
-                     'config-1',
-                     'config-2'
+                    'config-1',
+                    'config-2'
                 ]
             }
         ]
@@ -1295,57 +1363,913 @@ class ElasticBeanstalk(object):
     }
 
 
+class CloudFront(object):
+    test_find_usage_distributions_empty = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 0
+        }
+    }
+    test_find_usage_distributions = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-000',
+                    'Aliases': {
+                        'Quantity': 3,
+                        'Items': [
+                            'string1', 'string2', 'string3'
+                        ]
+                    },
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {},
+                    'CacheBehaviors': {
+                        'Quantity': 4,
+                        'Items': [
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                            {'PathPattern': '', 'TargetOriginId': 'string'},
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'Origins': {
+                        'Quantity': 3,
+                        'Items': [
+                            {'Id': 'string'},
+                            {'Id': 'string'},
+                            {'Id': 'string'},
+                        ]
+                    },
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-003',
+                    'OriginGroups': {
+                        'Quantity': 1,
+                        'Items': [
+                            {
+                                'Id': 'string',
+                                'FailoverCriteria': {},
+                                'Members': {}
+                            },
+                        ]
+                    },
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-100',
+                    'ARN': 'string',
+                    'Status': 'string',
+                    'LastModifiedTime': datetime(2015, 1, 1),
+                    'DomainName': 'string',
+                    'Aliases': {
+                        'Quantity': 2,
+                        'Items': [
+                            'string1',
+                            'string2',
+                        ]
+                    },
+                    'Origins': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'Id': 'string',
+                                'DomainName': 'string',
+                                'OriginPath': 'string',
+                                'CustomHeaders': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'HeaderName': 'string',
+                                            'HeaderValue': 'string'
+                                        },
+                                    ]
+                                },
+                                'S3OriginConfig': {
+                                    'OriginAccessIdentity': 'string'
+                                },
+                                'CustomOriginConfig': {
+                                    'HTTPPort': 123,
+                                    'HTTPSPort': 123,
+                                    'OriginProtocolPolicy': 'https-only',
+                                    'OriginSslProtocols': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'SSLv3', 'TLSv1', 'TLSv1.1',
+                                            'TLSv1.2',
+                                        ]
+                                    },
+                                    'OriginReadTimeout': 123,
+                                    'OriginKeepaliveTimeout': 123
+                                },
+                                'ConnectionAttempts': 123,
+                                'ConnectionTimeout': 123,
+                                'OriginShield': {
+                                    'Enabled': False,
+                                    'OriginShieldRegion': 'string'
+                                }
+                            },
+                        ]
+                    },
+                    'OriginGroups': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'Id': 'string',
+                                'FailoverCriteria': {
+                                    'StatusCodes': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            123,
+                                        ]
+                                    }
+                                },
+                                'Members': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'OriginId': 'string'
+                                        },
+                                    ]
+                                }
+                            },
+                        ]
+                    },
+                    'DefaultCacheBehavior': {
+                        'TargetOriginId': 'string',
+                        'TrustedSigners': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': [
+                                'string',
+                            ]
+                        },
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': [
+                                'string',
+                            ]
+                        },
+                        'ViewerProtocolPolicy': 'https-only',
+                        'AllowedMethods': {
+                            'Quantity': 123,
+                            'Items': [
+                                'GET', 'HEAD', 'POST', 'PUT', 'PATCH',
+                                'OPTIONS', 'DELETE',
+                            ],
+                            'CachedMethods': {
+                                'Quantity': 123,
+                                'Items': [
+                                    'GET', 'HEAD', 'POST', 'PUT', 'PATCH',
+                                    'OPTIONS', 'DELETE',
+                                ]
+                            }
+                        },
+                        'SmoothStreaming': False,
+                        'Compress': False,
+                        'LambdaFunctionAssociations': {
+                            'Quantity': 123,
+                            'Items': [
+                                {
+                                    'LambdaFunctionARN': 'string',
+                                    'EventType': 'viewer-request',
+                                    'IncludeBody': True
+                                },
+                            ]
+                        },
+                        'FunctionAssociations': {
+                            'Quantity': 123,
+                            'Items': [
+                                {
+                                    'FunctionARN': 'string',
+                                    'EventType': 'viewer-request'
+                                },
+                            ]
+                        },
+                        'FieldLevelEncryptionId': 'string',
+                        'RealtimeLogConfigArn': 'string',
+                        'CachePolicyId': 'string',
+                        'OriginRequestPolicyId': 'string',
+                        'ForwardedValues': {
+                            'QueryString': True,
+                            'Cookies': {
+                                'Forward': 'whitelist',
+                                'WhitelistedNames': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'string',
+                                    ]
+                                }
+                            },
+                            'Headers': {
+                                'Quantity': 123,
+                                'Items': [
+                                    'string',
+                                ]
+                            },
+                            'QueryStringCacheKeys': {
+                                'Quantity': 123,
+                                'Items': [
+                                    'string',
+                                ]
+                            }
+                        },
+                        'MinTTL': 123,
+                        'DefaultTTL': 123,
+                        'MaxTTL': 123
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'string',
+                                'TargetOriginId': 'string',
+                                'TrustedSigners': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'string',
+                                    ]
+                                },
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'string',
+                                    ]
+                                },
+                                'ViewerProtocolPolicy': 'https-only',
+                                'AllowedMethods': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        'GET', 'HEAD', 'POST', 'PUT', 'PATCH',
+                                        'OPTIONS', 'DELETE',
+                                    ],
+                                    'CachedMethods': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'GET', 'HEAD', 'POST', 'PUT',
+                                            'PATCH', 'OPTIONS', 'DELETE',
+                                        ]
+                                    }
+                                },
+                                'SmoothStreaming': False,
+                                'Compress': False,
+                                'LambdaFunctionAssociations': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'LambdaFunctionARN': 'string',
+                                            'EventType': 'viewer-request',
+                                            'IncludeBody': True
+                                        },
+                                    ]
+                                },
+                                'FunctionAssociations': {
+                                    'Quantity': 123,
+                                    'Items': [
+                                        {
+                                            'FunctionARN': 'string',
+                                            'EventType': 'viewer-request'
+                                        },
+                                    ]
+                                },
+                                'FieldLevelEncryptionId': 'string',
+                                'RealtimeLogConfigArn': 'string',
+                                'CachePolicyId': 'string',
+                                'OriginRequestPolicyId': 'string',
+                                'ForwardedValues': {
+                                    'QueryString': True,
+                                    'Cookies': {
+                                        'Forward': 'whitelist',
+                                        'WhitelistedNames': {
+                                            'Quantity': 123,
+                                            'Items': [
+                                                'string',
+                                            ]
+                                        }
+                                    },
+                                    'Headers': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'string',
+                                        ]
+                                    },
+                                    'QueryStringCacheKeys': {
+                                        'Quantity': 123,
+                                        'Items': [
+                                            'string',
+                                        ]
+                                    }
+                                },
+                                'MinTTL': 123,
+                                'DefaultTTL': 123,
+                                'MaxTTL': 123
+                            },
+                        ]
+                    },
+                    'CustomErrorResponses': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'ErrorCode': 123,
+                                'ResponsePagePath': 'string',
+                                'ResponseCode': 'string',
+                                'ErrorCachingMinTTL': 123
+                            },
+                        ]
+                    },
+                    'Comment': 'string',
+                    'PriceClass': 'PriceClass_100',
+                    'Enabled': True,
+                    'ViewerCertificate': {
+                        'CloudFrontDefaultCertificate': True,
+                        'IAMCertificateId': 'string',
+                        'ACMCertificateArn': 'string',
+                        'SSLSupportMethod': 'sni-only',
+                        'MinimumProtocolVersion': 'SSLv3',
+                        'Certificate': 'string',
+                        'CertificateSource': 'cloudfront'
+                    },
+                    'Restrictions': {
+                        'GeoRestriction': {
+                            'RestrictionType': 'whitelist',
+                            'Quantity': 123,
+                            'Items': [
+                                'string',
+                            ]
+                        }
+                    },
+                    'WebACLId': 'string',
+                    'HttpVersion': 'http1.1',
+                    'IsIPV6Enabled': False,
+                    'AliasICPRecordals': [
+                        {
+                            'CNAME': 'string',
+                            'ICPRecordalStatus': 'APPROVED'
+                        },
+                    ]
+                },
+            ]
+        }
+    }
+
+    test_find_usage_distributions_keygroups = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 2,
+                            'Items': [
+                                'A', 'B',
+                            ]
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 2,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 0,
+                                    'Items': []
+                                }
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 3,
+                                    'Items': ['A', 'B', 'C']
+                                },
+                            }
+                        ]
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_keygroups = {
+        'KeyGroupList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'KeyGroup': {
+                        'Id': 'kg01',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'KeyGroupConfig': {
+                            'Name': 'string',
+                            'Items': ['key01', 'key02', 'key03', 'key04'],
+                            'Comment': 'string'
+                        }
+                    }
+                },
+                {
+                    'KeyGroup': {
+                        'Id': 'kg02',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'KeyGroupConfig': {}
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_keygroups_empty = {
+        'KeyGroupList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 0,
+        }
+    }
+
+    test_find_usage_origin_access_identities = {
+        'CloudFrontOriginAccessIdentityList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 3,
+            'Items': [
+                {'Id': 'oai01', 'S3CanonicalUserId': 'string', 'Comment': ''},
+                {'Id': 'oai02', 'S3CanonicalUserId': 'string', 'Comment': ''},
+                {'Id': 'oai03', 'S3CanonicalUserId': 'string', 'Comment': ''}
+            ]
+        }
+    }
+
+    test_find_usage_origin_access_identities_empty = {
+        'CloudFrontOriginAccessIdentityList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 0,
+        }
+    }
+
+    test_find_usage_cache_policies = {
+        'CachePolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 4,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP01', 'CachePolicyConfig': {}}
+                },
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP02', 'CachePolicyConfig': {}}
+                },
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP03', 'CachePolicyConfig': {}}
+                },
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {'Id': 'CP04', 'CachePolicyConfig': {}}
+                },
+            ]
+        }
+    }
+
+    test_find_usage_cache_policies_empty = {
+        'CachePolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 0
+        }
+    }
+
+    test_find_usage_cache_policies_config = {
+        'CachePolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 123,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'CachePolicy': {
+                        'Id': 'CP01',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'CachePolicyConfig': {
+                            'Comment': 'string',
+                            'Name': 'string',
+                            'DefaultTTL': 123,
+                            'MaxTTL': 123,
+                            'MinTTL': 123,
+                            'ParametersInCacheKeyAndForwardedToOrigin': {
+                                'EnableAcceptEncodingGzip': True,
+                                'EnableAcceptEncodingBrotli': True,
+                                'HeadersConfig': {
+                                    'HeaderBehavior': 'whitelist',
+                                    'Headers': {
+                                        'Quantity': 3,
+                                        'Items': ['a', 'b', 'c']
+                                    },
+                                },
+                                'CookiesConfig': {
+                                    'CookieBehavior': 'whitelist',
+                                    'Cookies': {
+                                        'Quantity': 2,
+                                        'Items': ['1', '2']
+                                    }
+                                },
+                                'QueryStringsConfig': {
+                                    'QueryStringBehavior': 'allExcept',
+                                    'QueryStrings': {
+                                        'Quantity': 1,
+                                        'Items': ['string']
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_origin_request_policies = {
+        'OriginRequestPolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'OriginRequestPolicy': {
+                        'Id': 'ORP01', 'OriginRequestPolicyConfig': {}
+                    }
+                },
+                {
+                    'Type': 'custom',
+                    'OriginRequestPolicy': {
+                        'Id': 'ORP02', 'OriginRequestPolicyConfig': {}
+                    }
+                }
+            ]
+        }
+    }
+
+    test_find_usage_origin_request_policies_empty = {
+        'OriginRequestPolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 0
+        }
+    }
+
+    test_find_usage_origin_request_policies_config = {
+        'OriginRequestPolicyList': {
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'Quantity': 123,
+            'Items': [
+                {
+                    'Type': 'custom',
+                    'OriginRequestPolicy': {
+                        'Id': 'ORP01',
+                        'LastModifiedTime': datetime(2015, 1, 1),
+                        'OriginRequestPolicyConfig': {
+                            'Comment': 'string',
+                            'Name': 'string',
+                            'HeadersConfig': {
+                                'HeaderBehavior': 'whitelist',
+                                'Headers': {
+                                    'Quantity': 3,
+                                    'Items': ['a', 'b', 'c']
+                                },
+                            },
+                            'CookiesConfig': {
+                                'CookieBehavior': 'whitelist',
+                                'Cookies': {
+                                    'Quantity': 2,
+                                    'Items': ['1', '2']
+                                }
+                            },
+                            'QueryStringsConfig': {
+                                'QueryStringBehavior': 'allExcept',
+                                'QueryStrings': {
+                                    'Quantity': 1,
+                                    'Items': ['string']
+                                }
+                            }
+                        }
+                    }
+                },
+            ]
+        }
+    }
+
+    test_find_usage_per_cache_behavior = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 1,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-100',
+                    'DefaultCacheBehavior': {
+                        'ForwardedValues': {
+                            'QueryString': True,
+                            'Cookies': {
+                                'Forward': 'whitelist',
+                                'WhitelistedNames': {
+                                    'Quantity': 3,
+                                    'Items': ['a', 'b', 'c']
+                                }
+                            },
+                            'Headers': {
+                                'Quantity': 4,
+                                'Items': ['a', 'b', 'c', 'd']
+                            },
+                            'QueryStringCacheKeys': {
+                                'Quantity': 5,
+                                'Items': ['a', 'b', 'c', 'd', 'e']
+                            }
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 1,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'ForwardedValues': {
+                                    'QueryString': True,
+                                    'Cookies': {
+                                        'Forward': 'whitelist',
+                                        'WhitelistedNames': {
+                                            'Quantity': 1,
+                                            'Items': ['']
+                                        }
+                                    },
+                                    'Headers': {
+                                        'Quantity': 2,
+                                        'Items': ['', '']
+                                    },
+                                    'QueryStringCacheKeys': {
+                                        'Quantity': 3,
+                                        'Items': ['', '', '']
+                                    }
+                                }
+                            },
+                        ]
+                    },
+                },
+            ]
+        }
+    }
+
+    test_find_usage_distributions_per_key_group = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': ['A', 'B', 'C']
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': ['A', 'B']
+                                },
+                            },
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': ['A']
+                                },
+                            },
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'DefaultCacheBehavior': {
+                        'TrustedKeyGroups': {
+                            'Enabled': False,
+                            'Quantity': 123,
+                            'Items': ['A']
+                        },
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': []
+                                },
+                            },
+                            {
+                                'PathPattern': 'string',
+                                'TrustedKeyGroups': {
+                                    'Enabled': True,
+                                    'Quantity': 123,
+                                    'Items': []
+                                },
+                            },
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    test_find_usage_distributions_per_cache_policy = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'CachePolicyId': 'A',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'CachePolicyId': 'A',
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'CachePolicyId': 'B',
+                            },
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'DefaultCacheBehavior': {
+                        'CachePolicyId': 'D',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'CachePolicyId': 'A',
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'CachePolicyId': 'C',
+                            },
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+    test_find_usage_distributions_per_origin_req_policy = {
+        'DistributionList': {
+            'Marker': 'string',
+            'NextMarker': 'string',
+            'MaxItems': 123,
+            'IsTruncated': False,
+            'Quantity': 2,
+            'Items': [
+                {
+                    'Id': 'ID-DISTRIBUTION-001',
+                    'DefaultCacheBehavior': {
+                        'OriginRequestPolicyId': 'A',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'OriginRequestPolicyId': 'A',
+                            },
+                            {
+                                'PathPattern': 'path02',
+                                'OriginRequestPolicyId': 'B',
+                            },
+                        ]
+                    }
+                },
+                {
+                    'Id': 'ID-DISTRIBUTION-002',
+                    'DefaultCacheBehavior': {
+                        'OriginRequestPolicyId': 'A',
+                    },
+                    'CacheBehaviors': {
+                        'Quantity': 123,
+                        'Items': [
+                            {
+                                'PathPattern': 'path01',
+                                'OriginRequestPolicyId': 'C',
+                            },
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+
+
 class ELB(object):
 
     test_find_usage = {
-            # this is a subset of response items
-            'LoadBalancerDescriptions': [
-                {
-                    'LoadBalancerName': 'elb-1',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': []
-                },
-                {
-                    'LoadBalancerName': 'elb-2',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [
-                        {'InstanceId': 'i-1'},
-                        {'InstanceId': 'i-2'},
-                        {'InstanceId': 'i-3'},
-                        {'InstanceId': 'i-4'},
-                    ]
-                },
-                {
-                    'LoadBalancerName': 'elb-3',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [{'InstanceId': 'i-5'}]
-                },
-                {
-                    'LoadBalancerName': 'elb-4',
-                    'ListenerDescriptions': [
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                        {'foo': 'bar'},
-                    ],
-                    'Instances': [
-                        {'InstanceId': 'i-6'},
-                        {'InstanceId': 'i-7'}
-                    ]
-                }
-            ],
-        }
+        # this is a subset of response items
+        'LoadBalancerDescriptions': [
+            {
+                'LoadBalancerName': 'elb-1',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                ],
+                'Instances': []
+            },
+            {
+                'LoadBalancerName': 'elb-2',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [
+                    {'InstanceId': 'i-1'},
+                    {'InstanceId': 'i-2'},
+                    {'InstanceId': 'i-3'},
+                    {'InstanceId': 'i-4'},
+                ]
+            },
+            {
+                'LoadBalancerName': 'elb-3',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [{'InstanceId': 'i-5'}]
+            },
+            {
+                'LoadBalancerName': 'elb-4',
+                'ListenerDescriptions': [
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                    {'foo': 'bar'},
+                ],
+                'Instances': [
+                    {'InstanceId': 'i-6'},
+                    {'InstanceId': 'i-7'}
+                ]
+            }
+        ],
+    }
 
     test_update_limits_elb = {
         'ResponseMetadata': {
@@ -1848,54 +2772,88 @@ class EC2(object):
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 't2.micro'
         type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
 
         mock_inst1B = Mock(spec_set=Instance)
         type(mock_inst1B).id = '1B'
         type(mock_inst1B).instance_type = 'r3.2xlarge'
         type(mock_inst1B).spot_instance_request_id = None
-        type(mock_inst1B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1B).state = {'Code': 0, 'Name': 'pending'}
+
+        mock_inst1C = Mock(spec_set=Instance)
+        type(mock_inst1C).id = '1C'
+        type(mock_inst1C).instance_type = 't2.micro'
+        type(mock_inst1C).spot_instance_request_id = None
+        type(mock_inst1C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'host'
+        }
+        type(mock_inst1C).state = {'Code': 16, 'Name': 'running'}
+
+        mock_inst1D = Mock(spec_set=Instance)
+        type(mock_inst1D).id = '1D'
+        type(mock_inst1D).instance_type = 't2.micro'
+        type(mock_inst1D).spot_instance_request_id = None
+        type(mock_inst1D).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'dedicated'
+        }
+        type(mock_inst1D).state = {'Code': 16, 'Name': 'running'}
 
         mock_inst2A = Mock(spec_set=Instance)
         type(mock_inst2A).id = '2A'
         type(mock_inst2A).instance_type = 'c4.4xlarge'
         type(mock_inst2A).spot_instance_request_id = None
-        type(mock_inst2A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2A).state = {'Code': 32, 'Name': 'shutting-down'}
 
         mock_inst2B = Mock(spec_set=Instance)
         type(mock_inst2B).id = '2B'
         type(mock_inst2B).instance_type = 't2.micro'
         type(mock_inst2B).spot_instance_request_id = '1234'
-        type(mock_inst2B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2B).state = {'Code': 64, 'Name': 'stopping'}
 
         mock_inst2C = Mock(spec_set=Instance)
         type(mock_inst2C).id = '2C'
         type(mock_inst2C).instance_type = 'm4.8xlarge'
         type(mock_inst2C).spot_instance_request_id = None
-        type(mock_inst2C).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2C).state = {'Code': 16, 'Name': 'running'}
 
         mock_instStopped = Mock(spec_set=Instance)
         type(mock_instStopped).id = '2C'
         type(mock_instStopped).instance_type = 'm4.8xlarge'
         type(mock_instStopped).spot_instance_request_id = None
-        type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instStopped).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instStopped).state = {'Code': 80, 'Name': 'stopped'}
 
         mock_instTerm = Mock(spec_set=Instance)
         type(mock_instTerm).id = '2C'
         type(mock_instTerm).instance_type = 'm4.8xlarge'
         type(mock_instTerm).spot_instance_request_id = None
-        type(mock_instTerm).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instTerm).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instTerm).state = {'Code': 48, 'Name': 'terminated'}
 
         return_value = [
             mock_inst1A,
             mock_inst1B,
+            mock_inst1C,
+            mock_inst1D,
             mock_inst2A,
             mock_inst2B,
             mock_inst2C,
@@ -1910,7 +2868,9 @@ class EC2(object):
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 't2.micro'
         type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst1A).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
 
@@ -1918,9 +2878,31 @@ class EC2(object):
         type(mock_inst1B).id = '1B'
         type(mock_inst1B).instance_type = 'r3.2xlarge'
         type(mock_inst1B).spot_instance_request_id = None
-        type(mock_inst1B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1B).state = {'Code': 0, 'Name': 'pending'}
         type(mock_inst1B).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
+
+        mock_inst1C = Mock(spec_set=Instance)
+        type(mock_inst1C).id = '1C'
+        type(mock_inst1C).instance_type = 't2.micro'
+        type(mock_inst1C).spot_instance_request_id = None
+        type(mock_inst1C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'host'
+        }
+        type(mock_inst1C).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst1C).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
+
+        mock_inst1D = Mock(spec_set=Instance)
+        type(mock_inst1D).id = '1D'
+        type(mock_inst1D).instance_type = 't2.micro'
+        type(mock_inst1D).spot_instance_request_id = None
+        type(mock_inst1D).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'dedicated'
+        }
+        type(mock_inst1D).state = {'Code': 16, 'Name': 'running'}
+        type(mock_inst1D).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
 
         mock_inst2A = Mock(spec_set=Instance)
         type(mock_inst2A).id = '2A'
@@ -1934,7 +2916,9 @@ class EC2(object):
         type(mock_inst2B).id = '2B'
         type(mock_inst2B).instance_type = 't2.micro'
         type(mock_inst2B).spot_instance_request_id = '1234'
-        type(mock_inst2B).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2B).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2B).state = {'Code': 64, 'Name': 'stopping'}
         type(mock_inst2B).cpu_options = {'CoreCount': 1, 'ThreadsPerCore': 2}
 
@@ -1942,7 +2926,9 @@ class EC2(object):
         type(mock_inst2C).id = '2C'
         type(mock_inst2C).instance_type = 'm4.8xlarge'
         type(mock_inst2C).spot_instance_request_id = None
-        type(mock_inst2C).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2C).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2C).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2C).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -1950,7 +2936,9 @@ class EC2(object):
         type(mock_instStopped).id = 'instStopped'
         type(mock_instStopped).instance_type = 'm4.8xlarge'
         type(mock_instStopped).spot_instance_request_id = None
-        type(mock_instStopped).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instStopped).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instStopped).state = {'Code': 80, 'Name': 'stopped'}
         type(mock_instStopped).cpu_options = {
             'CoreCount': 16, 'ThreadsPerCore': 2
@@ -1960,7 +2948,9 @@ class EC2(object):
         type(mock_instTerm).id = '2C'
         type(mock_instTerm).instance_type = 'm4.8xlarge'
         type(mock_instTerm).spot_instance_request_id = None
-        type(mock_instTerm).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_instTerm).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_instTerm).state = {'Code': 48, 'Name': 'terminated'}
         type(mock_instTerm).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -1968,7 +2958,9 @@ class EC2(object):
         type(mock_inst2D).id = '2D'
         type(mock_inst2D).instance_type = 'f1.16xlarge'
         type(mock_inst2D).spot_instance_request_id = None
-        type(mock_inst2D).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2D).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2D).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
 
@@ -1976,7 +2968,9 @@ class EC2(object):
         type(mock_inst2E).id = '2E'
         type(mock_inst2E).instance_type = 'f1.2xlarge'
         type(mock_inst2E).spot_instance_request_id = None
-        type(mock_inst2E).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2E).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2E).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2E).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
 
@@ -1984,7 +2978,9 @@ class EC2(object):
         type(mock_inst2F).id = '2F'
         type(mock_inst2F).instance_type = 'g4dn.12xlarge'
         type(mock_inst2F).spot_instance_request_id = None
-        type(mock_inst2F).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst2F).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst2F).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst2F).cpu_options = {'CoreCount': 12, 'ThreadsPerCore': 4}
 
@@ -1992,7 +2988,9 @@ class EC2(object):
         type(mock_inst1A).id = '3A'
         type(mock_inst3A).instance_type = 'p2.16xlarge'
         type(mock_inst3A).spot_instance_request_id = None
-        type(mock_inst3A).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3A).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3A).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3A).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 2}
 
@@ -2000,7 +2998,9 @@ class EC2(object):
         type(mock_inst3F).id = '3F'
         type(mock_inst3F).instance_type = 'p2.8xlarge'
         type(mock_inst3F).spot_instance_request_id = None
-        type(mock_inst3F).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3F).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3F).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3F).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -2008,7 +3008,9 @@ class EC2(object):
         type(mock_inst3G).id = '3G'
         type(mock_inst3G).instance_type = 'p2.8xlarge'
         type(mock_inst3G).spot_instance_request_id = None
-        type(mock_inst3G).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3G).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3G).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3G).cpu_options = {'CoreCount': 16, 'ThreadsPerCore': 2}
 
@@ -2016,7 +3018,9 @@ class EC2(object):
         type(mock_inst3B).id = '3B'
         type(mock_inst3B).instance_type = 'r3.2xlarge'
         type(mock_inst3B).spot_instance_request_id = None
-        type(mock_inst3B).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3B).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3B).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3B).cpu_options = {'CoreCount': 4, 'ThreadsPerCore': 2}
 
@@ -2024,7 +3028,9 @@ class EC2(object):
         type(mock_inst3C).id = '3C'
         type(mock_inst3C).instance_type = 'x1e.32xlarge'
         type(mock_inst3C).spot_instance_request_id = None
-        type(mock_inst3C).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3C).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3C).state = {'Code': 32, 'Name': 'stopped'}
         type(mock_inst3C).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
@@ -2032,7 +3038,9 @@ class EC2(object):
         type(mock_inst3D).id = '3D'
         type(mock_inst3D).instance_type = 'x1e.32xlarge'
         type(mock_inst3D).spot_instance_request_id = None
-        type(mock_inst3D).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3D).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3D).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3D).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
@@ -2040,13 +3048,17 @@ class EC2(object):
         type(mock_inst3E).id = '3E'
         type(mock_inst3E).instance_type = 'x1e.32xlarge'
         type(mock_inst3E).spot_instance_request_id = None
-        type(mock_inst3E).placement = {'AvailabilityZone': 'az1c'}
+        type(mock_inst3E).placement = {
+            'AvailabilityZone': 'az1c', 'Tenancy': 'default'
+        }
         type(mock_inst3E).state = {'Code': 16, 'Name': 'running'}
         type(mock_inst3E).cpu_options = {'CoreCount': 32, 'ThreadsPerCore': 4}
 
         return_value = [
             mock_inst1A,
             mock_inst1B,
+            mock_inst1C,
+            mock_inst1D,
             mock_inst2A,
             mock_inst2B,
             mock_inst2C,
@@ -2071,7 +3083,9 @@ class EC2(object):
         type(mock_inst1A).id = '1A'
         type(mock_inst1A).instance_type = 'foobar'
         type(mock_inst1A).spot_instance_request_id = None
-        type(mock_inst1A).placement = {'AvailabilityZone': 'az1a'}
+        type(mock_inst1A).placement = {
+            'AvailabilityZone': 'az1a', 'Tenancy': 'default'
+        }
         type(mock_inst1A).state = {'Code': 16, 'Name': 'running'}
         return [mock_inst1A]
 
@@ -4378,98 +5392,274 @@ class Route53(object):
 class CloudTrail(object):
 
     mock_describe_trails = {
-            'trailList': [
-                {
-                    'Name': 'trail1',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'thisregion',
-                    'TrailARN': 'trailarn1',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': False
-                },
-                {
-                    'Name': 'trail2',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'thisregion',
-                    'TrailARN': 'trailarn2',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True
-                },
-                {
-                    'Name': 'trail3',
-                    'S3BucketName': 'string',
-                    'S3KeyPrefix': 'string',
-                    'SnsTopicName': 'string',
-                    'SnsTopicARN': 'string',
-                    'IncludeGlobalServiceEvents': True,
-                    'IsMultiRegionTrail': True,
-                    'HomeRegion': 'otherRegion',
-                    'TrailARN': 'trailarn3',
-                    'LogFileValidationEnabled': True,
-                    'CloudWatchLogsLogGroupArn': 'string',
-                    'CloudWatchLogsRoleArn': 'string',
-                    'KmsKeyId': 'string',
-                    'HasCustomEventSelectors': True
-                },
-                {
-                    'Name': 'trail4',
-                    'TrailARN': 'trailarn4',
-                    'HomeRegion': 'thisregion'
-                }
-            ],
+        'trailList': [
+            {
+                'Name': 'trail1',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'thisregion',
+                'TrailARN': 'trailarn1',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': False
+            },
+            {
+                'Name': 'trail2',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'thisregion',
+                'TrailARN': 'trailarn2',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': True
+            },
+            {
+                'Name': 'trail3',
+                'S3BucketName': 'string',
+                'S3KeyPrefix': 'string',
+                'SnsTopicName': 'string',
+                'SnsTopicARN': 'string',
+                'IncludeGlobalServiceEvents': True,
+                'IsMultiRegionTrail': True,
+                'HomeRegion': 'otherRegion',
+                'TrailARN': 'trailarn3',
+                'LogFileValidationEnabled': True,
+                'CloudWatchLogsLogGroupArn': 'string',
+                'CloudWatchLogsRoleArn': 'string',
+                'KmsKeyId': 'string',
+                'HasCustomEventSelectors': True
+            },
+            {
+                'Name': 'trail4',
+                'TrailARN': 'trailarn4',
+                'HomeRegion': 'thisregion'
+            }
+        ],
     }
 
     mock_get_event_selectors = {
-            'TrailARN': 'string',
-            'EventSelectors': [
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True,
-                    'DataResources': [
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        },
-                        {
-                            'Type': 'string',
-                            'Values': [
-                                'string',
-                            ]
-                        }
+        'TrailARN': 'string',
+        'EventSelectors': [
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True,
+                'DataResources': [
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    },
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    },
+                    {
+                        'Type': 'string',
+                        'Values': [
+                            'string',
+                        ]
+                    }
+                ]
+            },
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True,
+                'DataResources': []
+            },
+            {
+                'ReadWriteType': 'ReadOnly',
+                'IncludeManagementEvents': True
+            }
+        ]
+    }
+
+
+class Kinesis(object):
+    mock_describe_limits = {
+        'ShardLimit': 700,
+        'OpenShardCount': 555
+    }
+
+
+class EKS(object):
+
+    test_find_clusters_usage_list = {
+        'clusters': [
+            'devel',
+            'prod',
+        ]
+    }
+
+    test_find_clusters_usage_describe = [
+        {
+            'cluster': {
+                'name': 'devel',
+                'resourcesVpcConfig': {
+                    'securityGroupIds': [
+                        'abc-1234',
+
+                    ],
+                    'publicAccessCidrs': [
+                        '1.1.1.1/32',
+                        '2.2.2.0/24',
+                        '203.0.113.5/32'
                     ]
                 },
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True,
-                    'DataResources': []
+            }
+        },
+        {
+            'cluster': {
+                'name': 'prod',
+                'resourcesVpcConfig': {
+                    'securityGroupIds': [
+                        'foo-1234',
+                        'bar-1234'
+                    ],
+                    'publicAccessCidrs': [
+                        '1.1.1.1/32',
+                    ]
                 },
-                {
-                    'ReadWriteType': 'ReadOnly',
-                    'IncludeManagementEvents': True
-                }
+            }
+        }
+    ]
+
+    test_find_clusters_usage_nodegrps = [
+        {
+            'nodegroups': [
+                'managed-ng-1',
+                'managed-ng-2'
             ]
+        },
+        {
+            'nodegroups': [
+                'managed-ng-3',
+            ]
+        }
+    ]
+
+    test_find_clusters_usage_fargates = [
+        {
+            'fargateProfileNames': [
+                'foo',
+            ]
+        },
+        {
+            'fargateProfileNames': [
+                'bar',
+                'baz',
+                'profile_no_labels',
+            ]
+        }
+    ]
+
+    test_find_clusters_usage_fargate_prof = [
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'foo',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'bar',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace2",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'baz',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                        'labels': {
+                            'key1': 'value1',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace2",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                        }
+                    },
+                    {
+                        'namespace': "test_namespace3",
+                        'labels': {
+                            'key1': 'value1',
+                            'key2': 'value2',
+                            'key3': 'value3',
+                        }
+                    },
+                ],
+            }
+        },
+        {
+            'fargateProfile': {
+                'fargateProfileName': 'profile_no_labels',
+                'selectors': [
+                    {
+                        'namespace': "test_namespace1",
+                    },
+                ],
+            }
+        }
+    ]
+
+
+class CertificateManager(object):
+    test_find_usage_certificates_empty = {
+    }
+
+    test_find_usage_certificates = {
+        'NextToken': 'string',
+        'CertificateSummaryList': [
+            {
+                'CertificateArn': 'string1',
+                'DomainName': 'string1'
+            },
+            {
+                'CertificateArn': 'string2',
+                'DomainName': 'string2'
+            },
+            {
+                'CertificateArn': 'string3',
+                'DomainName': 'string3'
+            },
+        ]
     }

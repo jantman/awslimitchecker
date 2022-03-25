@@ -86,9 +86,11 @@ class _DynamodbService(_AwsService):
                     gsi_write += gsi['ProvisionedThroughput'][
                         'WriteCapacityUnits']
             table_write_capacity = table.provisioned_throughput[
-                                       'WriteCapacityUnits'] + gsi_write
+                'WriteCapacityUnits'
+            ] + gsi_write
             table_read_capacity = table.provisioned_throughput[
-                                      'ReadCapacityUnits'] + gsi_read
+                'ReadCapacityUnits'
+            ] + gsi_read
             region_write_capacity += table_write_capacity
             region_read_capacity += table_read_capacity
 

@@ -53,9 +53,9 @@ if (
         sys.version_info[0] < 3 or
         sys.version_info[0] == 3 and sys.version_info[1] < 4
 ):
-    from mock import patch, call, Mock
+    from mock import patch, call, Mock, DEFAULT
 else:
-    from unittest.mock import patch, call, Mock
+    from unittest.mock import patch, call, Mock, DEFAULT
 
 
 pbm = 'awslimitchecker.trustedadvisor'
@@ -163,34 +163,121 @@ class TestUpdateLimits(object):
 
     def test_simple(self):
         mock_results = Mock()
-        with patch('%s.connect' % pb, autospec=True) as mock_connect:
-            with patch('%s._poll' % pb, autospec=True) as mock_poll:
-                with patch('%s._update_services' % pb,
-                           autospec=True) as mock_update_services:
-                    mock_poll.return_value = mock_results
-                    self.cls.update_limits()
-        assert mock_connect.mock_calls == [call(self.cls)]
-        assert mock_poll.mock_calls == [call(self.cls)]
-        assert mock_update_services.mock_calls == [
+        with patch.multiple(
+            pb,
+            connect=DEFAULT,
+            _poll=DEFAULT,
+            _update_services=DEFAULT,
+            _dont_use_ta=DEFAULT,
+            autospec=True
+        ) as mocks:
+            mocks['_poll'].return_value = mock_results
+            mocks['_dont_use_ta'].return_value = False
+            self.cls.update_limits()
+        assert mocks['connect'].mock_calls == [call(self.cls)]
+        assert mocks['_poll'].mock_calls == [call(self.cls)]
+        assert mocks['_update_services'].mock_calls == [
             call(self.cls, mock_results)
         ]
 
     def test_again(self):
         mock_results = Mock()
         self.cls.limits_updated = True
-        with patch('%s.connect' % pb, autospec=True) as mock_connect:
-            with patch('%s._poll' % pb, autospec=True) as mock_poll:
-                with patch('%s._update_services' % pb,
-                           autospec=True) as mock_update_services:
-                    with patch('%s.logger' % pbm) as mock_logger:
-                        mock_poll.return_value = mock_results
-                        self.cls.update_limits()
-        assert mock_connect.mock_calls == []
-        assert mock_poll.mock_calls == []
-        assert mock_update_services.mock_calls == []
+        with patch.multiple(
+            pb,
+            connect=DEFAULT,
+            _poll=DEFAULT,
+            _update_services=DEFAULT,
+            _dont_use_ta=DEFAULT,
+            autospec=True
+        ) as mocks:
+            mocks['_poll'].return_value = mock_results
+            mocks['_dont_use_ta'].return_value = False
+            with patch('%s.logger' % pbm) as mock_logger:
+                self.cls.update_limits()
+        assert mocks['connect'].mock_calls == []
+        assert mocks['_poll'].mock_calls == []
+        assert mocks['_update_services'].mock_calls == []
         assert mock_logger.mock_calls == [
             call.debug('Already polled TA; skipping update')
         ]
+
+    def test_dont_use(self):
+        mock_results = Mock()
+        with patch.multiple(
+            pb,
+            connect=DEFAULT,
+            _poll=DEFAULT,
+            _update_services=DEFAULT,
+            _dont_use_ta=DEFAULT,
+            autospec=True
+        ) as mocks:
+            mocks['_poll'].return_value = mock_results
+            mocks['_dont_use_ta'].return_value = True
+            self.cls.update_limits()
+        assert mocks['connect'].mock_calls == [call(self.cls)]
+        assert mocks['_poll'].mock_calls == []
+        assert mocks['_update_services'].mock_calls == []
+
+
+class TestDontUseTa():
+
+    def setup(self):
+        self.mock_conn = Mock()
+        self.mock_client_config = Mock()
+        type(self.mock_client_config).region_name = 'us-east-1'
+        type(self.mock_conn)._client_config = self.mock_client_config
+        self.cls = TrustedAdvisor({}, {})
+        self.cls.conn = self.mock_conn
+
+        self.mock_svc1 = Mock(spec_set=_AwsService)
+        self.mock_svc2 = Mock(spec_set=_AwsService)
+        self.services = {
+            'SvcFoo': self.mock_svc1,
+            'SvcBar': self.mock_svc2,
+        }
+
+    @patch.dict(
+        'os.environ',
+        {'AWS_REGION': 'us-east-1'},
+        clear=True
+    )
+    def test_simple(self):
+        assert self.cls._dont_use_ta() is True
+
+    @patch.dict(
+        'os.environ',
+        {'AWS_REGION': 'us-east-1', 'FORCE_USE_TA': 'true'},
+        clear=True
+    )
+    def test_env_var(self):
+        assert self.cls._dont_use_ta() is False
+
+    @patch.dict(
+        'os.environ',
+        {'AWS_REGION': 'us-east-1', 'FORCE_USE_TA': 'nottrue'},
+        clear=True
+    )
+    def test_env_var_false(self):
+        assert self.cls._dont_use_ta() is True
+
+    @patch.dict(
+        'os.environ',
+        {'AWS_REGION': 'cn-foo-1'},
+        clear=True
+    )
+    def test_china(self):
+        type(self.mock_client_config).region_name = 'cn-foo-1'
+        assert self.cls._dont_use_ta() is False
+
+    @patch.dict(
+        'os.environ',
+        {'AWS_REGION': 'us-gov-east-1'},
+        clear=True
+    )
+    def test_gov_cloud(self):
+        type(self.mock_client_config).region_name = 'us-gov-east-1'
+        assert self.cls._dont_use_ta() is False
 
 
 class TestGetLimitCheckId(object):
@@ -327,7 +414,7 @@ class TestGetLimitCheckId(object):
             call.describe_trusted_advisor_checks(language='en')
         ]
         assert excinfo.value.response['ResponseMetadata'][
-                   'HTTPStatusCode'] == 400
+            'HTTPStatusCode'] == 400
         assert excinfo.value.response['Error']['Message'] == 'foo'
         assert excinfo.value.response['Error']['Code'] == 'SomeOtherException'
 
