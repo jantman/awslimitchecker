@@ -179,7 +179,7 @@ Trusted Advisor
 
 awslimitchecker supports retrieving your current service limits via the
 `Trusted Advisor <https://aws.amazon.com/premiumsupport/trustedadvisor/>`_
-`"Service Limits" performance check <https://aws.amazon.com/premiumsupport/trustedadvisor/best-practices/#Performance>`_
+`"Service Limits" performance check <https://docs.aws.amazon.com/awssupport/latest/user/performance-checks.html>`_
 , for limits which Trusted Advisor tracks (currently a subset of what awslimitchecker
 knows about). The results of this check may not be available via the API for all
 accounts; as of December 2016, the Trusted Advisor documentation states that while

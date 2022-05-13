@@ -222,13 +222,13 @@ and limits followed by ``(API)`` have been obtained from the service's API.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l
-   ApiGateway/API keys per account                                           500.0 (Quotas)
+   ApiGateway/API keys per account                                           10000.0 (Quotas)
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
    ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   AutoScaling/Auto Scaling groups                                           200 (API)
+   AutoScaling/Auto Scaling groups                                           500 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
@@ -253,7 +253,7 @@ from the Service Quotas service.
    ApiGateway/Documentation parts per API                                    2000
    ApiGateway/Edge APIs per account                                          120
    (...)
-   AutoScaling/Auto Scaling groups                                           200 (API)
+   AutoScaling/Auto Scaling groups                                           500 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
@@ -275,13 +275,13 @@ from Trusted Advisor for all commands.
 .. code-block:: console
 
    (venv)$ awslimitchecker -l --skip-ta
-   ApiGateway/API keys per account                                           500.0 (Quotas)
+   ApiGateway/API keys per account                                           10000.0 (Quotas)
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
    ApiGateway/Edge APIs per account                                          120.0 (Quotas)
    (...)
-   AutoScaling/Auto Scaling groups                                           200 (API)
+   AutoScaling/Auto Scaling groups                                           500 (API)
    (...)
    Lambda/Function Count                                                     None
    (...)
@@ -344,15 +344,15 @@ using their IDs).
 .. code-block:: console
 
    (venv)$ awslimitchecker -u
-   ApiGateway/API keys per account                                           2
+   ApiGateway/API keys per account                                           0
    ApiGateway/Client certificates per account                                0
-   ApiGateway/Custom authorizers per API                                     max: 2d7q4kzcmh=2 (2d7q4kz (...)
-   ApiGateway/Documentation parts per API                                    max: 2d7q4kzcmh=2 (2d7q4kz (...)
-   ApiGateway/Edge APIs per account                                          9
+   ApiGateway/Custom authorizers per API                                     <unknown>
+   ApiGateway/Documentation parts per API                                    <unknown>
+   ApiGateway/Edge APIs per account                                          0
    (...)
-   VPC/Subnets per VPC                                                       max: vpc-f4279a92=6 (vpc-f (...)
+   VPC/Subnets per VPC                                                       max: vpc-02031d86da0b6d120 (...)
    VPC/VPCs                                                                  2
-   VPC/Virtual private gateways                                              1
+   VPC/Virtual private gateways                                              0
 
 
 
@@ -377,7 +377,7 @@ For example, to override the limits of EC2's "EC2-Classic Elastic IPs" and
 .. code-block:: console
 
    (venv)$ awslimitchecker -L "AutoScaling/Auto Scaling groups"=321 --limit="AutoScaling/Launch configurations"=456 -l
-   ApiGateway/API keys per account                                           500.0 (Quotas)
+   ApiGateway/API keys per account                                           10000.0 (Quotas)
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
@@ -412,7 +412,7 @@ Using a command like:
 .. code-block:: console
 
    (venv)$ awslimitchecker --limit-override-json=limit_overrides.json -l
-   ApiGateway/API keys per account                                           500.0 (Quotas)
+   ApiGateway/API keys per account                                           10000.0 (Quotas)
    ApiGateway/Client certificates per account                                60.0 (Quotas)
    ApiGateway/Custom authorizers per API                                     10
    ApiGateway/Documentation parts per API                                    2000
@@ -573,6 +573,26 @@ environment variable) and an optional ``extra_tags`` parameter:
 
 Metrics will be pushed to the provider only when awslimitchecker is done checking
 all limits.
+
+There is also an alternative metric format for
+:py:class:`~awslimitchecker.metrics.datadog.Datadog` metrics provider which
+uses only two metrics ``awslimitchecker.limit`` and
+``awslimitchecker.max_usage``. All service limits are added as tags to these
+metrics.
+
+To use this alternative format add optional parameter ``metric_format=servicetags``:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam \
+        --metrics-config=metric_format=servicetags
+
+You can use the following query with one Datadog monitor for all service limits.
+``avg(last_4h):avg:awslimitchecker.max_usage{*} by {service_limit} /
+avg:awslimitchecker.limit{*} by {service_limit} * 100 > 95``
 
 .. _cli_usage.alerts:
 

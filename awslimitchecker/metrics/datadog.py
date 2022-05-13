@@ -53,7 +53,8 @@ class Datadog(MetricsProvider):
 
     def __init__(
         self, region_name, prefix='awslimitchecker.', api_key=None,
-        extra_tags=None, host='https://api.datadoghq.com'
+        extra_tags=None, host='https://api.datadoghq.com',
+        metric_format='original'
     ):
         """
         Initialize the Datadog metrics provider. This class does not have any
@@ -76,6 +77,15 @@ class Datadog(MetricsProvider):
         :param extra_tags: CSV list of additional tags to send with metrics.
           All metrics will automatically be tagged with ``region:<region name>``
         :type extra_tags: str
+        :param metric_format: ``original`` default format has a metric name
+          `awslimitchecker.s3.buckets.limit` per service limit `S3 / Buckets`.
+          ``servicetags`` format uses only 2 metric names
+          `awslimitchecker.limit` and `awslimitchecker.max_usage` with the
+          limit as a tag, `awslimitchecker.limit ['service_limit:s3.buckets']`.
+          This can be used with a single monitor with a single query
+          `avg(last_4h):avg:awslimitchecker.max_usage{*} by {service_limit} /
+          avg:awslimitchecker.limit{*} by {service_limit} * 100 > 95`
+        :type metric_format: str
         """
         super(Datadog, self).__init__(region_name)
         self._prefix = prefix
@@ -84,6 +94,7 @@ class Datadog(MetricsProvider):
             self._tags.extend(extra_tags.split(','))
         self._api_key = os.environ.get('DATADOG_API_KEY')
         self._host = os.environ.get('DATADOG_HOST', host)
+        self._metric_format = metric_format
         if api_key is not None:
             self._api_key = api_key
         if self._api_key is None:
@@ -122,6 +133,19 @@ class Datadog(MetricsProvider):
             re.sub(r'[^0-9a-zA-Z]+', '_', limit)
         )).lower()
 
+    def _name_for_datadog(self, name):
+        """
+        Return a name that's safe for datadog
+
+        :param name: service or limit or other name
+        :type service: str
+        :return: datadog safe name
+        :rtype: str
+        """
+        return ('%s' % (
+            re.sub(r'[^0-9a-zA-Z]+', '_', name)
+        )).lower()
+
     def flush(self):
         ts = int(time.time())
         logger.debug('Flushing metrics to Datadog.')
@@ -137,21 +161,50 @@ class Datadog(MetricsProvider):
                 max_usage = 0
             else:
                 max_usage = max(u).get_value()
-            mname = self._name_for_metric(lim.service.service_name, lim.name)
-            series.append({
-                'metric': '%s.max_usage' % mname,
-                'points': [[ts, max_usage]],
-                'type': 'gauge',
-                'tags': self._tags
-            })
             limit = lim.get_limit()
-            if limit is not None:
+
+            if self._metric_format == 'original':
+                mname = self._name_for_metric(
+                    lim.service.service_name, lim.name)
                 series.append({
-                    'metric': '%s.limit' % mname,
-                    'points': [[ts, limit]],
+                    'metric': '%s.max_usage' % mname,
+                    'points': [[ts, max_usage]],
                     'type': 'gauge',
                     'tags': self._tags
                 })
+                if limit is not None:
+                    series.append({
+                        'metric': '%s.limit' % mname,
+                        'points': [[ts, limit]],
+                        'type': 'gauge',
+                        'tags': self._tags
+                    })
+            elif self._metric_format == 'servicetags':
+                mtags = self._tags.copy()
+                mtags.extend(['service:%s' %
+                              self._name_for_datadog(lim.service.service_name)])
+                mtags.extend(['service_limit:%s.%s' %
+                              (self._name_for_datadog(lim.service.service_name),
+                               self._name_for_datadog(lim.name))])
+                series.append({
+                    'metric': '%smax_usage' % self._prefix,
+                    'points': [[ts, max_usage]],
+                    'type': 'gauge',
+                    'tags': mtags
+                })
+                limit = lim.get_limit()
+                if limit is not None:
+                    series.append({
+                        'metric': '%slimit' % self._prefix,
+                        'points': [[ts, limit]],
+                        'type': 'gauge',
+                        'tags': mtags
+                    })
+            else:
+                raise RuntimeError(
+                    "ERROR: Datadog metric provider metric_format must "
+                    "be 'original' or 'servicetags'."
+                )
         logger.info('POSTing %d metrics to datadog', len(series))
         data = {'series': series}
         encoded = json.dumps(data).encode('utf-8')

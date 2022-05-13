@@ -273,6 +273,26 @@ environment variable) and an optional ``extra_tags`` parameter:
 Metrics will be pushed to the provider only when awslimitchecker is done checking
 all limits.
 
+There is also an alternative metric format for
+:py:class:`~awslimitchecker.metrics.datadog.Datadog` metrics provider which
+uses only two metrics ``awslimitchecker.limit`` and
+``awslimitchecker.max_usage``. All service limits are added as tags to these
+metrics.
+
+To use this alternative format add optional parameter ``metric_format=servicetags``:
+
+.. code-block:: console
+
+    (venv)$ awslimitchecker \
+        --metrics-provider=Datadog \
+        --metrics-config=api_key=123456 \
+        --metrics-config=extra_tags=foo,bar,baz:blam \
+        --metrics-config=metric_format=servicetags
+
+You can use the following query with one Datadog monitor for all service limits.
+``avg(last_4h):avg:awslimitchecker.max_usage{*} by {service_limit} /
+avg:awslimitchecker.limit{*} by {service_limit} * 100 > 95``
+
 .. _cli_usage.alerts:
 
 Enable Alerts Provider

@@ -222,7 +222,7 @@ type.
 Limit                                                                Trusted Advisor Quotas   API     Default
 ==================================================================== =============== ======== ======= ====
 All F Spot Instance Requests                                                         |check|          11  
-All G Spot Instance Requests                                                         |check|          11  
+All G Spot Instance Requests                                                                          11  
 All Inf Spot Instance Requests                                                       |check|          64  
 All P Spot Instance Requests                                                         |check|          16  
 All Standard (A, C, D, H, I, M, R, T, Z) Spot Instance Requests                      |check|          1440
@@ -234,7 +234,7 @@ Max target capacity for all spot fleets in region                               
 Max target capacity per spot fleet                                                                    3000
 Rules per VPC security group                                                         |check|          60  
 Running On-Demand All F instances                                                    |check|          128 
-Running On-Demand All G instances                                                    |check|          128 
+Running On-Demand All G instances                                                                     128 
 Running On-Demand All P instances                                                    |check|          128 
 Running On-Demand All Standard (A, C, D, H, I, M, R, T, Z) instances                 |check|          1152
 Running On-Demand All X instances                                                    |check|          128 
