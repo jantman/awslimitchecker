@@ -171,6 +171,7 @@ class DatadogTester(object):
             m_init.return_value = None
             self.cls = Datadog()
             self.cls._host = 'https://api.datadoghq.com'
+            self.cls._metric_format = 'original'
 
 
 class TestValidateAuth(DatadogTester):
@@ -226,6 +227,14 @@ class TestNameForMetric(DatadogTester):
         assert self.cls._name_for_metric(
             'Service Name*', 'limit NAME .'
         ) == 'foobar.service_name_.limit_name_'
+
+
+class TestSafeName(DatadogTester):
+
+    def test_simple(self):
+        assert self.cls._name_for_datadog(
+            'limit* NAME .'
+        ) == 'limit_name_'
 
 
 class TestFlush(DatadogTester):
@@ -296,6 +305,112 @@ class TestFlush(DatadogTester):
         assert len(c[2]) == 2
         assert c[2]['headers'] == {'Content-type': 'application/json'}
         assert json.loads(c[2]['body'].decode()) == expected
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_servicetags_format(self):
+        self.cls._prefix = 'prefix.'
+        self.cls._tags = ['tag1', 'tag:2']
+        self.cls._limits = []
+        self.cls._api_key = 'myKey'
+        self.cls._metric_format = 'servicetags'
+        self.cls.set_run_duration(123.45)
+        limA = Mock(
+            name='limitA', service=Mock(service_name='SVC1')
+        )
+        type(limA).name = 'limitA'
+        limA.get_current_usage.return_value = []
+        limA.get_limit.return_value = None
+        self.cls.add_limit(limA)
+        limB = Mock(
+            name='limitB', service=Mock(service_name='SVC1')
+        )
+        type(limB).name = 'limitB'
+        mocku = Mock()
+        mocku.get_value.return_value = 6
+        limB.get_current_usage.return_value = [mocku]
+        limB.get_limit.return_value = 10
+        self.cls.add_limit(limB)
+        mock_http = Mock()
+        mock_resp = Mock(status=200, data='{"status": "ok"}')
+        mock_http.request.return_value = mock_resp
+        self.cls._http = mock_http
+        self.cls.flush()
+        ts = 1481884842
+        expected = {
+            'series': [
+                {
+                    'metric': 'prefix.runtime',
+                    'points': [[ts, 123.45]],
+                    'type': 'gauge',
+                    'tags': ['tag1', 'tag:2']
+                },
+                {
+                    'metric': 'prefix.max_usage',
+                    'points': [[ts, 0]],
+                    'type': 'gauge',
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1', 'service_limit:svc1.limita']
+                },
+                {
+                    'metric': 'prefix.max_usage',
+                    'points': [[ts, 6]],
+                    'type': 'gauge',
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1', 'service_limit:svc1.limitb']
+                },
+                {
+                    'metric': 'prefix.limit',
+                    'points': [[ts, 10]],
+                    'type': 'gauge',
+                    'tags': ['tag1', 'tag:2',
+                             'service:svc1', 'service_limit:svc1.limitb']
+                }
+            ]
+        }
+        assert len(mock_http.mock_calls) == 1
+        c = mock_http.mock_calls[0]
+        assert c[0] == 'request'
+        assert c[1] == (
+            'POST', 'https://api.datadoghq.com/api/v1/series?api_key=myKey'
+        )
+        assert len(c[2]) == 2
+        assert c[2]['headers'] == {'Content-type': 'application/json'}
+        assert json.loads(c[2]['body'].decode()) == expected
+
+    @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
+    def test_invalid_format(self):
+        self.cls._prefix = 'prefix.'
+        self.cls._tags = ['tag1', 'tag:2']
+        self.cls._limits = []
+        self.cls._api_key = 'myKey'
+        self.cls._metric_format = 'invalidformat'
+        self.cls.set_run_duration(123.45)
+        limA = Mock(
+            name='limitA', service=Mock(service_name='SVC1')
+        )
+        type(limA).name = 'limitA'
+        limA.get_current_usage.return_value = []
+        limA.get_limit.return_value = None
+        self.cls.add_limit(limA)
+        limB = Mock(
+            name='limitB', service=Mock(service_name='SVC1')
+        )
+        type(limB).name = 'limitB'
+        mocku = Mock()
+        mocku.get_value.return_value = 6
+        limB.get_current_usage.return_value = [mocku]
+        limB.get_limit.return_value = 10
+        self.cls.add_limit(limB)
+        mock_http = Mock()
+        mock_resp = Mock(status=200, data='{"status": "ok"}')
+        mock_http.request.return_value = mock_resp
+        self.cls._http = mock_http
+        with pytest.raises(RuntimeError) as exc:
+            self.cls.flush()
+        assert str(exc.value) == "ERROR: Datadog metric provider " \
+                                 "metric_format must be " \
+                                 "'original' or 'servicetags'."
+        assert len(mock_http.mock_calls) == 0
 
     @freeze_time("2016-12-16 10:40:42", tz_offset=0, auto_tick_seconds=6)
     def test_api_error_non_default_host(self):
