@@ -641,6 +641,25 @@ class VPC(object):
         ]
     }
 
+    test_find_usages_customer_gateways = {
+        'CustomerGateways': [
+            {
+                "BgpAsn": "11111",
+                'State': 'pending',
+                'Type': 'ipsec.1',
+                "IpAddress": "123.55.44.11",
+                'CustomerGatewayId': 'string',
+                'Tags': [
+                    {
+                        'Key': 'string',
+                        'Value': 'string'
+                    },
+                ]
+            },
+            {'CustomerGatewayId': 'string1'}
+        ]
+    }
+
     test_find_usage_network_interfaces = {
         'NetworkInterfaces': [
             {
