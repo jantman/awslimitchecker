@@ -181,7 +181,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBSnapshot',
-            quotas_name='Manual snapshots'
+            quotas_name='Manual DB instance snapshots'
         )
         limits['DB parameter groups'] = AwsLimit(
             'DB parameter groups',
@@ -295,7 +295,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBCluster',
-            quotas_name='Manual Cluster Snapshots'
+            quotas_name='Manual DB cluster snapshots'
         )
         limits['Custom Endpoints Per DB Cluster'] = AwsLimit(
             'Custom Endpoints Per DB Cluster',
@@ -313,7 +313,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBInstance',
-            quotas_name='DB Instance Roles'
+            quotas_name='IAM roles per DB instance'
         )
         limits['DB Cluster Roles'] = AwsLimit(
             'DB Cluster Roles',
@@ -322,7 +322,7 @@ class _RDSService(_AwsService):
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::RDS::DBCluster',
-            quotas_name='DB Cluster Roles'
+            quotas_name='IAM roles per DB cluster'
         )
         self.limits = limits
         return limits
