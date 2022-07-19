@@ -81,6 +81,7 @@ class Test_VpcService(object):
             'Rules per network ACL',
             'Route tables per VPC',
             'Virtual private gateways',
+            'Customer gateways',
             'Network interfaces per Region',
         ])
         for name, limit in res.items():
@@ -113,6 +114,7 @@ class Test_VpcService(object):
                     _find_usage_gateways=DEFAULT,
                     _find_usage_nat_gateways=DEFAULT,
                     _find_usages_vpn_gateways=DEFAULT,
+                    _find_usages_customer_gateways=DEFAULT,
                     _find_usage_network_interfaces=DEFAULT,
             ) as mocks:
                 mocks['_find_usage_subnets'].return_value = sn
@@ -130,6 +132,7 @@ class Test_VpcService(object):
                 '_find_usage_route_tables',
                 '_find_usage_gateways',
                 '_find_usages_vpn_gateways',
+                '_find_usages_customer_gateways',
                 '_find_usage_network_interfaces',
         ]:
             assert mocks[x].mock_calls == [call()]
@@ -362,6 +365,34 @@ class Test_VpcService(object):
             ]),
         ]
 
+    def test_find_usages_customer_gateways(self):
+        response = result_fixtures.VPC.test_find_usages_customer_gateways
+
+        mock_conn = Mock()
+        mock_conn.describe_customer_gateways.return_value = response
+
+        cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
+        cls.conn = mock_conn
+
+        cls._find_usages_customer_gateways()
+
+        assert len(cls.limits['Customer gateways']
+                   .get_current_usage()) == 1
+        assert cls.limits['Customer gateways'].get_current_usage()[
+            0].get_value() == 2
+        assert mock_conn.mock_calls == [
+            call.describe_customer_gateways(Filters=[
+                {
+                    'Name': 'state',
+                    'Values': [
+                        'available',
+                        'pending'
+                    ]
+                }
+            ]),
+        ]
+
     def test_find_usage_network_interfaces(self):
         response = result_fixtures.VPC.test_find_usage_network_interfaces
 
@@ -393,5 +424,6 @@ class Test_VpcService(object):
             'ec2:DescribeSubnets',
             'ec2:DescribeVpcs',
             'ec2:DescribeVpnGateways',
+            'ec2:DescribeCustomerGateways',            
             'ec2:DescribeNetworkInterfaces',
         ]

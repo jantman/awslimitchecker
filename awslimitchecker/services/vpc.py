@@ -72,6 +72,7 @@ class _VpcService(_AwsService):
         self._find_usage_gateways()
         self._find_usage_nat_gateways(subnet_to_az)
         self._find_usages_vpn_gateways()
+        self._find_usages_customer_gateways()
         self._find_usage_network_interfaces()
         self._have_usage = True
         logger.debug("Done checking usage.")
@@ -235,6 +236,25 @@ class _VpcService(_AwsService):
             aws_type='AWS::EC2::VPNGateway'
         )
 
+    def _find_usages_customer_gateways(self):
+        """find usage of customer gateways"""
+
+        # do not include deleting and deleted in the results
+        vpngws = self.conn.describe_customer_gateways(Filters=[
+            {
+                'Name': 'state',
+                'Values': [
+                    'available',
+                    'pending'
+                ]
+            }
+        ])['CustomerGateways']
+
+        self.limits['Customer gateways']._add_current_usage(
+            len(vpngws),
+            aws_type='AWS::EC2::CustomerGateway'
+        )
+
     def _find_usage_network_interfaces(self):
         """find usage of network interfaces"""
         enis = paginate_dict(
@@ -352,6 +372,17 @@ class _VpcService(_AwsService):
             limit_type='AWS::EC2::VPNGateway',
             quotas_service_code='ec2',
             quotas_name='Virtual private gateways per region'
+        )
+
+        limits['Customer gateways'] = AwsLimit(
+            'Customer gateways',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::CustomerGateway',
+            quotas_service_code='ec2',
+            quotas_name='Customer gateways per region'
         )
 
         limits['Network interfaces per Region'] = AwsLimit(
