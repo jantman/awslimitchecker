@@ -334,6 +334,30 @@ class Test_VpcService(object):
                        exc_info=1)
         ]
 
+    def test_find_usage_peering_connections(self):
+        response = result_fixtures.VPC.test_find_usage_peering_connections
+
+        mock_conn = Mock()
+        mock_conn.describe_vpc_peering_connections.return_value = response
+        cls = _VpcService(21, 43, {}, None)
+        cls._current_account_id = '0123456789'
+        cls.conn = mock_conn
+
+        res = cls._find_usage_peering_connections()
+
+        usage = sorted(cls.limits['Active VPC peering connections per VPC'].get_current_usage())
+        print(usage)
+        assert len(usage) == 2
+        assert usage[0].resource_id == 'vpc-4'
+        assert usage[0].get_value() == 1
+        assert usage[1].resource_id == 'vpc-3'
+        assert usage[1].get_value() == 3
+        assert mock_conn.mock_calls == [
+            call.describe_subnets(Filters=[{
+                'Name': 'status-code', 'Values': ['active']
+            }])
+        ]
+
     def test_find_usages_vpn_gateways(self):
         response = result_fixtures.VPC.test_find_usages_vpn_gateways
 

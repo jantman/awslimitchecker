@@ -71,6 +71,7 @@ class _VpcService(_AwsService):
         self._find_usage_route_tables()
         self._find_usage_gateways()
         self._find_usage_nat_gateways(subnet_to_az)
+        self._find_usage_peering_connections()
         self._find_usages_vpn_gateways()
         self._find_usage_network_interfaces()
         self._have_usage = True
@@ -216,6 +217,33 @@ class _VpcService(_AwsService):
                          'perhaps NAT service does not exist in this region?',
                          exc_info=1)
 
+    def _find_usage_peering_connections(self):
+        """find usage of Active VPC Peering Connections"""
+
+        peering_connections = self.conn.describe_vpc_peering_connections(
+            Filters=[{'Name': 'status-code', 'Values': ['active']}]
+        )['VpcPeeringConnections']
+
+        peering_connections_per_vpc = defaultdict(int)
+        for peering in peering_connections:
+            for vpc in [peering['AccepterVpcInfo'], peering['RequesterVpcInfo']]:
+                # Each peering contains 2 VPCs and at least one is in our current account and region. To avoid incorrect alerts about out-of-scope VPCs we need to filter to only VPCs in our account and region.
+
+                if vpc['OwnerId'] != self.current_account_id:
+                    continue
+
+                if vpc['Region'] != "us-west-2": # TODO: How to get current region?
+                    continue
+
+                peering_connections_per_vpc[vpc['VpcId']] += 1
+
+        for vpc_id, peerings in peering_connections_per_vpc.items():
+            self.limits['Active VPC peering connections per VPC']._add_current_usage(
+                peerings,
+                aws_type='AWS::EC2::VPC',
+                resource_id=vpc_id
+            )
+
     def _find_usages_vpn_gateways(self):
         """find usage of vpn gateways"""
 
@@ -341,6 +369,16 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::NatGateway',
             quotas_name='NAT gateways per Availability Zone'
+        )
+
+        limits['Active VPC peering connections per VPC'] = AwsLimit(
+            'Active VPC peering connections per VPC',
+            self,
+            50,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::VPCPeeringConnection',
+            limit_subtype='AWS::EC2::VPC',
         )
 
         limits['Virtual private gateways'] = AwsLimit(
