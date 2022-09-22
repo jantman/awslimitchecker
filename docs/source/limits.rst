@@ -777,9 +777,9 @@ Daily sending quota                          |check| 200
 VPC
 ----
 
-============================= =============== ======== ======= ====
-Limit                         Trusted Advisor Quotas   API     Default
-============================= =============== ======== ======= ====
+===================================== =============== ======== ======= ====
+Limit                                 Trusted Advisor Quotas   API     Default
+===================================== =============== ======== ======= ====
 Entries per route table                       |check|          50  
 Internet gateways                             |check|          5   
 NAT Gateways per AZ                           |check|          5   
@@ -788,9 +788,10 @@ Network interfaces per Region                 |check|          5000
 Route tables per VPC                          |check|          200 
 Rules per network ACL                         |check|          20  
 Subnets per VPC                               |check|          200 
+Active VPC peering connections per VPC        |check|          50  
 VPCs                                          |check|          5   
 Virtual private gateways                                       5   
-============================= =============== ======== ======= ====
+====================================== =============== ======== ======= ====
 
 
 

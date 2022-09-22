@@ -617,6 +617,122 @@ class VPC(object):
         'subnet3': 'az2'
     }
 
+    test_find_usage_peering_connections = {
+        'VpcPeeringConnections': [
+            {
+                'AccepterVpcInfo': {
+                    'CidrBlock': '10.3.128.0/18',
+                    'CidrBlockSet': [{'CidrBlock': '10.3.128.0/18'}],
+                    'OwnerId': '123456789012',
+                    'PeeringOptions': {
+                        'AllowDnsResolutionFromRemoteVpc': False,
+                        'AllowEgressFromLocalClassicLinkToRemoteVpc': False,
+                        'AllowEgressFromLocalVpcToRemoteClassicLink': False,
+                    },
+                    'Region': 'us-west-2',
+                    'VpcId': 'vpc-1',
+                },
+                'RequesterVpcInfo': {
+                    'CidrBlock': '10.8.72.0/21',
+                    'CidrBlockSet': [{'CidrBlock': '10.8.72.0/21'}],
+                    'OwnerId': '123456789012',
+                    'PeeringOptions': {
+                        'AllowDnsResolutionFromRemoteVpc': False,
+                        'AllowEgressFromLocalClassicLinkToRemoteVpc': False,
+                        'AllowEgressFromLocalVpcToRemoteClassicLink': False,
+                    },
+                    'Region': 'ap-south-1',
+                    'VpcId': 'vpc-2',
+                },
+                'Status': {
+                    'Code': 'active',
+                    'Message': 'Active',
+                },
+                'Tags': [
+                    {
+                        'Key': 'a key',
+                        'Value': 'a value',
+                    },
+                ],
+                'VpcPeeringConnectionId': 'pcx-1',
+            },
+            {
+                'AccepterVpcInfo': {
+                    'CidrBlock': '10.3.128.0/18',
+                    'CidrBlockSet': [{'CidrBlock': '10.3.128.0/18'}],
+                    'OwnerId': '99999',
+                    'PeeringOptions': {
+                        'AllowDnsResolutionFromRemoteVpc': False,
+                        'AllowEgressFromLocalClassicLinkToRemoteVpc': False,
+                        'AllowEgressFromLocalVpcToRemoteClassicLink': False,
+                    },
+                    'Region': 'us-west-2',
+                    'VpcId': 'vpc-3',
+                },
+                'RequesterVpcInfo': {
+                    'CidrBlock': '10.8.72.0/21',
+                    'CidrBlockSet': [{'CidrBlock': '10.8.72.0/21'}],
+                    'OwnerId': '123456789012',
+                    'PeeringOptions': {
+                        'AllowDnsResolutionFromRemoteVpc': False,
+                        'AllowEgressFromLocalClassicLinkToRemoteVpc': False,
+                        'AllowEgressFromLocalVpcToRemoteClassicLink': False,
+                    },
+                    'Region': 'us-west-2',
+                    'VpcId': 'vpc-1',
+                },
+                'Status': {
+                    'Code': 'active',
+                    'Message': 'Active',
+                },
+                'Tags': [
+                    {
+                        'Key': 'foo',
+                        'Value': 'bar',
+                    },
+                ],
+                'VpcPeeringConnectionId': 'pcx-2',
+            },
+            {
+                'AccepterVpcInfo': {
+                    'CidrBlock': '10.3.128.0/18',
+                    'CidrBlockSet': [{'CidrBlock': '10.3.128.0/18'}],
+                    'OwnerId': '123456789012',
+                    'PeeringOptions': {
+                        'AllowDnsResolutionFromRemoteVpc': False,
+                        'AllowEgressFromLocalClassicLinkToRemoteVpc': False,
+                        'AllowEgressFromLocalVpcToRemoteClassicLink': False,
+                    },
+                    'Region': 'us-west-2',
+                    'VpcId': 'vpc-4',
+                },
+                'RequesterVpcInfo': {
+                    'CidrBlock': '10.8.72.0/21',
+                    'CidrBlockSet': [{'CidrBlock': '10.8.72.0/21'}],
+                    'OwnerId': '123456789012',
+                    'PeeringOptions': {
+                        'AllowDnsResolutionFromRemoteVpc': False,
+                        'AllowEgressFromLocalClassicLinkToRemoteVpc': False,
+                        'AllowEgressFromLocalVpcToRemoteClassicLink': False,
+                    },
+                    'Region': 'ap-south-1',
+                    'VpcId': 'vpc-5',
+                },
+                'Status': {
+                    'Code': 'active',
+                    'Message': 'Active',
+                },
+                'Tags': [
+                    {
+                        'Key': 'out',
+                        'Value': 'of ideas',
+                    },
+                ],
+                'VpcPeeringConnectionId': 'pcx-3',
+            },
+        ]
+    }
+
     test_find_usages_vpn_gateways = {
         'VpnGateways': [
             {
