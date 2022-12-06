@@ -41,6 +41,7 @@ import sys
 from awslimitchecker.services.ebs import _EbsService, convert_TiB_to_GiB
 from awslimitchecker.limit import AwsLimit
 from awslimitchecker.tests.services import result_fixtures
+from awslimitchecker import AwsLimitChecker
 
 # https://code.google.com/p/mock/issues/detail?id=249
 # py>=3.4 should use unittest.mock not the mock package on pypi
@@ -256,3 +257,15 @@ class Test_EbsService(object):
             "ec2:DescribeVolumes",
             "ec2:DescribeSnapshots"
         ]
+
+    def find_quota_ebs(self):
+        cls = AwsLimitChecker("us-east-1")
+        limits = cls.get_limits(["EBS"])
+        assert limits["EBS"]["Cold (HDD) volume storage (GiB)"].quotas_limit != None
+        assert limits["EBS"]["Throughput Optimized (HDD) volume storage (GiB)"].quotas_limit != None
+        assert limits["EBS"]["Provisioned IOPS SSD (io1) storage (GiB)"].quotas_limit != None
+        assert limits["EBS"]["Provisioned IOPS SSD (io2) storage (GiB)"].quotas_limit != None
+        assert limits["EBS"]["General Purpose (SSD gp2) volume storage (GiB)"].quotas_limit != None
+        assert limits["EBS"]["General Purpose (SSD gp3) volume storage (GiB)"].quotas_limit != None
+        assert limits["EBS"]["Magnetic volume storage (GiB)"].quotas_limit != None
+        
