@@ -270,6 +270,31 @@ class _VpcService(_AwsService):
             aws_type='AWS::EC2::NetworkInterface'
         )
 
+    def _find_usages_gateway_vpc_endpoints(self):
+        """find usage of Gateway VPC endpoints"""
+
+        # do not include deleting and deleted in the results
+        vpngws = self.conn.describe_vpc_endpoints(Filters=[
+            {
+                'Name': 'vpc-endpoint-state',
+                'Values': [
+                    'available',
+                    'pending'
+                ]
+            },
+            {
+                'Name': 'vpc-endpoint-type',
+                'Values': [
+                    'Gateway'
+                ]
+            }
+        ])['VpcEndpoints']
+
+        self.limits['Gateway VPC endpoints']._add_current_usage(
+            len(vpngws),
+            aws_type='AWS::EC2::GatewayVPCEndpoints'
+        )
+
     def get_limits(self):
         """
         Return all known limits for this service, as a dict of their names
@@ -393,6 +418,18 @@ class _VpcService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::EC2::NetworkInterface'
         )
+
+        limits['Gateway VPC endpoints'] = AwsLimit(
+            'Gateway VPC endpoints',
+            self,
+            20,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::EC2::GatewayVPCEndpoints',
+            quotas_service_code='vpc',
+            quotas_name='Gateway VPC endpoints per Region'
+        )
+
         self.limits = limits
         return limits
 
