@@ -74,6 +74,7 @@ class _VpcService(_AwsService):
         self._find_usages_vpn_gateways()
         self._find_usages_customer_gateways()
         self._find_usage_network_interfaces()
+        self._find_usages_gateway_vpc_endpoints()
         self._have_usage = True
         logger.debug("Done checking usage.")
 
@@ -450,4 +451,5 @@ class _VpcService(_AwsService):
             'ec2:DescribeVpcs',
             'ec2:DescribeVpnGateways',
             'ec2:DescribeNetworkInterfaces',
+            'ec2:DescribeVpcEndpoints',
         ]

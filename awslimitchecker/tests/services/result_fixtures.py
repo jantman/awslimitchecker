@@ -728,6 +728,38 @@ class VPC(object):
         }
     }
 
+    test_find_usages_gateway_vpc_endpoints = {
+        'VpcEndpoints': [
+            {
+            "VpcEndpointId": "vpce-77777777",
+            "VpcEndpointType": "Gateway",
+            "VpcId": "vpc-88888888",
+            "ServiceName": "com.amazonaws.us-west-2.s3",
+            "State": "available",
+            "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
+            "RouteTableIds": [
+                "rtb-11111111",
+                "rtb-22222222",
+                "rtb-33333333"
+            ],
+            "SubnetIds": [],
+            "Groups": [],
+            "PrivateDnsEnabled": false,
+            "RequesterManaged": false,
+            "NetworkInterfaceIds": [],
+            "DnsEntries": [],
+            "CreationTimestamp": "2017-09-28T18:43:44+00:00",
+            "Tags": [
+                {
+                    "Key": "team",
+                    "Value": "sre"
+                },
+            ],
+            "OwnerId": "123123123123123"
+            }
+        ]
+    }
+
 
 class RDS(object):
     test_find_usage_instances = []

@@ -426,4 +426,5 @@ class Test_VpcService(object):
             'ec2:DescribeVpnGateways',
             'ec2:DescribeCustomerGateways',            
             'ec2:DescribeNetworkInterfaces',
+            'ec2:DescribeVpcEndpoints',
         ]
