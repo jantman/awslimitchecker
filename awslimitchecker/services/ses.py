@@ -102,6 +102,13 @@ class _SesService(_AwsService):
             self.critical_threshold,
             limit_type='AWS::SES::Email',
         )
+        limits['Max sending per second'] = AwsLimit(
+            'Max sending per second',
+            self,
+            1,
+            self.warning_threshold,
+            self.critical_threshold,
+            limit_type='AWS::SES::Email',)
         self.limits = limits
         return limits
 
@@ -125,6 +132,7 @@ class _SesService(_AwsService):
             logger.warning('Skipping SES: %s', str(ex))
             return
         self.limits['Daily sending quota']._set_api_limit(resp['Max24HourSend'])
+        self.limits['Max sending per second']._set_api_limit(resp['MaxSendRate'])
 
     def required_iam_permissions(self):
         """
