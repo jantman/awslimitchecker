@@ -63,7 +63,19 @@ class _S3Service(_AwsService):
             lim._reset_usage()
         count = 0
         for bkt in self.resource_conn.buckets.all():
-            count += 1
+            bucket_head = self.resource_conn.meta.client.head_bucket(
+                Bucket=bkt.name
+            )
+            bucket_headers = bucket_head['ResponseMetadata']['HTTPHeaders']
+            # if the region was not specified when the bucket was created, it
+            # will be in us-east-1
+            bucket_region = bucket_headers.get(
+                'x-amz-bucket-region',
+                'us-east-1'
+            )
+            our_region_name = self._boto3_connection_kwargs['region_name']
+            if bucket_region == our_region_name:
+                count += 1
         self.limits['Buckets']._add_current_usage(
             count, aws_type='AWS::S3::Bucket'
         )
@@ -103,4 +115,5 @@ class _S3Service(_AwsService):
         """
         return [
             "s3:ListAllMyBuckets",
+            "s3:ListBucket"
         ]

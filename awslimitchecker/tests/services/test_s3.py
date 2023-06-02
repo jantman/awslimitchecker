@@ -88,22 +88,46 @@ class Test_S3Service(object):
         assert res == mock_limits
 
     def test_find_usage(self):
+        from collections import namedtuple
         mock_buckets = Mock()
-        mock_buckets.all.return_value = ['a', 'b', 'c']
-        mock_conn = Mock(buckets=mock_buckets)
+        mock_buckets.all.return_value = [
+            namedtuple('Bucket', ['name'])(x)
+
+            for x in ['a', 'b', 'c']
+        ]
+
+        mock_client = Mock()
+        mock_client.head_bucket.side_effect = [
+            {
+                'ResponseMetadata': {
+                    'HTTPHeaders': {
+                        'x-amz-bucket-region': region
+                    }
+                }
+            }
+
+            for region in ['us-east-1', 'us-east-1', 'us-west-2']
+        ]
+
+        mock_conn = Mock(buckets=mock_buckets, meta=Mock(client=mock_client))
+
         with patch('%s.connect_resource' % pb) as mock_connect:
             cls = _S3Service(21, 43, {}, None)
             cls.resource_conn = mock_conn
+            cls._boto3_connection_kwargs = {'region_name': 'us-east-1'}
             assert cls._have_usage is False
             cls.find_usage()
         assert mock_connect.mock_calls == [call()]
         assert cls._have_usage is True
         assert mock_buckets.mock_calls == [call.all()]
         assert len(cls.limits['Buckets'].get_current_usage()) == 1
-        assert cls.limits['Buckets'].get_current_usage()[0].get_value() == 3
+        # the bucket in us-west-2 should be ignored, because that is not the
+        # name of our region
+        assert cls.limits['Buckets'].get_current_usage()[0].get_value() == 2
 
     def test_required_iam_permissions(self):
         cls = _S3Service(21, 43, {}, None)
         assert cls.required_iam_permissions() == [
-            's3:ListAllMyBuckets'
+            's3:ListAllMyBuckets',
+            's3:ListBucket'
         ]
