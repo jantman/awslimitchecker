@@ -151,7 +151,7 @@ class _DynamodbService(_AwsService):
         limits['Tables Per Region'] = AwsLimit(
             'Tables Per Region',
             self,
-            256,
+            2500,
             self.warning_threshold,
             self.critical_threshold,
             limit_type='AWS::DynamoDB::Table',
